@@ -1,0 +1,75 @@
+schema: spec-driven
+
+context: |
+  Project: MyBudget — TFM BigSchool Máster en Desarrollo con IA
+  Stack: .NET 10 (Vertical Slice) + Vue 3 + PostgreSQL
+  Architecture: Vertical Slice Architecture (feature-first, 4-file slice pattern)
+  Frontend: Vue 3 + Vite + Pinia + TailwindCSS + daisyUI + vue-i18n v9 + chart.js + Axios + Zod
+  Backend: Mediator (not MediatR) + FluentValidation + Mapster + EF Core + Dapper + MailKit + Serilog + OTel
+  Auth: JWT + BCrypt + 4 roles (owner, admin, operator, read-only) per budget
+  i18n: ES/EN — frontend vue-i18n, backend Microsoft.Extensions.Localization
+  Package manager: pnpm (frontend)
+  Deployment: budget ~$8/mo, PaaS options (Railway, Render, Fly.io)
+  Code language: English
+
+strict_tdd: false
+
+testing:
+  strict_tdd: false
+  reason: "User explicitly disabled TDD (TDD Off setting)"
+  runner:
+    frontend: vitest (planned — not yet installed)
+    backend: xUnit + NSubstitute + Shouldly (planned — not yet installed)
+  layers:
+    unit:
+      available: false
+      note: "No test infrastructure yet — project is empty"
+    integration:
+      available: false
+      note: "Planned: WebApplicationFactory (.NET) + @testing-library/vue"
+    e2e:
+      available: false
+      note: "Planned: @playwright/test"
+  coverage:
+    frontend: "@vitest/coverage-v8 (planned)"
+    backend: "coverlet (planned)"
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify affected slices and SharedKernel impact
+    - Note i18n impact (new resx keys needed?)
+    - Note security implications (auth, role gating)
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Include role-based access requirements per scenario
+    - Include i18n requirements (ES + EN strings)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+    - Identify slice count and SharedKernel additions
+  tasks:
+    - Group tasks by phase (infrastructure, backend slices, frontend, testing)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+    - Always include i18n task as part of each feature
+  apply:
+    - Follow VSA 4-file slice pattern (Command/Validator/Handler/Endpoint)
+    - Use Mediator (not MediatR) — ValueTask return
+    - Use EF Core for writes, Dapper for reads
+    - AppDbContext is PURE — never inject IMediator
+    - BCrypt workFactor 12 for passwords
+    - Secrets via User Secrets (dev) / env vars (prod)
+    - pnpm for frontend package management
+    - Add X-Correlation-Id and Accept-Language on all Axios requests
+    - Code written in English
+  verify:
+    - Run vitest (frontend) if available
+    - Run dotnet test (backend) if available
+    - Compare implementation against every spec scenario
+    - Verify role-based access is enforced
+    - Verify i18n strings exist in both EN and ES
+  archive:
+    - Warn before merging destructive deltas (large removals)
+    - Update openspec/specs/ with finalized spec content

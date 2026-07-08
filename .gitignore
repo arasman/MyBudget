@@ -1,0 +1,43 @@
+# Personal notes — not for repo
+AnalisisInicial/
+
+# .NET
+bin/
+obj/
+*.user
+.vs/
+*.suo
+*.userosscache
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
+packages/
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+
+# Node / Frontend
+node_modules/
+dist/
+.output/
+.nuxt/
+.cache/
+
+# Environment secrets
+.env
+.env.local
+.env.*.local
+
+# Coverage
+coverage/
+lcov.info
+*.opencover.xml
+
+# IDE
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
