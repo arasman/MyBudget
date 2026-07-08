@@ -1,0 +1,12 @@
+/*
+ * Tailwind v4 CSS-only configuration — no tailwind.config.ts needed (ADR-004).
+ * Configuration is done via @theme, @layer, @plugin directives in CSS.
+ * daisyUI v5 uses @plugin directive and supports Tailwind v4 natively.
+ */
+
+@import "tailwindcss";
+
+/* daisyUI v5 plugin with light and dark themes */
+@plugin "daisyui" {
+  themes: light, dark;
+}

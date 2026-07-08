@@ -1,0 +1,18 @@
+{
+  "common": {
+    "appName": "MyBudget",
+    "loading": "Cargando...",
+    "error": "Ocurrió un error",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "loginButton": "Ingresar",
+    "loginError": "Email o contraseña inválidos"
+  }
+}

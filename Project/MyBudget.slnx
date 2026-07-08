@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MyBudget.Api/MyBudget.Api.csproj" />
+    <Project Path="src/MyBudget.Features/MyBudget.Features.csproj" />
+    <Project Path="src/MyBudget.Gateway/MyBudget.Gateway.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MyBudget.Features.Tests/MyBudget.Features.Tests.csproj" />
+    <Project Path="tests/MyBudget.Integration.Tests/MyBudget.Integration.Tests.csproj" />
+  </Folder>
+</Solution>
