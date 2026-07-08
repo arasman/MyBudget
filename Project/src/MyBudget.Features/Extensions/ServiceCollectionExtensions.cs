@@ -45,8 +45,8 @@ public static class ServiceCollectionExtensions
             opts.UseNpgsql(connectionString);
         });
 
-        // Dapper connection factory (keyed as "postgres")
-        services.AddSingleton<ConnectionFactory>();
+        // Dapper connection factory — keyed as "postgres" for [FromKeyedServices("postgres")] injection
+        services.AddKeyedSingleton<ConnectionFactory>("postgres");
 
         // Caching — NullCacheService at foundation (ADR-005)
         services.AddSingleton<ICacheService, NullCacheService>();
