@@ -12,27 +12,39 @@ context: |
   Deployment: budget ~$8/mo, PaaS options (Railway, Render, Fly.io)
   Code language: English
 
-strict_tdd: false
+strict_tdd: true
 
 testing:
-  strict_tdd: false
-  reason: "User explicitly disabled TDD (TDD Off setting)"
+  strict_tdd: true
+  reason: "Strict TDD enabled per session instruction — all features require tests before/alongside implementation"
   runner:
-    frontend: vitest (planned — not yet installed)
-    backend: xUnit + NSubstitute + Shouldly (planned — not yet installed)
+    frontend: "vitest@3 (installed) — pnpm test:unit in Project/frontend/"
+    backend: "xUnit + NSubstitute + Shouldly (installed)"
   layers:
     unit:
-      available: false
-      note: "No test infrastructure yet — project is empty"
+      available: true
+      command_backend: "dotnet test tests/MyBudget.Features.Tests"
+      command_frontend: "pnpm test:unit (in Project/frontend/)"
+      tools_backend: "xUnit + NSubstitute + Shouldly + coverlet + SQLite in-memory"
+      tools_frontend: "Vitest + @testing-library/vue + jsdom"
     integration:
-      available: false
-      note: "Planned: WebApplicationFactory (.NET) + @testing-library/vue"
+      available: true
+      command: "dotnet test tests/MyBudget.Integration.Tests"
+      note: "Requires Docker infra (Postgres, Redis, Mailpit). Uses WebApplicationFactory + SQLite in-memory override."
     e2e:
-      available: false
-      note: "Planned: @playwright/test"
+      available: true
+      command: "pnpm exec playwright test (in Project/frontend/)"
+      note: "Requires full Docker stack. @playwright/test@1 installed."
   coverage:
-    frontend: "@vitest/coverage-v8 (planned)"
-    backend: "coverlet (planned)"
+    frontend: "@vitest/coverage-v8 (installed)"
+    backend: "coverlet.collector@10 (installed)"
+  quality:
+    linter:
+      frontend: "eslint@9 — pnpm lint (in Project/frontend/)"
+    formatter:
+      frontend: "prettier@3 — pnpm format (in Project/frontend/)"
+    type_checker:
+      frontend: "vue-tsc — pnpm build (in Project/frontend/)"
 
 rules:
   proposal:
