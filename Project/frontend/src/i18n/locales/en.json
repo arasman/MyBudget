@@ -8,11 +8,54 @@
     "confirm": "Confirm"
   },
   "auth": {
-    "login": "Login",
-    "logout": "Logout",
-    "email": "Email",
-    "password": "Password",
+    "login": {
+      "title": "Sign In",
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "Password",
+      "submit": "Sign In",
+      "registerLink": "Don't have an account? Register",
+      "error": {
+        "invalidCredentials": "Invalid email or password. Please try again."
+      }
+    },
+    "register": {
+      "title": "Create Account",
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "Password (min 8 chars, 1 uppercase, 1 digit)",
+      "firstNamePlaceholder": "First name",
+      "lastNamePlaceholder": "Last name",
+      "submit": "Create Account",
+      "loginLink": "Already have an account? Sign in",
+      "successMessage": "Account created! Welcome to MyBudget.",
+      "emailTaken": "This email is already registered."
+    },
+    "loginLabel": "Login",
+    "logoutLabel": "Logout",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
     "loginButton": "Sign In",
     "loginError": "Invalid email or password"
+  },
+  "invitation": {
+    "modal": {
+      "title": "Invite a User",
+      "emailLabel": "Email address",
+      "roleLabel": "Role",
+      "submit": "Send Invitation",
+      "successMessage": "Invitation sent successfully.",
+      "error": {
+        "alreadyMember": "This user is already a member of this budget."
+      }
+    },
+    "accept": {
+      "title": "Accept Budget Invitation",
+      "loading": "Processing your invitation...",
+      "successMessage": "You have successfully joined the budget.",
+      "error": {
+        "expired": "This invitation has expired. Please request a new one.",
+        "alreadyUsed": "This invitation has already been used.",
+        "mismatch": "This invitation was not sent to your email address."
+      }
+    }
   }
 }

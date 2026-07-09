@@ -14,7 +14,7 @@ public static class EndpointExtensions
         var assembly = typeof(EndpointExtensions).Assembly;
 
         var endpointTypes = assembly.GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract)
+            .Where(t => t.IsClass)
             .Select(t => new
             {
                 Type = t,

@@ -11,6 +11,18 @@ const routes: RouteRecordRaw[] = [
     meta: { public: true },
   },
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/RegisterView.vue'),
+    meta: { public: true },
+  },
+  {
+    path: '/invitations/accept',
+    name: 'AcceptInvitation',
+    component: () => import('@/views/AcceptInvitationView.vue'),
+    meta: { public: true },
+  },
+  {
     path: '/',
     name: 'Home',
     component: HomeView,
@@ -24,11 +36,20 @@ export const router = createRouter({
 })
 
 // Navigation guard — redirects unauthenticated users to /login
-router.beforeEach((to) => {
+// If authenticated but user profile not yet loaded (e.g. page reload), fetchMe()
+// so the 401 interceptor can silently refresh an expired access token.
+router.beforeEach(async (to) => {
   if (to.meta.requiresAuth) {
     const authStore = useAuthStore()
     if (!authStore.isAuthenticated) {
       return '/login'
+    }
+    if (!authStore.user) {
+      try {
+        await authStore.fetchMe()
+      } catch {
+        return '/login'
+      }
     }
   }
 })

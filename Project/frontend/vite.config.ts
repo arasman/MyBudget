@@ -9,6 +9,14 @@ export default defineConfig({
     vue(),
     tailwindcss(),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5184',
+        changeOrigin: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
