@@ -41,3 +41,6 @@ Thumbs.db
 
 # Docker
 .docker/
+
+# ATL / SDD tooling cache
+.atl/.skill-registry.cache.json

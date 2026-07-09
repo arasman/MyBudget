@@ -37,7 +37,9 @@ public sealed class ValidationBehaviour<TRequest, TResponse> : IPipelineBehavior
         if (failures.Count == 0)
             return await next(message, cancellationToken);
 
-        var errorMessage = string.Join("; ", failures.Select(f => f.ErrorMessage));
+        // Use ErrorCode when set (matches endpoint switch cases); fall back to ErrorMessage
+        var errorMessage = string.Join("; ", failures.Select(f =>
+            string.IsNullOrEmpty(f.ErrorCode) ? f.ErrorMessage : f.ErrorCode));
 
         // Return a failure Result — requires TResponse to be Result<T>
         // The cast is intentional: all handlers in this codebase return Result<T>

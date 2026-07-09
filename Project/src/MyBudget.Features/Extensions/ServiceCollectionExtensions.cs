@@ -1,9 +1,13 @@
 using FluentValidation;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyBudget.Features.Behaviours;
+using MyBudget.Features.SharedKernel.Auth;
+using MyBudget.Features.SharedKernel.Auth.Authorization;
 using MyBudget.Features.SharedKernel.Caching;
 using MyBudget.Features.SharedKernel.Email;
 using MyBudget.Features.SharedKernel.Persistence;
@@ -45,8 +49,8 @@ public static class ServiceCollectionExtensions
             opts.UseNpgsql(connectionString);
         });
 
-        // Dapper connection factory — keyed as "postgres" for [FromKeyedServices("postgres")] injection
-        services.AddKeyedSingleton<ConnectionFactory>("postgres");
+        // Dapper connection factory — singleton for Dapper-based handlers and BudgetAuthorizationHandler
+        services.AddSingleton<ConnectionFactory>();
 
         // Caching — NullCacheService at foundation (ADR-005)
         services.AddSingleton<ICacheService, NullCacheService>();
@@ -55,6 +59,17 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<EmailChannel>();
         services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<EmailChannel>());
         services.AddHostedService<EmailBackgroundService>();
+
+        // JWT options + token service
+        services.Configure<JwtOptions>(configuration.GetSection("JWT"));
+        services.AddScoped<JwtTokenService>();
+
+        // IMemoryCache — for BudgetAuthorizationHandler
+        services.AddMemoryCache();
+
+        // Per-budget authorization handler + custom middleware result handler (404 for missing budgets)
+        services.AddScoped<IAuthorizationHandler, BudgetAuthorizationHandler>();
+        services.AddSingleton<IAuthorizationMiddlewareResultHandler, BudgetAuthorizationMiddlewareResultHandler>();
 
         // Localization
         services.AddLocalization();

@@ -8,11 +8,53 @@
     "confirm": "Confirmar"
   },
   "auth": {
-    "login": "Iniciar sesión",
-    "logout": "Cerrar sesión",
-    "email": "Correo electrónico",
-    "password": "Contraseña",
+    "login": {
+      "title": "Iniciar sesión",
+      "emailPlaceholder": "tu@ejemplo.com",
+      "passwordPlaceholder": "Contraseña",
+      "submit": "Ingresar",
+      "registerLink": "¿No tienes cuenta? Regístrate",
+      "error": {
+        "invalidCredentials": "Email o contraseña inválidos. Intenta de nuevo."
+      }
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "emailPlaceholder": "tu@ejemplo.com",
+      "passwordPlaceholder": "Contraseña (mín. 8 caracteres, 1 mayúscula, 1 dígito)",
+      "firstNamePlaceholder": "Nombre",
+      "lastNamePlaceholder": "Apellido",
+      "submit": "Crear cuenta",
+      "loginLink": "¿Ya tienes cuenta? Inicia sesión",
+      "successMessage": "¡Cuenta creada! Bienvenido a MyBudget."
+    },
+    "loginLabel": "Iniciar sesión",
+    "logoutLabel": "Cerrar sesión",
+    "emailLabel": "Correo electrónico",
+    "passwordLabel": "Contraseña",
     "loginButton": "Ingresar",
     "loginError": "Email o contraseña inválidos"
+  },
+  "invitation": {
+    "modal": {
+      "title": "Invitar a un usuario",
+      "emailLabel": "Correo electrónico",
+      "roleLabel": "Rol",
+      "submit": "Enviar invitación",
+      "successMessage": "Invitación enviada exitosamente.",
+      "error": {
+        "alreadyMember": "Este usuario ya es miembro de este presupuesto."
+      }
+    },
+    "accept": {
+      "title": "Aceptar invitación al presupuesto",
+      "loading": "Procesando tu invitación...",
+      "successMessage": "Te has unido al presupuesto exitosamente.",
+      "error": {
+        "expired": "Esta invitación ha expirado. Solicita una nueva.",
+        "alreadyUsed": "Esta invitación ya fue utilizada.",
+        "mismatch": "Esta invitación no fue enviada a tu dirección de correo."
+      }
+    }
   }
 }

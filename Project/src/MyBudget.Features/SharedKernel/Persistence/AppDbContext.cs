@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MyBudget.Features.SharedKernel.Entities;
 
 namespace MyBudget.Features.SharedKernel.Persistence;
 
@@ -9,6 +10,12 @@ namespace MyBudget.Features.SharedKernel.Persistence;
 public sealed class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> opts) : base(opts) { }
+
+    public DbSet<User>             Users             => Set<User>();
+    public DbSet<RefreshToken>     RefreshTokens     => Set<RefreshToken>();
+    public DbSet<Budget>           Budgets           => Set<Budget>();
+    public DbSet<BudgetMembership> BudgetMemberships => Set<BudgetMembership>();
+    public DbSet<Invitation>       Invitations       => Set<Invitation>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
