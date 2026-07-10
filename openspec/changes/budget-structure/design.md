@@ -31,9 +31,11 @@ Soft-delete handlers: when deleting Cycle, handler also sets `DeletedAt` on chil
 
 ### ADR-BS-03: SetActiveCycle Atomic Swap
 
-**Choice**: Single handler loads current active cycle (if any) via `_db.Cycles.Where(c => c.BudgetId == budgetId && c.IsActive)`, sets `IsActive = false`, then sets target cycle `IsActive = true`. One `SaveChangesAsync` call = one transaction.
+**Choice**: Handler uses an explicit `BeginTransactionAsync` + two sequential `SaveChangesAsync` calls — first deactivate the current cycle, then activate the target. Both saves run inside the same DB transaction, preserving atomicity.
 
-**Rejected**: DB trigger (hidden logic), two separate API calls (race condition risk).
+**Why not single SaveChangesAsync**: PostgreSQL's partial unique index `IX_Cycles_BudgetId_IsActive WHERE IsActive=true` fires a constraint violation if EF Core sends the activate UPDATE before the deactivate UPDATE within the same batch. Splitting into two saves with the deactivation first avoids the transient constraint violation while keeping the operation atomic.
+
+**Rejected**: DB trigger (hidden logic), two separate API calls (race condition risk), single `SaveChangesAsync` (causes constraint violation with the partial unique index).
 
 ### ADR-BS-04: Reorder via Ordered ID List
 

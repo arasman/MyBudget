@@ -323,7 +323,7 @@ BudgetLineRevision.
 #### Scenario: Invalid LineType rejected `@unit`
 - GIVEN open Period
 - WHEN POST with LineType="Income"
-- THEN HTTP 422 with validation error on LineType
+- THEN HTTP 400 (JSON deserialization rejects unknown enum name before FluentValidation; unit validator tests cover enum rejection at domain layer)
 
 #### Scenario: Invalid currency rejected `@unit`
 - GIVEN open Period
@@ -348,19 +348,18 @@ the new Amount, Currency, and a timestamp. Existing revisions MUST NOT be mutate
 
 ### REQ-BL-04: Delete BudgetLine
 
-The system MUST soft-delete the BudgetLine (and cascade-soft-delete its Revisions) when the Period
-is open. A soft-deleted BudgetLine MAY be restored. Hard delete removes Revisions first, then
-the BudgetLine row.
+The system MUST soft-delete the BudgetLine when the Period is open. BudgetLineRevisions are
+immutable (no `DeletedAt` per ADR-BS-01) and become inaccessible through the ListBudgetLines JOIN
+when the BudgetLine is soft-deleted — this satisfies the business intent without mutating revision
+history. Hard delete is sequential: BudgetLineRevisions first, then BudgetLine.
 
 #### Scenario: Soft delete `@integration`
 - GIVEN open Period, BudgetLine with 2 Revisions
 - WHEN DELETE `.../lines/{lineId}`
-- THEN HTTP 204; BudgetLine.DeletedAt set; both Revisions have DeletedAt set
+- THEN HTTP 204; BudgetLine.DeletedAt set; Revisions remain in DB (immutable) but are inaccessible
 
-#### Scenario: Restore soft-deleted line `@integration`
-- GIVEN a soft-deleted BudgetLine
-- WHEN PATCH `.../lines/{lineId}/restore` (or equivalent restore verb)
-- THEN HTTP 200; BudgetLine.DeletedAt=null; Revisions restored
+#### Scenario: Restore soft-deleted line — DEFERRED
+- Note: spec says MAY; no `/restore` endpoint implemented in this change. Deferred to a future slice.
 
 ---
 
