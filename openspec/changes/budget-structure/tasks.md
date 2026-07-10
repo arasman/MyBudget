@@ -52,28 +52,28 @@ Chain strategy: feature-branch-chain
 
 Each slice = 4 files: `{SliceName}Command.cs`, `{SliceName}Validator.cs`, `{SliceName}Handler.cs`, `{SliceName}Endpoint.cs`
 
-- [ ] PR2.1: `@unit` Write failing validator tests for `CreateCycleValidator` (StartDate < EndDate; required Name; overlap scenario stub)
-- [ ] PR2.2: Implement `Features/BudgetStructure/CreateCycle/` — POST `/api/budgets/{id}/cycles`; date-overlap check; returns 201; satisfies REQ-CYC-01
-- [ ] PR2.3: `@unit` Write failing validator tests for `UpdateCycleValidator` (same rules + period-out-of-range stub)
-- [ ] PR2.4: Implement `Features/BudgetStructure/UpdateCycle/` — PUT `/api/budgets/{id}/cycles/{cycleId}`; excludes self from overlap check; validates no Period falls outside new range; returns 200; satisfies REQ-CYC-02
-- [ ] PR2.5: `@unit` Write failing validator tests for `DeleteCycleValidator` (cycleId required)
-- [ ] PR2.6: Implement `Features/BudgetStructure/DeleteCycle/` — DELETE `/api/budgets/{id}/cycles/{cycleId}`; sets `DeletedAt` on Cycle + child Periods + their BudgetLines in one `SaveChangesAsync`; returns 204; satisfies REQ-CYC-03
-- [ ] PR2.7: `@unit` Write failing validator tests for `SetActiveCycleValidator` (cycleId required, must belong to budget)
-- [ ] PR2.8: Implement `Features/BudgetStructure/SetActiveCycle/` — PUT `/api/budgets/{id}/active-cycle`; atomic swap: load current active, deactivate, activate target, single `SaveChangesAsync`; returns 200; satisfies REQ-CYC-04
-- [ ] PR2.9: `@unit` Write failing validator tests for `CreatePeriodValidator` (required fields; PeriodNumber > 0)
-- [ ] PR2.10: Implement `Features/BudgetStructure/CreatePeriod/` — POST `/api/budgets/{id}/cycles/{cycleId}/periods`; validates dates within Cycle range; checks overlap within Cycle; returns 201; satisfies REQ-PER-01
-- [ ] PR2.11: `@unit` Write failing validator tests for `UpdatePeriodValidator`
-- [ ] PR2.12: Implement `Features/BudgetStructure/UpdatePeriod/` — PUT `.../periods/{periodId}`; same range/overlap rules; returns 200; satisfies REQ-PER-02
-- [ ] PR2.13: `@unit` Write failing validator tests for `SetPeriodStatusValidator` (isClosed required)
-- [ ] PR2.14: Implement `Features/BudgetStructure/SetPeriodStatus/` — PATCH `.../periods/{periodId}/status`; sets `IsClosed`; returns 200; satisfies REQ-PER-03
-- [ ] PR2.15: `@unit` Write failing validator tests for `DeletePeriodValidator`
-- [ ] PR2.16: Implement `Features/BudgetStructure/DeletePeriod/` — DELETE `.../periods/{periodId}`; sets `DeletedAt` on Period + BudgetLines + Revisions; returns 204; satisfies REQ-PER-04
-- [ ] PR2.17: `@unit` Write failing validator tests for `CreateCategoryGroupValidator` (Name required, max 200; DisplayOrder > 0)
-- [ ] PR2.18: Implement `Features/BudgetStructure/CreateCategoryGroup/` — POST `/api/budgets/{id}/category-groups`; case-insensitive unique name per budget; returns 201; satisfies REQ-CG-01
-- [ ] PR2.19: `@unit` Write failing validator tests for `UpdateCategoryGroupValidator`
-- [ ] PR2.20: Implement `Features/BudgetStructure/UpdateCategoryGroup/` — PUT `.../category-groups/{groupId}`; unique name excluding self; returns 200; satisfies REQ-CG-02
-- [ ] PR2.21: `@unit` Write failing validator tests for `DeleteCategoryGroupValidator`
-- [ ] PR2.22: Implement `Features/BudgetStructure/DeleteCategoryGroup/` — DELETE `.../category-groups/{groupId}`; sets `DeletedAt` on group + all its Categories; returns 204; satisfies REQ-CG-03
+- [x] PR2.1: `@unit` Write failing validator tests for `CreateCycleValidator` (StartDate < EndDate; required Name; overlap scenario stub)
+- [x] PR2.2: Implement `Features/BudgetStructure/CreateCycle/` — POST `/api/budgets/{id}/cycles`; date-overlap check; returns 201; satisfies REQ-CYC-01
+- [x] PR2.3: `@unit` Write failing validator tests for `UpdateCycleValidator` (same rules + period-out-of-range stub)
+- [x] PR2.4: Implement `Features/BudgetStructure/UpdateCycle/` — PUT `/api/budgets/{id}/cycles/{cycleId}`; excludes self from overlap check; validates no Period falls outside new range; returns 200; satisfies REQ-CYC-02
+- [x] PR2.5: `@unit` Write failing validator tests for `DeleteCycleValidator` (cycleId required)
+- [x] PR2.6: Implement `Features/BudgetStructure/DeleteCycle/` — DELETE `/api/budgets/{id}/cycles/{cycleId}`; sets `DeletedAt` on Cycle + child Periods + their BudgetLines in one `SaveChangesAsync`; returns 204; satisfies REQ-CYC-03
+- [x] PR2.7: `@unit` Write failing validator tests for `SetActiveCycleValidator` (cycleId required, must belong to budget)
+- [x] PR2.8: Implement `Features/BudgetStructure/SetActiveCycle/` — PUT `/api/budgets/{id}/active-cycle`; atomic swap: load current active, deactivate, activate target, single `SaveChangesAsync`; returns 200; satisfies REQ-CYC-04
+- [x] PR2.9: `@unit` Write failing validator tests for `CreatePeriodValidator` (required fields; PeriodNumber > 0)
+- [x] PR2.10: Implement `Features/BudgetStructure/CreatePeriod/` — POST `/api/budgets/{id}/cycles/{cycleId}/periods`; validates dates within Cycle range; checks overlap within Cycle; returns 201; satisfies REQ-PER-01
+- [x] PR2.11: `@unit` Write failing validator tests for `UpdatePeriodValidator`
+- [x] PR2.12: Implement `Features/BudgetStructure/UpdatePeriod/` — PUT `.../periods/{periodId}`; same range/overlap rules; returns 200; satisfies REQ-PER-02
+- [x] PR2.13: `@unit` Write failing validator tests for `SetPeriodStatusValidator` (isClosed required)
+- [x] PR2.14: Implement `Features/BudgetStructure/SetPeriodStatus/` — PATCH `.../periods/{periodId}/status`; sets `IsClosed`; returns 200; satisfies REQ-PER-03
+- [x] PR2.15: `@unit` Write failing validator tests for `DeletePeriodValidator`
+- [x] PR2.16: Implement `Features/BudgetStructure/DeletePeriod/` — DELETE `.../periods/{periodId}`; sets `DeletedAt` on Period + BudgetLines + Revisions; returns 204; satisfies REQ-PER-04
+- [x] PR2.17: `@unit` Write failing validator tests for `CreateCategoryGroupValidator` (Name required, max 200; DisplayOrder > 0)
+- [x] PR2.18: Implement `Features/BudgetStructure/CreateCategoryGroup/` — POST `/api/budgets/{id}/category-groups`; case-insensitive unique name per budget; returns 201; satisfies REQ-CG-01
+- [x] PR2.19: `@unit` Write failing validator tests for `UpdateCategoryGroupValidator`
+- [x] PR2.20: Implement `Features/BudgetStructure/UpdateCategoryGroup/` — PUT `.../category-groups/{groupId}`; unique name excluding self; returns 200; satisfies REQ-CG-02
+- [x] PR2.21: `@unit` Write failing validator tests for `DeleteCategoryGroupValidator`
+- [x] PR2.22: Implement `Features/BudgetStructure/DeleteCategoryGroup/` — DELETE `.../category-groups/{groupId}`; sets `DeletedAt` on group + all its Categories; returns 204; satisfies REQ-CG-03
 
 ---
 
