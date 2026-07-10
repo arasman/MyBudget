@@ -20,17 +20,26 @@ public sealed class SetActiveCycleHandler : IRequestHandler<SetActiveCycleComman
         if (target is null || target.BudgetId != cmd.BudgetId)
             return Result<Guid>.Failure("CYCLE_NOT_FOUND");
 
-        // Load currently active cycle (if any)
+        // Use explicit transaction to enforce deactivate-then-activate order.
+        // The unique partial index IX_Cycles_BudgetId_IsActive prevents two active cycles;
+        // EF Core may batch the two UPDATEs in any order, so we split into two saves.
+        await using var tx = await _db.Database.BeginTransactionAsync(ct);
+
+        // Step 1: deactivate the current active cycle (if any, and not the target)
         var currentActive = await _db.Cycles
             .FirstOrDefaultAsync(c => c.BudgetId == cmd.BudgetId && c.IsActive, ct);
 
         if (currentActive is not null && currentActive.Id != cmd.CycleId)
+        {
             currentActive.Deactivate();
+            await _db.SaveChangesAsync(ct);
+        }
 
+        // Step 2: activate target
         target.Activate();
-
-        // Single SaveChangesAsync = single transaction (ADR-BS-03)
         await _db.SaveChangesAsync(ct);
+
+        await tx.CommitAsync(ct);
 
         return Result<Guid>.Success(target.Id);
     }
