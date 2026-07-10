@@ -29,22 +29,22 @@ Chain strategy: feature-branch-chain
 
 ## PR1 — Entities + Migration
 
-- [ ] PR1.1: Update dotnet-ef tooling — run `dotnet tool update --global dotnet-ef` to resolve version mismatch (tools 9.x vs runtime 10.x)
-- [ ] PR1.2: Add `LineType` enum (`Expense = 0`, `LongTermSavings = 1`, `PreventiveSavings = 2`) to `SharedKernel/Entities/LineType.cs`
-- [ ] PR1.3: Create `SharedKernel/Entities/Cycle.cs` — extends `BaseEntity`; fields: `BudgetId`, `Name`, `StartDate`, `EndDate`, `IsActive`, `DeletedAt`; nav props; domain methods `Activate()`, `Deactivate()`
-- [ ] PR1.4: Create `SharedKernel/Entities/Period.cs` — extends `BaseEntity`; fields: `CycleId`, `Name`, `PeriodNumber`, `StartDate`, `EndDate`, `IsClosed`, `DeletedAt`; nav props; domain method `SetClosed(bool)`
-- [ ] PR1.5: Create `SharedKernel/Entities/CategoryGroup.cs` — extends `BaseEntity`; fields: `BudgetId`, `Name`, `DisplayOrder`, `DeletedAt`; nav props; method `SetDisplayOrder(int)`
-- [ ] PR1.6: Create `SharedKernel/Entities/Category.cs` — extends `BaseEntity`; fields: `CategoryGroupId`, `Name`, `DisplayOrder`, `DeletedAt`; nav props; method `SetDisplayOrder(int)`
-- [ ] PR1.7: Create `SharedKernel/Entities/BudgetLine.cs` — extends `BaseEntity`; fields: `PeriodId`, `CategoryGroupId`, `CategoryId?`, `Name`, `LineType`, `IsRecurring`, `DeletedAt`; nav props
-- [ ] PR1.8: Create `SharedKernel/Entities/BudgetLineRevision.cs` — extends `BaseEntity`; fields: `BudgetLineId`, `BudgetedAmount`, `Currency` (max 3), `RevisedAt`, `Note?`; NO `DeletedAt`; nav props
-- [ ] PR1.9: Create `SharedKernel/Persistence/Configurations/CycleConfiguration.cs` — table "Cycles"; IX_Cycles_BudgetId; IX_Cycles_BudgetId_IsActive (partial unique, IsActive=true); query filter `DeletedAt == null`; restrict FK from Budget
-- [ ] PR1.10: Create `SharedKernel/Persistence/Configurations/PeriodConfiguration.cs` — table "Periods"; IX_Periods_CycleId; query filter `DeletedAt == null`; cascade FK from Cycle
-- [ ] PR1.11: Create `SharedKernel/Persistence/Configurations/CategoryGroupConfiguration.cs` — table "CategoryGroups"; IX_CategoryGroups_BudgetId; IX_CategoryGroups_BudgetId_Name (unique); query filter `DeletedAt == null`; restrict FK from Budget
-- [ ] PR1.12: Create `SharedKernel/Persistence/Configurations/CategoryConfiguration.cs` — table "Categories"; IX_Categories_CategoryGroupId; IX_Categories_CategoryGroupId_Name (unique); query filter `DeletedAt == null`; cascade FK from CategoryGroup
-- [ ] PR1.13: Create `SharedKernel/Persistence/Configurations/BudgetLineConfiguration.cs` — table "BudgetLines"; IX_BudgetLines_PeriodId; IX_BudgetLines_CategoryGroupId; query filter `DeletedAt == null`; cascade FK from Period
-- [ ] PR1.14: Create `SharedKernel/Persistence/Configurations/BudgetLineRevisionConfiguration.cs` — table "BudgetLineRevisions"; IX_BudgetLineRevisions_BudgetLineId_RevisedAt (desc); NO query filter; cascade FK from BudgetLine; Currency `HasMaxLength(3)`
-- [ ] PR1.15: Modify `SharedKernel/Persistence/AppDbContext.cs` — add 6 `DbSet<T>` properties; apply 6 configurations in `OnModelCreating`
-- [ ] PR1.16: Add EF migration `AddBudgetStructureTables` — run `dotnet ef migrations add AddBudgetStructureTables --project ...`; verify snapshot is correct; do NOT apply to DB yet
+- [x] PR1.1: Update dotnet-ef tooling — run `dotnet tool update --global dotnet-ef` to resolve version mismatch (tools 9.x vs runtime 10.x)
+- [x] PR1.2: Add `LineType` enum (`Expense = 0`, `LongTermSavings = 1`, `PreventiveSavings = 2`) to `SharedKernel/Entities/LineType.cs`
+- [x] PR1.3: Create `SharedKernel/Entities/Cycle.cs` — extends `BaseEntity`; fields: `BudgetId`, `Name`, `StartDate`, `EndDate`, `IsActive`, `DeletedAt`; nav props; domain methods `Activate()`, `Deactivate()`
+- [x] PR1.4: Create `SharedKernel/Entities/Period.cs` — extends `BaseEntity`; fields: `CycleId`, `Name`, `PeriodNumber`, `StartDate`, `EndDate`, `IsClosed`, `DeletedAt`; nav props; domain method `SetClosed(bool)`
+- [x] PR1.5: Create `SharedKernel/Entities/CategoryGroup.cs` — extends `BaseEntity`; fields: `BudgetId`, `Name`, `DisplayOrder`, `DeletedAt`; nav props; method `SetDisplayOrder(int)`
+- [x] PR1.6: Create `SharedKernel/Entities/Category.cs` — extends `BaseEntity`; fields: `CategoryGroupId`, `Name`, `DisplayOrder`, `DeletedAt`; nav props; method `SetDisplayOrder(int)`
+- [x] PR1.7: Create `SharedKernel/Entities/BudgetLine.cs` — extends `BaseEntity`; fields: `PeriodId`, `CategoryGroupId`, `CategoryId?`, `Name`, `LineType`, `IsRecurring`, `DeletedAt`; nav props
+- [x] PR1.8: Create `SharedKernel/Entities/BudgetLineRevision.cs` — extends `BaseEntity`; fields: `BudgetLineId`, `BudgetedAmount`, `Currency` (max 3), `RevisedAt`, `Note?`; NO `DeletedAt`; nav props
+- [x] PR1.9: Create `SharedKernel/Persistence/Configurations/CycleConfiguration.cs` — table "Cycles"; IX_Cycles_BudgetId; IX_Cycles_BudgetId_IsActive (partial unique, IsActive=true); query filter `DeletedAt == null`; restrict FK from Budget
+- [x] PR1.10: Create `SharedKernel/Persistence/Configurations/PeriodConfiguration.cs` — table "Periods"; IX_Periods_CycleId; query filter `DeletedAt == null`; cascade FK from Cycle
+- [x] PR1.11: Create `SharedKernel/Persistence/Configurations/CategoryGroupConfiguration.cs` — table "CategoryGroups"; IX_CategoryGroups_BudgetId; IX_CategoryGroups_BudgetId_Name (unique); query filter `DeletedAt == null`; restrict FK from Budget
+- [x] PR1.12: Create `SharedKernel/Persistence/Configurations/CategoryConfiguration.cs` — table "Categories"; IX_Categories_CategoryGroupId; IX_Categories_CategoryGroupId_Name (unique); query filter `DeletedAt == null`; cascade FK from CategoryGroup
+- [x] PR1.13: Create `SharedKernel/Persistence/Configurations/BudgetLineConfiguration.cs` — table "BudgetLines"; IX_BudgetLines_PeriodId; IX_BudgetLines_CategoryGroupId; query filter `DeletedAt == null`; cascade FK from Period
+- [x] PR1.14: Create `SharedKernel/Persistence/Configurations/BudgetLineRevisionConfiguration.cs` — table "BudgetLineRevisions"; IX_BudgetLineRevisions_BudgetLineId_RevisedAt (desc); NO query filter; cascade FK from BudgetLine; Currency `HasMaxLength(3)`
+- [x] PR1.15: Modify `SharedKernel/Persistence/AppDbContext.cs` — add 6 `DbSet<T>` properties; apply 6 configurations in `OnModelCreating`
+- [x] PR1.16: Add EF migration `AddBudgetStructureTables` — run `dotnet ef migrations add AddBudgetStructureTables --project ...`; verify snapshot is correct; do NOT apply to DB yet
 
 ---
 
