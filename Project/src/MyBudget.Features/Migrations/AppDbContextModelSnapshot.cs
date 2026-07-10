@@ -17,7 +17,7 @@ namespace MyBudget.Features.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.17")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -47,6 +47,93 @@ namespace MyBudget.Features.Migrations
                     b.HasIndex("OwnerId");
 
                     b.ToTable("Budgets");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.BudgetLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CategoryGroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsRecurring")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LineType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("PeriodId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryGroupId")
+                        .HasDatabaseName("IX_BudgetLines_CategoryGroupId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("PeriodId")
+                        .HasDatabaseName("IX_BudgetLines_PeriodId");
+
+                    b.ToTable("BudgetLines", (string)null);
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.BudgetLineRevision", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BudgetLineId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("BudgetedAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("RevisedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BudgetLineId", "RevisedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("IX_BudgetLineRevisions_BudgetLineId_RevisedAt");
+
+                    b.ToTable("BudgetLineRevisions", (string)null);
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.BudgetMembership", b =>
@@ -82,6 +169,127 @@ namespace MyBudget.Features.Migrations
                         .HasDatabaseName("IX_BudgetMemberships_BudgetId_UserId");
 
                     b.ToTable("BudgetMemberships");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CategoryGroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryGroupId")
+                        .HasDatabaseName("IX_Categories_CategoryGroupId");
+
+                    b.HasIndex("CategoryGroupId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Categories_CategoryGroupId_Name");
+
+                    b.ToTable("Categories", (string)null);
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.CategoryGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BudgetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BudgetId")
+                        .HasDatabaseName("IX_CategoryGroups_BudgetId");
+
+                    b.HasIndex("BudgetId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("IX_CategoryGroups_BudgetId_Name");
+
+                    b.ToTable("CategoryGroups", (string)null);
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Cycle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BudgetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BudgetId")
+                        .HasDatabaseName("IX_Cycles_BudgetId");
+
+                    b.HasIndex("BudgetId", "IsActive")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Cycles_BudgetId_IsActive")
+                        .HasFilter("\"IsActive\" = true");
+
+                    b.ToTable("Cycles", (string)null);
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Invitation", b =>
@@ -135,6 +343,49 @@ namespace MyBudget.Features.Migrations
                         .HasDatabaseName("IX_Invitations_TokenHash");
 
                     b.ToTable("Invitations");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Period", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CycleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("PeriodNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CycleId")
+                        .HasDatabaseName("IX_Periods_CycleId");
+
+                    b.ToTable("Periods", (string)null);
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.RefreshToken", b =>
@@ -239,6 +490,43 @@ namespace MyBudget.Features.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.BudgetLine", b =>
+                {
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.CategoryGroup", "CategoryGroup")
+                        .WithMany()
+                        .HasForeignKey("CategoryGroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.Period", "Period")
+                        .WithMany("BudgetLines")
+                        .HasForeignKey("PeriodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("CategoryGroup");
+
+                    b.Navigation("Period");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.BudgetLineRevision", b =>
+                {
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.BudgetLine", "BudgetLine")
+                        .WithMany("Revisions")
+                        .HasForeignKey("BudgetLineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BudgetLine");
+                });
+
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.BudgetMembership", b =>
                 {
                     b.HasOne("MyBudget.Features.SharedKernel.Entities.Budget", "Budget")
@@ -256,6 +544,39 @@ namespace MyBudget.Features.Migrations
                     b.Navigation("Budget");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Category", b =>
+                {
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.CategoryGroup", "CategoryGroup")
+                        .WithMany("Categories")
+                        .HasForeignKey("CategoryGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CategoryGroup");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.CategoryGroup", b =>
+                {
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.Budget", "Budget")
+                        .WithMany()
+                        .HasForeignKey("BudgetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Budget");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Cycle", b =>
+                {
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.Budget", "Budget")
+                        .WithMany()
+                        .HasForeignKey("BudgetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Budget");
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Invitation", b =>
@@ -277,6 +598,17 @@ namespace MyBudget.Features.Migrations
                     b.Navigation("InvitedByUser");
                 });
 
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Period", b =>
+                {
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.Cycle", "Cycle")
+                        .WithMany("Periods")
+                        .HasForeignKey("CycleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cycle");
+                });
+
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.RefreshToken", b =>
                 {
                     b.HasOne("MyBudget.Features.SharedKernel.Entities.User", "User")
@@ -293,6 +625,26 @@ namespace MyBudget.Features.Migrations
                     b.Navigation("Invitations");
 
                     b.Navigation("Memberships");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.BudgetLine", b =>
+                {
+                    b.Navigation("Revisions");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.CategoryGroup", b =>
+                {
+                    b.Navigation("Categories");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Cycle", b =>
+                {
+                    b.Navigation("Periods");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Period", b =>
+                {
+                    b.Navigation("BudgetLines");
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.User", b =>

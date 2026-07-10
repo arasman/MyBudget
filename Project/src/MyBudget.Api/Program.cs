@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,13 +10,20 @@ using MyBudget.Features.SharedKernel.Auth.Authorization;
 using MyBudget.Features.SharedKernel.Persistence;
 using Serilog;
 
+// Register Dapper type handlers for DateOnly (Npgsql 10 maps PostgreSQL date as DateOnly)
+DapperTypeHandlers.RegisterAll();
+
 // 1. Serilog — must be first to capture all subsequent log output
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((ctx, cfg) =>
     cfg.ReadFrom.Configuration(ctx.Configuration));
 
-// 2. AddFeatures — registers EF, Mediator, Behaviours, Localization,
+// 2. Configure JSON serialization — use string enum names (e.g. "Expense" not 0)
+builder.Services.ConfigureHttpJsonOptions(opts =>
+    opts.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+// 3. AddFeatures — registers EF, Mediator, Behaviours, Localization,
 //    Email channel/background-service, OTel, ICacheService (Null), JwtOptions, BudgetAuthorizationHandler
 builder.Services.AddFeatures(builder.Configuration);
 

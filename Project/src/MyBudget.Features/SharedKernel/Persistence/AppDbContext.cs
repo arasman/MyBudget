@@ -11,11 +11,17 @@ public sealed class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> opts) : base(opts) { }
 
-    public DbSet<User>             Users             => Set<User>();
-    public DbSet<RefreshToken>     RefreshTokens     => Set<RefreshToken>();
-    public DbSet<Budget>           Budgets           => Set<Budget>();
-    public DbSet<BudgetMembership> BudgetMemberships => Set<BudgetMembership>();
-    public DbSet<Invitation>       Invitations       => Set<Invitation>();
+    public DbSet<User>                 Users                 => Set<User>();
+    public DbSet<RefreshToken>         RefreshTokens         => Set<RefreshToken>();
+    public DbSet<Budget>               Budgets               => Set<Budget>();
+    public DbSet<BudgetMembership>     BudgetMemberships     => Set<BudgetMembership>();
+    public DbSet<Invitation>           Invitations           => Set<Invitation>();
+    public DbSet<Cycle>                Cycles                => Set<Cycle>();
+    public DbSet<Period>               Periods               => Set<Period>();
+    public DbSet<CategoryGroup>        CategoryGroups        => Set<CategoryGroup>();
+    public DbSet<Category>             Categories            => Set<Category>();
+    public DbSet<BudgetLine>           BudgetLines           => Set<BudgetLine>();
+    public DbSet<BudgetLineRevision>   BudgetLineRevisions   => Set<BudgetLineRevision>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
