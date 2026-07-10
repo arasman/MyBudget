@@ -79,27 +79,27 @@ Each slice = 4 files: `{SliceName}Command.cs`, `{SliceName}Validator.cs`, `{Slic
 
 ## PR3 — Write Slices: Reorder + Categories + BudgetLines
 
-- [ ] PR3.1: `@unit` Write failing validator tests for `ReorderCategoryGroupsValidator` (list non-empty; completeness check stub)
-- [ ] PR3.2: `@unit` Write failing handler unit test for `ReorderCategoryGroupsHandler` — incomplete list → 422 `REORDER_LIST_INCOMPLETE`
-- [ ] PR3.3: Implement `Features/BudgetStructure/ReorderCategoryGroups/` — PUT `.../category-groups/order`; load all non-deleted groups; validate list completeness and no duplicates; assign `DisplayOrder = index + 1`; returns 204; satisfies REQ-CG-04
-- [ ] PR3.4: `@unit` Write failing validator tests for `CreateCategoryValidator` (Name required; DisplayOrder > 0)
-- [ ] PR3.5: Implement `Features/BudgetStructure/CreateCategory/` — POST `.../category-groups/{groupId}/categories`; unique name within group (case-insensitive); returns 201; satisfies REQ-CAT-01
-- [ ] PR3.6: `@unit` Write failing validator tests for `UpdateCategoryValidator`
-- [ ] PR3.7: Implement `Features/BudgetStructure/UpdateCategory/` — PUT `.../categories/{categoryId}`; unique name within group excluding self; returns 200; satisfies REQ-CAT-02
-- [ ] PR3.8: `@unit` Write failing validator tests for `DeleteCategoryValidator`
-- [ ] PR3.9: Implement `Features/BudgetStructure/DeleteCategory/` — DELETE `.../categories/{categoryId}`; sets `DeletedAt` on category only (BudgetLines retain reference); returns 204; satisfies REQ-CAT-03
-- [ ] PR3.10: `@unit` Write failing validator tests for `ReorderCategoriesValidator`
-- [ ] PR3.11: `@unit` Write failing handler unit test for `ReorderCategoriesHandler` — incomplete list → 422 `REORDER_LIST_INCOMPLETE`
-- [ ] PR3.12: Implement `Features/BudgetStructure/ReorderCategories/` — PUT `.../categories/order`; same pattern as ReorderCategoryGroups scoped to CategoryGroupId; returns 204; satisfies REQ-CAT-04
-- [ ] PR3.13: `@unit` Write failing validator tests for `CreateBudgetLineValidator` (Name required; LineType must be Expense/LongTermSavings/PreventiveSavings; Currency must be GTQ or USD; Amount > 0)
-- [ ] PR3.14: `@unit` Write failing handler unit test for `CreateBudgetLineHandler` — IsClosed period → 409 `PERIOD_CLOSED`; initial revision auto-created
-- [ ] PR3.15: Implement `Features/BudgetStructure/CreateBudgetLine/` — POST `.../periods/{periodId}/lines`; load Period → verify Cycle.BudgetId; check `IsClosed`; create `BudgetLine` + initial `BudgetLineRevision`; returns 201; satisfies REQ-BL-01, REQ-BL-02
-- [ ] PR3.16: `@unit` Write failing validator tests for `UpdateBudgetLineValidator`
-- [ ] PR3.17: `@unit` Write failing handler unit test for `UpdateBudgetLineHandler` — IsClosed → 409; new revision created; existing revisions unchanged
-- [ ] PR3.18: Implement `Features/BudgetStructure/UpdateBudgetLine/` — PUT `.../lines/{lineId}`; check IsClosed; update line fields; insert new `BudgetLineRevision`; returns 200; satisfies REQ-BL-01, REQ-BL-03
-- [ ] PR3.19: `@unit` Write failing validator tests for `DeleteBudgetLineValidator`
-- [ ] PR3.20: `@unit` Write failing handler unit test for `DeleteBudgetLineHandler` — IsClosed → 409; soft-delete cascades to Revisions
-- [ ] PR3.21: Implement `Features/BudgetStructure/DeleteBudgetLine/` — DELETE `.../lines/{lineId}`; check IsClosed; sets `DeletedAt` on BudgetLine + all its BudgetLineRevisions; returns 204; satisfies REQ-BL-01, REQ-BL-04
+- [x] PR3.1: `@unit` Write failing validator tests for `ReorderCategoryGroupsValidator` (list non-empty; completeness check stub)
+- [x] PR3.2: `@unit` Write failing handler unit test for `ReorderCategoryGroupsHandler` — incomplete list → 422 `REORDER_LIST_INCOMPLETE`
+- [x] PR3.3: Implement `Features/BudgetStructure/ReorderCategoryGroups/` — PUT `.../category-groups/order`; load all non-deleted groups; validate list completeness and no duplicates; assign `DisplayOrder = index + 1`; returns 204; satisfies REQ-CG-04
+- [x] PR3.4: `@unit` Write failing validator tests for `CreateCategoryValidator` (Name required; DisplayOrder > 0)
+- [x] PR3.5: Implement `Features/BudgetStructure/CreateCategory/` — POST `.../category-groups/{groupId}/categories`; unique name within group (case-insensitive); returns 201; satisfies REQ-CAT-01
+- [x] PR3.6: `@unit` Write failing validator tests for `UpdateCategoryValidator`
+- [x] PR3.7: Implement `Features/BudgetStructure/UpdateCategory/` — PUT `.../categories/{categoryId}`; unique name within group excluding self; returns 200; satisfies REQ-CAT-02
+- [x] PR3.8: `@unit` Write failing validator tests for `DeleteCategoryValidator`
+- [x] PR3.9: Implement `Features/BudgetStructure/DeleteCategory/` — DELETE `.../categories/{categoryId}`; sets `DeletedAt` on category only (BudgetLines retain reference); returns 204; satisfies REQ-CAT-03
+- [x] PR3.10: `@unit` Write failing validator tests for `ReorderCategoriesValidator`
+- [x] PR3.11: `@unit` Write failing handler unit test for `ReorderCategoriesHandler` — incomplete list → 422 `REORDER_LIST_INCOMPLETE`
+- [x] PR3.12: Implement `Features/BudgetStructure/ReorderCategories/` — PUT `.../categories/order`; same pattern as ReorderCategoryGroups scoped to CategoryGroupId; returns 204; satisfies REQ-CAT-04
+- [x] PR3.13: `@unit` Write failing validator tests for `CreateBudgetLineValidator` (Name required; LineType must be Expense/LongTermSavings/PreventiveSavings; Currency must be GTQ or USD; Amount > 0)
+- [x] PR3.14: `@unit` Write failing handler unit test for `CreateBudgetLineHandler` — IsClosed period → 409 `PERIOD_CLOSED`; initial revision auto-created
+- [x] PR3.15: Implement `Features/BudgetStructure/CreateBudgetLine/` — POST `.../periods/{periodId}/lines`; load Period → verify Cycle.BudgetId; check `IsClosed`; create `BudgetLine` + initial `BudgetLineRevision`; returns 201; satisfies REQ-BL-01, REQ-BL-02
+- [x] PR3.16: `@unit` Write failing validator tests for `UpdateBudgetLineValidator`
+- [x] PR3.17: `@unit` Write failing handler unit test for `UpdateBudgetLineHandler` — IsClosed → 409; new revision created; existing revisions unchanged
+- [x] PR3.18: Implement `Features/BudgetStructure/UpdateBudgetLine/` — PUT `.../lines/{lineId}`; check IsClosed; update line fields; insert new `BudgetLineRevision`; returns 200; satisfies REQ-BL-01, REQ-BL-03
+- [x] PR3.19: `@unit` Write failing validator tests for `DeleteBudgetLineValidator`
+- [x] PR3.20: `@unit` Write failing handler unit test for `DeleteBudgetLineHandler` — IsClosed → 409; soft-delete cascades to Revisions
+- [x] PR3.21: Implement `Features/BudgetStructure/DeleteBudgetLine/` — DELETE `.../lines/{lineId}`; check IsClosed; sets `DeletedAt` on BudgetLine only (revisions are immutable per ADR-BS-01); returns 204; satisfies REQ-BL-01, REQ-BL-04
 
 ---
 
