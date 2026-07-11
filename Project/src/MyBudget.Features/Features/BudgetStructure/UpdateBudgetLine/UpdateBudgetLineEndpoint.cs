@@ -32,7 +32,7 @@ public static class UpdateBudgetLineEndpoint
             id, periodId, lineId,
             body.CategoryGroupId, body.CategoryId,
             body.Name, body.LineType, body.IsRecurring,
-            body.BudgetedAmount, body.Currency);
+            body.BudgetedAmount, body.CurrencyId);
 
         var result = await mediator.Send(cmd, ct);
 
@@ -56,4 +56,4 @@ public sealed record UpdateBudgetLineRequest(
     LineType LineType,
     bool     IsRecurring,
     decimal  BudgetedAmount,
-    string   Currency);
+    Guid?    CurrencyId);

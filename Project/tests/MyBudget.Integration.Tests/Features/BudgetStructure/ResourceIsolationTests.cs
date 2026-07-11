@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using MyBudget.Features.SharedKernel.Entities;
 using Shouldly;
 
 namespace MyBudget.Integration.Tests.Features.BudgetStructure;
@@ -64,7 +65,7 @@ public sealed class ResourceIsolationTests : BudgetStructureTestBase
 
         var response = await Client.PutAsJsonAsync(
             $"/api/budgets/{budgetBId}/cycles/{cycleId}",
-            new { name = "Hacked", startDate = new DateOnly(2025, 1, 1), endDate = new DateOnly(2025, 12, 31) });
+            new { name = "Hacked", startDate = new DateOnly(2025, 1, 1), endDate = new DateOnly(2025, 12, 31), defaultCurrencyId = CurrencySeeds.GtqId });
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }

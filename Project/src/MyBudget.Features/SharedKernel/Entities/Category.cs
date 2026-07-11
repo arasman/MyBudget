@@ -30,6 +30,12 @@ public sealed class Category : BaseEntity
 
     public void SoftDelete() => DeletedAt = DateTimeOffset.UtcNow;
 
+    public void Restore()
+    {
+        DeletedAt = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
     public void Update(string name, int displayOrder)
     {
         Name         = name.Trim();

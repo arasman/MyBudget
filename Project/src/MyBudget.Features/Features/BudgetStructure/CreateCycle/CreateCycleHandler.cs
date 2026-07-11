@@ -23,7 +23,9 @@ public sealed class CreateCycleHandler : IRequestHandler<CreateCycleCommand, Res
         if (hasOverlap)
             return Result<Guid>.Failure("CYCLE_DATE_OVERLAP");
 
-        var cycle = Cycle.Create(cmd.BudgetId, cmd.Name, cmd.StartDate, cmd.EndDate);
+        var cycle = Cycle.Create(
+            cmd.BudgetId, cmd.Name, cmd.StartDate, cmd.EndDate,
+            cmd.DefaultCurrencyId, cmd.AlternateCurrencyId, cmd.ExchangeRate);
         _db.Cycles.Add(cycle);
         await _db.SaveChangesAsync(ct);
 

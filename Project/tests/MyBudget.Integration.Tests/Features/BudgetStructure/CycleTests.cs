@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using MyBudget.Features.SharedKernel.Entities;
 using Shouldly;
 
 namespace MyBudget.Integration.Tests.Features.BudgetStructure;
@@ -21,7 +22,7 @@ public sealed class CycleTests : BudgetStructureTestBase
 
         var response = await Client.PostAsJsonAsync(
             $"/api/budgets/{budgetId}/cycles",
-            new { name = "Annual 2025", startDate = new DateOnly(2025, 1, 1), endDate = new DateOnly(2025, 12, 31) });
+            new { name = "Annual 2025", startDate = new DateOnly(2025, 1, 1), endDate = new DateOnly(2025, 12, 31), defaultCurrencyId = CurrencySeeds.GtqId });
 
         response.StatusCode.ShouldBe(HttpStatusCode.Created);
         var body = await response.Content.ReadFromJsonAsync<IdResponse>(JsonOpts);
@@ -37,7 +38,7 @@ public sealed class CycleTests : BudgetStructureTestBase
         // Overlapping range
         var response = await Client.PostAsJsonAsync(
             $"/api/budgets/{budgetId}/cycles",
-            new { name = "Overlap", startDate = new DateOnly(2025, 6, 1), endDate = new DateOnly(2026, 6, 30) });
+            new { name = "Overlap", startDate = new DateOnly(2025, 6, 1), endDate = new DateOnly(2026, 6, 30), defaultCurrencyId = CurrencySeeds.GtqId });
 
         response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>(JsonOpts);
@@ -51,7 +52,7 @@ public sealed class CycleTests : BudgetStructureTestBase
 
         var response = await Client.PostAsJsonAsync(
             $"/api/budgets/{budgetId}/cycles",
-            new { name = "Bad dates", startDate = new DateOnly(2025, 12, 31), endDate = new DateOnly(2025, 1, 1) });
+            new { name = "Bad dates", startDate = new DateOnly(2025, 12, 31), endDate = new DateOnly(2025, 1, 1), defaultCurrencyId = CurrencySeeds.GtqId });
 
         response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
     }
@@ -77,7 +78,7 @@ public sealed class CycleTests : BudgetStructureTestBase
 
         var response = await Client.PostAsJsonAsync(
             $"/api/budgets/{budgetId}/cycles",
-            new { name = "X", startDate = new DateOnly(2025, 1, 1), endDate = new DateOnly(2025, 12, 31) });
+            new { name = "X", startDate = new DateOnly(2025, 1, 1), endDate = new DateOnly(2025, 12, 31), defaultCurrencyId = CurrencySeeds.GtqId });
 
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
@@ -92,7 +93,7 @@ public sealed class CycleTests : BudgetStructureTestBase
 
         var response = await Client.PutAsJsonAsync(
             $"/api/budgets/{budgetId}/cycles/{cycleId}",
-            new { name = "Updated Name", startDate = new DateOnly(2025, 1, 1), endDate = new DateOnly(2025, 12, 31) });
+            new { name = "Updated Name", startDate = new DateOnly(2025, 1, 1), endDate = new DateOnly(2025, 12, 31), defaultCurrencyId = CurrencySeeds.GtqId });
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
@@ -108,7 +109,7 @@ public sealed class CycleTests : BudgetStructureTestBase
         // Shrink to November — orphans December period
         var response = await Client.PutAsJsonAsync(
             $"/api/budgets/{budgetId}/cycles/{cycleId}",
-            new { name = "2025", startDate = new DateOnly(2025, 1, 1), endDate = new DateOnly(2025, 11, 30) });
+            new { name = "2025", startDate = new DateOnly(2025, 1, 1), endDate = new DateOnly(2025, 11, 30), defaultCurrencyId = CurrencySeeds.GtqId });
 
         response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>(JsonOpts);

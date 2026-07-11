@@ -170,5 +170,5 @@ public sealed class ReadEndpointTests : BudgetStructureTestBase
     private sealed record PeriodItem(Guid Id, string Name, int PeriodNumber, DateOnly StartDate, DateOnly EndDate, bool IsClosed);
     private sealed record CategoryGroupResponse(Guid Id, string Name, int DisplayOrder, CategoryItem[] Categories);
     private sealed record CategoryItem(Guid Id, string Name, int DisplayOrder);
-    private sealed record BudgetLineItem(Guid Id, string Name, string LineType, bool IsRecurring, Guid CategoryGroupId, Guid? CategoryId, decimal? BudgetedAmount, string? Currency);
+    private sealed record BudgetLineItem(Guid Id, string Name, string LineType, bool IsRecurring, Guid CategoryGroupId, Guid? CategoryId, decimal? BudgetedAmount, string? CurrencyCode, string? CurrencySymbol);
 }

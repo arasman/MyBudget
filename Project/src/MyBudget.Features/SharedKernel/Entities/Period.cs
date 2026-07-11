@@ -37,6 +37,12 @@ public sealed class Period : BaseEntity
 
     public void SoftDelete() => DeletedAt = DateTimeOffset.UtcNow;
 
+    public void Restore()
+    {
+        DeletedAt = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
     public void Update(string name, int periodNumber, DateOnly startDate, DateOnly endDate)
     {
         Name         = name.Trim();

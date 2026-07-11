@@ -45,7 +45,8 @@ public sealed class UpdateBudgetLineHandlerTests : IDisposable
 
         var cycle = Cycle.Create(budgetId, "Cycle",
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(365)));
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(365)),
+            CurrencySeeds.GtqId);
         _seedDb.Cycles.Add(cycle);
         await _seedDb.SaveChangesAsync();
 
@@ -64,7 +65,7 @@ public sealed class UpdateBudgetLineHandlerTests : IDisposable
         _seedDb.BudgetLines.Add(line);
         await _seedDb.SaveChangesAsync();
 
-        var revision = BudgetLineRevision.Create(line.Id, 1000m, "GTQ");
+        var revision = BudgetLineRevision.Create(line.Id, 1000m, CurrencySeeds.GtqId);
         _seedDb.BudgetLineRevisions.Add(revision);
         await _seedDb.SaveChangesAsync();
 
@@ -82,7 +83,7 @@ public sealed class UpdateBudgetLineHandlerTests : IDisposable
 
         var cmd = new UpdateBudgetLineCommand(
             budgetId, periodId, lineId, groupId, null,
-            "Rent Updated", LineType.Expense, true, 2000m, "GTQ");
+            "Rent Updated", LineType.Expense, true, 2000m, CurrencySeeds.GtqId);
 
         var result = await sut.Handle(cmd, CancellationToken.None);
 
@@ -107,7 +108,7 @@ public sealed class UpdateBudgetLineHandlerTests : IDisposable
 
         var cmd = new UpdateBudgetLineCommand(
             budgetId, periodId, lineId, groupId, null,
-            "Rent Updated", LineType.LongTermSavings, false, 2000m, "USD");
+            "Rent Updated", LineType.LongTermSavings, false, 2000m, CurrencySeeds.UsdId);
 
         var result = await sut.Handle(cmd, CancellationToken.None);
 
@@ -129,6 +130,6 @@ public sealed class UpdateBudgetLineHandlerTests : IDisposable
 
         // New revision has updated values
         var newRevision = revisionsAfter.First(r => r.BudgetedAmount == 2000m);
-        newRevision.Currency.ShouldBe("USD");
+        newRevision.CurrencyId.ShouldBe(CurrencySeeds.UsdId);
     }
 }

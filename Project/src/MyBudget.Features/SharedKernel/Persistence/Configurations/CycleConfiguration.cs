@@ -31,5 +31,20 @@ public sealed class CycleConfiguration : IEntityTypeConfiguration<Cycle>
             .WithMany()
             .HasForeignKey(c => c.BudgetId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(c => c.ExchangeRate)
+            .HasPrecision(18, 6);
+
+        builder.HasOne(c => c.DefaultCurrency)
+            .WithMany()
+            .HasForeignKey(c => c.DefaultCurrencyId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(c => c.AlternateCurrency)
+            .WithMany()
+            .HasForeignKey(c => c.AlternateCurrencyId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

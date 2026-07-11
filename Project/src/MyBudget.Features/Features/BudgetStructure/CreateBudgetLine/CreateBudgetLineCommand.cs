@@ -13,5 +13,5 @@ public sealed record CreateBudgetLineCommand(
     LineType LineType,
     bool     IsRecurring,
     decimal  BudgetedAmount,
-    string   Currency
+    Guid?    CurrencyId
 ) : IRequest<Result<Guid>>;

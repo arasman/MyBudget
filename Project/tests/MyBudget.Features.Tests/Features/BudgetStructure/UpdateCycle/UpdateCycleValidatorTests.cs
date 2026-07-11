@@ -8,7 +8,8 @@ public sealed class UpdateCycleValidatorTests
     private readonly UpdateCycleValidator _sut = new();
 
     private static UpdateCycleCommand ValidCommand() =>
-        new(Guid.NewGuid(), Guid.NewGuid(), "2025", new DateOnly(2025, 1, 1), new DateOnly(2025, 12, 31));
+        new(Guid.NewGuid(), Guid.NewGuid(), "2025", new DateOnly(2025, 1, 1), new DateOnly(2025, 12, 31),
+            Guid.Parse("11111111-1111-1111-1111-111111111111"), null, null);
 
     [Fact]
     public void ValidPayload_Passes()
@@ -57,5 +58,40 @@ public sealed class UpdateCycleValidatorTests
         var result = _sut.Validate(ValidCommand() with { CycleId = Guid.Empty });
         result.IsValid.ShouldBeFalse();
         result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateCycleCommand.CycleId));
+    }
+
+    [Fact]
+    public void AlternateCurrencyId_WithoutExchangeRate_Fails_WithCYC_PAIR_INCOMPLETE()
+    {
+        var result = _sut.Validate(ValidCommand() with
+        {
+            AlternateCurrencyId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            ExchangeRate        = null
+        });
+        result.IsValid.ShouldBeFalse();
+        result.Errors.ShouldContain(e => e.ErrorCode == "CYC_PAIR_INCOMPLETE");
+    }
+
+    [Fact]
+    public void ExchangeRate_WithoutAlternateCurrencyId_Fails_WithCYC_PAIR_INCOMPLETE()
+    {
+        var result = _sut.Validate(ValidCommand() with
+        {
+            AlternateCurrencyId = null,
+            ExchangeRate        = 7.5m
+        });
+        result.IsValid.ShouldBeFalse();
+        result.Errors.ShouldContain(e => e.ErrorCode == "CYC_PAIR_INCOMPLETE");
+    }
+
+    [Fact]
+    public void BothAlternateFields_Present_Passes()
+    {
+        var result = _sut.Validate(ValidCommand() with
+        {
+            AlternateCurrencyId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            ExchangeRate        = 7.5m
+        });
+        result.IsValid.ShouldBeTrue();
     }
 }

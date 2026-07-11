@@ -67,6 +67,9 @@ namespace MyBudget.Features.Migrations
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsRecurring")
                         .HasColumnType("boolean");
 
@@ -113,10 +116,8 @@ namespace MyBudget.Features.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
+                    b.Property<Guid>("CurrencyId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Note")
                         .HasColumnType("text");
@@ -128,6 +129,8 @@ namespace MyBudget.Features.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CurrencyId");
 
                     b.HasIndex("BudgetLineId", "RevisedAt")
                         .IsDescending(false, true)
@@ -247,10 +250,66 @@ namespace MyBudget.Features.Migrations
                     b.ToTable("CategoryGroups", (string)null);
                 });
 
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Currency", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Currencies_Code");
+
+                    b.ToTable("Currencies", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Code = "GTQ",
+                            Name = "Quetzal",
+                            Symbol = "Q"
+                        },
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            Code = "USD",
+                            Name = "US Dollar",
+                            Symbol = "$"
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            Code = "EUR",
+                            Name = "Euro",
+                            Symbol = "€"
+                        });
+                });
+
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Cycle", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AlternateCurrencyId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("BudgetId")
@@ -259,11 +318,18 @@ namespace MyBudget.Features.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("DefaultCurrencyId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateOnly>("EndDate")
                         .HasColumnType("date");
+
+                    b.Property<decimal?>("ExchangeRate")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -281,8 +347,12 @@ namespace MyBudget.Features.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AlternateCurrencyId");
+
                     b.HasIndex("BudgetId")
                         .HasDatabaseName("IX_Cycles_BudgetId");
+
+                    b.HasIndex("DefaultCurrencyId");
 
                     b.HasIndex("BudgetId", "IsActive")
                         .IsUnique()
@@ -524,7 +594,15 @@ namespace MyBudget.Features.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.Currency", "Currency")
+                        .WithMany()
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("BudgetLine");
+
+                    b.Navigation("Currency");
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.BudgetMembership", b =>
@@ -570,13 +648,28 @@ namespace MyBudget.Features.Migrations
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Cycle", b =>
                 {
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.Currency", "AlternateCurrency")
+                        .WithMany()
+                        .HasForeignKey("AlternateCurrencyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("MyBudget.Features.SharedKernel.Entities.Budget", "Budget")
                         .WithMany()
                         .HasForeignKey("BudgetId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.Currency", "DefaultCurrency")
+                        .WithMany()
+                        .HasForeignKey("DefaultCurrencyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AlternateCurrency");
+
                     b.Navigation("Budget");
+
+                    b.Navigation("DefaultCurrency");
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Invitation", b =>

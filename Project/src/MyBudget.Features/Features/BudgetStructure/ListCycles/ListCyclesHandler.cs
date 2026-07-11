@@ -1,11 +1,12 @@
 using Dapper;
 using Mediator;
+using MyBudget.Features.Features.BudgetStructure.GetCycleDetail;
 using MyBudget.Features.SharedKernel.Persistence;
 using MyBudget.Features.SharedKernel.Results;
 
 namespace MyBudget.Features.Features.BudgetStructure.ListCycles;
 
-/// <summary>Dapper read — returns all non-deleted Cycles for a budget with period counts.</summary>
+/// <summary>Dapper read — returns all non-deleted Cycles for a budget with period counts and default currency.</summary>
 public sealed class ListCyclesHandler
     : IRequestHandler<ListCyclesQuery, Result<IReadOnlyList<CycleListItem>>>
 {
@@ -21,11 +22,15 @@ public sealed class ListCyclesHandler
         var rows = await conn.QueryAsync<CycleRow>(
             """
             SELECT c."Id", c."Name", c."StartDate", c."EndDate", c."IsActive",
-                   COUNT(p."Id") AS "PeriodCount"
+                   COUNT(p."Id") AS "PeriodCount",
+                   dc."Code"   AS "DefaultCurrencyCode",
+                   dc."Symbol" AS "DefaultCurrencySymbol"
             FROM "Cycles" c
-            LEFT JOIN "Periods" p ON p."CycleId" = c."Id" AND p."DeletedAt" IS NULL
+            INNER JOIN "Currencies" dc ON dc."Id" = c."DefaultCurrencyId"
+            LEFT  JOIN "Periods" p ON p."CycleId" = c."Id" AND p."DeletedAt" IS NULL
             WHERE c."BudgetId" = @BudgetId AND c."DeletedAt" IS NULL
-            GROUP BY c."Id", c."Name", c."StartDate", c."EndDate", c."IsActive"
+            GROUP BY c."Id", c."Name", c."StartDate", c."EndDate", c."IsActive",
+                     dc."Code", dc."Symbol"
             ORDER BY c."StartDate"
             """,
             new { BudgetId = query.BudgetId });
@@ -37,7 +42,8 @@ public sealed class ListCyclesHandler
                 r.StartDate,
                 r.EndDate,
                 r.IsActive,
-                (int)r.PeriodCount))
+                (int)r.PeriodCount,
+                new CurrencyDto(r.DefaultCurrencyCode, r.DefaultCurrencySymbol)))
             .ToList();
 
         return Result<IReadOnlyList<CycleListItem>>.Success(items);
@@ -50,5 +56,7 @@ public sealed class ListCyclesHandler
         DateOnly StartDate,
         DateOnly EndDate,
         bool     IsActive,
-        long     PeriodCount);
+        long     PeriodCount,
+        string   DefaultCurrencyCode,
+        string   DefaultCurrencySymbol);
 }

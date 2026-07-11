@@ -70,7 +70,7 @@
           <option value="USD">USD</option>
         </select>
       </template>
-      <template v-else>{{ line.currency ?? '—' }}</template>
+      <template v-else>{{ line.currencyCode ?? '—' }}</template>
     </td>
 
     <!-- Note cell -->
@@ -169,7 +169,7 @@ function resetForm(): void {
   form.lineType = props.line.lineType
   form.isRecurring = props.line.isRecurring
   form.budgetedAmount = props.line.budgetedAmount ?? null
-  form.currency = props.line.currency ?? 'GTQ'
+  form.currency = props.line.currencyCode ?? 'GTQ'
   form.note = props.line.note ?? ''
   form.categoryGroupId = props.line.categoryGroupId
 }

@@ -25,7 +25,14 @@ public static class CreateCycleEndpoint
         IMediator mediator,
         CancellationToken ct)
     {
-        var cmd    = new CreateCycleCommand(id, body.Name, body.StartDate, body.EndDate);
+        var cmd    = new CreateCycleCommand(
+            id,
+            body.Name,
+            body.StartDate,
+            body.EndDate,
+            body.DefaultCurrencyId,
+            body.AlternateCurrencyId,
+            body.ExchangeRate);
         var result = await mediator.Send(cmd, ct);
 
         if (!result.IsSuccess)
@@ -39,4 +46,10 @@ public static class CreateCycleEndpoint
     }
 }
 
-public sealed record CreateCycleRequest(string Name, DateOnly StartDate, DateOnly EndDate);
+public sealed record CreateCycleRequest(
+    string   Name,
+    DateOnly StartDate,
+    DateOnly EndDate,
+    Guid     DefaultCurrencyId,
+    Guid?    AlternateCurrencyId,
+    decimal? ExchangeRate);

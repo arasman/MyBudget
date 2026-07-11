@@ -5,8 +5,6 @@ namespace MyBudget.Features.Features.BudgetStructure.UpdateBudgetLine;
 
 public sealed class UpdateBudgetLineValidator : AbstractValidator<UpdateBudgetLineCommand>
 {
-    private static readonly string[] AllowedCurrencies = ["GTQ", "USD"];
-
     public UpdateBudgetLineValidator()
     {
         RuleFor(x => x.BudgetId)
@@ -27,11 +25,6 @@ public sealed class UpdateBudgetLineValidator : AbstractValidator<UpdateBudgetLi
 
         RuleFor(x => x.LineType)
             .Must(lt => Enum.IsDefined(typeof(LineType), lt))
-            .WithErrorCode("FIELD_INVALID");
-
-        RuleFor(x => x.Currency)
-            .NotEmpty().WithErrorCode("FIELD_REQUIRED")
-            .Must(c => AllowedCurrencies.Contains(c?.ToUpperInvariant()))
             .WithErrorCode("FIELD_INVALID");
 
         RuleFor(x => x.BudgetedAmount)

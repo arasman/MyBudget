@@ -8,6 +8,7 @@ public sealed class BudgetLine : BaseEntity
     public string Name { get; private set; } = string.Empty;
     public LineType LineType { get; private set; }
     public bool IsRecurring { get; private set; }
+    public int DisplayOrder { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
 
     // Navigation
@@ -24,7 +25,8 @@ public sealed class BudgetLine : BaseEntity
         Guid? categoryId,
         string name,
         LineType lineType,
-        bool isRecurring)
+        bool isRecurring,
+        int displayOrder = 0)
     {
         return new BudgetLine
         {
@@ -34,10 +36,19 @@ public sealed class BudgetLine : BaseEntity
             Name            = name.Trim(),
             LineType        = lineType,
             IsRecurring     = isRecurring,
+            DisplayOrder    = displayOrder,
         };
     }
 
+    public void SetDisplayOrder(int order) => DisplayOrder = order;
+
     public void SoftDelete() => DeletedAt = DateTimeOffset.UtcNow;
+
+    public void Restore()
+    {
+        DeletedAt = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 
     public void Update(Guid categoryGroupId, Guid? categoryId, string name, LineType lineType, bool isRecurring)
     {

@@ -26,6 +26,15 @@ public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCo
         if (period.IsClosed)
             return Result<Guid>.Failure("PERIOD_CLOSED");
 
+        // Resolve CurrencyId: explicit or fall back to Cycle.DefaultCurrencyId
+        var currencyId = cmd.CurrencyId ?? period.Cycle.DefaultCurrencyId;
+
+        // Determine DisplayOrder: count of existing active lines in same (PeriodId, CategoryGroupId, CategoryId) + 1
+        var existingCount = await _db.BudgetLines
+            .CountAsync(l => l.PeriodId == cmd.PeriodId
+                          && l.CategoryGroupId == cmd.CategoryGroupId
+                          && l.CategoryId == cmd.CategoryId, ct);
+
         // ADR-BS-06: Create BudgetLine + initial BudgetLineRevision
         var line = BudgetLine.Create(
             cmd.PeriodId,
@@ -33,12 +42,13 @@ public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCo
             cmd.CategoryId,
             cmd.Name,
             cmd.LineType,
-            cmd.IsRecurring);
+            cmd.IsRecurring,
+            existingCount + 1);
 
         _db.BudgetLines.Add(line);
         await _db.SaveChangesAsync(ct); // persist to get the Id
 
-        var revision = BudgetLineRevision.Create(line.Id, cmd.BudgetedAmount, cmd.Currency);
+        var revision = BudgetLineRevision.Create(line.Id, cmd.BudgetedAmount, currencyId);
         _db.BudgetLineRevisions.Add(revision);
         await _db.SaveChangesAsync(ct);
 

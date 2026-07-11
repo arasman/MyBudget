@@ -31,7 +31,7 @@ public static class CreateBudgetLineEndpoint
             id, periodId,
             body.CategoryGroupId, body.CategoryId,
             body.Name, body.LineType, body.IsRecurring,
-            body.BudgetedAmount, body.Currency);
+            body.BudgetedAmount, body.CurrencyId);
 
         var result = await mediator.Send(cmd, ct);
 
@@ -57,4 +57,4 @@ public sealed record CreateBudgetLineRequest(
     LineType LineType,
     bool     IsRecurring,
     decimal  BudgetedAmount,
-    string   Currency);
+    Guid?    CurrencyId);

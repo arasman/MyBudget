@@ -8,5 +8,8 @@ public sealed record UpdateCycleCommand(
     Guid     CycleId,
     string   Name,
     DateOnly StartDate,
-    DateOnly EndDate
+    DateOnly EndDate,
+    Guid     DefaultCurrencyId,
+    Guid?    AlternateCurrencyId,
+    decimal? ExchangeRate
 ) : IRequest<Result<Guid>>;

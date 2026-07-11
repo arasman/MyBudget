@@ -26,7 +26,8 @@ public sealed class DeleteBudgetLineHandlerTests : IDisposable
 
         var cycle = Cycle.Create(budgetId, "Cycle",
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(365)));
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(365)),
+            CurrencySeeds.GtqId);
         _db.Cycles.Add(cycle);
         await _db.SaveChangesAsync();
 
