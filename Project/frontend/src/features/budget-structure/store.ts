@@ -133,6 +133,7 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
       periods.value.push({
         id,
         name: payload.name,
+        periodNumber: fullPayload.periodNumber,
         startDate: payload.startDate,
         endDate: payload.endDate,
         status: 'Open',

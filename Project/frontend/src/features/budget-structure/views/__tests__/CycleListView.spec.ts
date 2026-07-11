@@ -73,6 +73,7 @@ function makeI18n() {
             active: 'Active',
             periodCount: 'Periods',
             confirmDelete: 'Are you sure?',
+            viewPeriods: 'View Periods',
             empty: {
               title: 'No cycles yet',
               description: 'Create your first cycle.',

@@ -137,7 +137,7 @@ describe('useBudgetStructureStore', () => {
   describe('loadLines', () => {
     it('populates budgetLines from API', async () => {
       const mockLines = [
-        { id: 'l1', name: 'Salary', lineType: 'Income', isRecurring: true, categoryGroupId: 'g1' },
+        { id: 'l1', name: 'Salary', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
         { id: 'l2', name: 'Rent', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
         { id: 'l3', name: 'Groceries', lineType: 'Expense', isRecurring: false, categoryGroupId: 'g1' },
       ]
@@ -175,7 +175,7 @@ describe('useBudgetStructureStore', () => {
   describe('deleteLine', () => {
     it('removes the line from budgetLines', async () => {
       vi.mocked(budgetLinesApi.list).mockResolvedValueOnce([
-        { id: 'l1', name: 'Salary', lineType: 'Income', isRecurring: true, categoryGroupId: 'g1' },
+        { id: 'l1', name: 'Salary', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
         { id: 'l2', name: 'Rent', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
       ] as any)
       vi.mocked(budgetLinesApi.remove).mockResolvedValueOnce(undefined)
