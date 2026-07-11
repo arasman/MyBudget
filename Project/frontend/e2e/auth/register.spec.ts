@@ -23,7 +23,7 @@ test.describe('Register flow', () => {
     await page.getByRole('button', { name: 'Create Account' }).click()
 
     // Should redirect to home after successful registration
-    await expect(page).toHaveURL('/', { timeout: 10_000 })
+    await expect(page).toHaveURL(/\/(budgets\/[^/]+\/cycles)?$/, { timeout: 10_000 })
 
     // Tokens must be persisted in localStorage
     const accessToken = await page.evaluate(() => localStorage.getItem('accessToken'))
@@ -47,7 +47,7 @@ test.describe('Register flow', () => {
     await page.getByPlaceholder('you@example.com').fill(email)
     await page.getByPlaceholder(/Password/).fill(password)
     await page.getByRole('button', { name: 'Create Account' }).click()
-    await expect(page).toHaveURL('/', { timeout: 10_000 })
+    await expect(page).toHaveURL(/\/(budgets\/[^/]+\/cycles)?$/, { timeout: 10_000 })
 
     // Clear storage and try to register again with the same email
     await page.evaluate(() => {

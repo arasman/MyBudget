@@ -49,7 +49,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 3. `budget-structure` 🔄 in progress — branch `feat/budget-structure`
+### 3. `budget-structure` ✅ archived 2026-07-10
 
 **What**: Backend CRUD for all structural entities of a budget.
 
@@ -81,20 +81,20 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 4. `budget-structure-ui` ⏳ planned
+### 4. `budget-structure-ui` 🔄 in progress — branch `feat/budget-structure-ui`
 
 **What**: Frontend for all budget structure management.
 
 **Scope in**:
-- Scalar UI: `app.MapScalarApiReference()` → visual API explorer at `/scalar/v1`
-- vue-i18n `@` escape fix in `en.json` and `es.json` (`emailPlaceholder` fields)
-- Login/Register form alignment fix (LoginView, RegisterView)
-- Budget structure main view: cycles, periods, category groups, categories, budget lines
-- Views/components: BudgetStructureView, CyclePanel, CategoryGroupPanel, BudgetLinesTable
-- Route: `/budgets/:id/structure` (requires auth)
+- App layout: top navbar + sidebar (AppLayout, NavBar, SideBar, BudgetSelector)
+- Auth fixes: Login/Register field alignment (`w-full`), password strength indicator, 422 error mapping
+- Budget structure CRUD views: CycleListView, CycleDetailView (periods), CategoryTreeView, BudgetLinesView
+- Reusable components: BudgetTabs, EmptyState, form modals per entity, BudgetLineRow
+- **Inline editing for BudgetLines**: double-click row → inline edit (Save/Cancel icons); `+` button → inline add row with all fields; Pencil icon still opens modal for full edit
+- Icon actions across all views (lucide-vue-next): Pencil (edit), Trash2 (delete), Star (set active), List (view lines), RefreshCw (change status), Check (save), X (cancel)
+- Currency constrained to GTQ/USD (select, not free text)
 - Pinia store for budget structure state
 - Vitest component tests + Playwright E2E for structure workflows
-- App layout definition: left sidebar navigation, main content area, detail panel
 
 **Scope out**: Execution entries (→ `budget-execution-ui`), account/fund management (→ `current-situation-ui`).
 
@@ -129,7 +129,22 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 7. `current-situation` ⏳ planned
+### 7. `multi-budget` ⏳ planned
+
+**What**: Allow each user to own and belong to multiple budgets.
+
+**Domain**: Currently a budget is auto-created on registration and users land directly on it. With multi-budget, users can create additional budgets, switch between them, and receive invitations to multiple budgets.
+
+**Scope in** *(requires full SDD exploration)*:
+- Backend: `CreateBudget`, `ListMyBudgets`, `DeleteBudget` slices; remove auto-redirect assumption
+- Frontend: BudgetSelector shows all budgets with create option; `/budgets` landing page lists budgets; budget switcher in sidebar
+- RBAC: only owners can delete a budget; existing per-budget roles unchanged
+
+**Scope out**: Budget templates, budget cloning, shared budgets beyond the invitation model.
+
+---
+
+### 8. `current-situation` ⏳ planned
 
 **What**: Backend for accounts, funds, balances, and payment methods.
 
@@ -145,7 +160,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 8. `current-situation-ui` ⏳ planned
+### 9. `current-situation-ui` ⏳ planned
 
 **What**: Frontend for account balances, payment methods, and situation view.
 
@@ -156,7 +171,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 9. `dashboard` ⏳ planned
+### 10. `dashboard` ⏳ planned
 
 **What**: Key charts and summary KPIs for the budget.
 

@@ -39,7 +39,7 @@ test.describe('Login and logout flow', () => {
     await page.getByPlaceholder('Password').fill(PASSWORD)
     await page.getByRole('button', { name: 'Sign In' }).click()
 
-    await expect(page).toHaveURL('/', { timeout: 10_000 })
+    await expect(page).toHaveURL(/\/(budgets\/[^/]+\/cycles)?$/, { timeout: 10_000 })
 
     const accessToken = await page.evaluate(() => localStorage.getItem('accessToken'))
     expect(accessToken).toBeTruthy()
@@ -51,9 +51,10 @@ test.describe('Login and logout flow', () => {
     await page.getByPlaceholder('you@example.com').fill(EMAIL)
     await page.getByPlaceholder('Password').fill(PASSWORD)
     await page.getByRole('button', { name: 'Sign In' }).click()
-    await expect(page).toHaveURL('/', { timeout: 10_000 })
+    await expect(page).toHaveURL(/\/(budgets\/[^/]+\/cycles)?$/, { timeout: 10_000 })
 
-    // Click logout button (assumes visible logout button on home page)
+    // Open user dropdown (daisyUI CSS-only — must click avatar trigger first)
+    await page.locator('.avatar.placeholder').click()
     await page.getByRole('button', { name: /logout|sign out/i }).click()
 
     await expect(page).toHaveURL('/login', { timeout: 5_000 })

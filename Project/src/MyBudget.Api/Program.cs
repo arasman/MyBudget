@@ -8,6 +8,7 @@ using MyBudget.Features.Extensions;
 using MyBudget.Features.SharedKernel.Auth;
 using MyBudget.Features.SharedKernel.Auth.Authorization;
 using MyBudget.Features.SharedKernel.Persistence;
+using Scalar.AspNetCore;
 using Serilog;
 
 // Register Dapper type handlers for DateOnly (Npgsql 10 maps PostgreSQL date as DateOnly)
@@ -85,9 +86,12 @@ app.UseMiddleware<ExceptionMiddleware>();
 // 12. MapAllSliceEndpoints — reflection scans MyBudget.Features for static Map()
 app.MapAllSliceEndpoints();
 
-// 13. MapOpenApi — dev only (Scalar UI)
+// 13. MapOpenApi + Scalar UI — dev only
 if (app.Environment.IsDevelopment())
+{
     app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 
 await app.RunAsync();
 

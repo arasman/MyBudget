@@ -27,56 +27,50 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-base-200 px-4">
-    <div class="card w-full max-w-md bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h1 class="card-title text-2xl justify-center mb-4">{{ t('auth.login.title') }}</h1>
+  <h1 class="card-title text-2xl justify-center mb-4">{{ t('auth.login.title') }}</h1>
 
-        <div v-if="error" role="alert" class="alert alert-error mb-4">
-          <span>{{ error }}</span>
-        </div>
-
-        <form @submit.prevent="onSubmit" class="space-y-4" novalidate>
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">{{ t('auth.emailLabel') }}</span>
-            </label>
-            <input
-              v-model="form.email"
-              type="email"
-              class="input input-bordered"
-              :placeholder="t('auth.login.emailPlaceholder')"
-              autocomplete="email"
-              required
-            />
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">{{ t('auth.passwordLabel') }}</span>
-            </label>
-            <input
-              v-model="form.password"
-              type="password"
-              class="input input-bordered"
-              :placeholder="t('auth.login.passwordPlaceholder')"
-              autocomplete="current-password"
-              required
-            />
-          </div>
-
-          <button type="submit" class="btn btn-primary w-full" :disabled="isSubmitting">
-            <span v-if="isSubmitting" class="loading loading-spinner loading-sm" />
-            {{ t('auth.login.submit') }}
-          </button>
-        </form>
-
-        <p class="text-center text-sm mt-4">
-          <router-link to="/register" class="link link-primary">
-            {{ t('auth.login.registerLink') }}
-          </router-link>
-        </p>
-      </div>
-    </div>
+  <div v-if="error" role="alert" class="alert alert-error mb-4">
+    <span>{{ error }}</span>
   </div>
+
+  <form @submit.prevent="onSubmit" class="space-y-4" novalidate>
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">{{ t('auth.emailLabel') }}</span>
+      </label>
+      <input
+        v-model="form.email"
+        type="email"
+        class="input input-bordered w-full"
+        :placeholder="t('auth.login.emailPlaceholder')"
+        autocomplete="email"
+        required
+      />
+    </div>
+
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">{{ t('auth.passwordLabel') }}</span>
+      </label>
+      <input
+        v-model="form.password"
+        type="password"
+        class="input input-bordered w-full"
+        :placeholder="t('auth.login.passwordPlaceholder')"
+        autocomplete="current-password"
+        required
+      />
+    </div>
+
+    <button type="submit" class="btn btn-primary w-full" :disabled="isSubmitting">
+      <span v-if="isSubmitting" class="loading loading-spinner loading-sm" />
+      {{ t('auth.login.submit') }}
+    </button>
+  </form>
+
+  <p class="text-center text-sm mt-4">
+    <router-link to="/register" class="link link-primary">
+      {{ t('auth.login.registerLink') }}
+    </router-link>
+  </p>
 </template>

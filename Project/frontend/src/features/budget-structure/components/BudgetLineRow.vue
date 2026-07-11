@@ -1,0 +1,213 @@
+<template>
+  <tr
+    class="hover select-none"
+    :class="{ 'cursor-pointer': !readonly && !editing }"
+    @dblclick="onRowDblClick"
+  >
+    <!-- Name cell -->
+    <td class="font-medium">
+      <template v-if="editing">
+        <input
+          v-model="form.name"
+          type="text"
+          class="input input-xs input-bordered w-full"
+          :placeholder="t('budgetStructure.budgetLines.name')"
+        />
+      </template>
+      <template v-else>{{ line.name }}</template>
+    </td>
+
+    <!-- Line type cell -->
+    <td>
+      <template v-if="editing">
+        <select v-model="form.lineType" class="select select-xs select-bordered w-full">
+          <option value="Expense">{{ t('budgetStructure.budgetLines.types.expense') }}</option>
+          <option value="LongTermSavings">{{ t('budgetStructure.budgetLines.types.longTermSavings') }}</option>
+          <option value="PreventiveSavings">{{ t('budgetStructure.budgetLines.types.preventiveSavings') }}</option>
+        </select>
+      </template>
+      <template v-else>
+        <span class="badge badge-sm">
+          {{ t(`budgetStructure.budgetLines.types.${line.lineType.charAt(0).toLowerCase() + line.lineType.slice(1)}`) }}
+        </span>
+      </template>
+    </td>
+
+    <!-- Recurring cell -->
+    <td>
+      <template v-if="editing">
+        <input v-model="form.isRecurring" type="checkbox" class="checkbox checkbox-xs" />
+      </template>
+      <template v-else>
+        <span v-if="line.isRecurring" class="text-base-content/70" title="Recurring">↻</span>
+        <span v-else class="text-base-content/30">—</span>
+      </template>
+    </td>
+
+    <!-- Budgeted amount cell -->
+    <td>
+      <template v-if="editing">
+        <input
+          v-model.number="form.budgetedAmount"
+          type="number"
+          step="0.01"
+          class="input input-xs input-bordered w-24"
+        />
+      </template>
+      <template v-else>
+        <span v-if="line.budgetedAmount != null">
+          {{ formatAmount(line.budgetedAmount) }}
+        </span>
+        <span v-else class="text-base-content/30">—</span>
+      </template>
+    </td>
+
+    <!-- Currency cell -->
+    <td>
+      <template v-if="editing">
+        <select v-model="form.currency" class="select select-xs select-bordered">
+          <option value="GTQ">GTQ</option>
+          <option value="USD">USD</option>
+        </select>
+      </template>
+      <template v-else>{{ line.currency ?? '—' }}</template>
+    </td>
+
+    <!-- Note cell -->
+    <td class="max-w-xs truncate text-sm text-base-content/60" :title="editing ? '' : (line.note ?? '')">
+      <template v-if="editing">
+        <input
+          v-model="form.note"
+          type="text"
+          class="input input-xs input-bordered w-full"
+          :placeholder="t('budgetStructure.budgetLines.note')"
+        />
+      </template>
+      <template v-else>{{ line.note ? truncate(line.note, 40) : '—' }}</template>
+    </td>
+
+    <!-- Actions cell -->
+    <td v-if="!readonly">
+      <div class="flex gap-1">
+        <template v-if="editing">
+          <button
+            type="button"
+            class="btn btn-xs btn-ghost btn-square text-success"
+            :title="t('budgetStructure.common.save')"
+            @click.stop="onInlineSave"
+          >
+            <Check :size="14" />
+          </button>
+          <button
+            type="button"
+            class="btn btn-xs btn-ghost btn-square"
+            :title="t('budgetStructure.common.cancel')"
+            @click.stop="emit('inlineCancel', props.line.id)"
+          >
+            <X :size="14" />
+          </button>
+        </template>
+        <template v-else>
+          <button
+            type="button"
+            class="btn btn-xs btn-ghost btn-square"
+            :title="t('budgetStructure.budgetLines.edit')"
+            @click.stop="emit('edit', line)"
+          >
+            <Pencil :size="14" />
+          </button>
+          <button
+            type="button"
+            class="btn btn-xs btn-ghost btn-square text-error"
+            :title="t('budgetStructure.budgetLines.delete')"
+            @click.stop="emit('delete', line.id)"
+          >
+            <Trash2 :size="14" />
+          </button>
+        </template>
+      </div>
+    </td>
+    <td v-else />
+  </tr>
+</template>
+
+<script setup lang="ts">
+import { reactive, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Pencil, Trash2, Check, X } from 'lucide-vue-next'
+import type { BudgetLineResponse, LineType, UpdateBudgetLinePayload } from '../types'
+
+const props = defineProps<{
+  line: BudgetLineResponse
+  readonly: boolean
+  editing: boolean
+  categoryGroups: { id: string; name: string }[]
+}>()
+
+const emit = defineEmits<{
+  edit: [line: BudgetLineResponse]
+  delete: [lineId: string]
+  startEdit: [line: BudgetLineResponse]
+  inlineSave: [lineId: string, payload: UpdateBudgetLinePayload]
+  inlineCancel: [lineId: string]
+}>()
+
+const { t } = useI18n()
+
+const form = reactive({
+  name: '',
+  lineType: 'Expense' as LineType,
+  isRecurring: false,
+  budgetedAmount: null as number | null,
+  currency: 'GTQ',
+  note: '',
+  categoryGroupId: undefined as string | undefined,
+})
+
+function resetForm(): void {
+  form.name = props.line.name
+  form.lineType = props.line.lineType
+  form.isRecurring = props.line.isRecurring
+  form.budgetedAmount = props.line.budgetedAmount ?? null
+  form.currency = props.line.currency ?? 'GTQ'
+  form.note = props.line.note ?? ''
+  form.categoryGroupId = props.line.categoryGroupId
+}
+
+watch(
+  () => props.editing,
+  (val) => {
+    if (val) resetForm()
+  },
+)
+
+function onRowDblClick(): void {
+  if (!props.readonly && !props.editing) {
+    emit('startEdit', props.line)
+  }
+}
+
+function onInlineSave(): void {
+  const payload: UpdateBudgetLinePayload = {
+    name: form.name,
+    lineType: form.lineType,
+    isRecurring: form.isRecurring,
+    budgetedAmount: form.budgetedAmount ?? undefined,
+    currency: form.currency,
+    note: form.note || undefined,
+    categoryGroupId: form.categoryGroupId,
+  }
+  emit('inlineSave', props.line.id, payload)
+}
+
+function formatAmount(amount: number): string {
+  return new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount)
+}
+
+function truncate(text: string, maxLength: number): string {
+  return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text
+}
+</script>
