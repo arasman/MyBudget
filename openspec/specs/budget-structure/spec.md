@@ -3,8 +3,24 @@
 ## Purpose
 
 Defines the structural backbone of a budget: Cycles (yearly planning periods), Periods (monthly or
-arbitrary sub-divisions), CategoryGroups, Categories, BudgetLines, and BudgetLineRevisions. This is
-a new capability — no existing spec exists for this domain.
+arbitrary sub-divisions), CategoryGroups, Categories, BudgetLines, and BudgetLineRevisions.
+Extends with Currency reference table, cycle currency fields, budget line currency tracking,
+display ordering, and restore cascade endpoints.
+
+---
+
+## Capability Index
+
+| Capability | Type | Requirements |
+|---|---|---|
+| `cycles` | Core | REQ-CYC-01 through REQ-CYC-04 |
+| `periods` | Core | REQ-PER-01 through REQ-PER-04 |
+| `category-groups` | Core | REQ-CG-01 through REQ-CG-04 |
+| `categories` | Core | REQ-CAT-01 through REQ-CAT-04 |
+| `budget-lines` | Core | REQ-BL-01 through REQ-BL-05 |
+| `currency-reference` | Added (patch) | REQ-CUR-01, REQ-CUR-02 |
+| `cycle-currency` | Modified (patch) | REQ-CYC-CUR-01, REQ-CYC-CUR-02 |
+| `budget-restore` | Added (patch) | REQ-RST-01 through REQ-RST-06 |
 
 ---
 
@@ -358,12 +374,165 @@ history. Hard delete is sequential: BudgetLineRevisions first, then BudgetLine.
 - WHEN DELETE `.../lines/{lineId}`
 - THEN HTTP 204; BudgetLine.DeletedAt set; Revisions remain in DB (immutable) but are inaccessible
 
-#### Scenario: Restore soft-deleted line — DEFERRED
-- Note: spec says MAY; no `/restore` endpoint implemented in this change. Deferred to a future slice.
+### REQ-BL-05: Currency and DisplayOrder
+
+**Currency**: Each `BudgetLineRevision` MUST store a `CurrencyId` (FK to Currency table) instead of a Currency string. When creating or updating a BudgetLine without an explicit `CurrencyId`, the handler MUST default to the parent Cycle's `DefaultCurrencyId`.
+
+**DisplayOrder**: Each `BudgetLine` MUST have a `DisplayOrder` (int, NOT NULL) for explicit ordering. The `ReorderBudgetLines` endpoint accepts an ordered array of BudgetLine IDs and updates `DisplayOrder` on each.
+
+#### Scenario: CurrencyId defaults to Cycle default `@integration`
+- GIVEN open Period → Cycle with DefaultCurrencyId = GTQ
+- WHEN POST `.../lines` without explicit CurrencyId
+- THEN BudgetLineRevision.CurrencyId = GTQ
+
+#### Scenario: DisplayOrder backfill `@integration`
+- GIVEN existing BudgetLines before migration
+- WHEN migration runs
+- THEN every BudgetLine has DisplayOrder >= 1, ordered by CreatedAt within (PeriodId, CategoryGroupId, CategoryId) partitions
+
+#### Scenario: Reorder BudgetLines `@integration`
+- GIVEN 3 BudgetLines in a Period with DisplayOrder 1, 2, 3
+- WHEN PUT `.../periods/{periodId}/budget-lines/order` with IDs in reversed order
+- THEN BudgetLines have DisplayOrder reassigned to match the new order
 
 ---
 
-## 6. Read Endpoints
+## 6. Currency Reference
+
+### REQ-CUR-01: Currency Entity
+
+A `Currency` entity with `Id` (Guid PK), `Code` (varchar 3, unique), `Name` (varchar 100), `Symbol` (varchar 10) MUST exist as a database table. The table is seeded with exactly three rows and has no soft-delete column.
+
+#### Seed data
+
+| Code | Name | Symbol |
+|---|---|---|
+| GTQ | Quetzal | Q |
+| USD | US Dollar | $ |
+| EUR | Euro | € |
+
+#### Scenario: Currency catalog unchanged by API `@unit`
+- GIVEN the Currencies table seeded
+- WHEN a request to create or update a currency directly via the application
+- THEN no write endpoint exists (404 on non-GET paths under currencies)
+
+### REQ-CUR-02: List Currencies
+
+A read-only endpoint `GET /budgets/{budgetId}/currencies` MUST exist. It returns all currencies regardless of budgetId. The `budgetId` path segment is present for routing consistency only.
+
+#### Scenario: Happy path `@integration`
+- GIVEN budgetId = any valid budget Guid (or nonexistent)
+- WHEN GET `/budgets/{budgetId}/currencies`
+- THEN HTTP 200 with array of all currencies (currently 3: GTQ, USD, EUR)
+
+---
+
+## 7. Cycle Currency Fields
+
+### REQ-CYC-CUR-01: Currency Fields on Cycle
+
+`Cycle` MUST have:
+- `DefaultCurrencyId` (Guid, NOT NULL, FK → Currency)
+- `AlternateCurrencyId` (Guid?, nullable, FK → Currency)
+- `ExchangeRate` (decimal(18,6), nullable)
+
+`AlternateCurrencyId` and `ExchangeRate` MUST be provided together or both omitted.
+
+#### Scenario: Create with default currency only `@integration`
+- GIVEN valid budget and Cycle data
+- WHEN POST `/api/budgets/{id}/cycles` with DefaultCurrencyId, no alternate
+- THEN HTTP 201; Cycle.DefaultCurrencyId set, AlternateCurrencyId = null, ExchangeRate = null
+
+#### Scenario: Pair rule enforced `@unit`
+- GIVEN CreateCycle or UpdateCycle command with AlternateCurrencyId but no ExchangeRate
+- WHEN validator runs
+- THEN validation error, code `CYC_PAIR_INCOMPLETE`, HTTP 400
+
+### REQ-CYC-CUR-02: Cycle Read Responses
+
+`GetCycleDetail` response MUST include `defaultCurrency` (Code, Symbol) and optionally `alternateCurrency` (Code, Symbol) and `exchangeRate`.
+
+`ListCycles` response items MUST include `defaultCurrency` (Code, Symbol).
+
+#### Scenario: Detail with alternate currency `@integration`
+- GIVEN Cycle with DefaultCurrencyId=GTQ, AlternateCurrencyId=USD, ExchangeRate=7.5
+- WHEN GET `/api/budgets/{id}/cycles/{cycleId}`
+- THEN HTTP 200; defaultCurrency: { code: "GTQ", symbol: "Q" }, alternateCurrency: { code: "USD", symbol: "$" }, exchangeRate: 7.5
+
+---
+
+## 8. Restore Endpoints
+
+### REQ-RST-01: Restore() Method
+
+Each soft-deletable entity (Cycle, Period, CategoryGroup, Category, BudgetLine) MUST expose a `Restore()` method that sets `DeletedAt = null` and refreshes `UpdatedAt = DateTimeOffset.UtcNow`.
+
+#### Scenario: Restore entity `@unit`
+- GIVEN a soft-deleted Cycle
+- WHEN Cycle.Restore() called
+- THEN Cycle.DeletedAt = null, UpdatedAt refreshed
+
+### REQ-RST-02: RestoreCycle Cascade
+
+Route: `POST /budgets/{budgetId}/cycles/{cycleId}/restore`
+
+Restores Cycle, then all its soft-deleted Periods, then all soft-deleted BudgetLines of those Periods. The `includeExecutionRecords` query parameter is accepted but ignored (no-op, forward-compat for `budget-execution`).
+
+#### Scenario: Full cascade restore `@integration`
+- GIVEN soft-deleted Cycle with 2 soft-deleted Periods, each with 2 soft-deleted BudgetLines
+- WHEN POST `.../cycles/{cycleId}/restore`
+- THEN HTTP 200; Cycle, all Periods, all BudgetLines have DeletedAt = null
+
+#### Scenario: Non-deleted Cycle rejected `@unit`
+- GIVEN an already-active (non-deleted) Cycle
+- WHEN POST `.../cycles/{cycleId}/restore`
+- THEN HTTP 404 (soft-deleted entities only visible via IgnoreQueryFilters in restore handlers)
+
+### REQ-RST-03: RestoreCategoryGroup Cascade
+
+Route: `POST /budgets/{budgetId}/category-groups/{groupId}/restore`
+
+Restores CategoryGroup, then all its soft-deleted Categories, then all soft-deleted BudgetLines whose `CategoryGroupId` matches.
+
+#### Scenario: Happy path `@integration`
+- GIVEN soft-deleted CategoryGroup with 2 soft-deleted Categories, each with 2 soft-deleted BudgetLines
+- WHEN POST `.../category-groups/{groupId}/restore`
+- THEN HTTP 200; all entities have DeletedAt = null
+
+### REQ-RST-04: RestoreCategory
+
+Route: `POST /budgets/{budgetId}/categories/{categoryId}/restore`
+
+Restores Category and all soft-deleted BudgetLines whose `CategoryId` matches.
+
+#### Scenario: Parent-deleted guard `@integration`
+- GIVEN soft-deleted Category whose parent CategoryGroup is soft-deleted
+- WHEN POST `.../categories/{categoryId}/restore`
+- THEN HTTP 409 Conflict, error code `PARENT_IS_DELETED`
+
+### REQ-RST-05: RestoreBudgetLine
+
+Route: `POST /budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/restore`
+
+Restores only the specified BudgetLine.
+
+#### Scenario: Parent-deleted guard `@integration`
+- GIVEN soft-deleted BudgetLine whose parent Period is soft-deleted
+- WHEN POST `.../budget-lines/{lineId}/restore`
+- THEN HTTP 409 Conflict, error code `PARENT_IS_DELETED`
+
+### REQ-RST-06: includeExecutionRecords Parameter
+
+All four restore endpoints MUST accept `includeExecutionRecords` (bool, default false) as a query parameter. The parameter is present in the API contract today for forward-compatibility with `budget-execution`. Handlers MUST ignore this flag (no-op).
+
+#### Scenario: Parameter accepted and ignored `@unit`
+- GIVEN any restore endpoint
+- WHEN called with ?includeExecutionRecords=true
+- THEN restore completes as if parameter were false (no-op)
+
+---
+
+## 9. Read Endpoints
 
 ### REQ-READ-01: List Cycles
 

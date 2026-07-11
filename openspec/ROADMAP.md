@@ -105,7 +105,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 5. `budget-structure-patch` 🔄 in progress
+### 5. `budget-structure-patch` ✅ archived 2026-07-11
 
 **What**: Schema and endpoint patch on top of `budget-structure` — closes gaps discovered during design review before `budget-execution` can start.
 
@@ -118,10 +118,12 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 - `BudgetLine` gains `DisplayOrder (int)` + `ReorderBudgetLines` endpoint
 - Restore endpoints (cascading) for Cycle, CategoryGroup, Category, BudgetLine — each with forward-compat `includeExecutionRecords: bool` no-op param
 - `Restore()` method on all soft-deletable entities; parent-deleted guard (409) on direct parent
+- 66 implementation tasks completed across 3 chained PRs; 218 tests passing
+- Verify: PASS WITH WARNINGS (0 CRITICAL, 3 pre-documented intentional deviations)
 
 **Scope out**: Audit logging (→ `audit-log`), ExecutionRecord restore logic (→ `budget-execution`), Currency management UI.
 
-**SDD artifacts**: `openspec/changes/budget-structure-patch/` (proposal ✅, spec ✅)
+**SDD artifacts**: `openspec/changes/archive/2026-07-11-budget-structure-patch/` — fully archived with all artifacts and verify report
 
 ---
 
