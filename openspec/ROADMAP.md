@@ -81,20 +81,25 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 4. `budget-structure-ui` 🔄 in progress — branch `feat/budget-structure-ui`
+### 4. `budget-structure-ui` ✅ archived 2026-07-11
 
 **What**: Frontend for all budget structure management.
 
 **Scope in**:
-- App layout: top navbar + sidebar (AppLayout, NavBar, SideBar, BudgetSelector)
-- Auth fixes: Login/Register field alignment (`w-full`), password strength indicator, 422 error mapping
+- App layout: `AppLayout` (authenticated) and `PublicLayout` (public) with top navbar, budget switcher, page-actions slot, notification bell infrastructure, user dropdown
+- Auth fixes: Login/Register field alignment with daisyUI v5, `@` escape in i18n placeholders, i18n key for language label
 - Budget structure CRUD views: CycleListView, CycleDetailView (periods), CategoryTreeView, BudgetLinesView
-- Reusable components: BudgetTabs, EmptyState, form modals per entity, BudgetLineRow
-- **Inline editing for BudgetLines**: double-click row → inline edit (Save/Cancel icons); `+` button → inline add row with all fields; Pencil icon still opens modal for full edit
+- Reusable components: BudgetTabs (Cycles/Categories), EmptyState, form modals per entity, BudgetLineRow
+- **Inline editing for all entities**: double-click row → inline edit modal or form; Pencil icon opens full modal; `+` button inline creates row
 - Icon actions across all views (lucide-vue-next): Pencil (edit), Trash2 (delete), Star (set active), List (view lines), RefreshCw (change status), Check (save), X (cancel)
 - Currency constrained to GTQ/USD (select, not free text)
-- Pinia store for budget structure state
-- Vitest component tests + Playwright E2E for structure workflows
+- `LineType` = Expense, LongTermSavings, PreventiveSavings
+- Drag-and-drop reorder for CategoryGroups and Categories via `vue-draggable-plus`
+- Pinia `budgetStructure.store` for budget structure state; `layoutStore` and `notificationStore` for shared UI
+- `useRoleGate` composable for admin/operator/read-only role gating
+- Vitest: 88 tests (34 unit + 54 component); Playwright E2E: 16+ tests (5 spec files, deferred execution)
+- Scalar API reference at `/scalar/v1`
+- i18n: `budgetStructure.*` namespace in EN and ES
 
 **Scope out**: Execution entries (→ `budget-execution-ui`), account/fund management (→ `current-situation-ui`).
 
