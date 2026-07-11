@@ -1,7 +1,7 @@
 namespace MyBudget.Features.SharedKernel.Entities;
 
 /// <summary>A named budget owned by a user. Created automatically at registration.</summary>
-public sealed class Budget : BaseEntity
+public sealed class Budget : BaseEntity, IAuditableEntity
 {
     public string Name { get; private set; } = string.Empty;
 
@@ -13,6 +13,8 @@ public sealed class Budget : BaseEntity
     public ICollection<Invitation> Invitations { get; private set; } = new List<Invitation>();
 
     private Budget() { }
+
+    public Guid? ResolveBudgetId() => Id;
 
     public static Budget Create(string name, Guid ownerId)
     {

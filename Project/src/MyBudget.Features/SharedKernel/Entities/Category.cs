@@ -1,6 +1,6 @@
 namespace MyBudget.Features.SharedKernel.Entities;
 
-public sealed class Category : BaseEntity
+public sealed class Category : BaseEntity, IAuditableEntity
 {
     public Guid CategoryGroupId { get; private set; }
     public string Name { get; private set; } = string.Empty;
@@ -11,6 +11,12 @@ public sealed class Category : BaseEntity
     public CategoryGroup? CategoryGroup { get; private set; }
 
     private Category() { }
+
+    /// <summary>
+    /// BudgetId is not directly available on Category (Category → CategoryGroup → Budget).
+    /// Returns null; BudgetId is resolved via Dapper fallback at audit time.
+    /// </summary>
+    public Guid? ResolveBudgetId() => null;
 
     public static Category Create(Guid categoryGroupId, string name, int displayOrder)
     {

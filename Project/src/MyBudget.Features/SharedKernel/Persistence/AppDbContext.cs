@@ -23,6 +23,8 @@ public sealed class AppDbContext : DbContext
     public DbSet<Currency>             Currencies            => Set<Currency>();
     public DbSet<BudgetLine>           BudgetLines           => Set<BudgetLine>();
     public DbSet<BudgetLineRevision>   BudgetLineRevisions   => Set<BudgetLineRevision>();
+    public DbSet<AuditLog>             AuditLogs             => Set<AuditLog>();
+    public DbSet<SecurityAuditLog>     SecurityAuditLogs     => Set<SecurityAuditLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

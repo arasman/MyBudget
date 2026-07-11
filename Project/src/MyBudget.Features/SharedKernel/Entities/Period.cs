@@ -1,6 +1,6 @@
 namespace MyBudget.Features.SharedKernel.Entities;
 
-public sealed class Period : BaseEntity
+public sealed class Period : BaseEntity, IAuditableEntity
 {
     public Guid CycleId { get; private set; }
     public string Name { get; private set; } = string.Empty;
@@ -15,6 +15,12 @@ public sealed class Period : BaseEntity
     public ICollection<BudgetLine> BudgetLines { get; private set; } = new List<BudgetLine>();
 
     private Period() { }
+
+    /// <summary>
+    /// BudgetId is not directly available on Period (Period → Cycle → Budget).
+    /// Returns null; BudgetId is resolved via Dapper fallback at audit time.
+    /// </summary>
+    public Guid? ResolveBudgetId() => null;
 
     public static Period Create(Guid cycleId, string name, int periodNumber, DateOnly startDate, DateOnly endDate)
     {

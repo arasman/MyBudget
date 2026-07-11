@@ -4,7 +4,7 @@ namespace MyBudget.Features.SharedKernel.Entities;
 /// Immutable append-only revision record for a BudgetLine.
 /// Never soft-deleted — cascades with BudgetLine physical delete.
 /// </summary>
-public sealed class BudgetLineRevision : BaseEntity
+public sealed class BudgetLineRevision : BaseEntity, IAuditableEntity
 {
     public Guid BudgetLineId { get; private set; }
     public decimal BudgetedAmount { get; private set; }
@@ -17,6 +17,12 @@ public sealed class BudgetLineRevision : BaseEntity
     public Currency? Currency { get; private set; }
 
     private BudgetLineRevision() { }
+
+    /// <summary>
+    /// BudgetId is not directly available on BudgetLineRevision (Revision → BudgetLine → Period → Cycle → Budget).
+    /// Returns null; BudgetId is resolved via Dapper fallback at audit time.
+    /// </summary>
+    public Guid? ResolveBudgetId() => null;
 
     public static BudgetLineRevision Create(
         Guid budgetLineId,

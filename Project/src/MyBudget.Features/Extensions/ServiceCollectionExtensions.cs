@@ -11,6 +11,7 @@ using MyBudget.Features.SharedKernel.Auth.Authorization;
 using MyBudget.Features.SharedKernel.Caching;
 using MyBudget.Features.SharedKernel.Email;
 using MyBudget.Features.SharedKernel.Persistence;
+using MyBudget.Features.SharedKernel.Services;
 using MyBudget.Features.SharedKernel.Telemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -59,6 +60,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<EmailChannel>();
         services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<EmailChannel>());
         services.AddHostedService<EmailBackgroundService>();
+
+        // Audit log — current user, security audit writer, retention policy, retention cleanup
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, HttpContextCurrentUserService>();
+        services.AddScoped<ISecurityAuditWriter, NullSecurityAuditWriter>();
+        services.AddSingleton<IAuditRetentionPolicy, AppSettingsAuditRetentionPolicy>();
+        services.AddHostedService<AuditRetentionService>();
 
         // JWT options + token service
         services.Configure<JwtOptions>(configuration.GetSection("JWT"));

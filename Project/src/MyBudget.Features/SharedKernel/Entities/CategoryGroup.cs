@@ -1,6 +1,6 @@
 namespace MyBudget.Features.SharedKernel.Entities;
 
-public sealed class CategoryGroup : BaseEntity
+public sealed class CategoryGroup : BaseEntity, IAuditableEntity
 {
     public Guid BudgetId { get; private set; }
     public string Name { get; private set; } = string.Empty;
@@ -12,6 +12,8 @@ public sealed class CategoryGroup : BaseEntity
     public ICollection<Category> Categories { get; private set; } = new List<Category>();
 
     private CategoryGroup() { }
+
+    public Guid? ResolveBudgetId() => BudgetId;
 
     public static CategoryGroup Create(Guid budgetId, string name, int displayOrder)
     {
