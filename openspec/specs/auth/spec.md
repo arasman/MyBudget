@@ -71,6 +71,12 @@ The system MUST create a user account, hash the password with BCrypt (workFactor
 - WHEN `POST /api/auth/register` is called
 - THEN the system returns `422 Unprocessable Entity` with field error `preferredLocale: AUTH_LOCALE_UNSUPPORTED`
 
+#### Scenario: Email placeholder renders without vue-i18n warning
+
+- GIVEN the register view renders with locale "es"
+- WHEN the email input placeholder is displayed
+- THEN no vue-i18n linked-message warning appears in the browser console
+
 **Error responses:**
 | Condition | HTTP | Error Code |
 |---|---|---|
@@ -80,7 +86,20 @@ The system MUST create a user account, hash the password with BCrypt (workFactor
 | Locale not supported | 422 | `AUTH_LOCALE_UNSUPPORTED` |
 
 **i18n keys (backend `.resx`):** `RegisterUser.EmailTaken`, `RegisterUser.PasswordTooWeak`, `RegisterUser.LocaleUnsupported`
-**i18n keys (frontend `en.json` / `es.json`):** `auth.register.title`, `auth.register.emailPlaceholder`, `auth.register.passwordPlaceholder`, `auth.register.firstNamePlaceholder`, `auth.register.lastNamePlaceholder`, `auth.register.submit`, `auth.register.loginLink`, `auth.register.successMessage`
+**i18n keys (frontend `en.json` / `es.json`):** `auth.register.title`, `auth.register.emailPlaceholder`, `auth.register.passwordPlaceholder`, `auth.register.firstNamePlaceholder`, `auth.register.lastNamePlaceholder`, `auth.register.submit`, `auth.register.loginLink`, `auth.register.successMessage`, `auth.register.languageLabel`
+
+---
+
+### Requirement: REG-I18N-1 — Language Label i18n Key
+
+The register view MUST use the i18n key `auth.register.languageLabel` for the language selector label. No hardcoded label text MAY appear at `RegisterView.vue:152` or any equivalent location.
+
+#### Scenario: Language label rendered from i18n
+
+- GIVEN locale is "es"
+- WHEN the register view renders
+- THEN the language selector label shows the Spanish translation for `auth.register.languageLabel`
+- AND no hardcoded "Language" string is present in the DOM
 
 ---
 
@@ -88,7 +107,7 @@ The system MUST create a user account, hash the password with BCrypt (workFactor
 
 ### Requirement: LOGIN-1 — Credential Verification and Token Issuance
 
-The system MUST verify credentials, issue a JWT access token (15-minute TTL) and a rotating refresh token (7-day TTL, single-use, hashed in DB), and update `LastLoginAt`.
+The system MUST verify credentials, issue a JWT access token (15-minute TTL) and a rotating refresh token (7-day TTL, single-use, hashed in DB), and update `LastLoginAt`. The `auth.login.emailPlaceholder` i18n key MUST escape `@` as `{'@'}` to prevent vue-i18n linked-message errors.
 
 **Field validation rules:**
 | Field | Rule |
@@ -124,6 +143,12 @@ The system MUST verify credentials, issue a JWT access token (15-minute TTL) and
 - GIVEN a login request with `password` omitted
 - WHEN `POST /api/auth/login` is called
 - THEN `422 Unprocessable Entity` is returned with field error `password: FIELD_REQUIRED`
+
+#### Scenario: Email placeholder renders without vue-i18n warning
+
+- GIVEN the login view renders with locale "en"
+- WHEN the email input placeholder is displayed
+- THEN no vue-i18n linked-message warning appears in the browser console
 
 **Error responses:**
 | Condition | HTTP | Error Code |

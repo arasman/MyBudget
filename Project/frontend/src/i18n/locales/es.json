@@ -7,10 +7,13 @@
     "cancel": "Cancelar",
     "confirm": "Confirmar"
   },
+  "nav": {
+    "backToHome": "Volver al inicio"
+  },
   "auth": {
     "login": {
       "title": "Iniciar sesión",
-      "emailPlaceholder": "tu@ejemplo.com",
+      "emailPlaceholder": "tu{'@'}ejemplo.com",
       "passwordPlaceholder": "Contraseña",
       "submit": "Ingresar",
       "registerLink": "¿No tienes cuenta? Regístrate",
@@ -20,13 +23,22 @@
     },
     "register": {
       "title": "Crear cuenta",
-      "emailPlaceholder": "tu@ejemplo.com",
+      "emailPlaceholder": "tu{'@'}ejemplo.com",
       "passwordPlaceholder": "Contraseña (mín. 8 caracteres, 1 mayúscula, 1 dígito)",
       "firstNamePlaceholder": "Nombre",
       "lastNamePlaceholder": "Apellido",
+      "languageLabel": "Idioma",
       "submit": "Crear cuenta",
       "loginLink": "¿Ya tienes cuenta? Inicia sesión",
-      "successMessage": "¡Cuenta creada! Bienvenido a MyBudget."
+      "successMessage": "¡Cuenta creada! Bienvenido a MyBudget.",
+      "emailTaken": "Este correo ya está registrado.",
+      "passwordTooWeak": "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un dígito.",
+      "passwordStrength": {
+        "ruleLength": "Al menos 8 caracteres",
+        "ruleUppercase": "Una letra mayúscula (A–Z)",
+        "ruleLowercase": "Una letra minúscula (a–z)",
+        "ruleDigit": "Un número (0–9)"
+      }
     },
     "loginLabel": "Iniciar sesión",
     "logoutLabel": "Cerrar sesión",
@@ -34,6 +46,103 @@
     "passwordLabel": "Contraseña",
     "loginButton": "Ingresar",
     "loginError": "Email o contraseña inválidos"
+  },
+  "budgetStructure": {
+    "cycles": {
+      "title": "Ciclos",
+      "create": "Nuevo ciclo",
+      "edit": "Editar ciclo",
+      "delete": "Eliminar ciclo",
+      "confirmDelete": "¿Estás seguro de que deseas eliminar este ciclo?",
+      "setActive": "Establecer como activo",
+      "viewPeriods": "Ver períodos",
+      "name": "Nombre",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "active": "Activo",
+      "periodCount": "Períodos",
+      "empty": {
+        "title": "Aún no hay ciclos",
+        "description": "Crea tu primer ciclo para comenzar a organizar tu presupuesto.",
+        "action": "Nuevo ciclo"
+      }
+    },
+    "periods": {
+      "title": "Períodos",
+      "create": "Nuevo período",
+      "edit": "Editar período",
+      "delete": "Eliminar período",
+      "confirmDelete": "¿Estás seguro de que deseas eliminar este período?",
+      "changeStatus": "Cambiar estado",
+      "name": "Nombre",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "status": "Estado",
+      "viewLines": "Ver líneas de presupuesto",
+      "empty": {
+        "title": "Aún no hay períodos",
+        "description": "Agrega períodos a este ciclo para organizar tu presupuesto en el tiempo.",
+        "action": "Nuevo período"
+      }
+    },
+    "categoryGroups": {
+      "title": "Grupos de categorías",
+      "create": "Nuevo grupo",
+      "edit": "Editar grupo",
+      "delete": "Eliminar grupo",
+      "confirmDelete": "¿Estás seguro de que deseas eliminar este grupo? También se eliminarán todas las categorías que contiene.",
+      "name": "Nombre",
+      "reorder": "Arrastra para reordenar grupos",
+      "empty": {
+        "title": "Aún no hay grupos de categorías",
+        "description": "Crea grupos de categorías para organizar las categorías de tu presupuesto.",
+        "action": "Nuevo grupo"
+      }
+    },
+    "categories": {
+      "create": "Nueva categoría",
+      "edit": "Editar categoría",
+      "delete": "Eliminar categoría",
+      "confirmDelete": "¿Estás seguro de que deseas eliminar esta categoría?",
+      "name": "Nombre",
+      "reorder": "Arrastra para reordenar categorías"
+    },
+    "budgetLines": {
+      "title": "Líneas de presupuesto",
+      "create": "Nueva línea",
+      "edit": "Editar línea",
+      "delete": "Eliminar línea",
+      "confirmDelete": "¿Estás seguro de que deseas eliminar esta línea de presupuesto?",
+      "name": "Nombre",
+      "lineType": "Tipo",
+      "isRecurring": "Recurrente",
+      "budgetedAmount": "Monto presupuestado",
+      "currency": "Moneda",
+      "note": "Nota",
+      "types": {
+        "expense": "Gasto",
+        "longTermSavings": "Ahorro a largo plazo",
+        "preventiveSavings": "Ahorro preventivo"
+      },
+      "empty": {
+        "title": "Aún no hay líneas de presupuesto",
+        "description": "Agrega líneas de presupuesto para registrar ingresos y gastos de este período.",
+        "action": "Nueva línea"
+      }
+    },
+    "selection": {
+      "title": "Mis presupuestos",
+      "singleRedirect": "Redirigiendo a tu presupuesto...",
+      "noBudgets": "Aún no eres miembro de ningún presupuesto.",
+      "selectBudget": "Selecciona un presupuesto para continuar"
+    },
+    "common": {
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "actions": "Acciones",
+      "noPermission": "No tienes permiso para realizar esta acción."
+    }
   },
   "invitation": {
     "modal": {

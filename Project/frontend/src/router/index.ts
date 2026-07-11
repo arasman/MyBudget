@@ -1,32 +1,96 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import AppLayout from '@/layouts/AppLayout.vue'
+import PublicLayout from '@/layouts/PublicLayout.vue'
 import LoginView from '@/views/LoginView.vue'
-import HomeView from '@/views/HomeView.vue'
+import BudgetSelectionView from '@/features/budget-structure/views/BudgetSelectionView.vue'
 
 const routes: RouteRecordRaw[] = [
+  // Authenticated routes — wrapped by AppLayout
+  {
+    path: '/',
+    component: AppLayout,
+    meta: { requiresAuth: true },
+    children: [
+      // Budget selection — root route for authenticated users
+      {
+        path: '',
+        name: 'BudgetSelection',
+        component: BudgetSelectionView,
+      },
+      // Budget-scoped routes
+      {
+        path: 'budgets/:budgetId',
+        children: [
+          {
+            path: '',
+            redirect: { name: 'CycleList' },
+          },
+          {
+            path: 'cycles',
+            name: 'CycleList',
+            component: () =>
+              import('@/features/budget-structure/views/CycleListView.vue'),
+          },
+          {
+            path: 'cycles/:cycleId',
+            name: 'CycleDetail',
+            component: () =>
+              import('@/features/budget-structure/views/CycleDetailView.vue'),
+          },
+          {
+            path: 'categories',
+            name: 'CategoryTree',
+            component: () =>
+              import('@/features/budget-structure/views/CategoryTreeView.vue'),
+          },
+          {
+            path: 'cycles/:cycleId/periods/:periodId/lines',
+            name: 'BudgetLines',
+            component: () =>
+              import('@/features/budget-structure/views/BudgetLinesView.vue'),
+          },
+        ],
+      },
+    ],
+  },
+
+  // Public routes — wrapped by PublicLayout
   {
     path: '/login',
-    name: 'Login',
-    component: LoginView,
-    meta: { public: true },
+    component: PublicLayout,
+    children: [
+      {
+        path: '',
+        name: 'Login',
+        component: LoginView,
+        meta: { public: true },
+      },
+    ],
   },
   {
     path: '/register',
-    name: 'Register',
-    component: () => import('@/views/RegisterView.vue'),
-    meta: { public: true },
+    component: PublicLayout,
+    children: [
+      {
+        path: '',
+        name: 'Register',
+        component: () => import('@/views/RegisterView.vue'),
+        meta: { public: true },
+      },
+    ],
   },
   {
     path: '/invitations/accept',
-    name: 'AcceptInvitation',
-    component: () => import('@/views/AcceptInvitationView.vue'),
-    meta: { public: true },
-  },
-  {
-    path: '/',
-    name: 'Home',
-    component: HomeView,
-    meta: { requiresAuth: true },
+    component: PublicLayout,
+    children: [
+      {
+        path: '',
+        name: 'AcceptInvitation',
+        component: () => import('@/views/AcceptInvitationView.vue'),
+        meta: { public: true },
+      },
+    ],
   },
 ]
 
