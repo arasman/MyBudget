@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-09
+**Last updated**: 2026-07-11
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -105,7 +105,44 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 5. `budget-execution` ⏳ planned
+### 5. `budget-structure-patch` 🔄 in progress
+
+**What**: Schema and endpoint patch on top of `budget-structure` — closes gaps discovered during design review before `budget-execution` can start.
+
+**Scope in**:
+- `Currency` reference table (Id, Code, Name, Symbol) seeded with GTQ/Quetzal/Q, USD/US Dollar/$, EUR/Euro/€
+- `GET /budgets/{budgetId}/currencies` — read-only list endpoint
+- `Cycle` gains `DefaultCurrencyId` (FK, required), `AlternateCurrencyId` (FK, nullable), `ExchangeRate` (decimal(18,6), nullable); pair rule: both or neither
+- ExchangeRate semantics: X DefaultCurrency = 1 AlternateCurrency (e.g., 7.5 GTQ = 1 USD)
+- `BudgetLineRevision.Currency varchar(3)` → `CurrencyId FK`; existing revision rows deleted in migration (test data)
+- `BudgetLine` gains `DisplayOrder (int)` + `ReorderBudgetLines` endpoint
+- Restore endpoints (cascading) for Cycle, CategoryGroup, Category, BudgetLine — each with forward-compat `includeExecutionRecords: bool` no-op param
+- `Restore()` method on all soft-deletable entities; parent-deleted guard (409) on direct parent
+
+**Scope out**: Audit logging (→ `audit-log`), ExecutionRecord restore logic (→ `budget-execution`), Currency management UI.
+
+**SDD artifacts**: `openspec/changes/budget-structure-patch/` (proposal ✅, spec ✅)
+
+---
+
+### 6. `audit-log` ⏳ planned
+
+**What**: Cross-cutting audit trail for all write operations across the application.
+
+**Domain**: Financial app requires traceability — Who/What/When/Where for every mutation (create, update, delete, restore). Especially critical for soft-delete and restore operations on budget entities.
+
+**Scope in** *(requires full SDD exploration)*:
+- Structured audit event: Who (UserId, role), What (entity type + id + action + diff), When (UTC timestamp), Where (IP, request origin)
+- Covers all structural entities + execution records once budget-execution is live
+- Backend: `AuditLog` entity + middleware or behavior interceptor (MediatR pipeline)
+- Query endpoint: `GET /budgets/{budgetId}/audit-log` (filtered by entity, date range, user)
+- RBAC: `budget:admin` reads audit log
+
+**Scope out**: Frontend audit viewer (→ deferred), real-time audit alerts (→ MVP B).
+
+---
+
+### 7. `budget-execution` ⏳ planned
 
 **What**: Backend for recording actual spending (ejecución) against budget lines.
 
@@ -123,7 +160,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 6. `budget-execution-ui` ⏳ planned
+### 8. `budget-execution-ui` ⏳ planned
 
 **What**: Frontend for recording and viewing actual spending per budget line.
 
@@ -134,7 +171,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 7. `multi-budget` ⏳ planned
+### 9. `multi-budget` ⏳ planned
 
 **What**: Allow each user to own and belong to multiple budgets.
 
@@ -149,7 +186,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 8. `current-situation` ⏳ planned
+### 10. `current-situation` ⏳ planned
 
 **What**: Backend for accounts, funds, balances, and payment methods.
 
@@ -165,7 +202,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 9. `current-situation-ui` ⏳ planned
+### 11. `current-situation-ui` ⏳ planned
 
 **What**: Frontend for account balances, payment methods, and situation view.
 
@@ -176,7 +213,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 10. `dashboard` ⏳ planned
+### 12. `dashboard` ⏳ planned
 
 **What**: Key charts and summary KPIs for the budget.
 

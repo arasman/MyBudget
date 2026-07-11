@@ -12,9 +12,13 @@ public sealed class BudgetLineRevisionConfiguration : IEntityTypeConfiguration<B
 
         builder.HasKey(r => r.Id);
 
-        builder.Property(r => r.Currency)
-            .IsRequired()
-            .HasMaxLength(3);
+        builder.Property(r => r.CurrencyId)
+            .IsRequired();
+
+        builder.HasOne(r => r.Currency)
+            .WithMany()
+            .HasForeignKey(r => r.CurrencyId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(r => r.BudgetedAmount)
             .HasPrecision(18, 2);

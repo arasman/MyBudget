@@ -17,7 +17,7 @@ test.describe('Budget Structure — Budget Lines', () => {
 
     // Create cycle via API
     const cycleResp = await page.request.post(`/api/budgets/${budgetId}/cycles`, {
-      data: { name: 'Lines Cycle', startDate: '2024-01-01', endDate: '2024-12-31' },
+      data: { name: 'Lines Cycle', startDate: '2024-01-01', endDate: '2024-12-31', defaultCurrencyId: '11111111-1111-1111-1111-111111111111' },
       headers,
     })
     expect(cycleResp.status()).toBe(201)

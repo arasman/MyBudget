@@ -20,5 +20,14 @@ public sealed class UpdateCycleValidator : AbstractValidator<UpdateCycleCommand>
             .Must((cmd, start) => start < cmd.EndDate)
             .WithErrorCode("CYCLE_INVALID_DATE_RANGE")
             .WithMessage("StartDate must be before EndDate.");
+
+        RuleFor(x => x.DefaultCurrencyId)
+            .NotEmpty().WithErrorCode("CYC_DEFAULT_CURRENCY_REQUIRED");
+
+        RuleFor(x => x)
+            .Must(cmd => cmd.AlternateCurrencyId.HasValue == cmd.ExchangeRate.HasValue)
+            .WithErrorCode("CYC_PAIR_INCOMPLETE")
+            .WithMessage("AlternateCurrencyId and ExchangeRate must both be provided or both omitted.")
+            .WithName("AlternateCurrencyId");
     }
 }

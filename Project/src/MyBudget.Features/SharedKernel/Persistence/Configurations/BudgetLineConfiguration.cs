@@ -19,6 +19,9 @@ public sealed class BudgetLineConfiguration : IEntityTypeConfiguration<BudgetLin
         builder.Property(l => l.LineType)
             .HasConversion<int>();
 
+        builder.Property(l => l.DisplayOrder)
+            .IsRequired();
+
         builder.HasQueryFilter(l => l.DeletedAt == null);
 
         builder.HasIndex(l => l.PeriodId)

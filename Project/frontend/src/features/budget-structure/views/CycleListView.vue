@@ -142,6 +142,7 @@
     <CycleForm
       v-if="showForm"
       :model-value="editingCycle"
+      :budget-id="budgetId"
       @submit="handleFormSubmit"
       @cancel="closeModal"
     />
@@ -210,10 +211,12 @@ function handleStartEdit(cycle: CycleListItem): void {
 }
 
 async function handleInlineSave(cycleId: string): Promise<void> {
+  const existing = store.cycles.find((c) => c.id === cycleId)
   await store.updateCycle(budgetId, cycleId, {
     name: inlineEditForm.name,
     startDate: inlineEditForm.startDate,
     endDate: inlineEditForm.endDate,
+    defaultCurrencyId: existing?.defaultCurrency?.id ?? '11111111-1111-1111-1111-111111111111',
   })
   inlineEditingCycleId.value = null
 }
@@ -253,6 +256,7 @@ async function handleFormSubmit(payload: {
   name: string
   startDate: DateString
   endDate: DateString
+  defaultCurrencyId: string
 }): Promise<void> {
   if (editingCycle.value) {
     await store.updateCycle(budgetId, editingCycle.value.id, payload)

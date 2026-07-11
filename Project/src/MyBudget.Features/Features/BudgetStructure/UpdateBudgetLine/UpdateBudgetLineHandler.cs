@@ -28,11 +28,14 @@ public sealed class UpdateBudgetLineHandler : IRequestHandler<UpdateBudgetLineCo
         if (line.Period.IsClosed)
             return Result<Guid>.Failure("PERIOD_CLOSED");
 
+        // Resolve CurrencyId: explicit or fall back to Cycle.DefaultCurrencyId
+        var currencyId = cmd.CurrencyId ?? line.Period.Cycle.DefaultCurrencyId;
+
         // Update line fields
         line.Update(cmd.CategoryGroupId, cmd.CategoryId, cmd.Name, cmd.LineType, cmd.IsRecurring);
 
         // ADR-BS-06: Insert NEW BudgetLineRevision — never modify existing ones
-        var revision = BudgetLineRevision.Create(line.Id, cmd.BudgetedAmount, cmd.Currency);
+        var revision = BudgetLineRevision.Create(line.Id, cmd.BudgetedAmount, currencyId);
         _db.BudgetLineRevisions.Add(revision);
 
         await _db.SaveChangesAsync(ct);

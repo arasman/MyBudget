@@ -120,8 +120,9 @@ public sealed class BudgetLineTests : BudgetStructureTestBase
     }
 
     [Fact]
-    public async Task CreateBudgetLine_InvalidCurrency_Returns422()
+    public async Task CreateBudgetLine_NoCurrencyId_DefaultsToCycleDefaultCurrency_Returns201()
     {
+        // When currencyId is omitted the handler resolves Cycle.DefaultCurrencyId (GTQ seed).
         var (_, budgetId) = await SetupOwnerAsync("bl-create5@example.com");
         var cycleId       = await CreateCycleAsync(budgetId);
         var periodId      = await CreatePeriodAsync(budgetId, cycleId);
@@ -136,10 +137,12 @@ public sealed class BudgetLineTests : BudgetStructureTestBase
                 isRecurring     = false,
                 categoryGroupId = groupId,
                 budgetedAmount  = 1500m,
-                currency        = "EUR",  // invalid — only GTQ and USD allowed
+                // currencyId intentionally omitted — defaults to Cycle.DefaultCurrencyId
             });
 
-        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+        var body = await response.Content.ReadFromJsonAsync<IdResponse>(JsonOpts);
+        body!.Id.ShouldNotBe(Guid.Empty);
     }
 
     // ── REQ-BL-03: Update BudgetLine ─────────────────────────────────────────
@@ -257,5 +260,6 @@ public sealed class BudgetLineTests : BudgetStructureTestBase
         Guid     CategoryGroupId,
         Guid?    CategoryId,
         decimal? BudgetedAmount,
-        string?  Currency);
+        string?  CurrencyCode,
+        string?  CurrencySymbol);
 }

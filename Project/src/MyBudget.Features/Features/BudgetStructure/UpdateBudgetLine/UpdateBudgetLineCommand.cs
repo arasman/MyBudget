@@ -14,5 +14,5 @@ public sealed record UpdateBudgetLineCommand(
     LineType LineType,
     bool     IsRecurring,
     decimal  BudgetedAmount,
-    string   Currency
+    Guid?    CurrencyId
 ) : IRequest<Result<Guid>>;

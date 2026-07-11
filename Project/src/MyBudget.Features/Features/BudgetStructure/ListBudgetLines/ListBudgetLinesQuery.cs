@@ -14,6 +14,7 @@ public sealed record BudgetLineResponse(
     Guid      CategoryGroupId,
     Guid?     CategoryId,
     decimal?  BudgetedAmount,
-    string?   Currency,
+    string?   CurrencyCode,
+    string?   CurrencySymbol,
     DateTimeOffset? RevisedAt,
     string?   Note);

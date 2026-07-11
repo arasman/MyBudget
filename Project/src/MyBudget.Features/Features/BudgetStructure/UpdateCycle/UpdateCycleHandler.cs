@@ -37,7 +37,8 @@ public sealed class UpdateCycleHandler : IRequestHandler<UpdateCycleCommand, Res
         if (periodOutOfRange)
             return Result<Guid>.Failure("CYCLE_PERIOD_OUT_OF_RANGE");
 
-        cycle.Update(cmd.Name, cmd.StartDate, cmd.EndDate);
+        cycle.Update(cmd.Name, cmd.StartDate, cmd.EndDate,
+            cmd.DefaultCurrencyId, cmd.AlternateCurrencyId, cmd.ExchangeRate);
         await _db.SaveChangesAsync(ct);
 
         return Result<Guid>.Success(cycle.Id);

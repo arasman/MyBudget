@@ -38,6 +38,13 @@ export function formatDate(date: DateString, locale: string): string {
 // Cycle entities
 // ---------------------------------------------------------------------------
 
+export interface CurrencyItem {
+  id: string
+  code: string
+  name: string
+  symbol: string
+}
+
 export interface CycleListItem {
   id: string
   name: string
@@ -45,6 +52,7 @@ export interface CycleListItem {
   endDate: DateString
   isActive: boolean
   periodCount: number
+  defaultCurrency?: CurrencyItem
 }
 
 export interface CycleDetail extends Omit<CycleListItem, 'periodCount'> {
@@ -89,7 +97,8 @@ export interface BudgetLineResponse {
   categoryGroupId: string
   categoryId?: string
   budgetedAmount?: number
-  currency?: string
+  currencyCode?: string
+  currencySymbol?: string
   revisedAt?: DateString
   note?: string
 }
@@ -102,12 +111,18 @@ export interface CreateCyclePayload {
   name: string
   startDate: DateString
   endDate: DateString
+  defaultCurrencyId: string
+  alternateCurrencyId?: string
+  exchangeRate?: number
 }
 
 export interface UpdateCyclePayload {
   name: string
   startDate: DateString
   endDate: DateString
+  defaultCurrencyId: string
+  alternateCurrencyId?: string
+  exchangeRate?: number
 }
 
 export interface CreatePeriodPayload {

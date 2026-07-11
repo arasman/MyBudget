@@ -26,17 +26,20 @@ public static class UpdateCycleEndpoint
         IMediator mediator,
         CancellationToken ct)
     {
-        var cmd    = new UpdateCycleCommand(id, cycleId, body.Name, body.StartDate, body.EndDate);
+        var cmd    = new UpdateCycleCommand(
+            id, cycleId,
+            body.Name, body.StartDate, body.EndDate,
+            body.DefaultCurrencyId, body.AlternateCurrencyId, body.ExchangeRate);
         var result = await mediator.Send(cmd, ct);
 
         if (!result.IsSuccess)
         {
             return result.Error switch
             {
-                "CYCLE_NOT_FOUND"          => Results.NotFound(new { error = result.Error }),
-                "CYCLE_DATE_OVERLAP"       => Results.UnprocessableEntity(new { error = result.Error }),
-                "CYCLE_PERIOD_OUT_OF_RANGE"=> Results.UnprocessableEntity(new { error = result.Error }),
-                _                          => Results.Problem(result.Error, statusCode: StatusCodes.Status422UnprocessableEntity)
+                "CYCLE_NOT_FOUND"           => Results.NotFound(new { error = result.Error }),
+                "CYCLE_DATE_OVERLAP"        => Results.UnprocessableEntity(new { error = result.Error }),
+                "CYCLE_PERIOD_OUT_OF_RANGE" => Results.UnprocessableEntity(new { error = result.Error }),
+                _                           => Results.Problem(result.Error, statusCode: StatusCodes.Status422UnprocessableEntity)
             };
         }
 
@@ -44,4 +47,10 @@ public static class UpdateCycleEndpoint
     }
 }
 
-public sealed record UpdateCycleRequest(string Name, DateOnly StartDate, DateOnly EndDate);
+public sealed record UpdateCycleRequest(
+    string   Name,
+    DateOnly StartDate,
+    DateOnly EndDate,
+    Guid     DefaultCurrencyId,
+    Guid?    AlternateCurrencyId,
+    decimal? ExchangeRate);

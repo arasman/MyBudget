@@ -44,17 +44,19 @@ public sealed class ListBudgetLinesHandler
             """
             SELECT bl."Id", bl."Name", bl."LineType", bl."IsRecurring",
                    bl."CategoryGroupId", bl."CategoryId",
-                   r."BudgetedAmount", r."Currency", r."RevisedAt", r."Note"
+                   r."BudgetedAmount", r."CurrencyCode", r."CurrencySymbol", r."RevisedAt", r."Note"
             FROM "BudgetLines" bl
             LEFT JOIN LATERAL (
-                SELECT r2."BudgetedAmount", r2."Currency", r2."RevisedAt", r2."Note"
+                SELECT r2."BudgetedAmount", c."Code" AS "CurrencyCode", c."Symbol" AS "CurrencySymbol",
+                       r2."RevisedAt", r2."Note"
                 FROM "BudgetLineRevisions" r2
+                LEFT JOIN "Currencies" c ON r2."CurrencyId" = c."Id"
                 WHERE r2."BudgetLineId" = bl."Id"
                 ORDER BY r2."RevisedAt" DESC
                 LIMIT 1
             ) r ON true
             WHERE bl."PeriodId" = @PeriodId AND bl."DeletedAt" IS NULL
-            ORDER BY bl."Name"
+            ORDER BY bl."DisplayOrder", bl."Name"
             """,
             new { query.PeriodId });
 
@@ -67,7 +69,8 @@ public sealed class ListBudgetLinesHandler
                 r.CategoryGroupId,
                 r.CategoryId,
                 r.BudgetedAmount,
-                r.Currency,
+                r.CurrencyCode,
+                r.CurrencySymbol,
                 r.RevisedAt.HasValue
                     ? new DateTimeOffset(r.RevisedAt.Value, TimeSpan.Zero)
                     : null,
@@ -85,7 +88,8 @@ public sealed class ListBudgetLinesHandler
         Guid      CategoryGroupId,
         Guid?     CategoryId,
         decimal?  BudgetedAmount,
-        string?   Currency,
+        string?   CurrencyCode,
+        string?   CurrencySymbol,
         DateTime? RevisedAt,
         string?   Note);
 }

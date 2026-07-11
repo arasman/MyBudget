@@ -5,7 +5,7 @@ using MyBudget.Features.SharedKernel.Results;
 
 namespace MyBudget.Features.Features.BudgetStructure.GetCycleDetail;
 
-/// <summary>Dapper read — returns Cycle + nested Periods. Returns 404 if not found.</summary>
+/// <summary>Dapper read — returns Cycle + nested Periods with currency info. Returns 404 if not found.</summary>
 public sealed class GetCycleDetailHandler
     : IRequestHandler<GetCycleDetailQuery, Result<CycleDetailResponse>>
 {
@@ -20,8 +20,15 @@ public sealed class GetCycleDetailHandler
 
         var cycleRow = await conn.QuerySingleOrDefaultAsync<CycleRow>(
             """
-            SELECT c."Id", c."Name", c."StartDate", c."EndDate", c."IsActive"
+            SELECT c."Id", c."Name", c."StartDate", c."EndDate", c."IsActive",
+                   c."ExchangeRate",
+                   dc."Code"   AS "DefaultCurrencyCode",
+                   dc."Symbol" AS "DefaultCurrencySymbol",
+                   ac."Code"   AS "AlternateCurrencyCode",
+                   ac."Symbol" AS "AlternateCurrencySymbol"
             FROM "Cycles" c
+            INNER JOIN "Currencies" dc ON dc."Id" = c."DefaultCurrencyId"
+            LEFT  JOIN "Currencies" ac ON ac."Id" = c."AlternateCurrencyId"
             WHERE c."Id" = @CycleId AND c."BudgetId" = @BudgetId AND c."DeletedAt" IS NULL
             """,
             new { query.CycleId, query.BudgetId });
@@ -48,24 +55,35 @@ public sealed class GetCycleDetailHandler
                 r.IsClosed))
             .ToList();
 
+        CurrencyDto? alternateCurrency = cycleRow.AlternateCurrencyCode is not null
+            ? new CurrencyDto(cycleRow.AlternateCurrencyCode, cycleRow.AlternateCurrencySymbol!)
+            : null;
+
         var response = new CycleDetailResponse(
             cycleRow.Id,
             cycleRow.Name,
             cycleRow.StartDate,
             cycleRow.EndDate,
             cycleRow.IsActive,
+            new CurrencyDto(cycleRow.DefaultCurrencyCode, cycleRow.DefaultCurrencySymbol),
+            alternateCurrency,
+            cycleRow.ExchangeRate,
             periods);
 
         return Result<CycleDetailResponse>.Success(response);
     }
 
-    // Npgsql 10 maps PostgreSQL date as DateOnly directly.
     private sealed record CycleRow(
         Guid     Id,
         string   Name,
         DateOnly StartDate,
         DateOnly EndDate,
-        bool     IsActive);
+        bool     IsActive,
+        decimal? ExchangeRate,
+        string   DefaultCurrencyCode,
+        string   DefaultCurrencySymbol,
+        string?  AlternateCurrencyCode,
+        string?  AlternateCurrencySymbol);
 
     private sealed record PeriodRow(
         Guid     Id,

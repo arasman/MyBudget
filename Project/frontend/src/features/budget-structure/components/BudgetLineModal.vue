@@ -167,7 +167,7 @@ const form = reactive<{
   categoryGroupId: props.modelValue?.categoryGroupId ?? '',
   categoryId: props.modelValue?.categoryId,
   budgetedAmount: props.modelValue?.budgetedAmount,
-  currency: props.modelValue?.currency ?? 'GTQ',
+  currency: props.modelValue?.currencyCode ?? 'GTQ',
   note: props.modelValue?.note,
 })
 

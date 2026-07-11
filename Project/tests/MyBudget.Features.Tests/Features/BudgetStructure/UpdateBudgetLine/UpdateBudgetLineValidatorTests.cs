@@ -19,12 +19,19 @@ public sealed class UpdateBudgetLineValidatorTests
             LineType:        LineType.Expense,
             IsRecurring:     true,
             BudgetedAmount:  2000m,
-            Currency:        "USD");
+            CurrencyId:      CurrencySeeds.UsdId);
 
     [Fact]
     public void ValidPayload_Passes()
     {
         var result = _sut.Validate(ValidCommand());
+        result.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ValidPayload_NoCurrencyId_Passes()
+    {
+        var result = _sut.Validate(ValidCommand() with { CurrencyId = null });
         result.IsValid.ShouldBeTrue();
     }
 
@@ -81,21 +88,6 @@ public sealed class UpdateBudgetLineValidatorTests
         var result = _sut.Validate(ValidCommand() with { LineType = (LineType)99 });
         result.IsValid.ShouldBeFalse();
         result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateBudgetLineCommand.LineType));
-    }
-
-    [Fact]
-    public void Currency_Invalid_Fails()
-    {
-        var result = _sut.Validate(ValidCommand() with { Currency = "EUR" });
-        result.IsValid.ShouldBeFalse();
-        result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateBudgetLineCommand.Currency));
-    }
-
-    [Fact]
-    public void Currency_USD_Passes()
-    {
-        var result = _sut.Validate(ValidCommand() with { Currency = "USD" });
-        result.IsValid.ShouldBeTrue();
     }
 
     [Fact]

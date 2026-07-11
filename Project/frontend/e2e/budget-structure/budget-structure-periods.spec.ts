@@ -12,7 +12,7 @@ test.describe('Budget Structure — Period Management', () => {
 
     // First create a cycle via API (faster than UI for setup)
     const cycleResp = await page.request.post(`/api/budgets/${budgetId}/cycles`, {
-      data: { name: 'E2E Cycle', startDate: '2024-01-01', endDate: '2024-12-31' },
+      data: { name: 'E2E Cycle', startDate: '2024-01-01', endDate: '2024-12-31', defaultCurrencyId: '11111111-1111-1111-1111-111111111111' },
       headers: {
         Authorization: `Bearer ${await page.evaluate(() => localStorage.getItem('accessToken'))}`,
       },

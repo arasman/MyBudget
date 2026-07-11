@@ -20,6 +20,7 @@ public sealed class AppDbContext : DbContext
     public DbSet<Period>               Periods               => Set<Period>();
     public DbSet<CategoryGroup>        CategoryGroups        => Set<CategoryGroup>();
     public DbSet<Category>             Categories            => Set<Category>();
+    public DbSet<Currency>             Currencies            => Set<Currency>();
     public DbSet<BudgetLine>           BudgetLines           => Set<BudgetLine>();
     public DbSet<BudgetLineRevision>   BudgetLineRevisions   => Set<BudgetLineRevision>();
 

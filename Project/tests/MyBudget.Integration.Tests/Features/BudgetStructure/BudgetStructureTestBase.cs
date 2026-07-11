@@ -60,7 +60,7 @@ public abstract class BudgetStructureTestBase : IntegrationTestBase
 
         var response = await Client.PostAsJsonAsync(
             $"/api/budgets/{budgetId}/cycles",
-            new { name, startDate = s, endDate = e });
+            new { name, startDate = s, endDate = e, defaultCurrencyId = CurrencySeeds.GtqId });
 
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadFromJsonAsync<IdResponse>(JsonOpts);
@@ -131,7 +131,7 @@ public abstract class BudgetStructureTestBase : IntegrationTestBase
         string  name       = "Rent",
         string  lineType   = "Expense",
         decimal amount     = 1500m,
-        string  currency   = "GTQ",
+        Guid?   currencyId = null,
         Guid?   categoryId = null)
     {
         var response = await Client.PostAsJsonAsync(
@@ -144,7 +144,7 @@ public abstract class BudgetStructureTestBase : IntegrationTestBase
                 categoryGroupId,
                 categoryId,
                 budgetedAmount  = amount,
-                currency,
+                currencyId,
             });
 
         response.EnsureSuccessStatusCode();

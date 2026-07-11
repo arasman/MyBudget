@@ -84,6 +84,7 @@ describe('useBudgetStructureStore', () => {
         name: 'New Cycle',
         startDate: '2024-01-01' as any,
         endDate: '2024-12-31' as any,
+        defaultCurrencyId: '11111111-1111-1111-1111-111111111111',
       })
 
       expect(store.cycles).toHaveLength(1)
