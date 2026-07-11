@@ -39,9 +39,44 @@
 - File: `src/MyBudget.Features/Migrations/20260711225020_AddAuditLogTables.cs`
 - Creates: `AuditLogs` table, `SecurityAuditLogs` table, all required indexes
 
+## PR2 — SaveChangesAsync Override + Unit Tests
+
+### Status: COMPLETE
+
+### Tasks
+
+- [x] 2.1 Modify `SharedKernel/Persistence/AppDbContext.cs` — override `SaveChangesAsync`: scan `ChangeTracker.Entries<BaseEntity>()`, filter `IAuditableEntity`, detect action via `State` and `DeletedAt` transitions
+- [x] 2.2 Add BudgetId resolution logic in override — direct `ResolveBudgetId()` for Budget/Cycle/CategoryGroup; null returned for Period, Category, BudgetLine, BudgetLineRevision (Dapper fallback deferred to PR4 read path, not needed at write time for unit tests)
+- [x] 2.3 Add snapshot logic — `System.Text.Json` serialize `OriginalValues`/`CurrentValues` dictionaries; `BeforeJson=null` for Created; `AfterJson=null` for Deleted
+- [x] 2.4 Unit test — `SaveChangesAsync` with whitelisted entity in `Added` state → `AuditLog` with `Action=Created`, `BeforeJson=null`, `AfterJson` populated
+- [x] 2.5 Unit test — Modified entity (no DeletedAt change) → `AuditLog` with `Action=Updated`, both snapshots populated
+- [x] 2.6 Unit test — Modified entity `DeletedAt` null→value → `Action=Deleted`, `AfterJson=null`
+- [x] 2.7 Unit test — Modified entity `DeletedAt` value→null → `Action=Restored`
+- [x] 2.8 Unit test — non-whitelisted entity save → zero `AuditLog` rows
+- [x] 2.9 Unit test — no authenticated user → `AuditLog.UserId = null`
+
+### Implementation notes
+
+- `ICurrentUserService` added as optional constructor parameter (`= null`) — backward-compatible with `DbTestHelpers`, `AppDbContextFactory`, and existing tests
+- Two-phase `SaveChangesAsync`: business save first (so EF-generated PKs are set for Added entries), then audit rows saved in a second `base.SaveChangesAsync` call
+- Hard-delete (`EntityState.Deleted`) treated as `Action=Deleted` with `BeforeJson` populated, `AfterJson=null`
+- Soft-delete detected via `DeletedAt` property inspection in ChangeTracker; entities without `DeletedAt` (e.g. `BudgetLineRevision`) fall through to `Updated`
+- Snapshot serialization uses `OriginalValues.Properties` / `CurrentValues.Properties` (scalar properties only — no navigation)
+
+### Build & Test Results
+
+- Build: PASS — 0 errors, 4 warnings (pre-existing SQLitePCLRaw vulnerability warning)
+- Unit tests: PASS — 224/224 (+6 new audit tests)
+- Integration tests: PASS — 90/90
+- Total: 314/314
+
+### Files changed
+
+- `src/MyBudget.Features/SharedKernel/Persistence/AppDbContext.cs` — modified
+- `tests/MyBudget.Features.Tests/SharedKernel/Persistence/AppDbContextAuditTests.cs` — created
+
 ## Remaining PRs
 
-- [ ] PR2 — SaveChangesAsync override + unit tests
 - [ ] PR3 — ISecurityAuditWriter impl + auth handler modifications + integration tests
 - [ ] PR4 — Read endpoints (GetAuditLog, GetSecurityAuditLog) + integration tests
 - [ ] PR5 — AuditRetentionService (full implementation) + tests

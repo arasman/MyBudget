@@ -50,15 +50,15 @@ Chain strategy: stacked-to-main
 
 ## Phase 2: SaveChangesAsync Override + Unit Tests (PR2)
 
-- [ ] 2.1 Modify `SharedKernel/Persistence/AppDbContext.cs` — override `SaveChangesAsync`: scan `ChangeTracker.Entries<BaseEntity>()`, filter `IAuditableEntity`, detect action via `State` and `DeletedAt` transitions
-- [ ] 2.2 Add BudgetId resolution logic in override — direct `ResolveBudgetId()` for Budget/Cycle/CategoryGroup; Dapper fallback for Period, Category, BudgetLine, BudgetLineRevision
-- [ ] 2.3 Add snapshot logic — `System.Text.Json` serialize `OriginalValues`/`CurrentValues` dictionaries; `BeforeJson=null` for Created; `AfterJson=null` for Deleted
-- [ ] 2.4 Write unit test — `SaveChangesAsync` with whitelisted entity in `Added` state produces `AuditLog` with `Action=Created`, `BeforeJson=null`, `AfterJson` populated (spec: Created entity scenario)
-- [ ] 2.5 Write unit test — Modified entity (no DeletedAt change) produces `AuditLog` with `Action=Updated`, both snapshots populated (spec: Updated entity scenario)
-- [ ] 2.6 Write unit test — Modified entity `DeletedAt` null→value produces `Action=Deleted`, `AfterJson=null` (spec: Deleted entity scenario)
-- [ ] 2.7 Write unit test — Modified entity `DeletedAt` value→null produces `Action=Restored`
-- [ ] 2.8 Write unit test — non-whitelisted entity save produces zero `AuditLog` rows (spec: Non-whitelisted entity scenario)
-- [ ] 2.9 Write unit test — no authenticated user → `AuditLog.UserId = null` (spec: Unauthenticated context scenario)
+- [x] 2.1 Modify `SharedKernel/Persistence/AppDbContext.cs` — override `SaveChangesAsync`: scan `ChangeTracker.Entries<BaseEntity>()`, filter `IAuditableEntity`, detect action via `State` and `DeletedAt` transitions
+- [x] 2.2 Add BudgetId resolution logic in override — direct `ResolveBudgetId()` for Budget/Cycle/CategoryGroup; Dapper fallback for Period, Category, BudgetLine, BudgetLineRevision
+- [x] 2.3 Add snapshot logic — `System.Text.Json` serialize `OriginalValues`/`CurrentValues` dictionaries; `BeforeJson=null` for Created; `AfterJson=null` for Deleted
+- [x] 2.4 Write unit test — `SaveChangesAsync` with whitelisted entity in `Added` state produces `AuditLog` with `Action=Created`, `BeforeJson=null`, `AfterJson` populated (spec: Created entity scenario)
+- [x] 2.5 Write unit test — Modified entity (no DeletedAt change) produces `AuditLog` with `Action=Updated`, both snapshots populated (spec: Updated entity scenario)
+- [x] 2.6 Write unit test — Modified entity `DeletedAt` null→value produces `Action=Deleted`, `AfterJson=null` (spec: Deleted entity scenario)
+- [x] 2.7 Write unit test — Modified entity `DeletedAt` value→null produces `Action=Restored`
+- [x] 2.8 Write unit test — non-whitelisted entity save produces zero `AuditLog` rows (spec: Non-whitelisted entity scenario)
+- [x] 2.9 Write unit test — no authenticated user → `AuditLog.UserId = null` (spec: Unauthenticated context scenario)
 
 ---
 
