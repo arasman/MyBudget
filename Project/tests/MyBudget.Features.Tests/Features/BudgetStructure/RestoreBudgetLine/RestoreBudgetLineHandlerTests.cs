@@ -31,7 +31,7 @@ public sealed class RestoreBudgetLineHandlerTests : IDisposable
         _db.Cycles.Add(cycle);
         await _db.SaveChangesAsync();
 
-        var period = Period.Create(cycle.Id, "January", 1,
+        var period = Period.Create(budgetId, cycle.Id, "January", 1,
             DateOnly.FromDateTime(DateTime.UtcNow),
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
 
@@ -45,7 +45,7 @@ public sealed class RestoreBudgetLineHandlerTests : IDisposable
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        var line = BudgetLine.Create(period.Id, group.Id, null, "Rent", LineType.Expense, true, 1);
+        var line = BudgetLine.Create(budgetId, period.Id, group.Id, null, "Rent", LineType.Expense, true, 1);
         line.SoftDelete();
         _db.BudgetLines.Add(line);
         await _db.SaveChangesAsync();

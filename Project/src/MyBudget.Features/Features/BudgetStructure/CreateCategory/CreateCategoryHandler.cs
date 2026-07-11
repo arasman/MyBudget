@@ -30,7 +30,7 @@ public sealed class CreateCategoryHandler : IRequestHandler<CreateCategoryComman
         if (isDuplicate)
             return Result<Guid>.Failure("CATEGORY_NAME_DUPLICATE");
 
-        var category = Category.Create(cmd.CategoryGroupId, cmd.Name, cmd.DisplayOrder);
+        var category = Category.Create(group.BudgetId, cmd.CategoryGroupId, cmd.Name, cmd.DisplayOrder);
         _db.Categories.Add(category);
         await _db.SaveChangesAsync(ct);
 

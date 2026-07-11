@@ -31,7 +31,7 @@ public sealed class CreateBudgetLineHandlerTests : IDisposable
         _db.Cycles.Add(cycle);
         await _db.SaveChangesAsync();
 
-        var period = Period.Create(cycle.Id, "January", 1,
+        var period = Period.Create(budgetId, cycle.Id, "January", 1,
             DateOnly.FromDateTime(DateTime.UtcNow),
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
         _db.Periods.Add(period);
@@ -147,7 +147,7 @@ public sealed class CreateBudgetLineHandlerTests : IDisposable
         _db.Cycles.Add(cycle);
         await _db.SaveChangesAsync();
 
-        var period = Period.Create(cycle.Id, "January", 1,
+        var period = Period.Create(budgetId, cycle.Id, "January", 1,
             DateOnly.FromDateTime(DateTime.UtcNow),
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
         _db.Periods.Add(period);

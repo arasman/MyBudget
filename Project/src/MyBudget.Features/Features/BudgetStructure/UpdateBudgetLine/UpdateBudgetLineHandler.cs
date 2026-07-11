@@ -35,7 +35,7 @@ public sealed class UpdateBudgetLineHandler : IRequestHandler<UpdateBudgetLineCo
         line.Update(cmd.CategoryGroupId, cmd.CategoryId, cmd.Name, cmd.LineType, cmd.IsRecurring);
 
         // ADR-BS-06: Insert NEW BudgetLineRevision — never modify existing ones
-        var revision = BudgetLineRevision.Create(line.Id, cmd.BudgetedAmount, currencyId);
+        var revision = BudgetLineRevision.Create(line.Period!.Cycle!.BudgetId, line.Id, cmd.BudgetedAmount, currencyId);
         _db.BudgetLineRevisions.Add(revision);
 
         await _db.SaveChangesAsync(ct);

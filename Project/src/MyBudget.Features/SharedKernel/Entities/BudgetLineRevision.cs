@@ -6,6 +6,7 @@ namespace MyBudget.Features.SharedKernel.Entities;
 /// </summary>
 public sealed class BudgetLineRevision : BaseEntity, IAuditableEntity
 {
+    public Guid BudgetId { get; private set; }
     public Guid BudgetLineId { get; private set; }
     public decimal BudgetedAmount { get; private set; }
     public Guid CurrencyId { get; private set; }
@@ -18,13 +19,10 @@ public sealed class BudgetLineRevision : BaseEntity, IAuditableEntity
 
     private BudgetLineRevision() { }
 
-    /// <summary>
-    /// BudgetId is not directly available on BudgetLineRevision (Revision → BudgetLine → Period → Cycle → Budget).
-    /// Returns null; BudgetId is resolved via Dapper fallback at audit time.
-    /// </summary>
-    public Guid? ResolveBudgetId() => null;
+    public Guid? ResolveBudgetId() => BudgetId;
 
     public static BudgetLineRevision Create(
+        Guid budgetId,
         Guid budgetLineId,
         decimal budgetedAmount,
         Guid currencyId,
@@ -32,6 +30,7 @@ public sealed class BudgetLineRevision : BaseEntity, IAuditableEntity
     {
         return new BudgetLineRevision
         {
+            BudgetId       = budgetId,
             BudgetLineId   = budgetLineId,
             BudgetedAmount = budgetedAmount,
             CurrencyId     = currencyId,

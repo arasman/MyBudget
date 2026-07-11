@@ -6,7 +6,7 @@ namespace MyBudget.Features.Tests.SharedKernel.Entities;
 public sealed class CategoryEntityTests
 {
     private static Category BuildCategory() =>
-        Category.Create(Guid.NewGuid(), "Rent", 1);
+        Category.Create(Guid.NewGuid(), Guid.NewGuid(), "Rent", 1);
 
     [Fact]
     public void Restore_ClearsDeletedAt()

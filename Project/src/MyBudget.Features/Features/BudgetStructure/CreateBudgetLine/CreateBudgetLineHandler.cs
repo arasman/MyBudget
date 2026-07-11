@@ -36,7 +36,9 @@ public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCo
                           && l.CategoryId == cmd.CategoryId, ct);
 
         // ADR-BS-06: Create BudgetLine + initial BudgetLineRevision
+        var budgetId = period.Cycle!.BudgetId;
         var line = BudgetLine.Create(
+            budgetId,
             cmd.PeriodId,
             cmd.CategoryGroupId,
             cmd.CategoryId,
@@ -48,7 +50,7 @@ public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCo
         _db.BudgetLines.Add(line);
         await _db.SaveChangesAsync(ct); // persist to get the Id
 
-        var revision = BudgetLineRevision.Create(line.Id, cmd.BudgetedAmount, currencyId);
+        var revision = BudgetLineRevision.Create(budgetId, line.Id, cmd.BudgetedAmount, currencyId);
         _db.BudgetLineRevisions.Add(revision);
         await _db.SaveChangesAsync(ct);
 

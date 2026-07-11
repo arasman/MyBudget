@@ -127,20 +127,42 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 6. `audit-log` ⏳ planned
+### 6. `audit-log` 🔄 in progress
 
-**What**: Cross-cutting audit trail for all write operations across the application.
+**What**: Cross-cutting audit trail — entity mutations + security events.
 
-**Domain**: Financial app requires traceability — Who/What/When/Where for every mutation (create, update, delete, restore). Especially critical for soft-delete and restore operations on budget entities.
+**Domain**: Financial app requires traceability — Who/What/When/Where for every mutation (create, update, delete, restore) and security event (login, token, invitation). Foundation for future attack detection and policy enforcement.
+
+**Scope in**:
+- `AuditLog` entity: SaveChangesAsync override in AppDbContext, whitelisted budget-domain entities (Budget, Cycle, Period, CategoryGroup, Category, BudgetLine, BudgetLineRevision)
+- Actions: Created | Updated | Deleted | Restored; fields: EntityName, EntityId, Action, UserId?, Timestamp, BeforeJson?, AfterJson?, BudgetId?
+- `SecurityAuditLog` entity: explicit writes in auth handlers; events: FailedLogin, SuccessfulLogin, AccountRegistered, InvitationAccepted, TokenRefreshed, TokenRevoked, AccountLocked; fields include IpAddress, UserAgent, Details (jsonb?)
+- `ICurrentUserService` interface + `HttpContextCurrentUserService` (IHttpContextAccessor → ClaimTypes.NameIdentifier)
+- `GET /budgets/{budgetId}/audit-log` — paginated, Owner/Admin only, filters: EntityName, Action, date range
+- `GET /budgets/{budgetId}/security-audit-log` — paginated, Owner/Admin only, filtered by budget membership
+- `IAuditRetentionPolicy` + `AppSettingsAuditRetentionPolicy` (AuditLog:RetentionDays, default 90)
+- Background hosted service for TTL cleanup
+- EF migration for both tables
+
+**Scope out**: Frontend audit viewer (→ deferred), real-time alerts (→ MVP B), PasswordChanged event (→ `password-management`), user deletion anonymization (→ deferred).
+
+**SDD artifacts**: `openspec/changes/audit-log/` (explore ✅, proposal ✅, spec ✅, design ⏳, tasks ⏳)
+
+---
+
+### 6b. `password-management` ⏳ planned
+
+**What**: Password lifecycle management — recovery, account settings change, forced-change policy.
+
+**Domain**: Users need self-service password recovery (email link) and the ability to change their password from account settings. A forced-change policy (e.g. every 90 days) strengthens security. This feature also produces the `PasswordChanged` SecurityAuditLog event reserved in `audit-log`.
 
 **Scope in** *(requires full SDD exploration)*:
-- Structured audit event: Who (UserId, role), What (entity type + id + action + diff), When (UTC timestamp), Where (IP, request origin)
-- Covers all structural entities + execution records once budget-execution is live
-- Backend: `AuditLog` entity + middleware or behavior interceptor (MediatR pipeline)
-- Query endpoint: `GET /budgets/{budgetId}/audit-log` (filtered by entity, date range, user)
-- RBAC: `budget:admin` reads audit log
+- Password recovery by email (token link, Mailpit in dev)
+- Change password from User Account Settings
+- Forced-change policy: configurable interval; detected at login, blocks session until changed
+- `PasswordChanged` SecurityAuditLog event written at each write site
 
-**Scope out**: Frontend audit viewer (→ deferred), real-time audit alerts (→ MVP B).
+**Scope out**: OAuth, SSO, MFA (→ MVP B).
 
 ---
 

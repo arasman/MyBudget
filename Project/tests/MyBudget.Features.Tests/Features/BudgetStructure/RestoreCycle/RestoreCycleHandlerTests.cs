@@ -48,12 +48,12 @@ public sealed class RestoreCycleHandlerTests : IDisposable
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        var period1 = Period.Create(cycle.Id, "January", 1,
+        var period1 = Period.Create(budgetId, cycle.Id, "January", 1,
             DateOnly.FromDateTime(DateTime.UtcNow),
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
         period1.SoftDelete();
 
-        var period2 = Period.Create(cycle.Id, "February", 2,
+        var period2 = Period.Create(budgetId, cycle.Id, "February", 2,
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(31)),
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(59)));
         period2.SoftDelete();
@@ -62,10 +62,10 @@ public sealed class RestoreCycleHandlerTests : IDisposable
         _db.Periods.Add(period2);
         await _db.SaveChangesAsync();
 
-        var line1 = BudgetLine.Create(period1.Id, group.Id, null, "Rent",      LineType.Expense, true, 1);
-        var line2 = BudgetLine.Create(period1.Id, group.Id, null, "Utilities", LineType.Expense, false, 2);
-        var line3 = BudgetLine.Create(period2.Id, group.Id, null, "Insurance", LineType.Expense, false, 1);
-        var line4 = BudgetLine.Create(period2.Id, group.Id, null, "Food",      LineType.Expense, false, 2);
+        var line1 = BudgetLine.Create(budgetId, period1.Id, group.Id, null, "Rent",      LineType.Expense, true, 1);
+        var line2 = BudgetLine.Create(budgetId, period1.Id, group.Id, null, "Utilities", LineType.Expense, false, 2);
+        var line3 = BudgetLine.Create(budgetId, period2.Id, group.Id, null, "Insurance", LineType.Expense, false, 1);
+        var line4 = BudgetLine.Create(budgetId, period2.Id, group.Id, null, "Food",      LineType.Expense, false, 2);
         line1.SoftDelete(); line2.SoftDelete(); line3.SoftDelete(); line4.SoftDelete();
         _db.BudgetLines.AddRange(line1, line2, line3, line4);
         await _db.SaveChangesAsync();
@@ -109,15 +109,15 @@ public sealed class RestoreCycleHandlerTests : IDisposable
         await _db.SaveChangesAsync();
 
         // Period is NOT soft-deleted
-        var activePeriod = Period.Create(cycle.Id, "January", 1,
+        var activePeriod = Period.Create(budgetId, cycle.Id, "January", 1,
             DateOnly.FromDateTime(DateTime.UtcNow),
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
         _db.Periods.Add(activePeriod);
         await _db.SaveChangesAsync();
 
         // BudgetLines under the active period are soft-deleted
-        var line1 = BudgetLine.Create(activePeriod.Id, group.Id, null, "Rent", LineType.Expense, true, 1);
-        var line2 = BudgetLine.Create(activePeriod.Id, group.Id, null, "Food", LineType.Expense, false, 2);
+        var line1 = BudgetLine.Create(budgetId, activePeriod.Id, group.Id, null, "Rent", LineType.Expense, true, 1);
+        var line2 = BudgetLine.Create(budgetId, activePeriod.Id, group.Id, null, "Food", LineType.Expense, false, 2);
         line1.SoftDelete(); line2.SoftDelete();
         _db.BudgetLines.AddRange(line1, line2);
         await _db.SaveChangesAsync();

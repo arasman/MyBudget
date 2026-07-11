@@ -30,7 +30,7 @@ public sealed class ReorderBudgetLinesHandlerTests : IDisposable
         _db.Cycles.Add(cycle);
         await _db.SaveChangesAsync();
 
-        var period = Period.Create(cycle.Id, "January", 1,
+        var period = Period.Create(budgetId, cycle.Id, "January", 1,
             DateOnly.FromDateTime(DateTime.UtcNow),
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
         _db.Periods.Add(period);
@@ -48,9 +48,9 @@ public sealed class ReorderBudgetLinesHandlerTests : IDisposable
     {
         var (budgetId, periodId, groupId) = await SeedPeriodAsync();
 
-        var line1 = BudgetLine.Create(periodId, groupId, null, "Rent",      LineType.Expense, true,  1);
-        var line2 = BudgetLine.Create(periodId, groupId, null, "Utilities", LineType.Expense, false, 2);
-        var line3 = BudgetLine.Create(periodId, groupId, null, "Insurance", LineType.Expense, false, 3);
+        var line1 = BudgetLine.Create(budgetId, periodId, groupId, null, "Rent",      LineType.Expense, true,  1);
+        var line2 = BudgetLine.Create(budgetId, periodId, groupId, null, "Utilities", LineType.Expense, false, 2);
+        var line3 = BudgetLine.Create(budgetId, periodId, groupId, null, "Insurance", LineType.Expense, false, 3);
         _db.BudgetLines.AddRange(line1, line2, line3);
         await _db.SaveChangesAsync();
 
@@ -74,7 +74,7 @@ public sealed class ReorderBudgetLinesHandlerTests : IDisposable
     {
         var (budgetId, periodId, groupId) = await SeedPeriodAsync();
 
-        var line = BudgetLine.Create(periodId, groupId, null, "Rent", LineType.Expense, true, 1);
+        var line = BudgetLine.Create(budgetId, periodId, groupId, null, "Rent", LineType.Expense, true, 1);
         _db.BudgetLines.Add(line);
         await _db.SaveChangesAsync();
 
