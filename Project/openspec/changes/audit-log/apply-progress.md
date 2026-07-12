@@ -248,6 +248,48 @@
 - `src/MyBudget.Features/Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogEndpoint.cs`
 - `tests/MyBudget.Integration.Tests/Features/AuditLog/AuditLogEndpointTests.cs`
 
-## Remaining PRs
+## PR5 — AuditRetentionService (full implementation) + tests
 
-- [ ] PR5 — AuditRetentionService (full implementation) + tests
+### Status: COMPLETE
+
+### Tasks
+
+- [x] 5.1 Implement `SharedKernel/Services/AuditRetentionService.cs` — full IHostedService with PeriodicTimer (24h); ExecuteCleanupAsync deletes AuditLogs + SecurityAuditLogs older than TTL via EF ExecuteDeleteAsync; IServiceScopeFactory for scoped DbContext per tick
+- [x] 5.2 Unit test — AppSettingsAuditRetentionPolicy reads AuditLog:RetentionDays from mock IConfiguration; returns configured value
+- [x] 5.3 Unit test — AppSettingsAuditRetentionPolicy returns 90 when AuditLog:RetentionDays key is absent
+- [x] 5.4 Integration test — seed AuditLog rows with Timestamp older than TTL, trigger cleanup, verify rows deleted
+- [x] 5.5 Integration test — seed AuditLog rows within TTL window, trigger cleanup, verify rows preserved
+- [x] 5.6 Add `AuditLog:RetentionDays: 90` to appsettings.json and appsettings.Development.json
+
+### Implementation notes
+
+- `ExecuteCleanupAsync` is `public` so integration tests can call it directly without waiting for the 24h timer
+- EF `ExecuteDeleteAsync` used for bulk delete (avoids loading entities into memory)
+- Integration tests resolve service via `GetServices<IHostedService>().OfType<AuditRetentionService>()` — AddHostedService registers by IHostedService, not concrete type
+- Old rows seeded via `ExecuteSqlRawAsync` with explicit `Timestamp` value (AuditLog.Create() always uses UtcNow)
+
+### Build & Test Results
+
+- Build: PASS — 0 errors, 8 warnings (pre-existing SQLitePCLRaw vulnerability warning only)
+- Unit tests: PASS — 230/230 (+2 new AppSettingsAuditRetentionPolicy tests)
+- Integration tests: PASS — 104/104 (+2 new AuditRetentionService integration tests)
+- Total: 334/334
+
+### Files changed
+
+- `src/MyBudget.Features/SharedKernel/Services/AuditRetentionService.cs` — replaced stub with full implementation
+- `src/MyBudget.Api/appsettings.json` — added AuditLog:RetentionDays: 90
+- `src/MyBudget.Api/appsettings.Development.json` — added AuditLog:RetentionDays: 90
+- `tests/MyBudget.Features.Tests/SharedKernel/Services/AppSettingsAuditRetentionPolicyTests.cs` — created
+- `tests/MyBudget.Integration.Tests/Features/AuditLog/AuditRetentionServiceTests.cs` — created
+
+### Commit
+
+`feat(audit-log): PR5 audit retention service, tests, and appsettings`
+
+---
+
+## ALL PHASES COMPLETE
+
+PR1 + PR2 + PR2b + PR3 + PR4 + PR5 all committed to `feat/audit-log`.
+Final test count: 334/334 (230 unit + 104 integration).
