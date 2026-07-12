@@ -61,6 +61,12 @@
       "endDate": "Fecha de fin",
       "active": "Activo",
       "periodCount": "Períodos",
+      "defaultCurrency": "Moneda predeterminada",
+      "alternateCurrency": "Moneda alterna",
+      "exchangeRate": "Tipo de cambio",
+      "exchangeRateLabel": "{defaultCurrency} por 1 {alternateCurrency}",
+      "pairValidationError": "Ambos campos (moneda alterna y tipo de cambio) son requeridos, o deja ambos vacíos",
+      "noneSelected": "— Ninguna —",
       "empty": {
         "title": "Aún no hay ciclos",
         "description": "Crea tu primer ciclo para comenzar a organizar tu presupuesto.",

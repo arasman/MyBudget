@@ -61,6 +61,12 @@
       "endDate": "End Date",
       "active": "Active",
       "periodCount": "Periods",
+      "defaultCurrency": "Default Currency",
+      "alternateCurrency": "Alternate Currency",
+      "exchangeRate": "Exchange Rate",
+      "exchangeRateLabel": "{defaultCurrency} per 1 {alternateCurrency}",
+      "pairValidationError": "Both alternate currency and exchange rate are required, or leave both empty",
+      "noneSelected": "— None —",
       "empty": {
         "title": "No cycles yet",
         "description": "Create your first cycle to start organizing your budget.",

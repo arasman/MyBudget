@@ -76,8 +76,11 @@ describe('useBudgetStructureStore', () => {
   })
 
   describe('createCycle', () => {
-    it('appends a new cycle to the list', async () => {
+    it('reloads the cycle list after creation', async () => {
       vi.mocked(cyclesApi.create).mockResolvedValueOnce({ id: 'new-cycle' } as any)
+      vi.mocked(cyclesApi.list).mockResolvedValueOnce([
+        { id: 'new-cycle', name: 'New Cycle', startDate: '2024-01-01', endDate: '2024-12-31', isActive: false, periodCount: 0 },
+      ] as any)
 
       const store = useBudgetStructureStore()
       await store.createCycle(BUDGET_ID, {

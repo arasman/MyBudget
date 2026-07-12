@@ -178,8 +178,62 @@ public sealed class CycleTests : BudgetStructureTestBase
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
+    // ── REQ-CYC-CUR-02: ListCycles includes alternate currency fields ─────────
+
+    [Fact]
+    public async Task ListCycles_CycleWithAlternateCurrency_ReturnsAlternateCurrencyFields()
+    {
+        var (_, budgetId) = await SetupOwnerAsync("cycle-list-alt1@example.com");
+
+        var createResponse = await Client.PostAsJsonAsync(
+            $"/api/budgets/{budgetId}/cycles",
+            new
+            {
+                name                = "Cycle With Alt",
+                startDate           = new DateOnly(2025, 1, 1),
+                endDate             = new DateOnly(2025, 12, 31),
+                defaultCurrencyId   = CurrencySeeds.GtqId,
+                alternateCurrencyId = CurrencySeeds.UsdId,
+                exchangeRate        = 7.5m,
+            });
+
+        createResponse.EnsureSuccessStatusCode();
+
+        var listResponse = await Client.GetAsync($"/api/budgets/{budgetId}/cycles");
+        listResponse.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
+
+        var list = await listResponse.Content.ReadFromJsonAsync<CycleListItemFull[]>(JsonOpts);
+        list.ShouldNotBeNull();
+        list.ShouldHaveSingleItem();
+
+        var item = list![0];
+        item.AlternateCurrency.ShouldNotBeNull();
+        item.AlternateCurrency!.Code.ShouldBe("USD");
+        item.ExchangeRate.ShouldBe(7.5m);
+    }
+
+    [Fact]
+    public async Task ListCycles_CycleWithoutAlternateCurrency_ReturnsNullAlternateFields()
+    {
+        var (_, budgetId) = await SetupOwnerAsync("cycle-list-noalt@example.com");
+        await CreateCycleAsync(budgetId, "No Alt Cycle");
+
+        var listResponse = await Client.GetAsync($"/api/budgets/{budgetId}/cycles");
+        listResponse.EnsureSuccessStatusCode();
+
+        var list = await listResponse.Content.ReadFromJsonAsync<CycleListItemFull[]>(JsonOpts);
+        list.ShouldNotBeNull();
+        list.ShouldHaveSingleItem();
+
+        var item = list![0];
+        item.AlternateCurrency.ShouldBeNull();
+        item.ExchangeRate.ShouldBeNull();
+    }
+
     // ── Response helpers ──────────────────────────────────────────────────────
 
     private sealed record ErrorResponse(string Error);
     private sealed record CycleListItem(Guid Id, string Name, DateOnly StartDate, DateOnly EndDate, bool IsActive, int PeriodCount);
+    private sealed record CycleListItemFull(Guid Id, string Name, DateOnly StartDate, DateOnly EndDate, bool IsActive, int PeriodCount, CurrencyDto? AlternateCurrency, decimal? ExchangeRate);
+    private sealed record CurrencyDto(string Code, string Symbol);
 }

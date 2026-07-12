@@ -72,6 +72,7 @@ function makeI18n() {
             endDate: 'End Date',
             active: 'Active',
             periodCount: 'Periods',
+            alternateCurrency: 'Alt Currency',
             confirmDelete: 'Are you sure?',
             viewPeriods: 'View Periods',
             empty: {
@@ -197,6 +198,44 @@ describe('CycleListView', () => {
       })
       await renderView()
       expect(layoutStoreMock.setPageActions).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('REQ-CYC-1 — alternate currency column', () => {
+    it('renders alternate currency symbol and code when present', async () => {
+      const cycles: CycleListItem[] = [
+        {
+          id: 'c1',
+          name: 'Cycle With Alt',
+          startDate: '2024-01-01' as any,
+          endDate: '2024-12-31' as any,
+          isActive: false,
+          periodCount: 0,
+          alternateCurrency: { id: '22222222-2222-2222-2222-222222222222', code: 'USD', name: 'US Dollar', symbol: '$' },
+          exchangeRate: 7.5,
+        },
+      ]
+      setupStoreMocks({ cycles })
+      await renderView()
+      expect(screen.getByText(/\$ USD/i)).toBeTruthy()
+    })
+
+    it('renders nothing for alternate currency when null', async () => {
+      const cycles: CycleListItem[] = [
+        {
+          id: 'c2',
+          name: 'No Alt Cycle',
+          startDate: '2024-01-01' as any,
+          endDate: '2024-12-31' as any,
+          isActive: false,
+          periodCount: 0,
+          alternateCurrency: null,
+        },
+      ]
+      setupStoreMocks({ cycles })
+      await renderView()
+      // USD should not appear in the row
+      expect(screen.queryByText(/USD/i)).toBeNull()
     })
   })
 })

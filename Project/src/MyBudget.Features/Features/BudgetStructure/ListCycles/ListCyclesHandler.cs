@@ -24,26 +24,42 @@ public sealed class ListCyclesHandler
             SELECT c."Id", c."Name", c."StartDate", c."EndDate", c."IsActive",
                    COUNT(p."Id") AS "PeriodCount",
                    dc."Code"   AS "DefaultCurrencyCode",
-                   dc."Symbol" AS "DefaultCurrencySymbol"
+                   dc."Symbol" AS "DefaultCurrencySymbol",
+                   c."AlternateCurrencyId",
+                   c."ExchangeRate",
+                   ac."Code"   AS "AlternateCurrencyCode",
+                   ac."Symbol" AS "AlternateCurrencySymbol"
             FROM "Cycles" c
             INNER JOIN "Currencies" dc ON dc."Id" = c."DefaultCurrencyId"
+            LEFT  JOIN "Currencies" ac ON ac."Id" = c."AlternateCurrencyId"
             LEFT  JOIN "Periods" p ON p."CycleId" = c."Id" AND p."DeletedAt" IS NULL
             WHERE c."BudgetId" = @BudgetId AND c."DeletedAt" IS NULL
             GROUP BY c."Id", c."Name", c."StartDate", c."EndDate", c."IsActive",
-                     dc."Code", dc."Symbol"
+                     dc."Code", dc."Symbol",
+                     c."AlternateCurrencyId", c."ExchangeRate",
+                     ac."Code", ac."Symbol"
             ORDER BY c."StartDate"
             """,
             new { BudgetId = query.BudgetId });
 
         var items = rows
-            .Select(r => new CycleListItem(
-                r.Id,
-                r.Name,
-                r.StartDate,
-                r.EndDate,
-                r.IsActive,
-                (int)r.PeriodCount,
-                new CurrencyDto(r.DefaultCurrencyCode, r.DefaultCurrencySymbol)))
+            .Select(r =>
+            {
+                CurrencyDto? alternateCurrency = r.AlternateCurrencyCode is not null
+                    ? new CurrencyDto(r.AlternateCurrencyCode, r.AlternateCurrencySymbol!)
+                    : null;
+
+                return new CycleListItem(
+                    r.Id,
+                    r.Name,
+                    r.StartDate,
+                    r.EndDate,
+                    r.IsActive,
+                    (int)r.PeriodCount,
+                    new CurrencyDto(r.DefaultCurrencyCode, r.DefaultCurrencySymbol),
+                    alternateCurrency,
+                    r.ExchangeRate);
+            })
             .ToList();
 
         return Result<IReadOnlyList<CycleListItem>>.Success(items);
@@ -58,5 +74,9 @@ public sealed class ListCyclesHandler
         bool     IsActive,
         long     PeriodCount,
         string   DefaultCurrencyCode,
-        string   DefaultCurrencySymbol);
+        string   DefaultCurrencySymbol,
+        Guid?    AlternateCurrencyId,
+        decimal? ExchangeRate,
+        string?  AlternateCurrencyCode,
+        string?  AlternateCurrencySymbol);
 }

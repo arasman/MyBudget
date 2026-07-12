@@ -61,7 +61,7 @@
         </div>
 
         <!-- Default Currency -->
-        <div class="form-control mb-6">
+        <div class="form-control mb-4">
           <label class="label" for="cycle-currency">
             <span class="label-text">{{ t('budgetStructure.cycles.defaultCurrency') }}</span>
           </label>
@@ -75,6 +75,44 @@
               {{ c.symbol }} {{ c.name }} ({{ c.code }})
             </option>
           </select>
+        </div>
+
+        <!-- Alternate Currency -->
+        <div class="form-control mb-4">
+          <label class="label" for="cycle-alt-currency">
+            <span class="label-text">{{ t('budgetStructure.cycles.alternateCurrency') }}</span>
+          </label>
+          <select
+            id="cycle-alt-currency"
+            v-model="form.alternateCurrencyId"
+            class="select select-bordered w-full"
+          >
+            <option value="">{{ t('budgetStructure.cycles.noneSelected') }}</option>
+            <option v-for="c in currencies" :key="c.id" :value="c.id">
+              {{ c.symbol }} {{ c.name }} ({{ c.code }})
+            </option>
+          </select>
+        </div>
+
+        <!-- Exchange Rate — only shown when alternate currency is selected -->
+        <div v-if="form.alternateCurrencyId" class="form-control mb-4">
+          <label class="label" for="cycle-exchange-rate">
+            <span class="label-text">{{ exchangeRateLabel }}</span>
+          </label>
+          <input
+            id="cycle-exchange-rate"
+            v-model.number="form.exchangeRate"
+            type="number"
+            min="0.0001"
+            step="0.0001"
+            class="input input-bordered w-full"
+            :class="{ 'input-error': errors.pairValidation }"
+          />
+        </div>
+
+        <!-- Pair validation error -->
+        <div v-if="errors.pairValidation" class="label mb-4">
+          <span class="label-text-alt text-error">{{ errors.pairValidation }}</span>
         </div>
 
         <div class="modal-action">
@@ -92,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, ref, onMounted } from 'vue'
+import { reactive, watch, ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { CycleListItem, CurrencyItem, DateString } from '../types'
 import { listCurrencies } from '../api/currencies.api'
@@ -105,6 +143,8 @@ interface CycleFormPayload {
   startDate: DateString
   endDate: DateString
   defaultCurrencyId: string
+  alternateCurrencyId?: string
+  exchangeRate?: number
 }
 
 const props = defineProps<{
@@ -132,12 +172,25 @@ const form = reactive({
   startDate: '',
   endDate: '',
   defaultCurrencyId: GTQ_SEED_ID,
+  alternateCurrencyId: '' as string,
+  exchangeRate: null as number | null,
 })
 
 const errors = reactive({
   name: '',
   startDate: '',
   endDate: '',
+  pairValidation: '',
+})
+
+// Dynamic exchange rate label: "X GTQ per 1 USD"
+const exchangeRateLabel = computed(() => {
+  const defaultCurrency = currencies.value.find((c) => c.id === form.defaultCurrencyId)
+  const alternateCurrency = currencies.value.find((c) => c.id === form.alternateCurrencyId)
+  return t('budgetStructure.cycles.exchangeRateLabel', {
+    defaultCurrency: defaultCurrency?.code ?? '',
+    alternateCurrency: alternateCurrency?.code ?? '',
+  })
 })
 
 onMounted(async () => {
@@ -157,15 +210,20 @@ watch(
       form.startDate = cycle.startDate
       form.endDate = cycle.endDate
       form.defaultCurrencyId = cycle.defaultCurrency?.id ?? GTQ_SEED_ID
+      form.alternateCurrencyId = cycle.alternateCurrency?.id ?? ''
+      form.exchangeRate = cycle.exchangeRate ?? null
     } else {
       form.name = ''
       form.startDate = ''
       form.endDate = ''
       form.defaultCurrencyId = GTQ_SEED_ID
+      form.alternateCurrencyId = ''
+      form.exchangeRate = null
     }
     errors.name = ''
     errors.startDate = ''
     errors.endDate = ''
+    errors.pairValidation = ''
   },
   { immediate: true },
 )
@@ -179,17 +237,35 @@ function validate(): boolean {
     errors.endDate = 'End date must be after start date'
   }
 
-  return !errors.name && !errors.startDate && !errors.endDate
+  // Pair validation: both filled or both empty
+  const hasAlternate = !!form.alternateCurrencyId
+  const hasRate = form.exchangeRate != null && form.exchangeRate > 0
+  if (hasAlternate !== hasRate) {
+    errors.pairValidation = t('budgetStructure.cycles.pairValidationError')
+  } else {
+    errors.pairValidation = ''
+  }
+
+  return !errors.name && !errors.startDate && !errors.endDate && !errors.pairValidation
 }
 
 function handleSubmit(): void {
   if (!validate()) return
 
-  emit('submit', {
+  const payload: CycleFormPayload = {
     name: form.name.trim(),
     startDate: form.startDate as DateString,
     endDate: form.endDate as DateString,
     defaultCurrencyId: form.defaultCurrencyId,
-  })
+  }
+
+  if (form.alternateCurrencyId) {
+    payload.alternateCurrencyId = form.alternateCurrencyId
+  }
+  if (form.exchangeRate != null && form.exchangeRate > 0) {
+    payload.exchangeRate = form.exchangeRate
+  }
+
+  emit('submit', payload)
 }
 </script>

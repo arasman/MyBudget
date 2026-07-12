@@ -68,15 +68,8 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
 
   async function createCycle(budgetId: string, payload: CreateCyclePayload): Promise<void> {
     await _wrap(async () => {
-      const { id } = await cyclesApi.create(budgetId, payload)
-      cycles.value.push({
-        id,
-        name: payload.name,
-        startDate: payload.startDate,
-        endDate: payload.endDate,
-        isActive: false,
-        periodCount: 0,
-      })
+      await cyclesApi.create(budgetId, payload)
+      cycles.value = await cyclesApi.list(budgetId)
     })
   }
 

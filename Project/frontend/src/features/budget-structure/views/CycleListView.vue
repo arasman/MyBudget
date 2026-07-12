@@ -21,6 +21,7 @@
             <th>{{ t('budgetStructure.cycles.endDate') }}</th>
             <th>{{ t('budgetStructure.cycles.periodCount') }}</th>
             <th>{{ t('budgetStructure.cycles.active') }}</th>
+            <th>{{ t('budgetStructure.cycles.alternateCurrency') }}</th>
             <th>{{ t('budgetStructure.common.actions') }}</th>
           </tr>
         </thead>
@@ -63,6 +64,13 @@
             <td>
               <span v-if="cycle.isActive" class="badge badge-success badge-sm">
                 {{ t('budgetStructure.cycles.active') }}
+              </span>
+            </td>
+
+            <!-- Alternate currency — show symbol/code when present -->
+            <td>
+              <span v-if="cycle.alternateCurrency" class="text-sm text-base-content/70">
+                {{ cycle.alternateCurrency.symbol }} {{ cycle.alternateCurrency.code }}
               </span>
             </td>
 
@@ -257,6 +265,8 @@ async function handleFormSubmit(payload: {
   startDate: DateString
   endDate: DateString
   defaultCurrencyId: string
+  alternateCurrencyId?: string
+  exchangeRate?: number
 }): Promise<void> {
   if (editingCycle.value) {
     await store.updateCycle(budgetId, editingCycle.value.id, payload)
