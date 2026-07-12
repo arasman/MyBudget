@@ -146,23 +146,39 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 **Scope out**: Frontend audit viewer (→ deferred), real-time alerts (→ MVP B), PasswordChanged event (→ `password-management`), user deletion anonymization (→ deferred).
 
-**SDD artifacts**: `openspec/changes/audit-log/` (explore ✅, proposal ✅, spec ✅, design ⏳, tasks ⏳)
+**SDD artifacts**: `openspec/changes/audit-log/` (explore ✅, proposal ✅, spec ✅, design ✅, tasks ✅, apply ✅, verify ✅)
 
 ---
 
 ### 6b. `password-management` ⏳ planned
 
-**What**: Password lifecycle management — recovery, account settings change, forced-change policy.
+**What**: Password lifecycle management — recovery, account settings change, forced-change policy, account lockout.
 
-**Domain**: Users need self-service password recovery (email link) and the ability to change their password from account settings. A forced-change policy (e.g. every 90 days) strengthens security. This feature also produces the `PasswordChanged` SecurityAuditLog event reserved in `audit-log`.
+**Domain**: Users need self-service password recovery (email link) and the ability to change their password from account settings. A forced-change policy (e.g. every 90 days) strengthens security. This feature also produces the `PasswordChanged` and `AccountLocked` SecurityAuditLog events reserved in `audit-log`.
 
 **Scope in** *(requires full SDD exploration)*:
 - Password recovery by email (token link, Mailpit in dev)
 - Change password from User Account Settings
 - Forced-change policy: configurable interval; detected at login, blocks session until changed
+- Account lockout after N failed login attempts
 - `PasswordChanged` SecurityAuditLog event written at each write site
+- `AccountLocked` SecurityAuditLog event on lockout trigger
 
 **Scope out**: OAuth, SSO, MFA (→ MVP B).
+
+---
+
+### 6c. `budget-structure-i18n-patch` ⏳ planned
+
+**What**: Missing i18n keys for Cycle currency fields.
+
+**Domain**: Cycle creation/edit form shows raw key `budgetStructure.cycles.defaultCurrency` instead of a translated label. AlternateCurrency and ExchangeRate fields are also missing translations.
+
+**Scope in**:
+- Add i18n keys: `budgetStructure.cycles.defaultCurrency`, `budgetStructure.cycles.alternateCurrency`, `budgetStructure.cycles.exchangeRate` in EN and ES locales
+- Verify CycleForm renders labels correctly
+
+**Scope out**: Currency management UI, exchange rate calculation.
 
 ---
 

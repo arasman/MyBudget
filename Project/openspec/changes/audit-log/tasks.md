@@ -64,46 +64,46 @@ Chain strategy: stacked-to-main
 
 ## Phase 3: SecurityAuditWriter + Auth Handlers + Integration Tests (PR3)
 
-- [ ] 3.1 Create `SharedKernel/Services/SecurityAuditWriter.cs` — extracts `IpAddress` and `UserAgent` from `IHttpContextAccessor`, builds `SecurityAuditLog`, saves via `AppDbContext`
-- [ ] 3.2 Modify `Features/Auth/LoginUser/LoginUserHandler.cs` — inject `ISecurityAuditWriter`; write `SuccessfulLogin` on success, `FailedLogin` on wrong password or user not found
-- [ ] 3.3 Modify `Features/Auth/RegisterUser/RegisterUserHandler.cs` — inject `ISecurityAuditWriter`; write `AccountRegistered` after user created
-- [ ] 3.4 Modify `Features/Auth/AcceptInvitation/AcceptInvitationHandler.cs` — inject `ISecurityAuditWriter`; write `InvitationAccepted`
-- [ ] 3.5 Modify `Features/Auth/RefreshToken/RefreshTokenHandler.cs` — inject `ISecurityAuditWriter`; write `TokenRefreshed`
-- [ ] 3.6 Modify `Features/Auth/LogoutUser/LogoutUserHandler.cs` — inject `ISecurityAuditWriter`; write `TokenRevoked`
-- [ ] 3.7 Write unit test — `SecurityAuditWriter` extracts `IpAddress` and `UserAgent` from mock `IHttpContextAccessor` correctly
-- [ ] 3.8 Write integration test — `POST /auth/login` with valid credentials → `SecurityAuditLog` row with `Event=SuccessfulLogin`, `UserId` and `Email` populated (spec: Successful login scenario)
-- [ ] 3.9 Write integration test — `POST /auth/login` with invalid credentials → `SecurityAuditLog` row with `Event=FailedLogin` (spec: Failed login scenario)
-- [ ] 3.10 Write integration test — `POST /auth/refresh` → `SecurityAuditLog` row with `Event=TokenRefreshed` (spec: Token refresh scenario)
-- [ ] 3.11 Write integration test — `POST /auth/logout` → `SecurityAuditLog` row with `Event=TokenRevoked` (spec: Logout scenario)
-- [ ] 3.12 Write integration test — `POST /auth/register` → `SecurityAuditLog` row with `Event=AccountRegistered` (spec: Registration scenario)
-- [ ] 3.13 Write integration test — `POST /auth/accept-invitation` → `SecurityAuditLog` row with `Event=InvitationAccepted` (spec: Invitation acceptance scenario)
+- [x] 3.1 Create `SharedKernel/Services/SecurityAuditWriter.cs` — extracts `IpAddress` and `UserAgent` from `IHttpContextAccessor`, builds `SecurityAuditLog`, saves via `AppDbContext`
+- [x] 3.2 Modify `Features/Auth/LoginUser/LoginUserHandler.cs` — inject `ISecurityAuditWriter`; write `SuccessfulLogin` on success, `FailedLogin` on wrong password or user not found
+- [x] 3.3 Modify `Features/Auth/RegisterUser/RegisterUserHandler.cs` — inject `ISecurityAuditWriter`; write `AccountRegistered` after user created
+- [x] 3.4 Modify `Features/Auth/AcceptInvitation/AcceptInvitationHandler.cs` — inject `ISecurityAuditWriter`; write `InvitationAccepted`
+- [x] 3.5 Modify `Features/Auth/RefreshToken/RefreshTokenHandler.cs` — inject `ISecurityAuditWriter`; write `TokenRefreshed`
+- [x] 3.6 Modify `Features/Auth/LogoutUser/LogoutUserHandler.cs` — inject `ISecurityAuditWriter`; write `TokenRevoked`
+- [x] 3.7 Write unit test — `SecurityAuditWriter` extracts `IpAddress` and `UserAgent` from mock `IHttpContextAccessor` correctly
+- [x] 3.8 Write integration test — `POST /auth/login` with valid credentials → `SecurityAuditLog` row with `Event=SuccessfulLogin`, `UserId` and `Email` populated (spec: Successful login scenario)
+- [x] 3.9 Write integration test — `POST /auth/login` with invalid credentials → `SecurityAuditLog` row with `Event=FailedLogin` (spec: Failed login scenario)
+- [x] 3.10 Write integration test — `POST /auth/refresh` → `SecurityAuditLog` row with `Event=TokenRefreshed` (spec: Token refresh scenario)
+- [x] 3.11 Write integration test — `POST /auth/logout` → `SecurityAuditLog` row with `Event=TokenRevoked` (spec: Logout scenario)
+- [x] 3.12 Write integration test — `POST /auth/register` → `SecurityAuditLog` row with `Event=AccountRegistered` (spec: Registration scenario)
+- [x] 3.13 Write integration test — `POST /auth/accept-invitation` → `SecurityAuditLog` row with `Event=InvitationAccepted` (spec: Invitation acceptance scenario)
 
 ---
 
 ## Phase 4: Read Endpoints + Integration Tests (PR4)
 
-- [ ] 4.1 Create `Features/AuditLog/GetAuditLog/GetAuditLogQuery.cs` — record with `BudgetId`, `Page`, `PageSize`, `EntityName?`, `Action?`, `From?`, `To?`
-- [ ] 4.2 Create `Features/AuditLog/GetAuditLog/GetAuditLogHandler.cs` — Dapper paginated query on `AuditLogs` filtered by `BudgetId` and optional filters
-- [ ] 4.3 Create `Features/AuditLog/GetAuditLog/GetAuditLogEndpoint.cs` — `GET /budgets/{budgetId}/audit-log`, `budget:admin` authorization
-- [ ] 4.4 Create `Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogQuery.cs` — record with `BudgetId`, `Page`, `PageSize`
-- [ ] 4.5 Create `Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogHandler.cs` — Dapper paginated query JOIN `BudgetMemberships` to scope security events to budget members
-- [ ] 4.6 Create `Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogEndpoint.cs` — `GET /budgets/{budgetId}/security-audit-log`, `budget:admin` authorization
-- [ ] 4.7 Write integration test — Admin calls `GET /budgets/{id}/audit-log` → `200 OK` with paginated entries (spec: Admin retrieves audit log)
-- [ ] 4.8 Write integration test — Member calls `GET /budgets/{id}/audit-log` → `403 Forbidden` (spec: Member cannot access audit log)
-- [ ] 4.9 Write integration test — Filter by `entityName=Category&from=...&to=...` returns only matching rows (spec: Filter by EntityName and date range)
-- [ ] 4.10 Write integration test — Owner calls `GET /budgets/{id}/security-audit-log` → `200 OK`, only events from budget members included (spec: Owner retrieves security audit log / security events not in budget membership are excluded)
-- [ ] 4.11 Write integration test — Non-member calls `GET /budgets/{id}/security-audit-log` → `403 Forbidden` (spec: Non-member cannot access security audit log)
+- [x] 4.1 Create `Features/AuditLog/GetAuditLog/GetAuditLogQuery.cs` — record with `BudgetId`, `Page`, `PageSize`, `EntityName?`, `Action?`, `From?`, `To?`
+- [x] 4.2 Create `Features/AuditLog/GetAuditLog/GetAuditLogHandler.cs` — Dapper paginated query on `AuditLogs` filtered by `BudgetId` and optional filters
+- [x] 4.3 Create `Features/AuditLog/GetAuditLog/GetAuditLogEndpoint.cs` — `GET /budgets/{budgetId}/audit-log`, `budget:admin` authorization
+- [x] 4.4 Create `Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogQuery.cs` — record with `BudgetId`, `Page`, `PageSize`
+- [x] 4.5 Create `Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogHandler.cs` — Dapper paginated query JOIN `BudgetMemberships` to scope security events to budget members
+- [x] 4.6 Create `Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogEndpoint.cs` — `GET /budgets/{budgetId}/security-audit-log`, `budget:admin` authorization
+- [x] 4.7 Write integration test — Admin calls `GET /budgets/{id}/audit-log` → `200 OK` with paginated entries (spec: Admin retrieves audit log)
+- [x] 4.8 Write integration test — Member calls `GET /budgets/{id}/audit-log` → `403 Forbidden` (spec: Member cannot access audit log)
+- [x] 4.9 Write integration test — Filter by `entityName=Category&from=...&to=...` returns only matching rows (spec: Filter by EntityName and date range)
+- [x] 4.10 Write integration test — Owner calls `GET /budgets/{id}/security-audit-log` → `200 OK`, only events from budget members included (spec: Owner retrieves security audit log / security events not in budget membership are excluded)
+- [x] 4.11 Write integration test — Non-member calls `GET /budgets/{id}/security-audit-log` → `403 Forbidden` (spec: Non-member cannot access security audit log)
 
 ---
 
 ## Phase 5: Retention Service + Tests (PR5)
 
-- [ ] 5.1 Create `SharedKernel/Services/AuditRetentionService.cs` — `IHostedService` with daily `PeriodicTimer`; deletes `AuditLogs` and `SecurityAuditLogs` where `Timestamp < now - TTL`
-- [ ] 5.2 Write unit test — `AppSettingsAuditRetentionPolicy` reads `AuditLog:RetentionDays` from mock `IConfiguration`; returns configured value (spec: TTL is configurable)
-- [ ] 5.3 Write unit test — `AppSettingsAuditRetentionPolicy` returns 90 when key is absent (spec: Default TTL applies when setting is absent)
-- [ ] 5.4 Write integration test — seed `AuditLog` rows with `Timestamp < now - 90d`, trigger service, verify rows deleted (spec: Records older than TTL are deleted)
-- [ ] 5.5 Write integration test — seed `AuditLog` rows with `Timestamp` within TTL window, trigger service, verify rows preserved (spec: Records within TTL are preserved)
-- [ ] 5.6 Add `AuditLog:RetentionDays` entry to `appsettings.json` / `appsettings.Development.json`
+- [x] 5.1 Create `SharedKernel/Services/AuditRetentionService.cs` — `IHostedService` with daily `PeriodicTimer`; deletes `AuditLogs` and `SecurityAuditLogs` where `Timestamp < now - TTL`
+- [x] 5.2 Write unit test — `AppSettingsAuditRetentionPolicy` reads `AuditLog:RetentionDays` from mock `IConfiguration`; returns configured value (spec: TTL is configurable)
+- [x] 5.3 Write unit test — `AppSettingsAuditRetentionPolicy` returns 90 when key is absent (spec: Default TTL applies when setting is absent)
+- [x] 5.4 Write integration test — seed `AuditLog` rows with `Timestamp < now - 90d`, trigger service, verify rows deleted (spec: Records older than TTL are deleted)
+- [x] 5.5 Write integration test — seed `AuditLog` rows with `Timestamp` within TTL window, trigger service, verify rows preserved (spec: Records within TTL are preserved)
+- [x] 5.6 Add `AuditLog:RetentionDays` entry to `appsettings.json` / `appsettings.Development.json`
 
 ---
 
