@@ -205,7 +205,49 @@
 - `src/MyBudget.Features/Features/Auth/LogoutUser/LogoutUserHandler.cs` — inject ISecurityAuditWriter; TokenRevoked
 - `tests/MyBudget.Integration.Tests/Infrastructure/IntegrationTestFactory.cs` — CleanDatabaseAsync clears AuditLogs + SecurityAuditLogs
 
+## PR4 — Read Endpoints (GetAuditLog, GetSecurityAuditLog) + Integration Tests
+
+### Status: COMPLETE
+
+### Tasks
+
+- [x] 4.1 Create `Features/AuditLog/GetAuditLog/GetAuditLogQuery.cs` — record with BudgetId, Page, PageSize, EntityName?, Action?, From?, To?
+- [x] 4.2 Create `Features/AuditLog/GetAuditLog/GetAuditLogHandler.cs` — Dapper paginated query on AuditLogs filtered by BudgetId + optional filters
+- [x] 4.3 Create `Features/AuditLog/GetAuditLog/GetAuditLogEndpoint.cs` — GET /budgets/{id}/audit-log, budget:admin authorization
+- [x] 4.4 Create `Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogQuery.cs` — record with BudgetId, Page, PageSize
+- [x] 4.5 Create `Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogHandler.cs` — Dapper paginated query JOIN BudgetMemberships
+- [x] 4.6 Create `Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogEndpoint.cs` — GET /budgets/{id}/security-audit-log, budget:admin authorization
+- [x] 4.7 Integration test — Admin calls GET /budgets/{id}/audit-log → 200 OK paginated entries
+- [x] 4.8 Integration test — Member (Operator role) calls GET /budgets/{id}/audit-log → 403 Forbidden
+- [x] 4.9 Integration test — Filter by entityName + date range returns only matching rows
+- [x] 4.10 Integration test — Owner calls GET /budgets/{id}/security-audit-log → 200 OK, only member events returned; outsider excluded
+- [x] 4.11 Integration test — Non-member calls GET /budgets/{id}/security-audit-log → 403 Forbidden
+
+### Implementation notes
+
+- Npgsql/Dapper maps `timestamptz` as `DateTime` not `DateTimeOffset` — private row records use `DateTime`; converted to `DateTimeOffset` in projection via `new DateTimeOffset(r.Timestamp, TimeSpan.Zero)` (same pattern as `ListBudgetLinesHandler`)
+- `PagedResult<T>` type defined locally in each Query file to avoid shared-kernel coupling
+- `DateTimeOffset?` query params in the endpoint are URL-encoded in tests using `Uri.EscapeDataString` to handle ISO 8601 `+00:00` suffix
+- Endpoint auto-discovery works via the existing `MapAllSliceEndpoints` reflection scan — no registration needed
+- Test 4.10 seeds SecurityAuditLog rows organically via `RegisterUserAsync` (each registration writes an `AccountRegistered` event)
+
+### Build & Test Results
+
+- Build: PASS — 0 errors, pre-existing SQLitePCLRaw vulnerability warning only
+- Unit tests: PASS — 228/228 (unchanged)
+- Integration tests: PASS — 102/102 (+5 new PR4 integration tests)
+- Total: 330/330
+
+### Files created
+
+- `src/MyBudget.Features/Features/AuditLog/GetAuditLog/GetAuditLogQuery.cs`
+- `src/MyBudget.Features/Features/AuditLog/GetAuditLog/GetAuditLogHandler.cs`
+- `src/MyBudget.Features/Features/AuditLog/GetAuditLog/GetAuditLogEndpoint.cs`
+- `src/MyBudget.Features/Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogQuery.cs`
+- `src/MyBudget.Features/Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogHandler.cs`
+- `src/MyBudget.Features/Features/AuditLog/GetSecurityAuditLog/GetSecurityAuditLogEndpoint.cs`
+- `tests/MyBudget.Integration.Tests/Features/AuditLog/AuditLogEndpointTests.cs`
+
 ## Remaining PRs
 
-- [ ] PR4 — Read endpoints (GetAuditLog, GetSecurityAuditLog) + integration tests
 - [ ] PR5 — AuditRetentionService (full implementation) + tests
