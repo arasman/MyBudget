@@ -64,7 +64,7 @@ public static class ServiceCollectionExtensions
         // Audit log — current user, security audit writer, retention policy, retention cleanup
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, HttpContextCurrentUserService>();
-        services.AddScoped<ISecurityAuditWriter, NullSecurityAuditWriter>();
+        services.AddScoped<ISecurityAuditWriter, SecurityAuditWriter>();
         services.AddSingleton<IAuditRetentionPolicy, AppSettingsAuditRetentionPolicy>();
         services.AddHostedService<AuditRetentionService>();
 

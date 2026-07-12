@@ -75,8 +75,137 @@
 - `src/MyBudget.Features/SharedKernel/Persistence/AppDbContext.cs` — modified
 - `tests/MyBudget.Features.Tests/SharedKernel/Persistence/AppDbContextAuditTests.cs` — created
 
+## PR2b — Schema denormalization: BudgetId onto Period, Category, BudgetLine, BudgetLineRevision
+
+### Status: COMPLETE
+
+### Tasks
+
+- [x] 2b.1 Add `BudgetId` property to Period, Category, BudgetLine, BudgetLineRevision entities
+- [x] 2b.2 Update `Create()` factory methods on all four entities to accept and set `budgetId`
+- [x] 2b.3 Update `ResolveBudgetId()` on all four entities to return `BudgetId` directly (was `null`)
+- [x] 2b.4 Update EF configurations — add `.Property(BudgetId).IsRequired()` + FK to Budgets table + BudgetId index
+- [x] 2b.5 Update CreatePeriodHandler to pass `cycle.BudgetId` to `Period.Create()`
+- [x] 2b.6 Update CreateCategoryHandler to pass `group.BudgetId` to `Category.Create()`
+- [x] 2b.7 Update CreateBudgetLineHandler to pass `budgetId` to `BudgetLine.Create()` and `BudgetLineRevision.Create()`
+- [x] 2b.8 Update UpdateBudgetLineHandler to pass `line.Period.Cycle.BudgetId` to `BudgetLineRevision.Create()`
+- [x] 2b.9 Update all test files that call entity factories (20+ call sites across 12 test files)
+- [x] 2b.10 Add EF migration `AddBudgetIdToChildEntities`
+- [x] 2b.11 Build (0 errors) and test (314/314 pass)
+
+### Implementation notes
+
+- `BudgetId` placed as first property after `BaseEntity` fields, before parent FK, consistent with `CategoryGroup` pattern
+- Handlers already loaded the necessary parent entities (Cycle/Group) for authorization checks — `BudgetId` extracted from those, no extra DB queries needed
+- `UpdateBudgetLineHandler` uses `line.Period!.Cycle!.BudgetId` (already loaded via Include chain) for the new revision
+- Migration adds columns with `defaultValue: Guid.Empty` (EF default for non-nullable) — safe for empty tables in test/dev; existing production data would need a backfill SQL script
+
+### Build & Test Results
+
+- Build: PASS — 0 errors, 4 warnings (pre-existing SQLitePCLRaw vulnerability warning)
+- Unit tests: PASS — 224/224
+- Integration tests: PASS — 90/90
+- Total: 314/314
+
+### Files changed
+
+**Entities (src/MyBudget.Features/SharedKernel/Entities/)**
+- `Period.cs` — added `BudgetId`, updated `Create()`, updated `ResolveBudgetId()`
+- `Category.cs` — added `BudgetId`, updated `Create()`, updated `ResolveBudgetId()`
+- `BudgetLine.cs` — added `BudgetId`, updated `Create()`, updated `ResolveBudgetId()`
+- `BudgetLineRevision.cs` — added `BudgetId`, updated `Create()`, updated `ResolveBudgetId()`
+
+**EF Configurations (src/MyBudget.Features/SharedKernel/Persistence/Configurations/)**
+- `PeriodConfiguration.cs` — BudgetId property + FK + index
+- `CategoryConfiguration.cs` — BudgetId property + FK + index
+- `BudgetLineConfiguration.cs` — BudgetId property + FK + index
+- `BudgetLineRevisionConfiguration.cs` — BudgetId property + FK + index
+
+**Handlers (src/MyBudget.Features/Features/BudgetStructure/)**
+- `CreatePeriod/CreatePeriodHandler.cs`
+- `CreateCategory/CreateCategoryHandler.cs`
+- `CreateBudgetLine/CreateBudgetLineHandler.cs`
+- `UpdateBudgetLine/UpdateBudgetLineHandler.cs`
+
+**Migration**
+- `src/MyBudget.Features/Migrations/20260711233322_AddBudgetIdToChildEntities.cs`
+- `src/MyBudget.Features/Migrations/20260711233322_AddBudgetIdToChildEntities.Designer.cs`
+
+**Tests (12 test files updated)**
+- `SharedKernel/Entities/PeriodEntityTests.cs`
+- `SharedKernel/Entities/CategoryEntityTests.cs`
+- `SharedKernel/Entities/BudgetLineEntityTests.cs`
+- `SharedKernel/Entities/BudgetLineRevisionEntityTests.cs`
+- `Features/BudgetStructure/CreateBudgetLine/CreateBudgetLineHandlerTests.cs`
+- `Features/BudgetStructure/UpdateBudgetLine/UpdateBudgetLineHandlerTests.cs`
+- `Features/BudgetStructure/DeleteBudgetLine/DeleteBudgetLineHandlerTests.cs`
+- `Features/BudgetStructure/RestoreBudgetLine/RestoreBudgetLineHandlerTests.cs`
+- `Features/BudgetStructure/ReorderBudgetLines/ReorderBudgetLinesHandlerTests.cs`
+- `Features/BudgetStructure/ReorderCategories/ReorderCategoriesHandlerTests.cs`
+- `Features/BudgetStructure/RestoreCategory/RestoreCategoryHandlerTests.cs`
+- `Features/BudgetStructure/RestoreCategoryGroup/RestoreCategoryGroupHandlerTests.cs`
+- `Features/BudgetStructure/RestoreCycle/RestoreCycleHandlerTests.cs`
+
+### Commit
+
+`feat(audit-log): denormalize BudgetId onto Period, Category, BudgetLine, BudgetLineRevision`
+
+## PR3 — SecurityAuditWriter + Auth Handler Events + Integration Tests
+
+### Status: COMPLETE
+
+### Tasks
+
+- [x] 3.1 Create `SharedKernel/Services/SecurityAuditWriter.cs` — extracts IpAddress (X-Forwarded-For → RemoteIpAddress fallback) and UserAgent from IHttpContextAccessor; builds SecurityAuditLog; saves via AppDbContext.SaveChangesAsync (separate from business save)
+- [x] 3.2 Modify `Features/Auth/LoginUser/LoginUserHandler.cs` — inject ISecurityAuditWriter; write SuccessfulLogin on success, FailedLogin on invalid credentials
+- [x] 3.3 Modify `Features/Auth/RegisterUser/RegisterUserHandler.cs` — inject ISecurityAuditWriter; write AccountRegistered after user created
+- [x] 3.4 Modify `Features/Auth/AcceptInvitation/AcceptInvitationHandler.cs` — inject ISecurityAuditWriter; write InvitationAccepted
+- [x] 3.5 Modify `Features/Auth/RefreshToken/RefreshTokenHandler.cs` — inject ISecurityAuditWriter; write TokenRefreshed
+- [x] 3.6 Modify `Features/Auth/LogoutUser/LogoutUserHandler.cs` — inject ISecurityAuditWriter; write TokenRevoked
+- [x] 3.7 Unit tests — SecurityAuditWriter extracts IpAddress and UserAgent from mock IHttpContextAccessor (4 tests)
+- [x] 3.8 Integration test — POST /auth/login valid creds → SecurityAuditLog row Event=SuccessfulLogin, UserId + Email populated
+- [x] 3.9 Integration test — POST /auth/login invalid creds → SecurityAuditLog row Event=FailedLogin
+- [x] 3.10 Integration test — POST /auth/refresh → SecurityAuditLog row Event=TokenRefreshed
+- [x] 3.11 Integration test — POST /auth/logout → SecurityAuditLog row Event=TokenRevoked
+- [x] 3.12 Integration test — POST /auth/register → SecurityAuditLog row Event=AccountRegistered
+- [x] 3.13 Integration test — POST /auth/invitations/accept → SecurityAuditLog row Event=InvitationAccepted
+
+### Implementation notes
+
+- SecurityAuditWriter is `public sealed` (not `internal`) so unit tests can instantiate it directly
+- X-Forwarded-For parsed as comma-separated; first value taken as client IP
+- Null HttpContext (background jobs) handled gracefully — IpAddress=null, UserAgent=null, no throw
+- DI registration updated in ServiceCollectionExtensions: `NullSecurityAuditWriter` → `SecurityAuditWriter`
+- IntegrationTestFactory.CleanDatabaseAsync updated to clear AuditLogs + SecurityAuditLogs tables
+- FailedLogin for unknown email: UserId=null (user not found, no row to resolve)
+- FailedLogin for wrong password: UserId=row.Id (user exists, password mismatch)
+- InvitationAccepted test seeds invitation directly with known raw token (BCrypt, workFactor 4 for speed)
+- ClearAuditLogsAsync helper in SecurityAuditLogTests resets audit tables between test phases
+
+### Build & Test Results
+
+- Build: PASS — 0 errors, pre-existing SQLitePCLRaw vulnerability warning only
+- Unit tests: PASS — 228/228 (+4 new SecurityAuditWriter tests)
+- Integration tests: PASS — 97/97 (+7 new SecurityAuditLog integration tests)
+- Total: 325/325
+
+### Files changed
+
+**New files**
+- `src/MyBudget.Features/SharedKernel/Services/SecurityAuditWriter.cs`
+- `tests/MyBudget.Features.Tests/SharedKernel/Services/SecurityAuditWriterTests.cs`
+- `tests/MyBudget.Integration.Tests/Features/Auth/SecurityAuditLogTests.cs`
+
+**Modified files**
+- `src/MyBudget.Features/Extensions/ServiceCollectionExtensions.cs` — NullSecurityAuditWriter → SecurityAuditWriter
+- `src/MyBudget.Features/Features/Auth/LoginUser/LoginUserHandler.cs` — inject ISecurityAuditWriter; SuccessfulLogin + FailedLogin
+- `src/MyBudget.Features/Features/Auth/RegisterUser/RegisterUserHandler.cs` — inject ISecurityAuditWriter; AccountRegistered
+- `src/MyBudget.Features/Features/Auth/AcceptInvitation/AcceptInvitationHandler.cs` — inject ISecurityAuditWriter; InvitationAccepted
+- `src/MyBudget.Features/Features/Auth/RefreshToken/RefreshTokenHandler.cs` — inject ISecurityAuditWriter; TokenRefreshed
+- `src/MyBudget.Features/Features/Auth/LogoutUser/LogoutUserHandler.cs` — inject ISecurityAuditWriter; TokenRevoked
+- `tests/MyBudget.Integration.Tests/Infrastructure/IntegrationTestFactory.cs` — CleanDatabaseAsync clears AuditLogs + SecurityAuditLogs
+
 ## Remaining PRs
 
-- [ ] PR3 — ISecurityAuditWriter impl + auth handler modifications + integration tests
 - [ ] PR4 — Read endpoints (GetAuditLog, GetSecurityAuditLog) + integration tests
 - [ ] PR5 — AuditRetentionService (full implementation) + tests
