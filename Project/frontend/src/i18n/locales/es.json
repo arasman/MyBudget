@@ -65,6 +65,7 @@
       "alternateCurrency": "Moneda alterna",
       "exchangeRate": "Tipo de cambio",
       "exchangeRateLabel": "{defaultCurrency} por 1 {alternateCurrency}",
+      "exchangeRateDisplay": "{rate} {defaultCurrency} = 1 {alternateCurrency}",
       "pairValidationError": "Ambos campos (moneda alterna y tipo de cambio) son requeridos, o deja ambos vacíos",
       "noneSelected": "— Ninguna —",
       "empty": {

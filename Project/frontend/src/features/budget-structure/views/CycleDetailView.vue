@@ -21,9 +21,11 @@
     >
       <span>
         {{ t('budgetStructure.cycles.exchangeRate') }}:
-        {{ store.currentCycle.exchangeRate }}
-        {{ store.currentCycle.defaultCurrency?.code }} = 1
-        {{ store.currentCycle.alternateCurrency.code }}
+        {{ t('budgetStructure.cycles.exchangeRateDisplay', {
+          rate: store.currentCycle.exchangeRate,
+          defaultCurrency: store.currentCycle.defaultCurrency?.code,
+          alternateCurrency: store.currentCycle.alternateCurrency.code,
+        }) }}
       </span>
     </div>
 

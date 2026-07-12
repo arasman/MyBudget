@@ -65,6 +65,7 @@
       "alternateCurrency": "Alternate Currency",
       "exchangeRate": "Exchange Rate",
       "exchangeRateLabel": "{defaultCurrency} per 1 {alternateCurrency}",
+      "exchangeRateDisplay": "{rate} {defaultCurrency} = 1 {alternateCurrency}",
       "pairValidationError": "Both alternate currency and exchange rate are required, or leave both empty",
       "noneSelected": "— None —",
       "empty": {

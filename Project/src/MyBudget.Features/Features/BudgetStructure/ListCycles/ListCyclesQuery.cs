@@ -15,4 +15,5 @@ public sealed record CycleListItem(
     int         PeriodCount,
     CurrencyDto  DefaultCurrency,
     CurrencyDto? AlternateCurrency,
+    Guid?       AlternateCurrencyId,
     decimal?    ExchangeRate);

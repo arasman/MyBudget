@@ -58,6 +58,7 @@ public sealed class ListCyclesHandler
                     (int)r.PeriodCount,
                     new CurrencyDto(r.DefaultCurrencyCode, r.DefaultCurrencySymbol),
                     alternateCurrency,
+                    r.AlternateCurrencyId,
                     r.ExchangeRate);
             })
             .ToList();
