@@ -13,4 +13,7 @@ public sealed record CycleListItem(
     DateOnly    EndDate,
     bool        IsActive,
     int         PeriodCount,
-    CurrencyDto DefaultCurrency);
+    CurrencyDto  DefaultCurrency,
+    CurrencyDto? AlternateCurrency,
+    Guid?       AlternateCurrencyId,
+    decimal?    ExchangeRate);

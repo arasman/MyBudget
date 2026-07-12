@@ -14,6 +14,21 @@
 
     <BudgetTabs :budget-id="budgetId" class="mb-6" />
 
+    <!-- Cycle currency info — only shown when alternate currency is set -->
+    <div
+      v-if="store.currentCycle?.alternateCurrency"
+      class="alert alert-info mb-4 text-sm"
+    >
+      <span>
+        {{ t('budgetStructure.cycles.exchangeRate') }}:
+        {{ t('budgetStructure.cycles.exchangeRateDisplay', {
+          rate: store.currentCycle.exchangeRate,
+          defaultCurrency: store.currentCycle.defaultCurrency?.code,
+          alternateCurrency: store.currentCycle.alternateCurrency.code,
+        }) }}
+      </span>
+    </div>
+
     <!-- Empty state -->
     <div v-if="!store.loading && store.periods.length === 0" class="text-center py-16">
       <p class="text-base-content/60 text-lg mb-2">{{ t('budgetStructure.periods.empty.title') }}</p>

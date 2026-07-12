@@ -53,4 +53,38 @@ test.describe('Budget Structure — Cycles CRUD', () => {
     // Verify cycle removed
     await expect(page.getByText('Updated Cycle 2024')).not.toBeVisible({ timeout: 5_000 })
   })
+
+  test('create cycle with alternate currency → list shows USD → detail shows exchange rate', async ({ page }) => {
+    const { budgetId } = await seedOwnerAndLogin(page, 'cycles-alt')
+
+    await page.goto(`/budgets/${budgetId}/cycles`)
+    await expect(page).toHaveURL(`/budgets/${budgetId}/cycles`, { timeout: 10_000 })
+
+    // Open create form
+    await page.getByRole('navigation').getByRole('button', { name: 'New Cycle' }).click()
+
+    await page.getByLabel('Name').fill('Alt Currency Cycle')
+    await page.getByLabel('Start Date').fill('2025-01-01')
+    await page.getByLabel('End Date').fill('2025-12-31')
+
+    // Wait for currencies to load, then select alternate currency (USD)
+    await expect(page.getByLabel('Alternate Currency').locator('option', { hasText: 'US Dollar' })).toBeAttached({ timeout: 5_000 })
+    await page.getByLabel('Alternate Currency').selectOption({ label: '$ US Dollar (USD)' })
+
+    // Exchange rate input should appear; fill it
+    await expect(page.getByLabel(/per 1/)).toBeVisible({ timeout: 3_000 })
+    await page.locator('input[type="number"]').fill('7.5')
+
+    await page.getByRole('button', { name: 'Save' }).click()
+
+    // Verify cycle appears in the list with alternate currency column
+    await expect(page.getByText('Alt Currency Cycle')).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText(/\$ USD/)).toBeVisible({ timeout: 5_000 })
+
+    // Navigate to cycle detail
+    await page.getByRole('button', { name: 'View Periods' }).first().click()
+
+    // Verify exchange rate info is shown in detail view
+    await expect(page.getByText(/7\.5 GTQ = 1 USD/i)).toBeVisible({ timeout: 5_000 })
+  })
 })

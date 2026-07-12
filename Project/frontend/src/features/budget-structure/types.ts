@@ -53,6 +53,9 @@ export interface CycleListItem {
   isActive: boolean
   periodCount: number
   defaultCurrency?: CurrencyItem
+  alternateCurrency?: CurrencyItem | null
+  alternateCurrencyId?: string | null
+  exchangeRate?: number | null
 }
 
 export interface CycleDetail extends Omit<CycleListItem, 'periodCount'> {
