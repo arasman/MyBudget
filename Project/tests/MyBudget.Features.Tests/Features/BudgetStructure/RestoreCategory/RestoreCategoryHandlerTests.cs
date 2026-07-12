@@ -31,7 +31,7 @@ public sealed class RestoreCategoryHandlerTests : IDisposable
         _db.Cycles.Add(cycle);
         await _db.SaveChangesAsync();
 
-        var period = Period.Create(cycle.Id, "January", 1,
+        var period = Period.Create(budgetId, cycle.Id, "January", 1,
             DateOnly.FromDateTime(DateTime.UtcNow),
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
         _db.Periods.Add(period);
@@ -49,14 +49,14 @@ public sealed class RestoreCategoryHandlerTests : IDisposable
     {
         var (budgetId, periodId, group) = await SeedBaseAsync();
 
-        var category = Category.Create(group.Id, "Rent", 1);
+        var category = Category.Create(budgetId, group.Id, "Rent", 1);
         category.SoftDelete();
         _db.Categories.Add(category);
         await _db.SaveChangesAsync();
 
-        var line1 = BudgetLine.Create(periodId, group.Id, category.Id, "Rent 1", LineType.Expense, true, 1);
-        var line2 = BudgetLine.Create(periodId, group.Id, category.Id, "Rent 2", LineType.Expense, false, 2);
-        var line3 = BudgetLine.Create(periodId, group.Id, category.Id, "Rent 3", LineType.Expense, false, 3);
+        var line1 = BudgetLine.Create(budgetId, periodId, group.Id, category.Id, "Rent 1", LineType.Expense, true, 1);
+        var line2 = BudgetLine.Create(budgetId, periodId, group.Id, category.Id, "Rent 2", LineType.Expense, false, 2);
+        var line3 = BudgetLine.Create(budgetId, periodId, group.Id, category.Id, "Rent 3", LineType.Expense, false, 3);
         line1.SoftDelete(); line2.SoftDelete(); line3.SoftDelete();
         _db.BudgetLines.AddRange(line1, line2, line3);
         await _db.SaveChangesAsync();
@@ -85,7 +85,7 @@ public sealed class RestoreCategoryHandlerTests : IDisposable
         group.SoftDelete();
         await _db.SaveChangesAsync();
 
-        var category = Category.Create(group.Id, "Rent", 1);
+        var category = Category.Create(budgetId, group.Id, "Rent", 1);
         category.SoftDelete();
         _db.Categories.Add(category);
         await _db.SaveChangesAsync();

@@ -4,24 +4,28 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyBudget.Features.SharedKernel.Persistence;
 using MyBudget.Features.SharedKernel.Results;
+using MyBudget.Features.SharedKernel.Services;
 
 namespace MyBudget.Features.Features.Auth.LogoutUser;
 
 public sealed class LogoutUserHandler
     : IRequestHandler<LogoutUserCommand, Result<bool>>
 {
-    private readonly AppDbContext      _db;
-    private readonly ConnectionFactory _factory;
+    private readonly AppDbContext         _db;
+    private readonly ConnectionFactory    _factory;
+    private readonly ISecurityAuditWriter _auditWriter;
     private readonly ILogger<LogoutUserHandler> _logger;
 
     public LogoutUserHandler(
         AppDbContext db,
         ConnectionFactory factory,
+        ISecurityAuditWriter auditWriter,
         ILogger<LogoutUserHandler> logger)
     {
-        _db      = db;
-        _factory = factory;
-        _logger  = logger;
+        _db          = db;
+        _factory     = factory;
+        _auditWriter = auditWriter;
+        _logger      = logger;
     }
 
     public async ValueTask<Result<bool>> Handle(
@@ -61,6 +65,12 @@ public sealed class LogoutUserHandler
             await _db.SaveChangesAsync(ct);
             _logger.LogInformation("User {UserId} logged out", cmd.UserId);
         }
+
+        await _auditWriter.WriteAsync(
+            "TokenRevoked",
+            userId: cmd.UserId,
+            email:  null,
+            ct:     ct);
 
         return Result<bool>.Success(true);
     }

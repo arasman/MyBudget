@@ -34,7 +34,7 @@ public sealed class CreatePeriodHandler : IRequestHandler<CreatePeriodCommand, R
         if (hasOverlap)
             return Result<Guid>.Failure("PERIOD_DATE_OVERLAP");
 
-        var period = Period.Create(cmd.CycleId, cmd.Name, cmd.PeriodNumber, cmd.StartDate, cmd.EndDate);
+        var period = Period.Create(cycle.BudgetId, cmd.CycleId, cmd.Name, cmd.PeriodNumber, cmd.StartDate, cmd.EndDate);
         _db.Periods.Add(period);
         await _db.SaveChangesAsync(ct);
 

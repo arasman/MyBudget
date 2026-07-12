@@ -1,7 +1,8 @@
 namespace MyBudget.Features.SharedKernel.Entities;
 
-public sealed class Period : BaseEntity
+public sealed class Period : BaseEntity, IAuditableEntity
 {
+    public Guid BudgetId { get; private set; }
     public Guid CycleId { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public int PeriodNumber { get; private set; }
@@ -16,10 +17,13 @@ public sealed class Period : BaseEntity
 
     private Period() { }
 
-    public static Period Create(Guid cycleId, string name, int periodNumber, DateOnly startDate, DateOnly endDate)
+    public Guid? ResolveBudgetId() => BudgetId;
+
+    public static Period Create(Guid budgetId, Guid cycleId, string name, int periodNumber, DateOnly startDate, DateOnly endDate)
     {
         return new Period
         {
+            BudgetId     = budgetId,
             CycleId      = cycleId,
             Name         = name.Trim(),
             PeriodNumber = periodNumber,

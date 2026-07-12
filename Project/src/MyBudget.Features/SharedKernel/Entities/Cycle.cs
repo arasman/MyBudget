@@ -1,6 +1,6 @@
 namespace MyBudget.Features.SharedKernel.Entities;
 
-public sealed class Cycle : BaseEntity
+public sealed class Cycle : BaseEntity, IAuditableEntity
 {
     public Guid      BudgetId             { get; private set; }
     public string    Name                 { get; private set; } = string.Empty;
@@ -21,6 +21,8 @@ public sealed class Cycle : BaseEntity
     public ICollection<Period>  Periods            { get; private set; } = new List<Period>();
 
     private Cycle() { }
+
+    public Guid? ResolveBudgetId() => BudgetId;
 
     public static Cycle Create(
         Guid      budgetId,

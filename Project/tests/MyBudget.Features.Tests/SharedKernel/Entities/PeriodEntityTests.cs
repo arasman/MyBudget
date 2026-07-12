@@ -8,6 +8,7 @@ public sealed class PeriodEntityTests
     private static Period BuildPeriod() =>
         Period.Create(
             Guid.NewGuid(),
+            Guid.NewGuid(),
             "January",
             1,
             new DateOnly(2025, 1, 1),

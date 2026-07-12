@@ -7,6 +7,7 @@ using MyBudget.Features.SharedKernel.Entities;
 using RefreshTokenEntity = MyBudget.Features.SharedKernel.Entities.RefreshToken;
 using MyBudget.Features.SharedKernel.Persistence;
 using MyBudget.Features.SharedKernel.Results;
+using MyBudget.Features.SharedKernel.Services;
 
 namespace MyBudget.Features.Features.Auth.LoginUser;
 
@@ -16,18 +17,21 @@ public sealed class LoginUserHandler
     private readonly AppDbContext    _db;
     private readonly ConnectionFactory _factory;
     private readonly JwtTokenService _jwt;
+    private readonly ISecurityAuditWriter _auditWriter;
     private readonly ILogger<LoginUserHandler> _logger;
 
     public LoginUserHandler(
         AppDbContext db,
         ConnectionFactory factory,
         JwtTokenService jwt,
+        ISecurityAuditWriter auditWriter,
         ILogger<LoginUserHandler> logger)
     {
-        _db      = db;
-        _factory = factory;
-        _jwt     = jwt;
-        _logger  = logger;
+        _db          = db;
+        _factory     = factory;
+        _jwt         = jwt;
+        _auditWriter = auditWriter;
+        _logger      = logger;
     }
 
     public async ValueTask<Result<LoginResponse>> Handle(
@@ -48,7 +52,14 @@ public sealed class LoginUserHandler
 
         // 2. BCrypt.Verify — same response for unknown email and wrong password (no enumeration)
         if (row is null || !BCrypt.Net.BCrypt.Verify(cmd.Password, row.PasswordHash))
+        {
+            await _auditWriter.WriteAsync(
+                "FailedLogin",
+                userId: row?.Id,
+                email:  normalizedEmail,
+                ct:     ct);
             return Result<LoginResponse>.Failure("AUTH_INVALID_CREDENTIALS");
+        }
 
         // 3. Update LastLoginAt via EF
         var user = await _db.Users.FindAsync([row.Id], ct)
@@ -65,6 +76,12 @@ public sealed class LoginUserHandler
         var refreshToken = RefreshTokenEntity.Create(user.Id, refreshHash, DateTime.UtcNow.AddDays(7));
         _db.RefreshTokens.Add(refreshToken);
         await _db.SaveChangesAsync(ct);
+
+        await _auditWriter.WriteAsync(
+            "SuccessfulLogin",
+            userId: user.Id,
+            email:  user.Email,
+            ct:     ct);
 
         _logger.LogInformation("User logged in: {UserId}", user.Id);
 

@@ -16,10 +16,21 @@ public sealed class PeriodConfiguration : IEntityTypeConfiguration<Period>
             .IsRequired()
             .HasMaxLength(200);
 
+        builder.Property(p => p.BudgetId)
+            .IsRequired();
+
         builder.HasQueryFilter(p => p.DeletedAt == null);
+
+        builder.HasIndex(p => p.BudgetId)
+            .HasDatabaseName("IX_Periods_BudgetId");
 
         builder.HasIndex(p => p.CycleId)
             .HasDatabaseName("IX_Periods_CycleId");
+
+        builder.HasOne<Budget>()
+            .WithMany()
+            .HasForeignKey(p => p.BudgetId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(p => p.Cycle)
             .WithMany(c => c.Periods)

@@ -9,7 +9,7 @@ public sealed class BudgetLineEntityTests
     public void Create_AcceptsDisplayOrder()
     {
         var line = BudgetLine.Create(
-            Guid.NewGuid(), Guid.NewGuid(), null,
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null,
             "Rent", LineType.Expense, true,
             displayOrder: 3);
 
@@ -20,7 +20,7 @@ public sealed class BudgetLineEntityTests
     public void Create_DefaultDisplayOrder_IsZero()
     {
         var line = BudgetLine.Create(
-            Guid.NewGuid(), Guid.NewGuid(), null,
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null,
             "Rent", LineType.Expense, false);
 
         line.DisplayOrder.ShouldBe(0);
@@ -30,7 +30,7 @@ public sealed class BudgetLineEntityTests
     public void SetDisplayOrder_UpdatesDisplayOrder()
     {
         var line = BudgetLine.Create(
-            Guid.NewGuid(), Guid.NewGuid(), null,
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null,
             "Rent", LineType.Expense, false);
 
         line.SetDisplayOrder(5);
@@ -42,7 +42,7 @@ public sealed class BudgetLineEntityTests
     public void Restore_ClearsDeletedAt()
     {
         var line = BudgetLine.Create(
-            Guid.NewGuid(), Guid.NewGuid(), null,
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null,
             "Rent", LineType.Expense, false);
 
         line.SoftDelete();
@@ -57,7 +57,7 @@ public sealed class BudgetLineEntityTests
     public void Restore_RefreshesUpdatedAt()
     {
         var line = BudgetLine.Create(
-            Guid.NewGuid(), Guid.NewGuid(), null,
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null,
             "Rent", LineType.Expense, false);
 
         line.SoftDelete();

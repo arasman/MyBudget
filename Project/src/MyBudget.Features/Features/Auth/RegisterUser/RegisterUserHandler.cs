@@ -7,26 +7,30 @@ using MyBudget.Features.SharedKernel.Entities;
 using RefreshTokenEntity = MyBudget.Features.SharedKernel.Entities.RefreshToken;
 using MyBudget.Features.SharedKernel.Persistence;
 using MyBudget.Features.SharedKernel.Results;
+using MyBudget.Features.SharedKernel.Services;
 
 namespace MyBudget.Features.Features.Auth.RegisterUser;
 
 public sealed class RegisterUserHandler
     : IRequestHandler<RegisterUserCommand, Result<LoginResponse>>
 {
-    private readonly AppDbContext      _db;
-    private readonly JwtTokenService   _jwt;
-    private readonly IEmailSender      _emailSender;
+    private readonly AppDbContext         _db;
+    private readonly JwtTokenService      _jwt;
+    private readonly IEmailSender         _emailSender;
+    private readonly ISecurityAuditWriter _auditWriter;
     private readonly ILogger<RegisterUserHandler> _logger;
 
     public RegisterUserHandler(
         AppDbContext db,
         JwtTokenService jwt,
         IEmailSender emailSender,
+        ISecurityAuditWriter auditWriter,
         ILogger<RegisterUserHandler> logger)
     {
         _db          = db;
         _jwt         = jwt;
         _emailSender = emailSender;
+        _auditWriter = auditWriter;
         _logger      = logger;
     }
 
@@ -76,6 +80,12 @@ public sealed class RegisterUserHandler
 
         _db.RefreshTokens.Add(refreshToken);
         await _db.SaveChangesAsync(ct);
+
+        await _auditWriter.WriteAsync(
+            "AccountRegistered",
+            userId: user.Id,
+            email:  user.Email,
+            ct:     ct);
 
         // 7. Send welcome email (fire-and-forget via IEmailSender channel)
         await _emailSender.SendAsync(new EmailMessage(

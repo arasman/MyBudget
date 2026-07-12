@@ -31,7 +31,7 @@ public sealed class RestoreCategoryGroupHandlerTests : IDisposable
         _db.Cycles.Add(cycle);
         await _db.SaveChangesAsync();
 
-        var period = Period.Create(cycle.Id, "January", 1,
+        var period = Period.Create(budgetId, cycle.Id, "January", 1,
             DateOnly.FromDateTime(DateTime.UtcNow),
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
         _db.Periods.Add(period);
@@ -50,18 +50,18 @@ public sealed class RestoreCategoryGroupHandlerTests : IDisposable
     {
         var (budgetId, _, periodId, group) = await SeedGroupAsync();
 
-        var cat1 = Category.Create(group.Id, "Cat1", 1);
+        var cat1 = Category.Create(budgetId, group.Id, "Cat1", 1);
         cat1.SoftDelete();
-        var cat2 = Category.Create(group.Id, "Cat2", 2);
+        var cat2 = Category.Create(budgetId, group.Id, "Cat2", 2);
         cat2.SoftDelete();
         _db.Categories.AddRange(cat1, cat2);
         await _db.SaveChangesAsync();
 
         // BudgetLines scoped by CategoryGroupId
-        var line1 = BudgetLine.Create(periodId, group.Id, cat1.Id, "Rent",      LineType.Expense, true, 1);
-        var line2 = BudgetLine.Create(periodId, group.Id, cat1.Id, "Utilities", LineType.Expense, false, 2);
-        var line3 = BudgetLine.Create(periodId, group.Id, cat2.Id, "Insurance", LineType.Expense, false, 1);
-        var line4 = BudgetLine.Create(periodId, group.Id, cat2.Id, "Food",      LineType.Expense, false, 2);
+        var line1 = BudgetLine.Create(budgetId, periodId, group.Id, cat1.Id, "Rent",      LineType.Expense, true, 1);
+        var line2 = BudgetLine.Create(budgetId, periodId, group.Id, cat1.Id, "Utilities", LineType.Expense, false, 2);
+        var line3 = BudgetLine.Create(budgetId, periodId, group.Id, cat2.Id, "Insurance", LineType.Expense, false, 1);
+        var line4 = BudgetLine.Create(budgetId, periodId, group.Id, cat2.Id, "Food",      LineType.Expense, false, 2);
         line1.SoftDelete(); line2.SoftDelete(); line3.SoftDelete(); line4.SoftDelete();
         _db.BudgetLines.AddRange(line1, line2, line3, line4);
         await _db.SaveChangesAsync();

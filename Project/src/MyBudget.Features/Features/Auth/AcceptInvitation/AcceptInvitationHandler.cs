@@ -5,27 +5,31 @@ using Microsoft.Extensions.Logging;
 using MyBudget.Features.SharedKernel.Entities;
 using MyBudget.Features.SharedKernel.Persistence;
 using MyBudget.Features.SharedKernel.Results;
+using MyBudget.Features.SharedKernel.Services;
 
 namespace MyBudget.Features.Features.Auth.AcceptInvitation;
 
 public sealed class AcceptInvitationHandler
     : IRequestHandler<AcceptInvitationCommand, Result<AcceptInvitationResponse>>
 {
-    private readonly AppDbContext      _db;
-    private readonly ConnectionFactory _factory;
-    private readonly IMemoryCache      _cache;
+    private readonly AppDbContext         _db;
+    private readonly ConnectionFactory    _factory;
+    private readonly IMemoryCache         _cache;
+    private readonly ISecurityAuditWriter _auditWriter;
     private readonly ILogger<AcceptInvitationHandler> _logger;
 
     public AcceptInvitationHandler(
         AppDbContext db,
         ConnectionFactory factory,
         IMemoryCache cache,
+        ISecurityAuditWriter auditWriter,
         ILogger<AcceptInvitationHandler> logger)
     {
-        _db      = db;
-        _factory = factory;
-        _cache   = cache;
-        _logger  = logger;
+        _db          = db;
+        _factory     = factory;
+        _cache       = cache;
+        _auditWriter = auditWriter;
+        _logger      = logger;
     }
 
     public async ValueTask<Result<AcceptInvitationResponse>> Handle(
@@ -83,6 +87,12 @@ public sealed class AcceptInvitationHandler
         _db.BudgetMemberships.Add(membership);
 
         await _db.SaveChangesAsync(ct);
+
+        await _auditWriter.WriteAsync(
+            "InvitationAccepted",
+            userId: cmd.UserId,
+            email:  userEmail,
+            ct:     ct);
 
         // 7. Evict cache
         _cache.Remove($"budget-membership:{cmd.UserId}:{matched.BudgetId}");

@@ -12,8 +12,16 @@ public sealed class BudgetLineRevisionConfiguration : IEntityTypeConfiguration<B
 
         builder.HasKey(r => r.Id);
 
+        builder.Property(r => r.BudgetId)
+            .IsRequired();
+
         builder.Property(r => r.CurrencyId)
             .IsRequired();
+
+        builder.HasOne<Budget>()
+            .WithMany()
+            .HasForeignKey(r => r.BudgetId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(r => r.Currency)
             .WithMany()
@@ -24,6 +32,9 @@ public sealed class BudgetLineRevisionConfiguration : IEntityTypeConfiguration<B
             .HasPrecision(18, 2);
 
         // No query filter — BudgetLineRevision is immutable/append-only; no soft delete
+
+        builder.HasIndex(r => r.BudgetId)
+            .HasDatabaseName("IX_BudgetLineRevisions_BudgetId");
 
         builder.HasIndex(r => new { r.BudgetLineId, r.RevisedAt })
             .HasDatabaseName("IX_BudgetLineRevisions_BudgetLineId_RevisedAt")

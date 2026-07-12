@@ -50,7 +50,7 @@ public sealed class UpdateBudgetLineHandlerTests : IDisposable
         _seedDb.Cycles.Add(cycle);
         await _seedDb.SaveChangesAsync();
 
-        var period = Period.Create(cycle.Id, "January", 1,
+        var period = Period.Create(budgetId, cycle.Id, "January", 1,
             DateOnly.FromDateTime(DateTime.UtcNow),
             DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
         if (isClosed) period.SetClosed(true);
@@ -61,11 +61,11 @@ public sealed class UpdateBudgetLineHandlerTests : IDisposable
         _seedDb.CategoryGroups.Add(group);
         await _seedDb.SaveChangesAsync();
 
-        var line = BudgetLine.Create(period.Id, group.Id, null, "Rent", LineType.Expense, true);
+        var line = BudgetLine.Create(budgetId, period.Id, group.Id, null, "Rent", LineType.Expense, true);
         _seedDb.BudgetLines.Add(line);
         await _seedDb.SaveChangesAsync();
 
-        var revision = BudgetLineRevision.Create(line.Id, 1000m, CurrencySeeds.GtqId);
+        var revision = BudgetLineRevision.Create(budgetId, line.Id, 1000m, CurrencySeeds.GtqId);
         _seedDb.BudgetLineRevisions.Add(revision);
         await _seedDb.SaveChangesAsync();
 

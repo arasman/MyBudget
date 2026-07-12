@@ -16,7 +16,13 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .IsRequired()
             .HasMaxLength(200);
 
+        builder.Property(c => c.BudgetId)
+            .IsRequired();
+
         builder.HasQueryFilter(c => c.DeletedAt == null);
+
+        builder.HasIndex(c => c.BudgetId)
+            .HasDatabaseName("IX_Categories_BudgetId");
 
         builder.HasIndex(c => c.CategoryGroupId)
             .HasDatabaseName("IX_Categories_CategoryGroupId");
@@ -24,6 +30,11 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.HasIndex(c => new { c.CategoryGroupId, c.Name })
             .HasDatabaseName("IX_Categories_CategoryGroupId_Name")
             .IsUnique();
+
+        builder.HasOne<Budget>()
+            .WithMany()
+            .HasForeignKey(c => c.BudgetId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(c => c.CategoryGroup)
             .WithMany(g => g.Categories)

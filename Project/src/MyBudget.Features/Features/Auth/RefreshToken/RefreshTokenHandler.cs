@@ -7,27 +7,31 @@ using MyBudget.Features.SharedKernel.Entities;
 using RefreshTokenEntity = MyBudget.Features.SharedKernel.Entities.RefreshToken;
 using MyBudget.Features.SharedKernel.Persistence;
 using MyBudget.Features.SharedKernel.Results;
+using MyBudget.Features.SharedKernel.Services;
 
 namespace MyBudget.Features.Features.Auth.RefreshToken;
 
 public sealed class RefreshTokenHandler
     : IRequestHandler<RefreshTokenCommand, Result<LoginResponse>>
 {
-    private readonly AppDbContext      _db;
-    private readonly ConnectionFactory _factory;
-    private readonly JwtTokenService   _jwt;
+    private readonly AppDbContext         _db;
+    private readonly ConnectionFactory    _factory;
+    private readonly JwtTokenService      _jwt;
+    private readonly ISecurityAuditWriter _auditWriter;
     private readonly ILogger<RefreshTokenHandler> _logger;
 
     public RefreshTokenHandler(
         AppDbContext db,
         ConnectionFactory factory,
         JwtTokenService jwt,
+        ISecurityAuditWriter auditWriter,
         ILogger<RefreshTokenHandler> logger)
     {
-        _db      = db;
-        _factory = factory;
-        _jwt     = jwt;
-        _logger  = logger;
+        _db          = db;
+        _factory     = factory;
+        _jwt         = jwt;
+        _auditWriter = auditWriter;
+        _logger      = logger;
     }
 
     public async ValueTask<Result<LoginResponse>> Handle(
@@ -90,6 +94,12 @@ public sealed class RefreshTokenHandler
         var user = await _db.Users.FindAsync([cmd.UserId], ct)
                    ?? throw new InvalidOperationException("User not found.");
         var accessToken = _jwt.GenerateAccessToken(user);
+
+        await _auditWriter.WriteAsync(
+            "TokenRefreshed",
+            userId: cmd.UserId,
+            email:  null,
+            ct:     ct);
 
         var response = new LoginResponse(
             AccessToken:  accessToken,

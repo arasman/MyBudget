@@ -22,13 +22,24 @@ public sealed class BudgetLineConfiguration : IEntityTypeConfiguration<BudgetLin
         builder.Property(l => l.DisplayOrder)
             .IsRequired();
 
+        builder.Property(l => l.BudgetId)
+            .IsRequired();
+
         builder.HasQueryFilter(l => l.DeletedAt == null);
+
+        builder.HasIndex(l => l.BudgetId)
+            .HasDatabaseName("IX_BudgetLines_BudgetId");
 
         builder.HasIndex(l => l.PeriodId)
             .HasDatabaseName("IX_BudgetLines_PeriodId");
 
         builder.HasIndex(l => l.CategoryGroupId)
             .HasDatabaseName("IX_BudgetLines_CategoryGroupId");
+
+        builder.HasOne<Budget>()
+            .WithMany()
+            .HasForeignKey(l => l.BudgetId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(l => l.Period)
             .WithMany(p => p.BudgetLines)

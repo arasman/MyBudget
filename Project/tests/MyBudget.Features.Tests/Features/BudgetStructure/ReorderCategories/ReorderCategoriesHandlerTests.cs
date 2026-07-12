@@ -27,9 +27,9 @@ public sealed class ReorderCategoriesHandlerTests : IDisposable
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        var catA = Category.Create(group.Id, "Rent", 1);
-        var catB = Category.Create(group.Id, "Utilities", 2);
-        var catC = Category.Create(group.Id, "Insurance", 3);
+        var catA = Category.Create(budgetId, group.Id, "Rent", 1);
+        var catB = Category.Create(budgetId, group.Id, "Utilities", 2);
+        var catC = Category.Create(budgetId, group.Id, "Insurance", 3);
         _db.Categories.AddRange(catA, catB, catC);
         await _db.SaveChangesAsync();
 
@@ -49,8 +49,8 @@ public sealed class ReorderCategoriesHandlerTests : IDisposable
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        var catA = Category.Create(group.Id, "Rent", 1);
-        var catB = Category.Create(group.Id, "Utilities", 2);
+        var catA = Category.Create(budgetId, group.Id, "Rent", 1);
+        var catB = Category.Create(budgetId, group.Id, "Utilities", 2);
         _db.Categories.AddRange(catA, catB);
         await _db.SaveChangesAsync();
 
@@ -69,8 +69,8 @@ public sealed class ReorderCategoriesHandlerTests : IDisposable
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        var catA = Category.Create(group.Id, "Rent", 1);
-        var catB = Category.Create(group.Id, "Utilities", 2);
+        var catA = Category.Create(budgetId, group.Id, "Rent", 1);
+        var catB = Category.Create(budgetId, group.Id, "Utilities", 2);
         _db.Categories.AddRange(catA, catB);
         await _db.SaveChangesAsync();
 

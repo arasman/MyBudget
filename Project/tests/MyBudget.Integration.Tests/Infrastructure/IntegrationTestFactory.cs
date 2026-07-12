@@ -79,6 +79,9 @@ public sealed class IntegrationTestFactory : WebApplicationFactory<Program>, IAs
         db.RefreshTokens.RemoveRange(db.RefreshTokens);
         db.Budgets.RemoveRange(db.Budgets);
         db.Users.RemoveRange(db.Users);
+        // Audit tables — no FK constraints, cleared independently
+        db.AuditLogs.RemoveRange(db.AuditLogs);
+        db.SecurityAuditLogs.RemoveRange(db.SecurityAuditLogs);
         await db.SaveChangesAsync();
     }
 }
