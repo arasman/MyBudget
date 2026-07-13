@@ -35,6 +35,21 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(10)
             .HasDefaultValue("en");
 
+        // --- Password management columns ---
+        builder.Property(u => u.FailedLoginAttempts)
+            .IsRequired()
+            .HasDefaultValue(0);
+
+        builder.Property(u => u.LockoutUntil)
+            .IsRequired(false);
+
+        builder.Property(u => u.PasswordChangedAt)
+            .IsRequired(false);
+
+        builder.Property(u => u.ForcePasswordChange)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.HasMany(u => u.RefreshTokens)
             .WithOne(rt => rt.User)
             .HasForeignKey(rt => rt.UserId)

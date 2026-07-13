@@ -15,6 +15,12 @@ public sealed class User : BaseEntity
 
     public DateTime? LastLoginAt { get; private set; }
 
+    // --- Password management fields ---
+    public int      FailedLoginAttempts { get; private set; } = 0;
+    public DateTime? LockoutUntil        { get; private set; }
+    public DateTime? PasswordChangedAt   { get; private set; }
+    public bool      ForcePasswordChange { get; private set; } = false;
+
     // Navigation
     public ICollection<RefreshToken> RefreshTokens { get; private set; } = new List<RefreshToken>();
 
@@ -40,7 +46,50 @@ public sealed class User : BaseEntity
 
     public void UpdateLastLogin()
     {
-        LastLoginAt  = DateTime.UtcNow;
-        UpdatedAt    = DateTimeOffset.UtcNow;
+        LastLoginAt = DateTime.UtcNow;
+        UpdatedAt   = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Increments the failed login counter. If the counter reaches <paramref name="maxAttempts"/>,
+    /// the account is locked for <paramref name="lockoutDurationMinutes"/> minutes.
+    /// </summary>
+    /// <returns><c>true</c> if this call triggered a new lockout; otherwise <c>false</c>.</returns>
+    public bool RecordFailedLogin(int maxAttempts, int lockoutDurationMinutes = 30)
+    {
+        FailedLoginAttempts++;
+        UpdatedAt = DateTimeOffset.UtcNow;
+
+        if (FailedLoginAttempts >= maxAttempts)
+        {
+            LockoutUntil = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>Clears lockout state after a successful password reset or manual admin action.</summary>
+    public void ClearLockout()
+    {
+        FailedLoginAttempts = 0;
+        LockoutUntil        = null;
+        UpdatedAt           = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Sets a new password hash, records the change timestamp, and clears any forced-change flag.</summary>
+    public void UpdatePassword(string newHash)
+    {
+        PasswordHash        = newHash;
+        PasswordChangedAt   = DateTime.UtcNow;
+        ForcePasswordChange = false;
+        UpdatedAt           = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Marks the account so that the next login is blocked until the password is changed.</summary>
+    public void SetForcePasswordChange()
+    {
+        ForcePasswordChange = true;
+        UpdatedAt           = DateTimeOffset.UtcNow;
     }
 }

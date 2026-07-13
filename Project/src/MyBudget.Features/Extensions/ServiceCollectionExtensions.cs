@@ -67,6 +67,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISecurityAuditWriter, SecurityAuditWriter>();
         services.AddSingleton<IAuditRetentionPolicy, AppSettingsAuditRetentionPolicy>();
         services.AddHostedService<AuditRetentionService>();
+        services.AddSingleton<IPasswordPolicyService, AppSettingsPasswordPolicyService>();
 
         // JWT options + token service
         services.Configure<JwtOptions>(configuration.GetSection("JWT"));

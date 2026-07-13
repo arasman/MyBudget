@@ -92,6 +92,30 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/forgot-password',
+    component: PublicLayout,
+    children: [
+      {
+        path: '',
+        name: 'ForgotPassword',
+        component: () => import('@/views/ForgotPasswordView.vue'),
+        meta: { requiresAuth: false },
+      },
+    ],
+  },
+  {
+    path: '/reset-password',
+    component: PublicLayout,
+    children: [
+      {
+        path: '',
+        name: 'ResetPassword',
+        component: () => import('@/views/ResetPasswordView.vue'),
+        meta: { requiresAuth: false },
+      },
+    ],
+  },
 ]
 
 export const router = createRouter({
@@ -102,11 +126,15 @@ export const router = createRouter({
 // Navigation guard — redirects unauthenticated users to /login
 // If authenticated but user profile not yet loaded (e.g. page reload), fetchMe()
 // so the 401 interceptor can silently refresh an expired access token.
+// When forcePasswordChange is true, all requiresAuth routes redirect to /forgot-password.
 router.beforeEach(async (to) => {
   if (to.meta.requiresAuth) {
     const authStore = useAuthStore()
     if (!authStore.isAuthenticated) {
       return '/login'
+    }
+    if (authStore.forcePasswordChange) {
+      return '/forgot-password?reason=force'
     }
     if (!authStore.user) {
       try {

@@ -28,7 +28,18 @@ public static class LoginUserEndpoint
         var result = await mediator.Send(command, ct);
 
         if (!result.IsSuccess)
-            return Results.Unauthorized();
+        {
+            return result.Error switch
+            {
+                "AUTH_ACCOUNT_LOCKED" => Results.Problem(
+                    detail: "AUTH_ACCOUNT_LOCKED",
+                    statusCode: StatusCodes.Status423Locked),
+                "AUTH_FORCE_PASSWORD_CHANGE" => Results.Problem(
+                    detail: "AUTH_FORCE_PASSWORD_CHANGE",
+                    statusCode: StatusCodes.Status403Forbidden),
+                _ => Results.Unauthorized(),
+            };
+        }
 
         return Results.Ok(result.Value);
     }

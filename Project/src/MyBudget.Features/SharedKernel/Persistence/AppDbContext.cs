@@ -34,6 +34,8 @@ public sealed class AppDbContext : DbContext
     public DbSet<BudgetLineRevision>   BudgetLineRevisions   => Set<BudgetLineRevision>();
     public DbSet<AuditLog>             AuditLogs             => Set<AuditLog>();
     public DbSet<SecurityAuditLog>     SecurityAuditLogs     => Set<SecurityAuditLog>();
+    public DbSet<PasswordResetToken>   PasswordResetTokens   => Set<PasswordResetToken>();
+    public DbSet<PasswordHistory>      PasswordHistories     => Set<PasswordHistory>();
 
     // ---------------------------------------------------------------------------
     // SaveChangesAsync override — audit log interception (PR2)

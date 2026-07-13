@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import http from '@/api/axios'
 
 export interface BudgetMembershipDto {
@@ -42,6 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
   // State
   const accessToken = ref<string | null>(localStorage.getItem('accessToken'))
   const user = ref<User | null>(null)
+  const forcePasswordChange = ref(false)
 
   // Derived
   const isAuthenticated = computed(() => !!accessToken.value)
@@ -50,9 +52,21 @@ export const useAuthStore = defineStore('auth', () => {
   // (user profile is loaded lazily via fetchMe)
 
   async function login(email: string, password: string): Promise<void> {
-    const { data } = await http.post<LoginResponse>('/api/auth/login', { email, password })
-    _storeTokens(data.accessToken, data.refreshToken)
-    await fetchMe()
+    try {
+      const { data } = await http.post<LoginResponse>('/api/auth/login', { email, password })
+      _storeTokens(data.accessToken, data.refreshToken)
+      await fetchMe()
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } } }
+      const detail = axiosErr.response?.data?.detail ?? ''
+      if (detail.includes('AUTH_FORCE_PASSWORD_CHANGE')) {
+        forcePasswordChange.value = true
+        const router = useRouter()
+        router.push('/forgot-password?reason=force')
+        return
+      }
+      throw err
+    }
   }
 
   async function register(payload: RegisterPayload): Promise<void> {
@@ -120,14 +134,32 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function requestPasswordReset(email: string): Promise<void> {
+    await http.post('/api/auth/forgot-password', { email })
+  }
+
+  async function resetPassword(token: string, email: string, newPassword: string): Promise<void> {
+    await http.post('/api/auth/reset-password', { email, token, newPassword })
+  }
+
+  async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const currentRefreshToken = localStorage.getItem('refreshToken')
+    await http.post('/api/auth/change-password', { currentPassword, newPassword, currentRefreshToken })
+    forcePasswordChange.value = false
+  }
+
   return {
     accessToken,
     user,
     isAuthenticated,
+    forcePasswordChange,
     login,
     register,
     logout,
     refresh,
     fetchMe,
+    requestPasswordReset,
+    resetPassword,
+    changePassword,
   }
 })

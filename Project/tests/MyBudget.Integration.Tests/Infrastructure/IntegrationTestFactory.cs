@@ -76,6 +76,7 @@ public sealed class IntegrationTestFactory : WebApplicationFactory<Program>, IAs
         db.CategoryGroups.RemoveRange(db.CategoryGroups.IgnoreQueryFilters());
         db.Invitations.RemoveRange(db.Invitations);
         db.BudgetMemberships.RemoveRange(db.BudgetMemberships);
+        db.PasswordResetTokens.RemoveRange(db.PasswordResetTokens);
         db.RefreshTokens.RemoveRange(db.RefreshTokens);
         db.Budgets.RemoveRange(db.Budgets);
         db.Users.RemoveRange(db.Users);
