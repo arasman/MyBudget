@@ -36,6 +36,19 @@ public sealed class RestoreBudgetLineHandler : IRequestHandler<RestoreBudgetLine
             return Result<Guid>.Failure("BUDGET_LINE_NOT_FOUND");
 
         line.Restore();
+
+        // REQ-EXEC-CASCADE-2: restore child ExecutionRecords when IncludeExecutionRecords=true
+        if (cmd.IncludeExecutionRecords)
+        {
+            var executionRecords = await _db.ExecutionRecords
+                .IgnoreQueryFilters()
+                .Where(e => e.BudgetLineId == cmd.BudgetLineId && e.DeletedAt != null)
+                .ToListAsync(ct);
+
+            foreach (var record in executionRecords)
+                record.Restore();
+        }
+
         await _db.SaveChangesAsync(ct);
 
         return Result<Guid>.Success(line.Id);
