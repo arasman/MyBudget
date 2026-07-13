@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-13 (password-management archived)
+**Last updated**: 2026-07-13 (budget-execution archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -187,7 +187,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 7. `budget-execution` ⏳ planned
+### 7. `budget-execution` ✅ archived 2026-07-13
 
 **What**: Backend for recording actual spending (ejecución) against budget lines.
 
