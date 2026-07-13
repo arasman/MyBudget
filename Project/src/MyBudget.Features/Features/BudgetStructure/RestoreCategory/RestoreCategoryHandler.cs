@@ -44,8 +44,24 @@ public sealed class RestoreCategoryHandler : IRequestHandler<RestoreCategoryComm
             .Where(bl => bl.CategoryId == cmd.CategoryId && bl.DeletedAt != null)
             .ToListAsync(ct);
 
+        var restoredLineIds = new List<Guid>();
         foreach (var line in budgetLines)
+        {
             line.Restore();
+            restoredLineIds.Add(line.Id);
+        }
+
+        // REQ-EXEC-CASCADE-2: restore child ExecutionRecords when IncludeExecutionRecords=true
+        if (cmd.IncludeExecutionRecords && restoredLineIds.Count > 0)
+        {
+            var executionRecords = await _db.ExecutionRecords
+                .IgnoreQueryFilters()
+                .Where(e => restoredLineIds.Contains(e.BudgetLineId) && e.DeletedAt != null)
+                .ToListAsync(ct);
+
+            foreach (var record in executionRecords)
+                record.Restore();
+        }
 
         await _db.SaveChangesAsync(ct);
 

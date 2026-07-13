@@ -32,6 +32,7 @@ public sealed class AppDbContext : DbContext
     public DbSet<Currency>             Currencies            => Set<Currency>();
     public DbSet<BudgetLine>           BudgetLines           => Set<BudgetLine>();
     public DbSet<BudgetLineRevision>   BudgetLineRevisions   => Set<BudgetLineRevision>();
+    public DbSet<ExecutionRecord>      ExecutionRecords      => Set<ExecutionRecord>();
     public DbSet<AuditLog>             AuditLogs             => Set<AuditLog>();
     public DbSet<SecurityAuditLog>     SecurityAuditLogs     => Set<SecurityAuditLog>();
     public DbSet<PasswordResetToken>   PasswordResetTokens   => Set<PasswordResetToken>();

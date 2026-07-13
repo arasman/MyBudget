@@ -68,6 +68,7 @@ public sealed class IntegrationTestFactory : WebApplicationFactory<Program>, IAs
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         // Clear in FK-dependency reverse order (budget structure first, then auth)
+        db.ExecutionRecords.RemoveRange(db.ExecutionRecords.IgnoreQueryFilters());
         db.BudgetLineRevisions.RemoveRange(db.BudgetLineRevisions.IgnoreQueryFilters());
         db.BudgetLines.RemoveRange(db.BudgetLines.IgnoreQueryFilters());
         db.Periods.RemoveRange(db.Periods.IgnoreQueryFilters());

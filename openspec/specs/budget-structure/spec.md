@@ -533,12 +533,17 @@ Restores only the specified BudgetLine.
 
 ### REQ-RST-06: includeExecutionRecords Parameter
 
-All four restore endpoints MUST accept `includeExecutionRecords` (bool, default false) as a query parameter. The parameter is present in the API contract today for forward-compatibility with `budget-execution`. Handlers MUST ignore this flag (no-op).
+All four restore endpoints MUST accept `includeExecutionRecords` (bool, default false) as a query parameter. When `includeExecutionRecords=true`, soft-deleted ExecutionRecords (managed by `budget-execution`) MUST be restored along with their parent entities.
 
-#### Scenario: Parameter accepted and ignored `@unit`
-- GIVEN any restore endpoint
+#### Scenario: Parameter accepted and children restored `@integration`
+- GIVEN any restore endpoint with a soft-deleted child ExecutionRecord
 - WHEN called with ?includeExecutionRecords=true
-- THEN restore completes as if parameter were false (no-op)
+- THEN soft-deleted child ExecutionRecords are restored in the same operation
+
+#### Scenario: Parameter false or omitted preserves previous behavior `@integration`
+- GIVEN any restore endpoint
+- WHEN called with ?includeExecutionRecords=false or parameter omitted
+- THEN ExecutionRecords remain soft-deleted (default behavior)
 
 ---
 
