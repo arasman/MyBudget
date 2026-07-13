@@ -80,7 +80,7 @@ test.describe('Forgot-password flow', () => {
 
 test.describe('Reset-password — invalid token', () => {
   test('navigate to /reset-password?token=invalid, submit, see error', async ({ page }) => {
-    await page.goto('/reset-password?token=invalid-token-that-does-not-exist')
+    await page.goto('/reset-password?token=invalid-token-that-does-not-exist&email=test%40example.com')
 
     const passwordInputs = page.locator('input[type="password"]')
     await passwordInputs.nth(0).fill('NewPassword1!')
