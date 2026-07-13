@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyBudget.Features.SharedKernel.Persistence;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyBudget.Features.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260713150232_AddPasswordManagement")]
+    partial class AddPasswordManagement
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -482,31 +485,6 @@ namespace MyBudget.Features.Migrations
                     b.ToTable("Invitations");
                 });
 
-            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.PasswordHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasMaxLength(72)
-                        .HasColumnType("character varying(72)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "CreatedAt")
-                        .HasDatabaseName("IX_PasswordHistory_UserId_CreatedAt");
-
-                    b.ToTable("PasswordHistories");
-                });
-
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.PasswordResetToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -902,17 +880,6 @@ namespace MyBudget.Features.Migrations
                     b.Navigation("Budget");
 
                     b.Navigation("InvitedByUser");
-                });
-
-            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.PasswordHistory", b =>
-                {
-                    b.HasOne("MyBudget.Features.SharedKernel.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.PasswordResetToken", b =>

@@ -17,6 +17,7 @@
       "passwordPlaceholder": "Password",
       "submit": "Sign In",
       "registerLink": "Don't have an account? Register",
+      "forgotLink": "Forgot your password?",
       "error": {
         "invalidCredentials": "Invalid email or password. Please try again."
       }
@@ -39,6 +40,30 @@
         "ruleLowercase": "One lowercase letter (a–z)",
         "ruleDigit": "One number (0–9)"
       }
+    },
+    "password": {
+      "forgotTitle": "Forgot your password?",
+      "forgotDescription": "Enter your email and we'll send you a reset link.",
+      "forceChangeNotice": "Your password has expired and must be changed.",
+      "emailLabel": "Email address",
+      "sendLink": "Send reset link",
+      "linkSent": "If your email is registered, a reset link has been sent. Check your inbox.",
+      "resetTitle": "Reset your password",
+      "newPasswordLabel": "New password",
+      "confirmPasswordLabel": "Confirm new password",
+      "resetSubmit": "Reset password",
+      "resetSuccess": "Password reset successfully. You can now log in.",
+      "tokenInvalid": "This reset link is invalid or has expired.",
+      "passwordMismatch": "Passwords do not match.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "changePassword": "Change password",
+      "changeTitle": "Change your password",
+      "currentPasswordLabel": "Current password",
+      "changeSubmit": "Change password",
+      "changeSuccess": "Password changed successfully.",
+      "currentIncorrect": "Current password is incorrect.",
+      "sameAsCurrent": "New password must be different from your current password.",
+      "previouslyUsed": "This password has been used recently. Please choose a different one."
     },
     "loginLabel": "Login",
     "logoutLabel": "Logout",

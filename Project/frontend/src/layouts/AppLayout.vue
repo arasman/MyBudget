@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLayoutStore } from '@/stores/layout.store'
 import { useNotificationStore } from '@/stores/notification.store'
 import type { PageAction } from '@/stores/layout.store'
+import ChangePasswordModal from '@/components/auth/ChangePasswordModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const layoutStore = useLayoutStore()
 const notificationStore = useNotificationStore()
+
+const changePasswordModal = ref<InstanceType<typeof ChangePasswordModal>>()
 
 // User initials derived from firstName + lastName
 const userInitials = computed(() => {
@@ -226,12 +229,17 @@ function variantClass(action: PageAction): string {
             </li>
             <li class="divider" />
             <li>
+              <button @click="changePasswordModal?.open()">{{ $t('auth.password.changePassword') }}</button>
+            </li>
+            <li>
               <button @click="onLogout">{{ $t('auth.logoutLabel') }}</button>
             </li>
           </ul>
         </div>
       </div>
     </nav>
+
+    <ChangePasswordModal ref="changePasswordModal" />
 
     <!-- Main content -->
     <main>

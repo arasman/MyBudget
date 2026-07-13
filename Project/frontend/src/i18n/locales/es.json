@@ -17,6 +17,7 @@
       "passwordPlaceholder": "Contraseña",
       "submit": "Ingresar",
       "registerLink": "¿No tienes cuenta? Regístrate",
+      "forgotLink": "¿Olvidaste tu contraseña?",
       "error": {
         "invalidCredentials": "Email o contraseña inválidos. Intenta de nuevo."
       }
@@ -39,6 +40,30 @@
         "ruleLowercase": "Una letra minúscula (a–z)",
         "ruleDigit": "Un número (0–9)"
       }
+    },
+    "password": {
+      "forgotTitle": "¿Olvidaste tu contraseña?",
+      "forgotDescription": "Ingresa tu correo y te enviaremos un enlace para restablecerla.",
+      "forceChangeNotice": "Tu contraseña ha expirado y debe ser cambiada.",
+      "emailLabel": "Correo electrónico",
+      "sendLink": "Enviar enlace de restablecimiento",
+      "linkSent": "Si tu correo está registrado, se ha enviado un enlace de restablecimiento. Revisa tu bandeja de entrada.",
+      "resetTitle": "Restablecer tu contraseña",
+      "newPasswordLabel": "Nueva contraseña",
+      "confirmPasswordLabel": "Confirmar nueva contraseña",
+      "resetSubmit": "Restablecer contraseña",
+      "resetSuccess": "Contraseña restablecida exitosamente. Ya puedes iniciar sesión.",
+      "tokenInvalid": "Este enlace de restablecimiento es inválido o ha expirado.",
+      "passwordMismatch": "Las contraseñas no coinciden.",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+      "changePassword": "Cambiar contraseña",
+      "changeTitle": "Cambiar tu contraseña",
+      "currentPasswordLabel": "Contraseña actual",
+      "changeSubmit": "Cambiar contraseña",
+      "changeSuccess": "Contraseña cambiada exitosamente.",
+      "currentIncorrect": "La contraseña actual es incorrecta.",
+      "sameAsCurrent": "La nueva contraseña debe ser diferente a la contraseña actual.",
+      "previouslyUsed": "Esta contraseña fue usada recientemente. Por favor elegí una diferente."
     },
     "loginLabel": "Iniciar sesión",
     "logoutLabel": "Cerrar sesión",

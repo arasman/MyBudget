@@ -69,6 +69,12 @@ async function onSubmit() {
   </form>
 
   <p class="text-center text-sm mt-4">
+    <router-link to="/forgot-password" class="link link-neutral">
+      {{ t('auth.login.forgotLink') }}
+    </router-link>
+  </p>
+
+  <p class="text-center text-sm mt-2">
     <router-link to="/register" class="link link-primary">
       {{ t('auth.login.registerLink') }}
     </router-link>
