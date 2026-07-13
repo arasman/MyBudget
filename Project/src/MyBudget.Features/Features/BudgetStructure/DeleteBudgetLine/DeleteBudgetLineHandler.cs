@@ -28,8 +28,17 @@ public sealed class DeleteBudgetLineHandler : IRequestHandler<DeleteBudgetLineCo
             return Result<Guid>.Failure("PERIOD_CLOSED");
 
         // ADR-BS-01: BudgetLineRevision has NO soft delete (immutable, append-only)
-        // Only soft-delete the BudgetLine itself
+        // REQ-EXEC-CASCADE-1: cascade soft-delete to all non-deleted child ExecutionRecords
         line.SoftDelete();
+
+        var executionRecords = await _db.ExecutionRecords
+            .IgnoreQueryFilters()
+            .Where(e => e.BudgetLineId == cmd.LineId && e.DeletedAt == null)
+            .ToListAsync(ct);
+
+        foreach (var record in executionRecords)
+            record.SoftDelete();
+
         await _db.SaveChangesAsync(ct);
 
         return Result<Guid>.Success(line.Id);
