@@ -88,6 +88,6 @@ test.describe('Budget Execution — CreditNote and DebitNote', () => {
         paymentMethodId: null,
       },
     })
-    expect(resp.status()).toBe(400)
+    expect(resp.status()).toBe(422) // FluentValidation errors return 422 via ValidationBehaviour
   })
 })
