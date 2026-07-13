@@ -110,6 +110,20 @@ public sealed class UserPasswordTests
         user.PasswordChangedAt!.Value.ShouldBeLessThanOrEqualTo(after);
     }
 
+    [Fact]
+    public void UpdatePassword_DoesNotClearLockoutFields()
+    {
+        var user = CreateUser();
+        for (var i = 0; i < 5; i++)
+            user.RecordFailedLogin(maxAttempts: 5, lockoutDurationMinutes: 30);
+
+        // UpdatePassword is a separate contract from ClearLockout — it must NOT reset lockout state
+        user.UpdatePassword("newHash123");
+
+        user.FailedLoginAttempts.ShouldBe(5);
+        user.LockoutUntil.ShouldNotBeNull();
+    }
+
     // -------------------------------------------------------------------------
     // SetForcePasswordChange
     // -------------------------------------------------------------------------
