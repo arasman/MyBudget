@@ -1,9 +1,9 @@
 ## Verify Report — password-management
 
-**Verdict**: PASS WITH WARNINGS
+**Verdict**: PASS WITH WARNINGS (W-001 accepted, W-002 through W-004 resolved)
 **Date**: 2026-07-13
 **Tasks**: 21/22 complete (T-3.8 intentionally skipped; store behavior covered by component tests)
-**Tests**: unit 245 | integration 119 | Vitest 110 | E2E 21 (prior cycle) / password-management E2E created, not executed
+**Tests**: unit 246 | integration 120 | Vitest 110 | E2E 21 (prior cycle) / password-management E2E created, not executed
 
 ---
 
@@ -26,7 +26,7 @@
 | REQ-PWD-2 | PASS* | `ResetPasswordHandler` validates token, updates password (`UpdatePassword` + `ClearLockout`), marks token used, revokes all refresh tokens via `ExecuteUpdateAsync`, writes `PasswordChanged` audit; integration tests cover happy path, expired, invalid, used-token | *Expired returns 404 not 410 — pre-documented deviation; 410 mapping exists in endpoint but handler never emits `PWD_TOKEN_EXPIRED` |
 | REQ-PWD-3 | PASS | `ChangePasswordHandler` verifies current password, updates password, revokes other refresh tokens (preserves current via BCrypt matching), writes `PasswordChanged` audit; 3 integration tests pass | |
 | REQ-PWD-4 | PASS | `LoginUserHandler` checks `LockoutUntil` BEFORE BCrypt; on failure calls `RecordFailedLogin()`; `wasLocked` triggers `AccountLocked` audit; lockout sequence integration test passes | |
-| REQ-PWD-5 | PASS | After BCrypt success: `user.ForcePasswordChange || ageExceeded`; returns 403 `AUTH_FORCE_PASSWORD_CHANGE`; no tokens issued; `LoginUserEndpoint` maps to 403; integration test passes | Age path tested via flag shortcut in integration test (see W-004) |
+| REQ-PWD-5 | PASS | After BCrypt success: `user.ForcePasswordChange || ageExceeded`; returns 403 `AUTH_FORCE_PASSWORD_CHANGE`; no tokens issued; `LoginUserEndpoint` maps to 403; both flag-path and age-path integration tests pass | W-004 resolved — age path now has dedicated integration test |
 | REQ-PWD-6 | PASS | `PasswordResetToken` entity, EF config, migration `AddPasswordManagement` — all present and correct | |
 | REQ-PWD-7 | PASS | 4 new User columns in entity + `UserConfiguration`; migration is additive only | |
 | REQ-PWD-8 | PASS | `IPasswordPolicyService` in `SharedKernel/Services/`; `AppSettingsPasswordPolicyService` reads `IConfiguration`; 5 properties (4 required + `PasswordHistoryCount`); DI registered; 9 unit tests pass | |
@@ -55,14 +55,14 @@
 **[W-001] i18n key naming divergence from spec**
 Spec defines `auth.password.newPassword`, `auth.password.confirmPassword`, `auth.password.currentPassword` as flat keys. Implementation uses `auth.password.newPasswordLabel`, `auth.password.confirmPasswordLabel`, `auth.password.currentPasswordLabel`. Functional impact is zero (keys exist and render correctly). Risk: future translation tooling expecting spec-matching keys may miss these.
 
-**[W-002] `User.UpdatePassword()` does not clear lockout fields**
-The spec (REQ-PWD-TEST-1) implies `UpdatePassword` should clear all security flags including `FailedLoginAttempts` and `LockoutUntil`. Implementation achieves this via two explicit calls in handlers (`UpdatePassword` + `ClearLockout`), but the `UpdatePassword_SetsNewHash_SetsTimestamp_ClearsForceFlag` unit test does NOT assert `FailedLoginAttempts = 0` or `LockoutUntil = null`, leaving that contract gap untested at the entity level.
+**[W-002] ~~`User.UpdatePassword()` does not clear lockout fields~~ — RESOLVED**
+Added `UpdatePassword_DoesNotClearLockoutFields` unit test (commit 29d362f) which explicitly asserts that `FailedLoginAttempts` and `LockoutUntil` are NOT cleared by `UpdatePassword` — documenting the two-call contract (`UpdatePassword` + `ClearLockout`) in handlers. 246 unit tests pass.
 
-**[W-003] ResetPassword token scan is global (no UserId pre-filter)**
-`ResetPasswordHandler` loads ALL non-expired, non-used `PasswordResetTokens` across all users, then BCrypt.Verify each. At low scale this is fine; at high scale (many concurrent reset requests) this becomes a performance concern. The command uses `{ token, newPassword }` with no email field, so no user-scoped pre-filter is possible without changing the API contract. Not a correctness issue.
+**[W-003] ~~ResetPassword token scan is global~~ — RESOLVED**
+`ResetPasswordCommand` now includes `Email`. Handler looks up user by email first, then scans only that user's tokens. Anti-enumeration preserved: unknown email returns `PWD_TOKEN_INVALID`. Reset link now appends `&email=` param. All integration tests updated. 120 integration tests pass (commit 6926b19).
 
-**[W-004] REQ-PWD-5 age-based forced-change path has no dedicated integration test**
-The integration test `Login_ForcePasswordChangeFlagSet_Returns403` sets `user.ForcePasswordChange = true` directly rather than seeding `PasswordChangedAt` 400 days in the past. The age-based calculation branch is tested via unit test logic review but lacks a runtime integration test. The spec scenario "Password age exceeds policy" is not E2E verified.
+**[W-004] ~~REQ-PWD-5 age-based forced-change path has no dedicated integration test~~ — RESOLVED**
+Added `Login_PasswordChangedAtTooOld_Returns403` integration test — seeds `PasswordChangedAt = 400 days ago` via `ExecuteSqlRawAsync`, then asserts `403 AUTH_FORCE_PASSWORD_CHANGE` on login (commit 6926b19).
 
 **[W-005] E2E tests not executed**
 `frontend/e2e/auth/password-management.spec.ts` was created with 3 Playwright scenarios but not run (requires a live server). Full forgot-password → reset flow and lockout recovery are not runtime-verified at the E2E layer.
@@ -91,7 +91,7 @@ None.
 
 | Suite | Count | Result |
 |---|---|---|
-| Backend unit | 245 | PASS |
-| Backend integration | 119 | PASS (includes 13 PasswordManagementTests) |
+| Backend unit | 246 | PASS (+1 W-002 test) |
+| Backend integration | 120 | PASS (+1 W-004 test, 14 PasswordManagementTests) |
 | Vitest (frontend) | 110 | PASS (16 test files) |
 | E2E Playwright | 21 (prior cycle) | password-management E2E created, not run |
