@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-13
+**Last updated**: 2026-07-13 (password-management archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -150,21 +150,26 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 6b. `password-management` ⏳ planned
+### 6b. `password-management` ✅ archived 2026-07-13
 
 **What**: Password lifecycle management — recovery, account settings change, forced-change policy, account lockout.
 
-**Domain**: Users need self-service password recovery (email link) and the ability to change their password from account settings. A forced-change policy (e.g. every 90 days) strengthens security. This feature also produces the `PasswordChanged` and `AccountLocked` SecurityAuditLog events reserved in `audit-log`.
+**Domain**: Users need self-service password recovery (email link) and the ability to change their password from account settings. A forced-change policy (configurable interval) strengthens security. This feature also produces the `PasswordChanged` and `AccountLocked` SecurityAuditLog events reserved in `audit-log`.
 
-**Scope in** *(requires full SDD exploration)*:
-- Password recovery by email (token link, Mailpit in dev)
-- Change password from User Account Settings
-- Forced-change policy: configurable interval; detected at login, blocks session until changed
-- Account lockout after N failed login attempts
-- `PasswordChanged` SecurityAuditLog event written at each write site
-- `AccountLocked` SecurityAuditLog event on lockout trigger
+**Scope in**:
+- Password recovery by email (token link, Mailpit in dev); 30-min configurable TTL; BCrypt-hashed token stored in `PasswordResetTokens`
+- Change password from User Account Settings (ChangePasswordModal in AppLayout dropdown)
+- Forced-change policy: `ForceChangeAfterDays` (default 365); detected at login; blocks JWT issuance; user directed to `/forgot-password?reason=force`
+- Account lockout after N failed login attempts (default 5); locked 30 min; cleared on successful reset
+- Password history: last 5 hashes (configurable) blocked via `PasswordHistories` table
+- `PasswordChanged` + `AccountLocked` SecurityAuditLog events
+- `IPasswordPolicyService` / `AppSettingsPasswordPolicyService` — all policy values in `appsettings.json`
+- Frontend: ForgotPasswordView, ResetPasswordView, ChangePasswordModal, forgot-password link in LoginView
+- 246 unit | 120 integration | 110 Vitest | E2E created (not run against live server)
 
 **Scope out**: OAuth, SSO, MFA (→ MVP B).
+
+**SDD artifacts**: `openspec/changes/archive/2026-07-13-password-management/` — fully archived
 
 ---
 
