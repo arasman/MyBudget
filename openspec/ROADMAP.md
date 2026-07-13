@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-11
+**Last updated**: 2026-07-13
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -127,7 +127,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 6. `audit-log` 🔄 in progress
+### 6. `audit-log` ✅ archived 2026-07-11
 
 **What**: Cross-cutting audit trail — entity mutations + security events.
 
@@ -146,7 +146,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 **Scope out**: Frontend audit viewer (→ deferred), real-time alerts (→ MVP B), PasswordChanged event (→ `password-management`), user deletion anonymization (→ deferred).
 
-**SDD artifacts**: `openspec/changes/audit-log/` (explore ✅, proposal ✅, spec ✅, design ✅, tasks ✅, apply ✅, verify ✅)
+**SDD artifacts**: `openspec/changes/archive/2026-07-11-audit-log/` — fully archived
 
 ---
 
@@ -168,7 +168,7 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 6c. `budget-structure-i18n-patch` ⏳ planned
+### 6c. `budget-structure-i18n-patch` ✅ archived 2026-07-11
 
 **What**: Missing i18n keys for Cycle currency fields.
 
