@@ -74,7 +74,7 @@ public sealed class RequestPasswordResetHandler
 
         // STEP 6 — Build reset link
         var frontendBaseUrl = _config["App:FrontendBaseUrl"] ?? "http://localhost:5173";
-        var resetLink       = $"{frontendBaseUrl}/reset-password?token={rawToken}";
+        var resetLink       = $"{frontendBaseUrl}/reset-password?token={rawToken}&email={Uri.EscapeDataString(normalizedEmail)}";
 
         // STEP 7 — Queue email (fire-and-forget via EmailChannel)
         await _emailSender.SendAsync(new EmailMessage(

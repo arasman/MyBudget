@@ -138,8 +138,8 @@ export const useAuthStore = defineStore('auth', () => {
     await http.post('/api/auth/forgot-password', { email })
   }
 
-  async function resetPassword(token: string, newPassword: string): Promise<void> {
-    await http.post('/api/auth/reset-password', { token, newPassword })
+  async function resetPassword(token: string, email: string, newPassword: string): Promise<void> {
+    await http.post('/api/auth/reset-password', { email, token, newPassword })
   }
 
   async function changePassword(currentPassword: string, newPassword: string): Promise<void> {

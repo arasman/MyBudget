@@ -6,6 +6,10 @@ public sealed class ResetPasswordValidator : AbstractValidator<ResetPasswordComm
 {
     public ResetPasswordValidator()
     {
+        RuleFor(x => x.Email)
+            .NotEmpty().WithErrorCode("FIELD_REQUIRED")
+            .EmailAddress().WithErrorCode("FIELD_INVALID");
+
         RuleFor(x => x.Token)
             .NotEmpty().WithErrorCode("FIELD_REQUIRED");
 

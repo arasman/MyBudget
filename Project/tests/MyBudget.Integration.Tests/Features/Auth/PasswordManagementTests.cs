@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MyBudget.Features.SharedKernel.Entities;
 using MyBudget.Features.SharedKernel.Persistence;
@@ -93,7 +94,7 @@ public sealed class PasswordManagementTests : IntegrationTestBase
         // Execute reset
         var response = await Client.PostAsJsonAsync(
             "/api/auth/reset-password",
-            new { token = rawToken, newPassword = "NewPassword1" });
+            new { email = "resetpw@example.com", token = rawToken, newPassword = "NewPassword1" });
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
@@ -149,7 +150,7 @@ public sealed class PasswordManagementTests : IntegrationTestBase
         const string expiredRaw = "ExpiredRawToken-Test1234567890ABCDEF12";
         var resp = await Client.PostAsJsonAsync(
             "/api/auth/reset-password",
-            new { token = expiredRaw, newPassword = "NewPassword1" });
+            new { email = "expiredtoken@example.com", token = expiredRaw, newPassword = "NewPassword1" });
 
         // Handler pre-filters expired tokens, so they are never matched → 404 (same as invalid)
         // This is the secure behavior: no timing difference between expired and invalid tokens.
@@ -159,9 +160,10 @@ public sealed class PasswordManagementTests : IntegrationTestBase
     [Fact]
     public async Task ResetPassword_InvalidToken_Returns404()
     {
+        // email doesn't matter here — validator passes, handler returns 404 (unknown email)
         var response = await Client.PostAsJsonAsync(
             "/api/auth/reset-password",
-            new { token = "completely-invalid-token-that-matches-nothing", newPassword = "NewPassword1" });
+            new { email = "invalid@example.com", token = "completely-invalid-token-that-matches-nothing", newPassword = "NewPassword1" });
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -186,7 +188,7 @@ public sealed class PasswordManagementTests : IntegrationTestBase
 
         var response = await Client.PostAsJsonAsync(
             "/api/auth/reset-password",
-            new { token = rawToken, newPassword = "NewPassword1" });
+            new { email = "usedtoken@example.com", token = rawToken, newPassword = "NewPassword1" });
 
         // UsedAt IS NULL filter excludes this token → 404
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
@@ -195,10 +197,10 @@ public sealed class PasswordManagementTests : IntegrationTestBase
     [Fact]
     public async Task ResetPassword_WeakPassword_Returns422()
     {
-        // No token needed — validator fires first
+        // Validator fires before handler — email is required but weak password fails first
         var response = await Client.PostAsJsonAsync(
             "/api/auth/reset-password",
-            new { token = "anytoken", newPassword = "weak" });
+            new { email = "weak@example.com", token = "anytoken", newPassword = "weak" });
 
         response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
     }
@@ -335,7 +337,7 @@ public sealed class PasswordManagementTests : IntegrationTestBase
 
         var resetResp = await Client.PostAsJsonAsync(
             "/api/auth/reset-password",
-            new { token = rawToken, newPassword = "NewPassword1" });
+            new { email = "lockout-seq@example.com", token = rawToken, newPassword = "NewPassword1" });
         resetResp.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // Verify lockout is cleared
@@ -376,6 +378,32 @@ public sealed class PasswordManagementTests : IntegrationTestBase
             // and tests the handler's flag-based forced-change path (simpler than age check)
             user.SetForcePasswordChange();
             await db.SaveChangesAsync();
+        }
+
+        var response = await Client.PostAsJsonAsync("/api/auth/login", new { email, password });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        var body = await response.Content.ReadAsStringAsync();
+        body.ShouldContain("AUTH_FORCE_PASSWORD_CHANGE");
+    }
+
+    [Fact]
+    public async Task Login_PasswordChangedAtTooOld_Returns403()
+    {
+        const string email    = "forced-old-pwd@example.com";
+        const string password = "Password1";
+
+        await RegisterUserAsync(email, password);
+
+        // Seed PasswordChangedAt = 400 days ago (exceeds default 365-day ForceChangeAfterDays policy)
+        // PasswordChangedAt has a private setter, so use raw SQL to bypass the domain model
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var cutoff = DateTime.UtcNow.AddDays(-400);
+            await db.Database.ExecuteSqlRawAsync(
+                """UPDATE "Users" SET "PasswordChangedAt" = {0} WHERE "Email" = {1}""",
+                cutoff, email);
         }
 
         var response = await Client.PostAsJsonAsync("/api/auth/login", new { email, password });

@@ -9,6 +9,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const token = (route.query.token as string) ?? ''
+const email = (route.query.email as string) ?? ''
 
 const newPassword = ref('')
 const confirmPassword = ref('')
@@ -32,7 +33,7 @@ async function onSubmit() {
 
   isSubmitting.value = true
   try {
-    await authStore.resetPassword(token, newPassword.value)
+    await authStore.resetPassword(token, email, newPassword.value)
     submitted.value = true
   } catch (err: unknown) {
     const axiosErr = err as { response?: { data?: { detail?: string; error?: string } } }

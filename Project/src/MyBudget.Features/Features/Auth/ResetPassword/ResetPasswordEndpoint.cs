@@ -24,7 +24,7 @@ public static class ResetPasswordEndpoint
         IMediator mediator,
         CancellationToken ct)
     {
-        var command = new ResetPasswordCommand(request.Token, request.NewPassword);
+        var command = new ResetPasswordCommand(request.Email, request.Token, request.NewPassword);
         var result  = await mediator.Send(command, ct);
 
         if (!result.IsSuccess)
@@ -57,5 +57,5 @@ public static class ResetPasswordEndpoint
         return Results.Ok(new { message = "Password reset successfully." });
     }
 
-    private sealed record ResetPasswordRequest(string Token, string NewPassword);
+    private sealed record ResetPasswordRequest(string Email, string Token, string NewPassword);
 }

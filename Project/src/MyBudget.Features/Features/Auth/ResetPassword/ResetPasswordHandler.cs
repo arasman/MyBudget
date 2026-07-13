@@ -31,14 +31,23 @@ public sealed class ResetPasswordHandler
     public async ValueTask<Result<Unit>> Handle(
         ResetPasswordCommand cmd, CancellationToken ct)
     {
-        // STEP 1 — Load all non-expired, non-used tokens with their associated user
-        // BCrypt hashes cannot be indexed, so we filter by ExpiresAt/UsedAt then verify
+        // STEP 1 — Look up user by email (scope token scan to one user)
+        var normalizedEmail = cmd.Email.Trim().ToLowerInvariant();
+        var user = await _db.Users.SingleOrDefaultAsync(
+            u => u.Email == normalizedEmail, ct);
+
+        if (user is null)
+        {
+            _logger.LogWarning("Password reset attempted for unknown email.");
+            return Result<Unit>.Failure("PWD_TOKEN_INVALID");
+        }
+
+        // STEP 2 — Load only this user's non-expired, non-used tokens
         var candidateTokens = await _db.PasswordResetTokens
-            .Include(t => t.User)
-            .Where(t => t.UsedAt == null && t.ExpiresAt > DateTime.UtcNow)
+            .Where(t => t.UserId == user.Id && t.UsedAt == null && t.ExpiresAt > DateTime.UtcNow)
             .ToListAsync(ct);
 
-        // STEP 2 — Find matching token via BCrypt.Verify
+        // STEP 3 — Find matching token via BCrypt.Verify
         PasswordResetToken? matchedToken = null;
         foreach (var candidate in candidateTokens)
         {
@@ -49,17 +58,12 @@ public sealed class ResetPasswordHandler
             }
         }
 
-        // STEP 3 — Token not found or no match
+        // STEP 4 — Token not found
         if (matchedToken is null)
         {
             _logger.LogWarning("Password reset attempted with invalid or unknown token.");
             return Result<Unit>.Failure("PWD_TOKEN_INVALID");
         }
-
-        // STEP 4 — Load user (should be included via navigation)
-        var user = matchedToken.User
-            ?? await _db.Users.FindAsync([matchedToken.UserId], ct)
-            ?? throw new InvalidOperationException("User not found for matched password reset token.");
 
         // STEP 5 — Reject if new password matches current hash
         if (BCrypt.Net.BCrypt.Verify(cmd.NewPassword, user.PasswordHash))
