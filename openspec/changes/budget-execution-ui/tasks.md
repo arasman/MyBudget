@@ -50,25 +50,25 @@ Chain strategy: feature-branch-chain
 
 ## PR2 — Store + Composables (`feat/budget-matrix-store`)
 
-- [ ] T-2.1: Create `src/features/budget-execution/store.ts` — `useBudgetMatrixStore` with state shape from AD-2 (all `Record<string, T>` state, no Maps). Implement `initMatrix`, `loadVisiblePeriods`, `loadPeriodTotals`, `navigatePrev`, `navigateNext`, `openExecutionModal`, `closeExecutionModal`, `setDisplayCurrency`, `setShowDeleted`, `refreshPeriod`. _(REQ-MATRIX-NAV, REQ-MATRIX-EXEC, REQ-MATRIX-CURRENCY, REQ-MATRIX-DELETED)_
+- [x] T-2.1: Create `src/features/budget-execution/store.ts` — `useBudgetMatrixStore` with state shape from AD-2 (all `Record<string, T>` state, no Maps). Implement `initMatrix`, `loadVisiblePeriods`, `loadPeriodTotals`, `navigatePrev`, `navigateNext`, `openExecutionModal`, `closeExecutionModal`, `setDisplayCurrency`, `setShowDeleted`, `refreshPeriod`. _(REQ-MATRIX-NAV, REQ-MATRIX-EXEC, REQ-MATRIX-CURRENCY, REQ-MATRIX-DELETED)_
   - Acceptance: Store compiles; `collapsedGroupIds` / `collapsedCategoryIds` use `ref(new Set())`; `periodTotals` and `executionRecords` use `Record<string, T>`.
 
-- [ ] T-2.2: Create `src/features/budget-execution/composables/useMatrixNavigation.ts` — `visiblePeriods` (3-window slice), `canGoPrev`, `canGoNext`, `goPrev`, `goNext`. Boundary: offset clamped to `[0, allPeriods.length - 3]`. _(REQ-MATRIX-NAV)_
+- [x] T-2.2: Create `src/features/budget-execution/composables/useMatrixNavigation.ts` — `visiblePeriods` (3-window slice), `canGoPrev`, `canGoNext`, `goPrev`, `goNext`. Boundary: offset clamped to `[0, allPeriods.length - 3]`. _(REQ-MATRIX-NAV)_
   - Acceptance: Edge cases covered (fewer than 3 periods; exactly 3; offset at 0 and max).
 
-- [ ] T-2.3: Create `src/features/budget-execution/composables/usePeriodData.ts` — `loadPeriodTotals(periodId)` sets `loadingPeriods[periodId]`, calls `executionTotals.api.ts`, stores result in `periodTotals`; `loadVisiblePeriods(periodIds)` fires 3 parallel calls via `Promise.all`. _(REQ-MATRIX-NAV, REQ-MATRIX-REFRESH)_
+- [x] T-2.3: Create `src/features/budget-execution/composables/usePeriodData.ts` — `loadPeriodTotals(periodId)` sets `loadingPeriods[periodId]`, calls `executionTotals.api.ts`, stores result in `periodTotals`; `loadVisiblePeriods(periodIds)` fires 3 parallel calls via `Promise.all`. _(REQ-MATRIX-NAV, REQ-MATRIX-REFRESH)_
   - Acceptance: Parallel loading; each period independently transitions from loading to data.
 
-- [ ] T-2.4: Create `src/features/budget-execution/composables/useCurrencyDisplay.ts` — `convert(amount, mode)`: when `alternate` and `exchangeRate` is truthy → `Math.round(amount / exchangeRate * 100) / 100`; when `default` → returns `amount`. `formatAmount(amount, currencyCode)` wraps `Intl.NumberFormat`. _(REQ-MATRIX-CURRENCY)_
+- [x] T-2.4: Create `src/features/budget-execution/composables/useCurrencyDisplay.ts` — `convert(amount, mode)`: when `alternate` and `exchangeRate` is truthy → `Math.round(amount / exchangeRate * 100) / 100`; when `default` → returns `amount`. `formatAmount(amount, currencyCode)` wraps `Intl.NumberFormat`. _(REQ-MATRIX-CURRENCY)_
   - Acceptance: `convert(750, 'alternate')` with rate 7.5 → 100.00; back-toggle returns original.
 
-- [ ] T-2.5: Vitest tests for `useBudgetMatrixStore` — test `initMatrix` populates `cycleId`; `navigatePrev/Next` clamps correctly; `setDisplayCurrency` toggles state; `setShowDeleted` toggles state; `openExecutionModal` sets modal IDs. _(Test Coverage Requirements)_
+- [x] T-2.5: Vitest tests for `useBudgetMatrixStore` — test `initMatrix` populates `cycleId`; `navigatePrev/Next` clamps correctly; `setDisplayCurrency` toggles state; `setShowDeleted` toggles state; `openExecutionModal` sets modal IDs. _(Test Coverage Requirements)_
   - Acceptance: `createPinia()` setup; `vi.mock` api modules; ≥8 test cases.
 
-- [ ] T-2.6: Vitest tests for `useMatrixNavigation` — test offset clamping at 0, at max, with fewer than 3 periods. _(Test Coverage Requirements)_
+- [x] T-2.6: Vitest tests for `useMatrixNavigation` — test offset clamping at 0, at max, with fewer than 3 periods. _(Test Coverage Requirements)_
   - Acceptance: ≥4 test cases; no external deps needed.
 
-- [ ] T-2.7: Vitest tests for `useCurrencyDisplay` — test `convert` with null exchangeRate (no-op), with valid rate both directions, rounding precision. _(Test Coverage Requirements)_
+- [x] T-2.7: Vitest tests for `useCurrencyDisplay` — test `convert` with null exchangeRate (no-op), with valid rate both directions, rounding precision. _(Test Coverage Requirements)_
   - Acceptance: ≥4 test cases.
 
 ---
