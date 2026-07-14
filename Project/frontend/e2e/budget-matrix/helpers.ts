@@ -125,8 +125,8 @@ export async function seedBudgetMatrixFixture(
   // ── 7. Create 1 BudgetLine per category per period ────────────────────────
   const lineIds: string[] = []
   const lineDefs = [
-    { name: 'Rent Payment', lineType: 'Expense', categoryId: categoryIds[0], budgetedAmount: 5000 },
-    { name: 'Weekly Groceries', lineType: 'Expense', categoryId: categoryIds[1], budgetedAmount: 2000 },
+    { name: 'Rent Payment',    lineType: 'Expense', categoryGroupId: groupIds[0], categoryId: categoryIds[0], budgetedAmount: 5000 },
+    { name: 'Weekly Groceries', lineType: 'Expense', categoryGroupId: groupIds[1], categoryId: categoryIds[1], budgetedAmount: 2000 },
   ]
 
   for (const periodId of periodIds) {
@@ -137,6 +137,7 @@ export async function seedBudgetMatrixFixture(
           name: def.name,
           lineType: def.lineType,
           isRecurring: false,
+          categoryGroupId: def.categoryGroupId,
           categoryId: def.categoryId,
           budgetedAmount: def.budgetedAmount,
           currencyId: GTQ_CURRENCY_ID,
