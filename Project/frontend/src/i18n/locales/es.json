@@ -176,6 +176,41 @@
       "noPermission": "No tienes permiso para realizar esta acción."
     }
   },
+  "budgetMatrix": {
+    "title": "Matriz",
+    "navigation": {
+      "prevPeriod": "Período anterior",
+      "nextPeriod": "Siguiente período"
+    },
+    "columns": {
+      "budgeted": "Presupuesto",
+      "executed": "Ejecutado",
+      "label": "Categoría / Línea"
+    },
+    "rows": {
+      "insertLine": "Insertar Línea",
+      "insertCategory": "Insertar Categoría",
+      "insertGroup": "Insertar Grupo",
+      "estimatedVariance": "Est. - Real",
+      "executedVariance": "Real - Ejec.",
+      "expandGroup": "Expandir grupo",
+      "collapseGroup": "Colapsar grupo",
+      "expandCategory": "Expandir categoría",
+      "collapseCategory": "Colapsar categoría",
+      "moveUp": "Subir",
+      "moveDown": "Bajar"
+    },
+    "empty": {
+      "title": "Sin estructura presupuestaria",
+      "description": "Primero agregue grupos y categorías.",
+      "action": "Ir a Categorías"
+    },
+    "loading": "Cargando..."
+  },
+  "budgetExecution": {
+    "title": "Ejecuciones",
+    "addEntry": "Agregar entrada"
+  },
   "invitation": {
     "modal": {
       "title": "Invitar a un usuario",

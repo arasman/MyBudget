@@ -75,34 +75,34 @@ Chain strategy: feature-branch-chain
 
 ## PR3 — Skeleton View + Routing (`feat/budget-matrix-skeleton`)
 
-- [ ] T-3.1: Modify `src/router/index.ts` — add route `/budgets/:id/cycles/:cycleId/matrix` named `BudgetMatrix` mapped to lazy-import `BudgetMatrixView`. Add navigation guard: if no `cycleId`, redirect to `CycleListView`. _(REQ-MATRIX-ROUTE)_
+- [x] T-3.1: Modify `src/router/index.ts` — add route `/budgets/:id/cycles/:cycleId/matrix` named `BudgetMatrix` mapped to lazy-import `BudgetMatrixView`. Add navigation guard: if no `cycleId`, redirect to `CycleListView`. _(REQ-MATRIX-ROUTE)_
   - Acceptance: Route resolves; missing `cycleId` redirects; param name is `id` (not `budgetId`).
 
-- [ ] T-3.2: Modify `src/features/budget-structure/components/BudgetTabs.vue` — add optional `cycleId?: string` prop; add Matrix tab with `v-if="cycleId"` linking to `{ name: 'BudgetMatrix', params: { id: budgetId, cycleId } }`; Matrix tab has its own active state (not grouped with CYCLE_ROUTE_NAMES). _(REQ-MATRIX-ROUTE, Delta BudgetTabs)_
+- [x] T-3.2: Modify `src/features/budget-structure/components/BudgetTabs.vue` — add optional `cycleId?: string` prop; add Matrix tab with `v-if="cycleId"` linking to `{ name: 'BudgetMatrix', params: { id: budgetId, cycleId } }`; Matrix tab has its own active state (not grouped with CYCLE_ROUTE_NAMES). _(REQ-MATRIX-ROUTE, Delta BudgetTabs)_
   - Acceptance: Matrix tab visible only when `cycleId` is truthy; active class applied on `BudgetMatrix` route.
 
-- [ ] T-3.3: Create `src/features/budget-execution/views/BudgetMatrixView.vue` — `onMounted`: load cycle + groups via `budgetStructureStore`, then call `budgetMatrixStore.initMatrix(budgetId, cycleId)`. Render: `MatrixControls`, period nav buttons (prev/next), `<table>` wrapper with sticky overflow, `MatrixPeriodHeader`, group rows loop, `EmptyState` when no groups. 403 response → redirect to `BudgetSelectionView`. _(REQ-MATRIX-NAV, REQ-MATRIX-STRUCT, REQ-MATRIX-RBAC)_
+- [x] T-3.3: Create `src/features/budget-execution/views/BudgetMatrixView.vue` — `onMounted`: load cycle + groups via `budgetStructureStore`, then call `budgetMatrixStore.initMatrix(budgetId, cycleId)`. Render: `MatrixControls`, period nav buttons (prev/next), `<table>` wrapper with sticky overflow, `MatrixPeriodHeader`, group rows loop, `EmptyState` when no groups. 403 response → redirect to `BudgetSelectionView`. _(REQ-MATRIX-NAV, REQ-MATRIX-STRUCT, REQ-MATRIX-RBAC)_
   - Acceptance: View mounts and calls initMatrix; 403 redirects; empty state renders.
 
-- [ ] T-3.4: Create `src/features/budget-execution/components/MatrixPeriodHeader.vue` — renders one `<tr>` with sticky label `<th>` and 3×2 period sub-columns (Presupuesto / Ejecutado). Shows skeleton when `loadingPeriods[periodId]` is true. _(REQ-MATRIX-NAV, REQ-MATRIX-STRUCT)_
+- [x] T-3.4: Create `src/features/budget-execution/components/MatrixPeriodHeader.vue` — renders one `<tr>` with sticky label `<th>` and 3×2 period sub-columns (Presupuesto / Ejecutado). Shows skeleton when `loadingPeriods[periodId]` is true. _(REQ-MATRIX-NAV, REQ-MATRIX-STRUCT)_
   - Acceptance: 3 visible period headers; skeleton per period; sticky th has `position: sticky; left: 0`.
 
-- [ ] T-3.5: Create `src/features/budget-execution/components/MatrixGroupRow.vue` — `<tr>` with sticky name cell, collapse/expand toggle, up/down arrows (call `reorderGroups`), per-period aggregated Real + Ejecutado totals. Emits `toggle-collapse`. _(REQ-MATRIX-STRUCT, REQ-MATRIX-REORDER)_
+- [x] T-3.5: Create `src/features/budget-execution/components/MatrixGroupRow.vue` — `<tr>` with sticky name cell, collapse/expand toggle, up/down arrows (call `reorderGroups`), per-period aggregated Real + Ejecutado totals. Emits `toggle-collapse`. _(REQ-MATRIX-STRUCT, REQ-MATRIX-REORDER)_
   - Acceptance: Collapse hides child rows; up/down arrows disabled at first/last position.
 
-- [ ] T-3.6: Create `src/features/budget-execution/components/MatrixCategoryRow.vue` — `<tr>` with sticky name cell, collapse/expand toggle, up/down arrows (call `reorderCategories`), per-period aggregated totals. Renders `vue-draggable-plus` wrapper for its lines. _(REQ-MATRIX-STRUCT, REQ-MATRIX-REORDER)_
+- [x] T-3.6: Create `src/features/budget-execution/components/MatrixCategoryRow.vue` — `<tr>` with sticky name cell, collapse/expand toggle, up/down arrows (call `reorderCategories`), per-period aggregated totals. Renders `vue-draggable-plus` wrapper for its lines. _(REQ-MATRIX-STRUCT, REQ-MATRIX-REORDER)_
   - Acceptance: `@end` drag handler calls `reorderLines` with new order; arrows disabled at boundaries.
 
-- [ ] T-3.7: Create `src/features/budget-execution/components/MatrixLineRow.vue` — `<tr>` with sticky name cell, up/down arrows, per-period `MatrixCell` pairs (Real / Ejecutado). Ejecutado cell emits `dblclick` → `openExecutionModal`. _(REQ-MATRIX-STRUCT, REQ-MATRIX-EXEC)_
+- [x] T-3.7: Create `src/features/budget-execution/components/MatrixLineRow.vue` — `<tr>` with sticky name cell, up/down arrows, per-period `MatrixCell` pairs (Real / Ejecutado). Ejecutado cell emits `dblclick` → `openExecutionModal`. _(REQ-MATRIX-STRUCT, REQ-MATRIX-EXEC)_
   - Acceptance: `MatrixCell` dblclick on Ejecutado cell triggers modal open.
 
-- [ ] T-3.8: Create `src/features/budget-execution/components/MatrixEstimatedRow.vue` — variance sub-row: `Estimado - Real` and `Real - Total Ejecutado` per visible period. _(REQ-MATRIX-TOTALS)_
+- [x] T-3.8: Create `src/features/budget-execution/components/MatrixEstimatedRow.vue` — variance sub-row: `Estimado - Real` and `Real - Total Ejecutado` per visible period. _(REQ-MATRIX-TOTALS)_
   - Acceptance: Values are computed from store data; row renders below its parent `MatrixLineRow`.
 
-- [ ] T-3.9: Create `src/features/budget-execution/components/MatrixCell.vue` — renders formatted amount (uses `useCurrencyDisplay.convert()`); emits `dblclick` when `@dblclick` fires; shows skeleton when `loading` prop is true; applies gray styling when `deleted` prop is true. _(REQ-MATRIX-EXEC, REQ-MATRIX-DELETED)_
+- [x] T-3.9: Create `src/features/budget-execution/components/MatrixCell.vue` — renders formatted amount (uses `useCurrencyDisplay.convert()`); emits `dblclick` when `@dblclick` fires; shows skeleton when `loading` prop is true; applies gray styling when `deleted` prop is true. _(REQ-MATRIX-EXEC, REQ-MATRIX-DELETED)_
   - Acceptance: `dblclick` emit verifiable; skeleton shown when loading; currency conversion applied.
 
-- [ ] T-3.10: Add i18n skeleton keys only — `src/i18n/locales/en.json` + `es.json`: add `budgetMatrix` namespace with keys for nav labels, column headers (Presupuesto, Ejecutado), empty state. Spanish values may be placeholders marked `TODO`. Full translations deferred to PR5. _(i18n Requirements)_
+- [x] T-3.10: Add i18n skeleton keys only — `src/i18n/locales/en.json` + `es.json`: add `budgetMatrix` namespace with keys for nav labels, column headers (Presupuesto, Ejecutado), empty state. Spanish values may be placeholders marked `TODO`. Full translations deferred to PR5. _(i18n Requirements)_
   - Acceptance: All component `t('budgetMatrix.*')` keys exist; app does not throw missing-key warnings.
 
 ---

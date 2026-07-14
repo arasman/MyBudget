@@ -176,6 +176,41 @@
       "noPermission": "You don't have permission to perform this action."
     }
   },
+  "budgetMatrix": {
+    "title": "Matrix",
+    "navigation": {
+      "prevPeriod": "Previous period",
+      "nextPeriod": "Next period"
+    },
+    "columns": {
+      "budgeted": "Budgeted",
+      "executed": "Executed",
+      "label": "Category / Line"
+    },
+    "rows": {
+      "insertLine": "Insert Line",
+      "insertCategory": "Insert Category",
+      "insertGroup": "Insert Group",
+      "estimatedVariance": "Est. - Real",
+      "executedVariance": "Real - Exec.",
+      "expandGroup": "Expand group",
+      "collapseGroup": "Collapse group",
+      "expandCategory": "Expand category",
+      "collapseCategory": "Collapse category",
+      "moveUp": "Move up",
+      "moveDown": "Move down"
+    },
+    "empty": {
+      "title": "No budget structure",
+      "description": "Add groups and categories first.",
+      "action": "Go to Categories"
+    },
+    "loading": "Loading..."
+  },
+  "budgetExecution": {
+    "title": "Executions",
+    "addEntry": "Add entry"
+  },
   "invitation": {
     "modal": {
       "title": "Invite a User",
