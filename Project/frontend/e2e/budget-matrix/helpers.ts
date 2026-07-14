@@ -113,10 +113,10 @@ export async function seedBudgetMatrixFixture(
     { name: 'Groceries', categoryGroupId: groupIds[1], displayOrder: 1 },
   ]
   for (const def of categoryDefs) {
-    const resp = await request.post(`/api/budgets/${budgetId}/categories`, {
-      headers,
-      data: def,
-    })
+    const resp = await request.post(
+      `/api/budgets/${budgetId}/category-groups/${def.categoryGroupId}/categories`,
+      { headers, data: { name: def.name, displayOrder: def.displayOrder } },
+    )
     expect(resp.status()).toBe(201)
     const { id } = await resp.json()
     categoryIds.push(id)
