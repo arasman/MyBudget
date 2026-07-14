@@ -197,7 +197,7 @@ onMounted(async () => {
     try {
       await structureStore.loadLines(budgetId.value, matrixStore.allPeriods[0].id)
     } catch {
-      // non-critical: line rows won't render but the matrix still works
+      // non-critical — matrix renders without line rows
     }
   }
 })

@@ -94,7 +94,7 @@ function formatGroupTotal(periodId: string, type: 'budgeted' | 'executed'): stri
 
   const total = totals.categoryTotals
     .filter((ct) => ct.categoryGroupId === props.group.id)
-    .reduce((sum, ct) => sum + (type === 'budgeted' ? ct.budgetedAmount : ct.netExecuted), 0)
+    .reduce((sum, ct) => sum + (type === 'budgeted' ? 0 : ct.netTotal), 0)
 
   return formatAmount(total, '')
 }

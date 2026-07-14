@@ -26,7 +26,7 @@
           type="button"
           class="join-item btn btn-sm"
           :class="{ 'btn-active': matrixStore.displayCurrency === 'alternate' }"
-          :disabled="!structureStore.currentCycle?.alternateCurrencyId && !matrixStore.alternateCurrencyId"
+          :disabled="!structureStore.currentCycle?.alternateCurrency && !matrixStore.alternateCurrencyId"
           @click="matrixStore.setDisplayCurrency('alternate')"
         >
           USD

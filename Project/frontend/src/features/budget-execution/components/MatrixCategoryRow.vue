@@ -90,6 +90,6 @@ function formatCategoryTotal(periodId: string, type: 'budgeted' | 'executed'): s
   const catTotal = totals.categoryTotals.find((ct) => ct.categoryId === props.category.id)
   if (!catTotal) return formatAmount(0, '')
 
-  return formatAmount(type === 'budgeted' ? catTotal.budgetedAmount : catTotal.netExecuted, '')
+  return formatAmount(type === 'budgeted' ? 0 : catTotal.netTotal, '')
 }
 </script>

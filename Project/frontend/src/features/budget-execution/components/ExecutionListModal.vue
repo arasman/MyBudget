@@ -13,6 +13,7 @@
         </h3>
         <button
           type="button"
+          data-testid="modal-close-btn"
           class="btn btn-sm btn-ghost btn-square"
           @click="matrixStore.closeExecutionModal()"
         >
@@ -50,7 +51,7 @@
       </div>
 
       <!-- Closed-period notice (T-5.3) -->
-      <div v-if="periodClosed" class="alert alert-info text-sm mt-4">
+      <div v-if="periodClosed" data-testid="closed-period-banner" class="alert alert-info text-sm mt-4">
         {{ t('budgetExecution.modal.periodClosed') }}
       </div>
 
@@ -106,7 +107,7 @@ const period = computed(() =>
   structureStore.periods.find((p) => p.id === periodId.value),
 )
 
-const periodClosed = computed(() => period.value?.status === 'Closed')
+const periodClosed = computed(() => period.value?.isClosed === true)
 
 function onFormSaved(): void {
   // Records refresh is handled by the store's _invalidateAndRefresh

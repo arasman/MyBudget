@@ -129,7 +129,7 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
         periodNumber: fullPayload.periodNumber,
         startDate: payload.startDate,
         endDate: payload.endDate,
-        status: 'Open',
+        isClosed: false,
       })
     })
   }
@@ -162,7 +162,7 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
       await periodsApi.patchStatus(budgetId, cycleId, periodId, payload)
       const idx = periods.value.findIndex((p) => p.id === periodId)
       if (idx !== -1) {
-        periods.value[idx] = { ...periods.value[idx]!, status: payload.status }
+        periods.value[idx] = { ...periods.value[idx]!, isClosed: payload.status === 'Closed' }
       }
     })
   }

@@ -42,7 +42,7 @@ test.describe('BudgetMatrix RBAC', () => {
       // If still on page, open modal and verify no form is present
       const ejecutadoCell = page.locator('[data-testid="matrix-cell-ejecutado"]').first()
       if (await ejecutadoCell.isVisible()) {
-        await ejecutadoCell.dblclick()
+        await ejecutadoCell.dispatchEvent('dblclick')
         const modal = page.locator('[data-testid="execution-list-modal"]')
         if (await modal.isVisible()) {
           // No execution form for non-member / budget:read role
@@ -65,7 +65,7 @@ test.describe('BudgetMatrix RBAC', () => {
     // Open execution modal
     const ejecutadoCell = page.locator('[data-testid="matrix-cell-ejecutado"]').first()
     await expect(ejecutadoCell).toBeVisible()
-    await ejecutadoCell.dblclick()
+    await ejecutadoCell.dispatchEvent('dblclick')
 
     const modal = page.locator('[data-testid="execution-list-modal"]')
     await expect(modal).toBeVisible()

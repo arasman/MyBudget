@@ -41,7 +41,7 @@ export function formatDate(date: DateString, locale: string): string {
 export interface CurrencyItem {
   id: string
   code: string
-  name: string
+  name?: string
   symbol: string
 }
 
@@ -68,7 +68,7 @@ export interface PeriodSummary {
   periodNumber: number
   startDate: DateString
   endDate: DateString
-  status: string
+  isClosed: boolean
 }
 
 // ---------------------------------------------------------------------------

@@ -19,20 +19,23 @@ const MOCK_TOTALS = {
   lineTotals: [
     {
       budgetLineId: 'line-1',
-      budgetedAmount: 1000,
-      netExecuted: 750,
-      variance: 250,
+      budgetLineName: 'Alquiler',
+      totalExpenses: 750,
+      totalCreditNotes: 0,
+      totalDebitNotes: 0,
+      netTotal: 750,
     },
   ],
   categoryTotals: [
     {
-      categoryId: 'cat-1',
-      categoryName: 'Alquiler',
       categoryGroupId: 'group-1',
       categoryGroupName: 'Vivienda',
-      budgetedAmount: 1000,
-      netExecuted: 750,
-      variance: 250,
+      categoryId: 'cat-1',
+      categoryName: 'Alquiler',
+      totalExpenses: 750,
+      totalCreditNotes: 0,
+      totalDebitNotes: 0,
+      netTotal: 750,
     },
   ],
 }

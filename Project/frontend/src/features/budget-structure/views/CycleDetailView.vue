@@ -89,8 +89,8 @@
 
             <!-- status badge — no inline edit -->
             <td>
-              <span class="badge badge-sm" :class="statusBadgeClass(period.status)">
-                {{ period.status }}
+              <span class="badge badge-sm" :class="statusBadgeClass(period.isClosed ? 'Closed' : 'Open')">
+                {{ period.isClosed ? 'Closed' : 'Open' }}
               </span>
             </td>
 
@@ -291,7 +291,7 @@ function openEditModal(period: PeriodSummary): void {
 
 function openStatusModal(period: PeriodSummary): void {
   statusTargetId.value = period.id
-  newStatus.value = period.status
+  newStatus.value = period.isClosed ? 'Closed' : 'Open'
   showStatusDialog.value = true
 }
 

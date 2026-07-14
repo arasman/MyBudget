@@ -38,7 +38,7 @@ const matrixState: {
 }
 
 const structureState: {
-  periods: Array<{ id: string; name: string; periodNumber: number; startDate: string; endDate: string; status: string }>
+  periods: Array<{ id: string; name: string; periodNumber: number; startDate: string; endDate: string; isClosed: boolean }>
   currentCycle: { defaultCurrency: { id: string; code: string; name: string; symbol: string } } | null
   loading: boolean
   error: string | null
@@ -123,10 +123,10 @@ const openPeriod = {
   periodNumber: 1,
   startDate: '2026-01-01',
   endDate: '2026-01-31',
-  status: 'Open',
+  isClosed: false,
 }
 
-const closedPeriod = { ...openPeriod, status: 'Closed' }
+const closedPeriod = { ...openPeriod, isClosed: true }
 
 describe('ExecutionListModal.vue', () => {
   beforeEach(() => {

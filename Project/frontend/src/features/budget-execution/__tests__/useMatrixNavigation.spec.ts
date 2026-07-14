@@ -13,7 +13,7 @@ function makeStoreStub(periods: string[], offset = 0, windowSize = 3) {
     periodNumber: i + 1,
     startDate: '2026-01-01' as import('@/features/budget-structure/types').DateString,
     endDate: '2026-01-31' as import('@/features/budget-structure/types').DateString,
-    status: 'Open',
+    isClosed: false,
   }))
 
   // Reactive-like stub using a plain object (composable reads properties directly)

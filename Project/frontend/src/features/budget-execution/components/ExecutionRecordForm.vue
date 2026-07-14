@@ -1,5 +1,5 @@
 <template>
-  <form class="space-y-3" @submit.prevent="handleSubmit">
+  <form data-testid="execution-record-form" class="space-y-3" @submit.prevent="handleSubmit">
     <!-- Entry type -->
     <div class="form-control">
       <label class="label" for="exec-entry-type">
@@ -7,6 +7,7 @@
       </label>
       <select
         id="exec-entry-type"
+        data-testid="entry-type-select"
         v-model.number="form.entryType"
         class="select select-bordered select-sm w-full"
       >
@@ -23,6 +24,7 @@
       </label>
       <input
         id="exec-amount"
+        data-testid="amount-input"
         v-model.number="form.amount"
         type="number"
         step="0.01"
@@ -49,7 +51,7 @@
         class="input input-bordered input-sm w-full"
         :class="{ 'input-error': errors.note }"
       />
-      <span v-if="errors.note" class="label-text-alt text-error mt-1">{{ errors.note }}</span>
+      <span v-if="errors.note" data-testid="note-error" class="label-text-alt text-error mt-1">{{ errors.note }}</span>
     </div>
 
     <!-- Error banner -->
@@ -67,7 +69,7 @@
       >
         {{ t('budgetExecution.form.cancel') }}
       </button>
-      <button type="submit" class="btn btn-primary btn-sm" :disabled="submitting">
+      <button type="submit" data-testid="execution-form-submit" class="btn btn-primary btn-sm" :disabled="submitting">
         <span v-if="submitting" class="loading loading-spinner loading-xs" />
         {{ t('budgetExecution.form.save') }}
       </button>

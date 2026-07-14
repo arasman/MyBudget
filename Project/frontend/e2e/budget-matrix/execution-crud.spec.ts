@@ -15,7 +15,7 @@ test.describe('BudgetMatrix execution CRUD', () => {
     // Double-click the first Ejecutado cell in the matrix
     const ejecutadoCell = page.locator('[data-testid="matrix-cell-ejecutado"]').first()
     await expect(ejecutadoCell).toBeVisible()
-    await ejecutadoCell.dblclick()
+    await ejecutadoCell.dispatchEvent('dblclick')
 
     // Modal should appear
     const modal = page.locator('[data-testid="execution-list-modal"]')
@@ -33,7 +33,7 @@ test.describe('BudgetMatrix execution CRUD', () => {
     const initialText = await ejecutadoCell.textContent()
 
     // Open modal via double-click
-    await ejecutadoCell.dblclick()
+    await ejecutadoCell.dispatchEvent('dblclick')
     const modal = page.locator('[data-testid="execution-list-modal"]')
     await expect(modal).toBeVisible()
 
@@ -68,7 +68,7 @@ test.describe('BudgetMatrix execution CRUD', () => {
 
     // Open modal and create a record first
     const ejecutadoCell = page.locator('[data-testid="matrix-cell-ejecutado"]').first()
-    await ejecutadoCell.dblclick()
+    await ejecutadoCell.dispatchEvent('dblclick')
     const modal = page.locator('[data-testid="execution-list-modal"]')
     await expect(modal).toBeVisible()
 

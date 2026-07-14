@@ -59,7 +59,7 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
     const cycle = structureStore.currentCycle
     if (cycle) {
       exchangeRate.value = cycle.exchangeRate ?? null
-      alternateCurrencyId.value = cycle.alternateCurrencyId ?? null
+      alternateCurrencyId.value = cycle.alternateCurrencyId ?? (cycle.alternateCurrency ? (cycle.alternateCurrency as { code?: string }).code ?? 'alternate' : null)
     }
 
     // Read periods from structure store

@@ -27,28 +27,30 @@ const period1: PeriodSummary = {
   periodNumber: 1,
   startDate: '2025-01-01' as never,
   endDate: '2025-01-31' as never,
-  status: 'Open',
+  isClosed: false,
 }
 
 // CategoryTotalDto shapes for period p1
 const categoryTotals = [
   {
-    categoryId: 'cat-expense',
-    categoryName: 'Food',
     categoryGroupId: 'grp-1',
     categoryGroupName: 'Expenses',
-    budgetedAmount: 500,
-    netExecuted: 450,
-    variance: 50,
+    categoryId: 'cat-expense',
+    categoryName: 'Food',
+    totalExpenses: 450,
+    totalCreditNotes: 0,
+    totalDebitNotes: 0,
+    netTotal: 450,
   },
   {
-    categoryId: 'cat-savings',
-    categoryName: 'Emergency Fund',
     categoryGroupId: 'grp-2',
     categoryGroupName: 'Savings',
-    budgetedAmount: 200,
-    netExecuted: 180,
-    variance: 20,
+    categoryId: 'cat-savings',
+    categoryName: 'Emergency Fund',
+    totalExpenses: 180,
+    totalCreditNotes: 0,
+    totalDebitNotes: 0,
+    netTotal: 180,
   },
 ]
 
@@ -142,17 +144,15 @@ describe('MatrixSummaryRow', () => {
     expect(tr?.className).toContain('bg-warning/10')
   })
 
-  it('shows correct budgeted total for Expense categories', () => {
+  it('shows correct executed total for Expense categories', () => {
     const { getByText } = renderRow(1, 'Total Expenses')
-    // cat-expense has budgetedAmount=500, netExecuted=450
-    expect(getByText('500.00')).not.toBeNull()
+    // cat-expense has netTotal=450; budgeted column always shows 0
     expect(getByText('450.00')).not.toBeNull()
   })
 
   it('shows correct totals for LongTermSavings categories', () => {
     const { getByText } = renderRow(2, 'Total Long-term Savings')
-    // cat-savings has budgetedAmount=200, netExecuted=180
-    expect(getByText('200.00')).not.toBeNull()
+    // cat-savings has netTotal=180; budgeted column always shows 0
     expect(getByText('180.00')).not.toBeNull()
   })
 

@@ -38,7 +38,7 @@ test.describe('BudgetMatrix include deleted', () => {
     // Check "Incluir eliminados" checkbox
     const checkbox = page.getByTestId('include-deleted-checkbox')
     await checkbox.check()
-    await page.waitForTimeout(300) // allow reactivity
+    await page.waitForLoadState('networkidle')
 
     // Both groups should now be visible
     const groupRows = page.locator('[data-testid="matrix-group-row"]')

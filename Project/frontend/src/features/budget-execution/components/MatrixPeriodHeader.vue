@@ -16,7 +16,7 @@
         <div v-if="matrixStore.loadingPeriods[period.id]" class="skeleton h-4 w-full" />
         <template v-else>
           <span>{{ period.name }}</span>
-          <MatrixRefreshIcon :period-id="period.id" :period-status="period.status" />
+          <MatrixRefreshIcon :period-id="period.id" :period-status="period.isClosed ? 'Closed' : 'Open'" />
         </template>
       </th>
     </template>

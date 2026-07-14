@@ -35,9 +35,9 @@
         <span v-else>{{ formatLineAmount(period.id) }}</span>
       </td>
 
-      <!-- Ejecutado (netExecuted) — interactive MatrixCell -->
+      <!-- Ejecutado (netTotal) — interactive MatrixCell -->
       <MatrixCell
-        :amount="getLineTotal(period.id)?.netExecuted ?? 0"
+        :amount="getLineTotal(period.id)?.netTotal ?? 0"
         :loading="matrixStore.loadingPeriods[period.id] ?? false"
         @dblclick="matrixStore.openExecutionModal(line.id, period.id)"
       />
@@ -76,8 +76,7 @@ function getLineTotal(periodId: string): LineTotalDto | undefined {
   return totals?.lineTotals.find((lt) => lt.budgetLineId === props.line.id)
 }
 
-function formatLineAmount(periodId: string): string {
-  const lt = getLineTotal(periodId)
-  return formatAmount(lt?.budgetedAmount ?? 0, '')
+function formatLineAmount(_periodId: string): string {
+  return formatAmount(props.line.budgetedAmount ?? 0, '')
 }
 </script>

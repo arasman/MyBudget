@@ -15,7 +15,7 @@ test.describe('BudgetMatrix note validation', () => {
 
     // Open modal
     const ejecutadoCell = page.locator('[data-testid="matrix-cell-ejecutado"]').first()
-    await ejecutadoCell.dblclick()
+    await ejecutadoCell.dispatchEvent('dblclick')
     const modal = page.locator('[data-testid="execution-list-modal"]')
     await expect(modal).toBeVisible()
 
@@ -39,7 +39,7 @@ test.describe('BudgetMatrix note validation', () => {
 
     // Open modal
     const ejecutadoCell = page.locator('[data-testid="matrix-cell-ejecutado"]').first()
-    await ejecutadoCell.dblclick()
+    await ejecutadoCell.dispatchEvent('dblclick')
     const modal = page.locator('[data-testid="execution-list-modal"]')
     await expect(modal).toBeVisible()
 

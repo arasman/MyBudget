@@ -20,10 +20,11 @@ public static class ListCategoryGroupsEndpoint
 
     private static async Task<IResult> Handle(
         Guid id,
+        bool? includeDeleted,
         IMediator mediator,
         CancellationToken ct)
     {
-        var result = await mediator.Send(new ListCategoryGroupsQuery(id), ct);
+        var result = await mediator.Send(new ListCategoryGroupsQuery(id, includeDeleted ?? false), ct);
         return result.IsSuccess
             ? Results.Ok(result.Value)
             : Results.Problem(result.Error, statusCode: StatusCodes.Status500InternalServerError);

@@ -105,6 +105,14 @@
                     <List :size="14" />
                   </button>
                   <button
+                    type="button"
+                    class="btn btn-xs btn-ghost btn-square text-primary"
+                    :title="t('budgetStructure.cycles.viewMatrix')"
+                    @click="goToMatrix(cycle.id)"
+                  >
+                    <LayoutGrid :size="14" />
+                  </button>
+                  <button
                     v-if="canWriteStructure"
                     type="button"
                     class="btn btn-xs btn-ghost btn-square"
@@ -181,7 +189,7 @@ import { useI18n } from 'vue-i18n'
 import { useBudgetStructureStore } from '../store'
 import { useLayoutStore } from '@/stores/layout.store'
 import { useRoleGate } from '../composables/useRoleGate'
-import { Check, List, Pencil, Star, Trash2, X } from 'lucide-vue-next'
+import { Check, LayoutGrid, List, Pencil, Star, Trash2, X } from 'lucide-vue-next'
 import BudgetTabs from '../components/BudgetTabs.vue'
 import CycleForm from '../components/CycleForm.vue'
 import EmptyState from '../components/EmptyState.vue'
@@ -278,6 +286,10 @@ async function handleFormSubmit(payload: {
 
 function goToDetail(cycleId: string): void {
   router.push({ name: 'CycleDetail', params: { budgetId, cycleId } })
+}
+
+function goToMatrix(cycleId: string): void {
+  router.push({ name: 'BudgetMatrix', params: { budgetId, cycleId } })
 }
 
 onMounted(async () => {

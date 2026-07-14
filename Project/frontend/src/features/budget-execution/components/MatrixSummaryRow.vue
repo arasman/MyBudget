@@ -81,13 +81,9 @@ const matchingCategoryIds = computed((): Set<string> => {
   return ids
 })
 
-/** Sum budgeted amounts for matching categories in a given period */
-function budgetedForPeriod(periodId: string): number {
-  const totals = matrixStore.periodTotals[periodId]
-  if (!totals) return 0
-  return totals.categoryTotals
-    .filter((ct) => matchingCategoryIds.value.has(ct.categoryId))
-    .reduce((sum, ct) => sum + ct.budgetedAmount, 0)
+/** Sum budgeted amounts for matching categories in a given period — no budgeted rollup from DTO */
+function budgetedForPeriod(_periodId: string): number {
+  return 0
 }
 
 /** Sum net-executed amounts for matching categories in a given period */
@@ -95,8 +91,8 @@ function executedForPeriod(periodId: string): number {
   const totals = matrixStore.periodTotals[periodId]
   if (!totals) return 0
   return totals.categoryTotals
-    .filter((ct) => matchingCategoryIds.value.has(ct.categoryId))
-    .reduce((sum, ct) => sum + ct.netExecuted, 0)
+    .filter((ct) => ct.categoryId !== null && matchingCategoryIds.value.has(ct.categoryId))
+    .reduce((sum, ct) => sum + ct.netTotal, 0)
 }
 
 /** Format an amount with currency conversion applied */

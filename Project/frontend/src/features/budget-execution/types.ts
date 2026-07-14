@@ -49,19 +49,22 @@ export type UpdateExecutionRequest = CreateExecutionRequest
 
 export interface LineTotalDto {
   budgetLineId: string
-  budgetedAmount: number
-  netExecuted: number
-  variance: number
+  budgetLineName: string
+  totalExpenses: number
+  totalCreditNotes: number
+  totalDebitNotes: number
+  netTotal: number
 }
 
 export interface CategoryTotalDto {
-  categoryId: string
-  categoryName: string
   categoryGroupId: string
   categoryGroupName: string
-  budgetedAmount: number
-  netExecuted: number
-  variance: number
+  categoryId: string | null
+  categoryName: string | null
+  totalExpenses: number
+  totalCreditNotes: number
+  totalDebitNotes: number
+  netTotal: number
 }
 
 export interface PeriodTotalsDto {

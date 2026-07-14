@@ -63,12 +63,12 @@ function estimatedVariance(periodId: string): number {
 }
 
 /**
- * Real - Ejecutado: budgetedAmount minus netExecuted.
+ * Real - Ejecutado: budgetedAmount (from the line) minus netTotal (from the execution total).
  */
 function executedVariance(periodId: string): number {
   const lt = getLineTotal(periodId)
   if (!lt) return 0
-  return lt.budgetedAmount - lt.netExecuted
+  return (props.line.budgetedAmount ?? 0) - lt.netTotal
 }
 
 function formatVariance(value: number): string {

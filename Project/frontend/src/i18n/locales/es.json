@@ -81,6 +81,7 @@
       "confirmDelete": "¿Estás seguro de que deseas eliminar este ciclo?",
       "setActive": "Establecer como activo",
       "viewPeriods": "Ver períodos",
+      "viewMatrix": "Matriz de ejecución presupuestaria",
       "name": "Nombre",
       "startDate": "Fecha de inicio",
       "endDate": "Fecha de fin",

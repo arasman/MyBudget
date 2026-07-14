@@ -1,5 +1,6 @@
 <template>
   <div
+    data-testid="execution-record-row"
     class="flex items-start gap-2 py-2 px-1 border-b border-base-300 last:border-0"
     :class="{ 'opacity-60': record.deletedAt }"
   >
@@ -44,6 +45,7 @@
       <button
         v-if="!record.deletedAt && !editing"
         type="button"
+        data-testid="delete-record-btn"
         class="btn btn-xs btn-ghost text-error"
         :title="t('budgetExecution.row.delete')"
         :disabled="deleting"

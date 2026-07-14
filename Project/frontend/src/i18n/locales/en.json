@@ -81,6 +81,7 @@
       "confirmDelete": "Are you sure you want to delete this cycle?",
       "setActive": "Set as Active",
       "viewPeriods": "View Periods",
+      "viewMatrix": "Budget Execution Matrix",
       "name": "Name",
       "startDate": "Start Date",
       "endDate": "End Date",

@@ -52,7 +52,7 @@ async function loginViaApi(page: import('@playwright/test').Page, email: string)
   return resp.json()
 }
 
-/** Poll Mailpit until an email arrives for the given recipient, return raw body. */
+/** Poll Mailpit until the invite email arrives for the given recipient, return raw body. */
 async function waitForEmail(
   page: import('@playwright/test').Page,
   to: string,
@@ -63,16 +63,18 @@ async function waitForEmail(
     const resp = await page.request.get(`${MAILPIT_URL}/api/v1/messages`)
     if (resp.ok()) {
       const data: MailpitMessages = await resp.json()
-      const msg = data.messages?.find((m) => m.To.some((t) => t.Address === to))
+      const msg = data.messages?.find(
+        (m) => m.To.some((t) => t.Address === to) && m.Subject.includes('invited'),
+      )
       if (msg) {
         const bodyResp = await page.request.get(`${MAILPIT_URL}/api/v1/message/${msg.ID}`)
         const body = await bodyResp.json()
-        return body.Text ?? body.HTML ?? ''
+        return (body.Text || body.HTML) ?? ''
       }
     }
     await page.waitForTimeout(500)
   }
-  throw new Error(`Timeout waiting for email to ${to}`)
+  throw new Error(`Timeout waiting for invite email to ${to}`)
 }
 
 /** Extract the raw invitation token from the email body link. */
