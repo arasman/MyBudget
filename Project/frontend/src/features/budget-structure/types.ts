@@ -86,6 +86,7 @@ export interface CategoryGroupResponse {
   name: string
   displayOrder: number
   categories: CategoryItem[]
+  deletedAt?: string | null
 }
 
 // ---------------------------------------------------------------------------

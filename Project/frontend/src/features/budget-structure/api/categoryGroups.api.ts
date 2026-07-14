@@ -4,8 +4,10 @@ import type { CategoryGroupResponse, CreateGroupPayload, UpdateGroupPayload } fr
 const base = (budgetId: string) => `/api/budgets/${budgetId}/category-groups`
 
 /** GET /api/budgets/:budgetId/category-groups */
-export async function list(budgetId: string): Promise<CategoryGroupResponse[]> {
-  const { data } = await http.get<CategoryGroupResponse[]>(base(budgetId))
+export async function list(budgetId: string, includeDeleted = false): Promise<CategoryGroupResponse[]> {
+  const { data } = await http.get<CategoryGroupResponse[]>(base(budgetId), {
+    params: includeDeleted ? { includeDeleted: true } : undefined,
+  })
   return data
 }
 

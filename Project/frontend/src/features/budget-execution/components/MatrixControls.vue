@@ -13,6 +13,7 @@
       </span>
       <div class="join">
         <button
+          data-testid="currency-gtq-btn"
           type="button"
           class="join-item btn btn-sm"
           :class="{ 'btn-active': matrixStore.displayCurrency === 'default' }"
@@ -25,7 +26,7 @@
           type="button"
           class="join-item btn btn-sm"
           :class="{ 'btn-active': matrixStore.displayCurrency === 'alternate' }"
-          :disabled="!structureStore.currentCycle?.alternateCurrencyId"
+          :disabled="!structureStore.currentCycle?.alternateCurrencyId && !matrixStore.alternateCurrencyId"
           @click="matrixStore.setDisplayCurrency('alternate')"
         >
           USD

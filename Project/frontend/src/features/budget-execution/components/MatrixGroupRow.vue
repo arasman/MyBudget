@@ -1,10 +1,15 @@
 <template>
-  <tr data-testid="matrix-group-row" class="bg-base-200 font-semibold">
+  <tr
+    data-testid="matrix-group-row"
+    class="bg-base-200 font-semibold"
+    :class="{ 'opacity-50 text-base-content/50': group.deletedAt }"
+  >
     <!-- Sticky label cell -->
     <td class="sticky left-0 z-10 bg-base-200 px-3 py-2 border-b border-base-300">
       <div class="flex items-center gap-2">
         <!-- Collapse/expand toggle -->
         <button
+          data-testid="group-collapse-btn"
           type="button"
           class="btn btn-xs btn-ghost btn-square"
           :title="collapsed ? t('budgetMatrix.rows.expandGroup') : t('budgetMatrix.rows.collapseGroup')"

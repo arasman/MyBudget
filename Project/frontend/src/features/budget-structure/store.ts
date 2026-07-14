@@ -182,9 +182,9 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   // Category groups — implemented in PR2 (load) and PR4 (mutations)
   // ---------------------------------------------------------------------------
 
-  async function loadGroups(budgetId: string): Promise<void> {
+  async function loadGroups(budgetId: string, includeDeleted = false): Promise<void> {
     await _wrap(async () => {
-      categoryGroups.value = await groupsApi.list(budgetId)
+      categoryGroups.value = await groupsApi.list(budgetId, includeDeleted)
     })
   }
 
