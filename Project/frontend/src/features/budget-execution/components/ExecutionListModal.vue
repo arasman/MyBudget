@@ -28,6 +28,14 @@
           <div v-for="i in 3" :key="i" class="skeleton h-12 w-full mb-2" />
         </template>
 
+        <!-- Modal-scoped fetch error -->
+        <div
+          v-else-if="matrixStore.modalError"
+          class="alert alert-error text-sm"
+        >
+          {{ matrixStore.modalError }}
+        </div>
+
         <!-- Empty state -->
         <div
           v-else-if="records.length === 0"

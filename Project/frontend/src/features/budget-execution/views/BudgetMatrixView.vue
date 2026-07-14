@@ -1,14 +1,23 @@
 <template>
   <div class="container mx-auto px-4 py-6">
+    <!-- Navigation tabs -->
+    <BudgetTabs :budget-id="budgetId" class="mb-6" />
+
     <!-- Controls bar (T-5.2) -->
     <MatrixControls />
+
+    <!-- Non-blocking reorder error (dismissible) -->
+    <div v-if="reorderError" class="alert alert-warning mb-2 flex justify-between items-center">
+      <span>{{ reorderError }}</span>
+      <button type="button" class="btn btn-xs btn-ghost" @click="reorderError = null">✕</button>
+    </div>
 
     <!-- Loading state -->
     <div v-if="structureStore.loading || matrixStore.loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-md" />
     </div>
 
-    <!-- Error state -->
+    <!-- Critical error state (init failures only) -->
     <div v-else-if="structureStore.error || matrixStore.error" class="alert alert-error mb-4">
       <span>{{ structureStore.error ?? matrixStore.error }}</span>
     </div>
@@ -151,12 +160,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useBudgetMatrixStore } from '../store'
 import { useMatrixNavigation } from '../composables/useMatrixNavigation'
+import BudgetTabs from '@/features/budget-structure/components/BudgetTabs.vue'
 import MatrixPeriodHeader from '../components/MatrixPeriodHeader.vue'
 import MatrixGroupRow from '../components/MatrixGroupRow.vue'
 import MatrixCategoryRow from '../components/MatrixCategoryRow.vue'
@@ -178,6 +188,9 @@ const cycleId = computed(() => route.params.cycleId as string)
 const structureStore = useBudgetStructureStore()
 const matrixStore = useBudgetMatrixStore()
 const { visiblePeriods, canGoPrev, canGoNext, goPrev, goNext } = useMatrixNavigation(matrixStore)
+
+// Non-blocking error for non-critical operations (reorder, etc.)
+const reorderError = ref<string | null>(null)
 
 onMounted(async () => {
   try {
@@ -310,19 +323,20 @@ async function reorderLinesForAllPeriods(
   })
   structureStore.budgetLines = reorderedLines
 
+  // Only call reorder for the period whose lines are actually loaded in the store.
+  // Each period has distinct BudgetLine IDs; sending one period's IDs to another
+  // period's endpoint triggers REORDER_ID_NOT_IN_SCOPE on the backend.
+  const loadedPeriodId = matrixStore.allPeriods[0]?.id
+  if (!loadedPeriodId) return
+
   try {
-    // Call PUT /order for each visible period — N calls (one per period)
-    await Promise.all(
-      visiblePeriods.value.map((period) =>
-        budgetLinesApi.reorder(budgetId.value, period.id, newOrder),
-      ),
-    )
+    await budgetLinesApi.reorder(budgetId.value, loadedPeriodId, newOrder)
   } catch {
-    // Revert on error
+    // Revert optimistic update — non-blocking warning, does not kill the view
     structureStore.budgetLines = structureStore.budgetLines.filter((l) =>
       previousOrder.includes(l.id),
     )
-    matrixStore.error = 'Failed to reorder lines. Changes reverted.'
+    reorderError.value = 'Could not save new line order. Changes reverted.'
   }
 }
 </script>

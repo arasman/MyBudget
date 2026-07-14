@@ -39,6 +39,7 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
   const openModalPeriodId = ref<string | null>(null)
   const executionRecords = ref<Record<string, ExecutionRecordDto[]>>({})
   const loadingExecutions = ref<Record<string, boolean>>({})
+  const modalError = ref<string | null>(null)
 
   // Global state
   const loading = ref(false)
@@ -123,6 +124,7 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
   async function openExecutionModal(lineId: string, periodId: string): Promise<void> {
     openModalLineId.value = lineId
     openModalPeriodId.value = periodId
+    modalError.value = null
 
     const key = `${lineId}:${periodId}`
 
@@ -137,7 +139,8 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
       const records = await executionsApi.list(budgetId.value, periodId, lineId)
       executionRecords.value = { ...executionRecords.value, [key]: records }
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to load execution records'
+      // Modal-scoped error — does NOT kill the matrix view
+      modalError.value = e instanceof Error ? e.message : 'Failed to load execution records'
     } finally {
       loadingExecutions.value = { ...loadingExecutions.value, [key]: false }
     }
@@ -255,6 +258,7 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
     openModalPeriodId,
     executionRecords,
     loadingExecutions,
+    modalError,
     loading,
     error,
     // Actions
