@@ -162,31 +162,31 @@ Chain strategy: feature-branch-chain
 
 ## PR6 — Playwright E2E (`feat/budget-matrix-e2e`)
 
-- [ ] T-6.1: Create `e2e/budget-matrix/helpers.ts` — seed helper: `seedBudgetMatrixFixture(page)` that calls backend API to create budget + cycle + groups + categories + lines + open periods. Auth helper reuses existing login pattern. _(Test Coverage Requirements)_
+- [x] T-6.1: Create `e2e/budget-matrix/helpers.ts` — seed helper: `seedBudgetMatrixFixture(page)` that calls backend API to create budget + cycle + groups + categories + lines + open periods. Auth helper reuses existing login pattern. _(Test Coverage Requirements)_
   - Acceptance: Helper usable in all 8 specs; idempotent if run twice.
 
-- [ ] T-6.2: Create `e2e/budget-matrix/navigation.spec.ts` — test: initial load shows 3 periods; next period shifts window; prev disabled at start; next disabled at end. _(REQ-MATRIX-NAV)_
+- [x] T-6.2: Create `e2e/budget-matrix/navigation.spec.ts` — test: initial load shows 3 periods; next period shifts window; prev disabled at start; next disabled at end. _(REQ-MATRIX-NAV)_
   - Acceptance: 4 test cases; buttons checked for disabled state via `toBeDisabled()`.
 
-- [ ] T-6.3: Create `e2e/budget-matrix/collapse.spec.ts` — test: expand/collapse group hides/shows category rows; collapse category hides line rows. _(REQ-MATRIX-STRUCT)_
+- [x] T-6.3: Create `e2e/budget-matrix/collapse.spec.ts` — test: expand/collapse group hides/shows category rows; collapse category hides line rows. _(REQ-MATRIX-STRUCT)_
   - Acceptance: 2 test cases; row visibility checked via `toBeVisible()` / `toBeHidden()`.
 
-- [ ] T-6.4: Create `e2e/budget-matrix/execution-crud.spec.ts` — test: double-click Ejecutado cell opens modal; create Expense record → total updates; delete record → total updates. _(REQ-MATRIX-EXEC, REQ-MATRIX-TOTALS)_
+- [x] T-6.4: Create `e2e/budget-matrix/execution-crud.spec.ts` — test: double-click Ejecutado cell opens modal; create Expense record → total updates; delete record → total updates. _(REQ-MATRIX-EXEC, REQ-MATRIX-TOTALS)_
   - Acceptance: 3 test cases; cell amount before/after compared numerically.
 
-- [ ] T-6.5: Create `e2e/budget-matrix/note-validation.spec.ts` — test: CreditNote submit without note shows validation error; Expense submit without note succeeds. _(REQ-MATRIX-EXEC)_
+- [x] T-6.5: Create `e2e/budget-matrix/note-validation.spec.ts` — test: CreditNote submit without note shows validation error; Expense submit without note succeeds. _(REQ-MATRIX-EXEC)_
   - Acceptance: 2 test cases; error message text matches i18n key output.
 
-- [ ] T-6.6: Create `e2e/budget-matrix/currency-toggle.spec.ts` — test: default loads GTQ; toggle to USD converts amounts; exchange rate label visible; toggle back restores GTQ. _(REQ-MATRIX-CURRENCY)_
+- [x] T-6.6: Create `e2e/budget-matrix/currency-toggle.spec.ts` — test: default loads GTQ; toggle to USD converts amounts; exchange rate label visible; toggle back restores GTQ. _(REQ-MATRIX-CURRENCY)_
   - Acceptance: 3 test cases; amounts compared before/after toggle using `page.textContent()`.
 
-- [ ] T-6.7: Create `e2e/budget-matrix/include-deleted.spec.ts` — test: deleted group hidden by default; check "Incluir eliminados" shows group in gray; uncheck hides it again. _(REQ-MATRIX-DELETED)_
+- [x] T-6.7: Create `e2e/budget-matrix/include-deleted.spec.ts` — test: deleted group hidden by default; check "Incluir eliminados" shows group in gray; uncheck hides it again. _(REQ-MATRIX-DELETED)_
   - Acceptance: 2 test cases; gray styling verified via class assertion.
 
-- [ ] T-6.8: Create `e2e/budget-matrix/closed-period.spec.ts` — test: closed period column shows refresh icon; open period does not; double-click closed Ejecutado cell → modal opens read-only (no form). _(REQ-MATRIX-EXEC, REQ-MATRIX-REFRESH)_
+- [x] T-6.8: Create `e2e/budget-matrix/closed-period.spec.ts` — test: closed period column shows refresh icon; open period does not; double-click closed Ejecutado cell → modal opens read-only (no form). _(REQ-MATRIX-EXEC, REQ-MATRIX-REFRESH)_
   - Acceptance: 3 test cases.
 
-- [ ] T-6.9: Create `e2e/budget-matrix/rbac.spec.ts` — test: `budget:read` user sees no CRUD controls in modal; `budget:operator` sees form; non-member navigating to matrix route gets redirected. _(REQ-MATRIX-RBAC)_
+- [x] T-6.9: Create `e2e/budget-matrix/rbac.spec.ts` — test: `budget:read` user sees no CRUD controls in modal; `budget:operator` sees form; non-member navigating to matrix route gets redirected. _(REQ-MATRIX-RBAC)_
   - Acceptance: 3 test cases; each seeds a different user role.
 
 ---
