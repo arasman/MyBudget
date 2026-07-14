@@ -109,31 +109,31 @@ Chain strategy: feature-branch-chain
 
 ## PR4 — Execution Modal + CRUD (`feat/budget-matrix-execution`)
 
-- [ ] T-4.1: Create `src/features/budget-execution/components/ExecutionListModal.vue` — daisyUI `<dialog>` modal; reads `store.executionRecords[key]` where `key = ${lineId}:${periodId}`; shows list of `ExecutionRecordRow`; shows `ExecutionRecordForm` only when `period.status !== 'Closed'`; fetches records via `store.openExecutionModal()` on open. _(REQ-MATRIX-EXEC)_
+- [x] T-4.1: Create `src/features/budget-execution/components/ExecutionListModal.vue` — daisyUI `<dialog>` modal; reads `store.executionRecords[key]` where `key = ${lineId}:${periodId}`; shows list of `ExecutionRecordRow`; shows `ExecutionRecordForm` only when `period.status !== 'Closed'`; fetches records via `store.openExecutionModal()` on open. _(REQ-MATRIX-EXEC)_
   - Acceptance: Form hidden when period closed; records listed in `createdAt` asc order.
 
-- [ ] T-4.2: Create `src/features/budget-execution/components/ExecutionRecordRow.vue` — renders one record: `entryType`, `amount`, `note`; shows Edit + Delete buttons (operator); shows Restore button for deleted records; deleted records render in gray; read-only when period closed or `budget:read` role. _(REQ-MATRIX-EXEC, REQ-MATRIX-RBAC)_
+- [x] T-4.2: Create `src/features/budget-execution/components/ExecutionRecordRow.vue` — renders one record: `entryType`, `amount`, `note`; shows Edit + Delete buttons (operator); shows Restore button for deleted records; deleted records render in gray; read-only when period closed or `budget:read` role. _(REQ-MATRIX-EXEC, REQ-MATRIX-RBAC)_
   - Acceptance: No Edit/Delete visible for `budget:read` role; Restore visible only on deleted record.
 
-- [ ] T-4.3: Create `src/features/budget-execution/components/ExecutionRecordForm.vue` — create/edit form: `EntryType` select (Expense/CreditNote/DebitNote), `Amount` number input (positive), `Note` text input. Validation: Note required when type is CreditNote or DebitNote. On submit: call `executions.api.create/update` → update `executionRecords` cache → delete `periodTotals[periodId]` → call `loadPeriodTotals(periodId)`. _(REQ-MATRIX-EXEC)_
+- [x] T-4.3: Create `src/features/budget-execution/components/ExecutionRecordForm.vue` — create/edit form: `EntryType` select (Expense/CreditNote/DebitNote), `Amount` number input (positive), `Note` text input. Validation: Note required when type is CreditNote or DebitNote. On submit: call `executions.api.create/update` → update `executionRecords` cache → delete `periodTotals[periodId]` → call `loadPeriodTotals(periodId)`. _(REQ-MATRIX-EXEC)_
   - Acceptance: Note validation error blocks submit; success refreshes Ejecutado cell total.
 
-- [ ] T-4.4: Create `src/features/budget-execution/components/MatrixRefreshIcon.vue` — shows refresh icon (lucide `RefreshCw`) in period column header only when `period.status === 'Closed'`; on click calls `store.refreshPeriod(periodId)`; shows spinner while `loadingPeriods[periodId]` is true. _(REQ-MATRIX-REFRESH)_
+- [x] T-4.4: Create `src/features/budget-execution/components/MatrixRefreshIcon.vue` — shows refresh icon (lucide `RefreshCw`) in period column header only when `period.status === 'Closed'`; on click calls `store.refreshPeriod(periodId)`; shows spinner while `loadingPeriods[periodId]` is true. _(REQ-MATRIX-REFRESH)_
   - Acceptance: Icon absent on open periods; spinner shows during fetch; amounts update after.
 
-- [ ] T-4.5: Wire double-click in `MatrixLineRow.vue` → `store.openExecutionModal(lineId, periodId)` and wire `ExecutionListModal` visibility to `store.openModalLineId !== null`. _(REQ-MATRIX-EXEC)_
+- [x] T-4.5: Wire double-click in `MatrixLineRow.vue` → `store.openExecutionModal(lineId, periodId)` and wire `ExecutionListModal` visibility to `store.openModalLineId !== null`. _(REQ-MATRIX-EXEC)_
   - Acceptance: Double-click on Ejecutado cell opens modal with correct lineId + periodId.
 
-- [ ] T-4.6: Implement line reorder API calls in `MatrixCategoryRow.vue` — up/down arrows and `vue-draggable-plus` `@end` handler call `PUT /api/budgets/{id}/periods/{periodId}/budget-lines/order` with `{ orderedIds: Guid[] }` for EACH visible period that has lines in that category (N calls, one per period). Optimistic update: revert on error. _(REQ-MATRIX-REORDER)_
+- [x] T-4.6: Implement line reorder API calls in `MatrixCategoryRow.vue` — up/down arrows and `vue-draggable-plus` `@end` handler call `PUT /api/budgets/{id}/periods/{periodId}/budget-lines/order` with `{ orderedIds: Guid[] }` for EACH visible period that has lines in that category (N calls, one per period). Optimistic update: revert on error. _(REQ-MATRIX-REORDER)_
   - Acceptance: Reorder calls fired for all visible periods; local order reverted on API error.
 
-- [ ] T-4.7: Vitest component tests for `MatrixCell.vue` — test dblclick emits event; test skeleton shows when loading prop true; test gray class when deleted prop true. _(Test Coverage Requirements)_
+- [x] T-4.7: Vitest component tests for `MatrixCell.vue` — test dblclick emits event; test skeleton shows when loading prop true; test gray class when deleted prop true. _(Test Coverage Requirements)_
   - Acceptance: ≥3 test cases using `@testing-library/vue`.
 
-- [ ] T-4.8: Vitest component tests for `ExecutionRecordForm.vue` — test Note validation for CreditNote (error shown); test Note not required for Expense; test submit calls store action. _(Test Coverage Requirements)_
+- [x] T-4.8: Vitest component tests for `ExecutionRecordForm.vue` — test Note validation for CreditNote (error shown); test Note not required for Expense; test submit calls store action. _(Test Coverage Requirements)_
   - Acceptance: ≥4 test cases; store mocked via `createPinia()`.
 
-- [ ] T-4.9: Vitest component tests for `ExecutionListModal.vue` — test form hidden when period is closed; test form visible when period open; test records displayed in order. _(Test Coverage Requirements)_
+- [x] T-4.9: Vitest component tests for `ExecutionListModal.vue` — test form hidden when period is closed; test form visible when period open; test records displayed in order. _(Test Coverage Requirements)_
   - Acceptance: ≥3 test cases; period status passed via store `$patch`.
 
 ---

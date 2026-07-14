@@ -96,8 +96,30 @@
                   @move-down="handleCategoryMoveDown(group.id, group.categories, catIndex)"
                 />
 
-                <!-- Line rows for this category — wired in PR4 -->
-                <!-- MatrixLineRow + MatrixEstimatedRow will be rendered here when lines are available -->
+                <!-- Line rows for this category -->
+                <template
+                  v-if="!matrixStore.collapsedGroupIds.has(group.id) && !matrixStore.collapsedCategoryIds.has(category.id)"
+                >
+                  <template
+                    v-for="(line, lineIndex) in getLinesForCategory(category.id)"
+                    :key="line.id"
+                  >
+                    <MatrixLineRow
+                      :line="line"
+                      :category-collapsed="matrixStore.collapsedCategoryIds.has(category.id)"
+                      :visible-periods="visiblePeriods"
+                      :is-first="lineIndex === 0"
+                      :is-last="lineIndex === getLinesForCategory(category.id).length - 1"
+                      @move-up="handleLineMoveUp(category.id, line.id)"
+                      @move-down="handleLineMoveDown(category.id, line.id)"
+                    />
+                    <MatrixEstimatedRow
+                      :line="line"
+                      :category-collapsed="matrixStore.collapsedCategoryIds.has(category.id)"
+                      :visible-periods="visiblePeriods"
+                    />
+                  </template>
+                </template>
               </template>
             </template>
           </tbody>
@@ -107,6 +129,9 @@
         </table>
       </div>
     </template>
+
+    <!-- Execution list modal — one instance for the whole view -->
+    <ExecutionListModal :budget-id="budgetId" />
   </div>
 </template>
 
@@ -120,7 +145,11 @@ import { useMatrixNavigation } from '../composables/useMatrixNavigation'
 import MatrixPeriodHeader from '../components/MatrixPeriodHeader.vue'
 import MatrixGroupRow from '../components/MatrixGroupRow.vue'
 import MatrixCategoryRow from '../components/MatrixCategoryRow.vue'
-import type { CategoryItem } from '@/features/budget-structure/types'
+import MatrixLineRow from '../components/MatrixLineRow.vue'
+import MatrixEstimatedRow from '../components/MatrixEstimatedRow.vue'
+import ExecutionListModal from '../components/ExecutionListModal.vue'
+import * as budgetLinesApi from '@/features/budget-structure/api/budgetLines.api'
+import type { CategoryItem, BudgetLineResponse } from '@/features/budget-structure/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -146,12 +175,19 @@ onMounted(async () => {
   }
 })
 
+// Derive lines per category from the store's budgetLines flat array
+function getLinesForCategory(categoryId: string): BudgetLineResponse[] {
+  return structureStore.budgetLines.filter((l) => l.categoryId === categoryId)
+}
+
+// -------------------------------------------------------------------------
 // Group reorder helpers
+// -------------------------------------------------------------------------
+
 async function handleGroupMoveUp(_groupId: string, currentIndex: number): Promise<void> {
   if (currentIndex === 0) return
   const groups = structureStore.categoryGroups
   const orderedIds = groups.map((g) => g.id)
-  // Swap with previous
   ;[orderedIds[currentIndex - 1], orderedIds[currentIndex]] = [
     orderedIds[currentIndex]!,
     orderedIds[currentIndex - 1]!,
@@ -170,7 +206,10 @@ async function handleGroupMoveDown(_groupId: string, currentIndex: number): Prom
   await structureStore.reorderGroups(budgetId.value, orderedIds)
 }
 
+// -------------------------------------------------------------------------
 // Category reorder helpers
+// -------------------------------------------------------------------------
+
 async function handleCategoryMoveUp(
   groupId: string,
   categories: CategoryItem[],
@@ -197,5 +236,66 @@ async function handleCategoryMoveDown(
     orderedIds[currentIndex]!,
   ]
   await structureStore.reorderCategories(budgetId.value, groupId, orderedIds)
+}
+
+// -------------------------------------------------------------------------
+// Line reorder helpers (T-4.6)
+// Per AD-8: call PUT /order for EACH visible period with that category's lines
+// Optimistic: update local order immediately; revert all on any failure
+// -------------------------------------------------------------------------
+
+async function handleLineMoveUp(categoryId: string, lineId: string): Promise<void> {
+  await reorderLinesForAllPeriods(categoryId, lineId, 'up')
+}
+
+async function handleLineMoveDown(categoryId: string, lineId: string): Promise<void> {
+  await reorderLinesForAllPeriods(categoryId, lineId, 'down')
+}
+
+async function reorderLinesForAllPeriods(
+  categoryId: string,
+  lineId: string,
+  direction: 'up' | 'down',
+): Promise<void> {
+  // Current ordered lines for this category (from flat budgetLines list)
+  const categoryLines = getLinesForCategory(categoryId)
+  const currentIdx = categoryLines.findIndex((l) => l.id === lineId)
+  if (currentIdx === -1) return
+
+  if (direction === 'up' && currentIdx === 0) return
+  if (direction === 'down' && currentIdx === categoryLines.length - 1) return
+
+  // Compute new order (optimistic local update)
+  const newOrder = categoryLines.map((l) => l.id)
+  const swapIdx = direction === 'up' ? currentIdx - 1 : currentIdx + 1
+  ;[newOrder[currentIdx], newOrder[swapIdx]] = [newOrder[swapIdx]!, newOrder[currentIdx]!]
+
+  // Optimistic: reorder in-place in structureStore.budgetLines
+  const previousOrder = structureStore.budgetLines.map((l) => l.id)
+  const reorderedLines = [...structureStore.budgetLines].sort((a, b) => {
+    const ai = newOrder.indexOf(a.id)
+    const bi = newOrder.indexOf(b.id)
+    // Lines not in this category keep their relative positions
+    if (ai === -1 && bi === -1) return 0
+    if (ai === -1) return 1
+    if (bi === -1) return -1
+    return ai - bi
+  })
+  structureStore.budgetLines = reorderedLines
+
+  try {
+    // Call PUT /order for each visible period — N calls (one per period)
+    await Promise.all(
+      visiblePeriods.value.map((period) =>
+        budgetLinesApi.reorder(budgetId.value, period.id, newOrder),
+      ),
+    )
+  } catch {
+    // Revert on error
+    structureStore.budgetLines = structureStore.budgetLines.filter((l) =>
+      previousOrder.includes(l.id),
+    )
+    matrixStore.error = 'Failed to reorder lines. Changes reverted.'
+  }
 }
 </script>

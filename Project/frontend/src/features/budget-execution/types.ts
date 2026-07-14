@@ -24,6 +24,7 @@ export interface ExecutionRecordDto {
   note: string | null
   createdAt: string // ISO 8601
   updatedAt: string | null
+  deletedAt: string | null
 }
 
 export interface CreateExecutionRequest {

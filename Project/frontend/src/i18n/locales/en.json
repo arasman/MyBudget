@@ -209,7 +209,37 @@
   },
   "budgetExecution": {
     "title": "Executions",
-    "addEntry": "Add entry"
+    "addEntry": "Add entry",
+    "modal": {
+      "title": "Executions",
+      "noEntries": "No entries yet",
+      "addEntry": "Add entry"
+    },
+    "form": {
+      "entryType": "Entry type",
+      "entryTypes": {
+        "expense": "Expense",
+        "creditNote": "Credit Note",
+        "debitNote": "Debit Note"
+      },
+      "amount": "Amount",
+      "note": "Note",
+      "save": "Save",
+      "cancel": "Cancel",
+      "error": "An error occurred. Please try again.",
+      "validation": {
+        "amountRequired": "Amount must be greater than 0",
+        "noteRequired": "Note is required for Credit Note and Debit Note"
+      }
+    },
+    "row": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "restore": "Restore"
+    },
+    "refresh": {
+      "label": "Refresh period totals"
+    }
   },
   "invitation": {
     "modal": {

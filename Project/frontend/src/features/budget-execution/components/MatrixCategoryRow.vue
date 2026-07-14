@@ -76,6 +76,7 @@ defineEmits<{
   'move-up': []
   'move-down': []
   'insert-line': [{ categoryId: string }]
+  'reorder-line': [{ lineId: string; direction: 'up' | 'down' }]
 }>()
 
 const { t } = useI18n()

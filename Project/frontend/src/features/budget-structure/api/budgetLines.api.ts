@@ -34,3 +34,12 @@ export async function update(
 export async function remove(budgetId: string, periodId: string, lineId: string): Promise<void> {
   await http.delete(`${base(budgetId, periodId)}/${lineId}`)
 }
+
+/** PUT /api/budgets/:budgetId/periods/:periodId/budget-lines/order */
+export async function reorder(
+  budgetId: string,
+  periodId: string,
+  orderedIds: string[],
+): Promise<void> {
+  await http.put(`/api/budgets/${budgetId}/periods/${periodId}/budget-lines/order`, { orderedIds })
+}

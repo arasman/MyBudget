@@ -209,7 +209,37 @@
   },
   "budgetExecution": {
     "title": "Ejecuciones",
-    "addEntry": "Agregar entrada"
+    "addEntry": "Agregar entrada",
+    "modal": {
+      "title": "Ejecuciones",
+      "noEntries": "Sin registros aún",
+      "addEntry": "Agregar entrada"
+    },
+    "form": {
+      "entryType": "Tipo de entrada",
+      "entryTypes": {
+        "expense": "Gasto",
+        "creditNote": "Nota de crédito",
+        "debitNote": "Nota de débito"
+      },
+      "amount": "Monto",
+      "note": "Nota",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "error": "Ocurrió un error. Intente de nuevo.",
+      "validation": {
+        "amountRequired": "El monto debe ser mayor a 0",
+        "noteRequired": "La nota es obligatoria para notas de crédito y débito"
+      }
+    },
+    "row": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "restore": "Restaurar"
+    },
+    "refresh": {
+      "label": "Actualizar totales del período"
+    }
   },
   "invitation": {
     "modal": {
