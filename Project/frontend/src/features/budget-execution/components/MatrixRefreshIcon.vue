@@ -1,6 +1,7 @@
 <template>
   <button
     v-if="periodStatus === 'Closed'"
+    data-testid="period-refresh-icon"
     type="button"
     class="btn btn-xs btn-ghost btn-circle"
     :title="t('budgetExecution.refresh.label')"

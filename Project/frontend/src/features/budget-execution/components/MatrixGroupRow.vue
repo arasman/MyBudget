@@ -1,5 +1,5 @@
 <template>
-  <tr class="bg-base-200 font-semibold">
+  <tr data-testid="matrix-group-row" class="bg-base-200 font-semibold">
     <!-- Sticky label cell -->
     <td class="sticky left-0 z-10 bg-base-200 px-3 py-2 border-b border-base-300">
       <div class="flex items-center gap-2">

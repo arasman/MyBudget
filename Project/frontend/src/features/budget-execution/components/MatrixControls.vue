@@ -21,6 +21,7 @@
           GTQ
         </button>
         <button
+          data-testid="currency-usd-btn"
           type="button"
           class="join-item btn btn-sm"
           :class="{ 'btn-active': matrixStore.displayCurrency === 'alternate' }"
@@ -42,6 +43,7 @@
     <!-- Include deleted checkbox -->
     <label class="flex items-center gap-2 cursor-pointer">
       <input
+        data-testid="include-deleted-checkbox"
         type="checkbox"
         class="checkbox checkbox-sm"
         :checked="matrixStore.showDeleted"

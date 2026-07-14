@@ -1,5 +1,6 @@
 <template>
   <td
+    data-testid="matrix-cell-ejecutado"
     class="text-right cursor-pointer hover:bg-base-200 transition-colors px-3 py-2"
     :class="{ 'opacity-50 line-through': deleted }"
     @dblclick="$emit('dblclick')"

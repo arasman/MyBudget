@@ -1,6 +1,7 @@
 <template>
   <dialog
     v-if="matrixStore.openModalLineId !== null"
+    data-testid="execution-list-modal"
     class="modal modal-open"
     @keydown.escape="matrixStore.closeExecutionModal()"
   >

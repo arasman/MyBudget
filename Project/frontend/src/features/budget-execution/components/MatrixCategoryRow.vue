@@ -1,5 +1,5 @@
 <template>
-  <tr v-show="!collapsed" class="hover:bg-base-100">
+  <tr v-show="!collapsed" data-testid="matrix-category-row" class="hover:bg-base-100">
     <!-- Sticky label cell -->
     <td class="sticky left-0 z-10 bg-base-100 px-3 py-2 border-b border-base-300">
       <div class="flex items-center gap-2 pl-6">

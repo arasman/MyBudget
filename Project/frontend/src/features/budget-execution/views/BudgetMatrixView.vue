@@ -33,6 +33,7 @@
       <!-- Period navigation -->
       <div class="flex items-center gap-2 mb-2">
         <button
+          data-testid="period-prev-btn"
           type="button"
           class="btn btn-sm btn-ghost"
           :disabled="!canGoPrev"
@@ -43,6 +44,7 @@
         </button>
         <div class="flex-1" />
         <button
+          data-testid="period-next-btn"
           type="button"
           class="btn btn-sm btn-ghost"
           :disabled="!canGoNext"

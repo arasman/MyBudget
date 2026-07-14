@@ -9,11 +9,15 @@
     <template v-for="period in periods" :key="period.id">
       <!-- Period name spanning 2 sub-columns -->
       <th
+        data-testid="period-header"
         colspan="2"
         class="text-center px-3 py-1 min-w-[180px] border-b border-base-300 font-semibold"
       >
         <div v-if="matrixStore.loadingPeriods[period.id]" class="skeleton h-4 w-full" />
-        <span v-else>{{ period.name }}</span>
+        <template v-else>
+          <span>{{ period.name }}</span>
+          <MatrixRefreshIcon :period-id="period.id" :period-status="period.status" />
+        </template>
       </th>
     </template>
   </tr>
@@ -36,6 +40,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { useBudgetMatrixStore } from '../store'
+import MatrixRefreshIcon from './MatrixRefreshIcon.vue'
 import type { PeriodSummary } from '@/features/budget-structure/types'
 
 defineProps<{
