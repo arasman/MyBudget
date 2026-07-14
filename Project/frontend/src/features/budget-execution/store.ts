@@ -224,6 +224,12 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
     // but clearing cache ensures fresh data on next load)
     periodTotals.value = {}
     void loadVisiblePeriods()
+
+    // Reload groups so soft-deleted ones appear/disappear
+    if (budgetId.value) {
+      const structureStore = useBudgetStructureStore()
+      void structureStore.loadGroups(budgetId.value, value)
+    }
   }
 
   // ---------------------------------------------------------------------------

@@ -151,7 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
@@ -184,23 +184,23 @@ onMounted(async () => {
     await structureStore.loadCycleDetail(budgetId.value, cycleId.value)
     await structureStore.loadGroups(budgetId.value)
     await matrixStore.initMatrix(budgetId.value, cycleId.value)
-    if (matrixStore.allPeriods.length > 0) {
-      await structureStore.loadLines(budgetId.value, matrixStore.allPeriods[0].id)
-    }
   } catch (err: unknown) {
     const status = (err as { response?: { status?: number } })?.response?.status
     if (status === 403) {
       await router.push({ name: 'BudgetSelection' })
     }
+    return
+  }
+
+  // Load budget lines separately — errors here are non-critical (matrix renders without line rows)
+  if (matrixStore.allPeriods.length > 0) {
+    try {
+      await structureStore.loadLines(budgetId.value, matrixStore.allPeriods[0].id)
+    } catch {
+      // non-critical: line rows won't render but the matrix still works
+    }
   }
 })
-
-watch(
-  () => matrixStore.showDeleted,
-  async (val) => {
-    await structureStore.loadGroups(budgetId.value, val)
-  },
-)
 
 // Derive lines per category from the store's budgetLines flat array
 function getLinesForCategory(categoryId: string): BudgetLineResponse[] {
