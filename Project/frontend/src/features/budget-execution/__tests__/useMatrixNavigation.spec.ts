@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { ref } from 'vue'
 import { useMatrixNavigation } from '../composables/useMatrixNavigation'
 
 // ---------------------------------------------------------------------------

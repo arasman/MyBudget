@@ -2,11 +2,13 @@
 // Execution entry type
 // ---------------------------------------------------------------------------
 
-export enum EntryType {
-  Expense = 1,
-  CreditNote = 2,
-  DebitNote = 3,
-}
+export const EntryType = {
+  Expense:    1,
+  CreditNote: 2,
+  DebitNote:  3,
+} as const
+
+export type EntryType = typeof EntryType[keyof typeof EntryType]
 
 // ---------------------------------------------------------------------------
 // Execution record
