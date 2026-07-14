@@ -48,6 +48,11 @@
         </template>
       </div>
 
+      <!-- Closed-period notice (T-5.3) -->
+      <div v-if="periodClosed" class="alert alert-info text-sm mt-4">
+        {{ t('budgetExecution.modal.periodClosed') }}
+      </div>
+
       <!-- Footer: form (hidden when period closed) -->
       <div v-if="!periodClosed" class="border-t border-base-300 pt-4 mt-4">
         <p class="text-sm font-semibold mb-2">{{ t('budgetExecution.modal.addEntry') }}</p>

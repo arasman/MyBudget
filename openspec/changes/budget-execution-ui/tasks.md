@@ -140,22 +140,22 @@ Chain strategy: feature-branch-chain
 
 ## PR5 — Summary Rows + Controls + Full i18n (`feat/budget-matrix-summary`)
 
-- [ ] T-5.1: Create `src/features/budget-execution/components/MatrixSummaryRow.vue` — one row per `LineType` (Expense=red, LongTermSavings=green, PreventiveSavings=orange); shows Total Estimado | Total Real | Total Ejecutado per visible period; values computed from `periodTotals` + `categoryTotals`. _(REQ-MATRIX-TOTALS)_
+- [x] T-5.1: Create `src/features/budget-execution/components/MatrixSummaryRow.vue` — one row per `LineType` (Expense=red, LongTermSavings=green, PreventiveSavings=orange); shows Total Estimado | Total Real | Total Ejecutado per visible period; values computed from `periodTotals` + `categoryTotals`. _(REQ-MATRIX-TOTALS)_
   - Acceptance: 3 rows rendered; color classes applied (`text-error`, `text-success`, `text-warning`).
 
-- [ ] T-5.2: Create `src/features/budget-execution/components/MatrixControls.vue` — renders: cycle name, exchange rate display (when alternate currency available), GTQ/USD toggle buttons (alternate disabled when `cycle.alternateCurrencyId` is null), "Incluir eliminados" checkbox. Calls `store.setDisplayCurrency()` and `store.setShowDeleted()`. _(REQ-MATRIX-CURRENCY, REQ-MATRIX-DELETED)_
+- [x] T-5.2: Create `src/features/budget-execution/components/MatrixControls.vue` — renders: cycle name, exchange rate display (when alternate currency available), GTQ/USD toggle buttons (alternate disabled when `cycle.alternateCurrencyId` is null), "Incluir eliminados" checkbox. Calls `store.setDisplayCurrency()` and `store.setShowDeleted()`. _(REQ-MATRIX-CURRENCY, REQ-MATRIX-DELETED)_
   - Acceptance: USD toggle disabled when no `alternateCurrencyId`; exchange rate label visible when set.
 
-- [ ] T-5.3: Implement closed-period guard in `ExecutionListModal.vue` — verify `period.status === 'Closed'` hides form AND marks all `ExecutionRecordRow` instances as read-only (no edit/delete). _(REQ-MATRIX-EXEC)_
+- [x] T-5.3: Implement closed-period guard in `ExecutionListModal.vue` — verify `period.status === 'Closed'` hides form AND marks all `ExecutionRecordRow` instances as read-only (no edit/delete). _(REQ-MATRIX-EXEC)_
   - Acceptance: Closed period: form absent; no Edit/Delete buttons in any row.
 
-- [ ] T-5.4: Complete i18n `src/i18n/locales/en.json` — fill all `budgetMatrix.*` keys (nav, headers, empty state, reorder labels, refresh, summary row labels) and all `budgetExecution.*` keys (modal title, form labels, entry type options, validation messages). _(i18n Requirements)_
+- [x] T-5.4: Complete i18n `src/i18n/locales/en.json` — fill all `budgetMatrix.*` keys (nav, headers, empty state, reorder labels, refresh, summary row labels) and all `budgetExecution.*` keys (modal title, form labels, entry type options, validation messages). _(i18n Requirements)_
   - Acceptance: Zero missing-key console warnings; all matrix text comes from i18n.
 
-- [ ] T-5.5: Complete i18n `src/i18n/locales/es.json` — same key set as EN with proper Spanish translations (neutral/professional). _(i18n Requirements)_
+- [x] T-5.5: Complete i18n `src/i18n/locales/es.json` — same key set as EN with proper Spanish translations (neutral/professional). _(i18n Requirements)_
   - Acceptance: Locale switch EN → ES renders all labels in Spanish.
 
-- [ ] T-5.6: Vitest component tests for `MatrixSummaryRow.vue` — test Expense row applies red color class; test totals computed correctly from mocked `periodTotals` data; test zero amounts display correctly. _(Test Coverage Requirements)_
+- [x] T-5.6: Vitest component tests for `MatrixSummaryRow.vue` — test Expense row applies red color class; test totals computed correctly from mocked `periodTotals` data; test zero amounts display correctly. _(Test Coverage Requirements)_
   - Acceptance: ≥3 test cases.
 
 ---

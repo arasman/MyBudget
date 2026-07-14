@@ -1,9 +1,7 @@
 <template>
   <div class="container mx-auto px-4 py-6">
-    <!-- Controls placeholder — MatrixControls component added in PR5 -->
-    <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-xl font-bold">{{ t('budgetMatrix.title') }}</h2>
-    </div>
+    <!-- Controls bar (T-5.2) -->
+    <MatrixControls />
 
     <!-- Loading state -->
     <div v-if="structureStore.loading || matrixStore.loading" class="flex justify-center py-8">
@@ -124,7 +122,22 @@
             </template>
           </tbody>
           <tfoot>
-            <!-- MatrixSummaryRow added in PR5 -->
+            <!-- Summary rows: one per LineType (T-5.1) -->
+            <MatrixSummaryRow
+              :line-type="1"
+              :label="t('budgetMatrix.summary.expenses')"
+              :visible-periods="visiblePeriods"
+            />
+            <MatrixSummaryRow
+              :line-type="2"
+              :label="t('budgetMatrix.summary.longTermSavings')"
+              :visible-periods="visiblePeriods"
+            />
+            <MatrixSummaryRow
+              :line-type="3"
+              :label="t('budgetMatrix.summary.preventiveSavings')"
+              :visible-periods="visiblePeriods"
+            />
           </tfoot>
         </table>
       </div>
@@ -147,6 +160,8 @@ import MatrixGroupRow from '../components/MatrixGroupRow.vue'
 import MatrixCategoryRow from '../components/MatrixCategoryRow.vue'
 import MatrixLineRow from '../components/MatrixLineRow.vue'
 import MatrixEstimatedRow from '../components/MatrixEstimatedRow.vue'
+import MatrixControls from '../components/MatrixControls.vue'
+import MatrixSummaryRow from '../components/MatrixSummaryRow.vue'
 import ExecutionListModal from '../components/ExecutionListModal.vue'
 import * as budgetLinesApi from '@/features/budget-structure/api/budgetLines.api'
 import type { CategoryItem, BudgetLineResponse } from '@/features/budget-structure/types'

@@ -178,6 +178,11 @@
   },
   "budgetMatrix": {
     "title": "Matriz",
+    "controls": {
+      "currency": "Moneda",
+      "includeDeleted": "Incluir eliminados",
+      "refresh": "Actualizar"
+    },
     "navigation": {
       "prevPeriod": "Período anterior",
       "nextPeriod": "Siguiente período"
@@ -185,7 +190,9 @@
     "columns": {
       "budgeted": "Presupuesto",
       "executed": "Ejecutado",
-      "label": "Categoría / Línea"
+      "label": "Categoría / Línea",
+      "estimatedVariance": "Est. − Real",
+      "executedVariance": "Real − Ejec."
     },
     "rows": {
       "insertLine": "Insertar Línea",
@@ -200,6 +207,13 @@
       "moveUp": "Subir",
       "moveDown": "Bajar"
     },
+    "summary": {
+      "expenses": "Total de Gastos",
+      "longTermSavings": "Total Ahorro Largo Plazo",
+      "preventiveSavings": "Total Ahorro Preventivo",
+      "budgeted": "Presupuestado",
+      "executed": "Ejecutado"
+    },
     "empty": {
       "title": "Sin estructura presupuestaria",
       "description": "Primero agregue grupos y categorías.",
@@ -210,10 +224,16 @@
   "budgetExecution": {
     "title": "Ejecuciones",
     "addEntry": "Agregar entrada",
+    "entryTypes": {
+      "expense": "Gasto",
+      "creditNote": "Nota de crédito",
+      "debitNote": "Nota de débito"
+    },
     "modal": {
       "title": "Ejecuciones",
       "noEntries": "Sin registros aún",
-      "addEntry": "Agregar entrada"
+      "addEntry": "Agregar entrada",
+      "periodClosed": "Este período está cerrado. No se permiten cambios."
     },
     "form": {
       "entryType": "Tipo de entrada",
@@ -224,6 +244,8 @@
       },
       "amount": "Monto",
       "note": "Nota",
+      "noteRequired": "La nota es obligatoria para Nota de crédito y Nota de débito",
+      "amountRequired": "El monto debe ser mayor que 0",
       "save": "Guardar",
       "cancel": "Cancelar",
       "error": "Ocurrió un error. Intente de nuevo.",
@@ -232,13 +254,22 @@
         "noteRequired": "La nota es obligatoria para notas de crédito y débito"
       }
     },
+    "record": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "restore": "Restaurar",
+      "confirmDelete": "¿Eliminar esta entrada?",
+      "confirmRestore": "¿Restaurar esta entrada?"
+    },
     "row": {
       "edit": "Editar",
       "delete": "Eliminar",
       "restore": "Restaurar"
     },
+    "empty": "Sin entradas aún.",
     "refresh": {
-      "label": "Actualizar totales del período"
+      "tooltip": "Actualizar datos del período",
+      "label": "Actualizar"
     }
   },
   "invitation": {

@@ -178,6 +178,11 @@
   },
   "budgetMatrix": {
     "title": "Matrix",
+    "controls": {
+      "currency": "Currency",
+      "includeDeleted": "Include deleted",
+      "refresh": "Refresh"
+    },
     "navigation": {
       "prevPeriod": "Previous period",
       "nextPeriod": "Next period"
@@ -185,7 +190,9 @@
     "columns": {
       "budgeted": "Budgeted",
       "executed": "Executed",
-      "label": "Category / Line"
+      "label": "Category / Line",
+      "estimatedVariance": "Est. − Real",
+      "executedVariance": "Real − Exec."
     },
     "rows": {
       "insertLine": "Insert Line",
@@ -200,6 +207,13 @@
       "moveUp": "Move up",
       "moveDown": "Move down"
     },
+    "summary": {
+      "expenses": "Total Expenses",
+      "longTermSavings": "Total Long-term Savings",
+      "preventiveSavings": "Total Preventive Savings",
+      "budgeted": "Budgeted",
+      "executed": "Executed"
+    },
     "empty": {
       "title": "No budget structure",
       "description": "Add groups and categories first.",
@@ -209,11 +223,17 @@
   },
   "budgetExecution": {
     "title": "Executions",
-    "addEntry": "Add entry",
+    "addEntry": "Add Entry",
+    "entryTypes": {
+      "expense": "Expense",
+      "creditNote": "Credit Note",
+      "debitNote": "Debit Note"
+    },
     "modal": {
       "title": "Executions",
       "noEntries": "No entries yet",
-      "addEntry": "Add entry"
+      "addEntry": "Add entry",
+      "periodClosed": "This period is closed. No changes allowed."
     },
     "form": {
       "entryType": "Entry type",
@@ -224,6 +244,8 @@
       },
       "amount": "Amount",
       "note": "Note",
+      "noteRequired": "Note is required for Credit Note and Debit Note",
+      "amountRequired": "Amount must be greater than 0",
       "save": "Save",
       "cancel": "Cancel",
       "error": "An error occurred. Please try again.",
@@ -232,13 +254,22 @@
         "noteRequired": "Note is required for Credit Note and Debit Note"
       }
     },
+    "record": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "restore": "Restore",
+      "confirmDelete": "Delete this entry?",
+      "confirmRestore": "Restore this entry?"
+    },
     "row": {
       "edit": "Edit",
       "delete": "Delete",
       "restore": "Restore"
     },
+    "empty": "No entries yet.",
     "refresh": {
-      "label": "Refresh period totals"
+      "tooltip": "Refresh period data",
+      "label": "Refresh"
     }
   },
   "invitation": {
