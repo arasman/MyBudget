@@ -180,6 +180,43 @@
                 </template>
               </template>
             </template>
+
+            <!-- Inline add-group row -->
+            <tr v-if="addingGroup" data-testid="add-group-row">
+              <td class="sticky left-0 z-10 bg-base-200 px-3 py-2 border-b border-base-300" :colspan="1 + visiblePeriods.length * 3">
+                <div class="flex items-center gap-1">
+                  <input
+                    ref="addGroupInput"
+                    v-model="newGroupName"
+                    type="text"
+                    :placeholder="t('budgetMatrix.rows.newGroupName')"
+                    class="input input-xs input-bordered flex-1 min-w-0"
+                    @keydown.enter="confirmAddGroup"
+                    @keydown.escape="cancelAdd"
+                  />
+                  <button type="button" class="btn btn-xs btn-success" :disabled="addActing" @click="confirmAddGroup">
+                    <span v-if="addActing" class="loading loading-spinner loading-xs" />
+                    <span v-else>{{ t('common.save') }}</span>
+                  </button>
+                  <button type="button" class="btn btn-xs btn-ghost" @click="cancelAdd">{{ t('common.cancel') }}</button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Add group trigger row -->
+            <tr v-else>
+              <td class="sticky left-0 z-10 bg-base-100 px-3 py-2" :colspan="1 + visiblePeriods.length * 3">
+                <button
+                  type="button"
+                  class="btn btn-xs btn-ghost gap-1 text-base-content/50"
+                  data-testid="add-group-btn"
+                  @click="startAddGroup"
+                >
+                  <span class="text-lg leading-none">+</span>
+                  {{ t('budgetMatrix.rows.addGroup') }}
+                </button>
+              </td>
+            </tr>
           </tbody>
           <tfoot>
             <!-- Summary rows: one per LineType (T-5.1) -->
@@ -241,13 +278,16 @@ const { visiblePeriods, canGoPrev, canGoNext, goPrev, goNext } = useMatrixNaviga
 const reorderError = ref<string | null>(null)
 
 // Inline add state
+const addingGroup = ref(false)
+const newGroupName = ref('')
+const addGroupInput = ref<HTMLInputElement | null>(null)
 const addingCategoryForGroup = ref<string | null>(null)
 const newCategoryName = ref('')
 const addingLineForCategory = ref<string | null>(null)
 const newLineName = ref('')
 const addActing = ref(false)
-const addCategoryInput = ref<HTMLInputElement | null>(null)
-const addLineInput = ref<HTMLInputElement | null>(null)
+const addCategoryInput = ref<HTMLInputElement[]>([])
+const addLineInput = ref<HTMLInputElement[]>([])
 
 onMounted(async () => {
   try {
@@ -278,6 +318,34 @@ function getLinesForCategory(categoryId: string): BudgetLineResponse[] {
 }
 
 // -------------------------------------------------------------------------
+// Inline add group
+// -------------------------------------------------------------------------
+
+function startAddGroup(): void {
+  addingCategoryForGroup.value = null
+  addingLineForCategory.value = null
+  newCategoryName.value = ''
+  newLineName.value = ''
+  addingGroup.value = true
+  newGroupName.value = ''
+  nextTick(() => addGroupInput.value?.focus())
+}
+
+async function confirmAddGroup(): Promise<void> {
+  const name = newGroupName.value.trim()
+  if (!name) return
+  addActing.value = true
+  try {
+    await structureStore.createGroup(budgetId.value, { name })
+    await matrixStore.invalidateAllPeriods()
+    addingGroup.value = false
+    newGroupName.value = ''
+  } finally {
+    addActing.value = false
+  }
+}
+
+// -------------------------------------------------------------------------
 // Inline add category
 // -------------------------------------------------------------------------
 
@@ -286,7 +354,7 @@ function startAddCategory(groupId: string): void {
   newLineName.value = ''
   addingCategoryForGroup.value = groupId
   newCategoryName.value = ''
-  nextTick(() => addCategoryInput.value?.focus())
+  nextTick(() => addCategoryInput.value[0]?.focus())
 }
 
 async function confirmAddCategory(groupId: string): Promise<void> {
@@ -295,6 +363,7 @@ async function confirmAddCategory(groupId: string): Promise<void> {
   addActing.value = true
   try {
     await structureStore.createCategory(budgetId.value, groupId, { name })
+    await matrixStore.invalidateAllPeriods()
     addingCategoryForGroup.value = null
     newCategoryName.value = ''
   } finally {
@@ -311,7 +380,7 @@ function startAddLine(categoryId: string): void {
   newCategoryName.value = ''
   addingLineForCategory.value = categoryId
   newLineName.value = ''
-  nextTick(() => addLineInput.value?.focus())
+  nextTick(() => addLineInput.value[0]?.focus())
 }
 
 async function confirmAddLine(categoryId: string): Promise<void> {
@@ -319,14 +388,19 @@ async function confirmAddLine(categoryId: string): Promise<void> {
   if (!name) return
   const periodId = matrixStore.allPeriods[0]?.id
   if (!periodId) return
+  const categoryGroupId = structureStore.categoryGroups.find((g) =>
+    g.categories.some((c) => c.id === categoryId),
+  )?.id
+  if (!categoryGroupId) return
   addActing.value = true
   try {
-    await structureStore.createLine(budgetId.value, periodId, {
-      name,
-      categoryId,
-      lineType: 'Expense',
-      isRecurring: false,
-    })
+    await structureStore.createLine(
+      budgetId.value,
+      periodId,
+      { name, categoryId, categoryGroupId, lineType: 'Expense', isRecurring: false },
+      matrixStore.showDeleted,
+    )
+    await matrixStore.invalidateAllPeriods()
     addingLineForCategory.value = null
     newLineName.value = ''
   } finally {
@@ -335,8 +409,10 @@ async function confirmAddLine(categoryId: string): Promise<void> {
 }
 
 function cancelAdd(): void {
+  addingGroup.value = false
   addingCategoryForGroup.value = null
   addingLineForCategory.value = null
+  newGroupName.value = ''
   newCategoryName.value = ''
   newLineName.value = ''
 }

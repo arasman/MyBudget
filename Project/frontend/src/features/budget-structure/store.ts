@@ -396,10 +396,11 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
     budgetId: string,
     periodId: string,
     payload: CreateBudgetLinePayload,
+    includeDeleted = false,
   ): Promise<void> {
     await _wrap(async () => {
       await budgetLinesApi.create(budgetId, periodId, payload)
-      budgetLines.value = await budgetLinesApi.list(budgetId, periodId)
+      budgetLines.value = await budgetLinesApi.list(budgetId, periodId, includeDeleted)
     })
   }
 
