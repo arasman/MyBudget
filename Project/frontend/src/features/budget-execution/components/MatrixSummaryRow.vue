@@ -8,15 +8,16 @@
       {{ label }}
     </th>
 
-    <!-- Per-period totals (Budgeted + Executed columns per period) -->
+    <!-- Per-period totals (Budgeted + Executed + Difference per period) -->
     <template v-for="period in visiblePeriods" :key="period.id">
-      <!-- Budgeted total -->
       <td class="px-2 py-2 text-right text-xs" :class="rowClass">
         {{ formatAmount(budgetedForPeriod(period.id)) }}
       </td>
-      <!-- Executed total -->
       <td class="px-2 py-2 text-right text-xs" :class="rowClass">
         {{ formatAmount(executedForPeriod(period.id)) }}
+      </td>
+      <td class="px-2 py-2 text-right text-xs" :class="rowClass">
+        {{ formatAmount(budgetedForPeriod(period.id) - executedForPeriod(period.id)) }}
       </td>
     </template>
   </tr>
@@ -81,9 +82,11 @@ const matchingCategoryIds = computed((): Set<string> => {
   return ids
 })
 
-/** Sum budgeted amounts for matching categories in a given period — no budgeted rollup from DTO */
+/** Sum budgeted amounts for non-deleted lines matching this lineType (from loaded period) */
 function budgetedForPeriod(_periodId: string): number {
-  return 0
+  return structureStore.budgetLines
+    .filter((l) => l.lineType === lineTypeString.value && !l.deletedAt)
+    .reduce((sum, l) => sum + (l.budgetedAmount ?? 0), 0)
 }
 
 /** Sum net-executed amounts for matching categories in a given period */

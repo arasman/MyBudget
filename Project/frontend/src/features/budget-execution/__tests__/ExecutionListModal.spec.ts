@@ -20,19 +20,23 @@ import type { ExecutionRecordDto } from '../types'
 const matrixState: {
   openModalLineId: string | null
   openModalPeriodId: string | null
+  showDeletedInModal: boolean
   executionRecords: Record<string, ExecutionRecordDto[]>
   loadingExecutions: Record<string, boolean>
-  error: string | null
+  modalError: string | null
   closeExecutionModal: ReturnType<typeof vi.fn>
+  toggleShowDeletedInModal: ReturnType<typeof vi.fn>
   createExecution: ReturnType<typeof vi.fn>
   updateExecution: ReturnType<typeof vi.fn>
 } = {
   openModalLineId: null,
   openModalPeriodId: null,
+  showDeletedInModal: false,
   executionRecords: {},
   loadingExecutions: {},
-  error: null,
+  modalError: null,
   closeExecutionModal: vi.fn(),
+  toggleShowDeletedInModal: vi.fn(),
   createExecution: vi.fn(),
   updateExecution: vi.fn(),
 }
@@ -135,9 +139,10 @@ describe('ExecutionListModal.vue', () => {
     // Reset state to clean defaults
     matrixState.openModalLineId = null
     matrixState.openModalPeriodId = null
+    matrixState.showDeletedInModal = false
     matrixState.executionRecords = {}
     matrixState.loadingExecutions = {}
-    matrixState.error = null
+    matrixState.modalError = null
     structureState.periods = [openPeriod]
   })
 
@@ -154,7 +159,7 @@ describe('ExecutionListModal.vue', () => {
   it('hides the form when period is closed', () => {
     matrixState.openModalLineId = 'line-1'
     matrixState.openModalPeriodId = 'period-open'
-    matrixState.executionRecords = { 'line-1:period-open': [] }
+    matrixState.executionRecords = { 'line-1:period-open:false': [] }
     structureState.periods = [closedPeriod]
 
     render(ExecutionListModal, { props: { budgetId: 'budget-1' } })
@@ -166,7 +171,7 @@ describe('ExecutionListModal.vue', () => {
   it('shows the form when period is open', () => {
     matrixState.openModalLineId = 'line-1'
     matrixState.openModalPeriodId = 'period-open'
-    matrixState.executionRecords = { 'line-1:period-open': [] }
+    matrixState.executionRecords = { 'line-1:period-open:false': [] }
     structureState.periods = [openPeriod]
 
     const { container } = render(ExecutionListModal, { props: { budgetId: 'budget-1' } })
@@ -181,7 +186,7 @@ describe('ExecutionListModal.vue', () => {
     matrixState.openModalLineId = 'line-1'
     matrixState.openModalPeriodId = 'period-open'
     matrixState.executionRecords = {
-      'line-1:period-open': [
+      'line-1:period-open:false': [
         { ...sampleRecord, id: 'rec-2', createdAt: '2026-01-12T10:00:00Z', note: 'Second note' },
         { ...sampleRecord, id: 'rec-1', createdAt: '2026-01-10T10:00:00Z', note: 'First note' },
       ],
@@ -197,7 +202,7 @@ describe('ExecutionListModal.vue', () => {
   it('shows empty state message when no records', () => {
     matrixState.openModalLineId = 'line-1'
     matrixState.openModalPeriodId = 'period-open'
-    matrixState.executionRecords = { 'line-1:period-open': [] }
+    matrixState.executionRecords = { 'line-1:period-open:false': [] }
     structureState.periods = [openPeriod]
 
     render(ExecutionListModal, { props: { budgetId: 'budget-1' } })

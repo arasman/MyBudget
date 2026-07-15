@@ -191,9 +191,8 @@
     "columns": {
       "budgeted": "Presupuesto",
       "executed": "Ejecutado",
-      "label": "Categoría / Línea",
-      "estimatedVariance": "Est. − Real",
-      "executedVariance": "Real − Ejec."
+      "difference": "Diferencia",
+      "label": "Categoría / Línea"
     },
     "rows": {
       "insertLine": "Insertar Línea",
@@ -206,7 +205,20 @@
       "expandCategory": "Expandir categoría",
       "collapseCategory": "Colapsar categoría",
       "moveUp": "Subir",
-      "moveDown": "Bajar"
+      "moveDown": "Bajar",
+      "delete": "Eliminar",
+      "restore": "Restaurar",
+      "edit": "Editar",
+      "confirmDelete": "¿Eliminar este elemento?",
+      "confirmRestore": "¿Restaurar también los registros de ejecución?",
+      "restoreWithExecutions": "Sí, restaurar todo",
+      "restoreStructureOnly": "Solo estructura",
+      "addLine": "Agregar línea",
+      "addCategory": "Agregar categoría",
+      "addGroup": "Agregar grupo",
+      "newLineName": "Nombre de la línea",
+      "newCategoryName": "Nombre de la categoría",
+      "newGroupName": "Nombre del grupo"
     },
     "summary": {
       "expenses": "Total de Gastos",
@@ -234,7 +246,8 @@
       "title": "Ejecuciones",
       "noEntries": "Sin registros aún",
       "addEntry": "Agregar entrada",
-      "periodClosed": "Este período está cerrado. No se permiten cambios."
+      "periodClosed": "Este período está cerrado. No se permiten cambios.",
+      "includeDeleted": "Incluir eliminados"
     },
     "form": {
       "entryType": "Tipo de entrada",

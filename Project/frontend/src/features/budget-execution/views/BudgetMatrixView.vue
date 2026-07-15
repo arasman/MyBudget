@@ -65,7 +65,7 @@
       </div>
 
       <!-- Horizontal scroll wrapper -->
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto select-none">
         <table class="w-full border-collapse text-sm">
           <thead>
             <MatrixPeriodHeader :periods="visiblePeriods" />
@@ -78,6 +78,7 @@
               <!-- Group row -->
               <MatrixGroupRow
                 :group="group"
+                :budget-id="budgetId"
                 :visible-periods="visiblePeriods"
                 :collapsed="matrixStore.collapsedGroupIds.has(group.id)"
                 :is-first="groupIndex === 0"
@@ -85,7 +86,30 @@
                 @toggle-collapse="matrixStore.toggleGroupCollapse(group.id)"
                 @move-up="handleGroupMoveUp(group.id, groupIndex)"
                 @move-down="handleGroupMoveDown(group.id, groupIndex)"
+                @add-category="startAddCategory(group.id)"
               />
+
+              <!-- Inline add-category row -->
+              <tr v-if="addingCategoryForGroup === group.id" data-testid="add-category-row">
+                <td class="sticky left-0 z-10 bg-base-200 px-3 py-2 border-b border-base-300" :colspan="1 + visiblePeriods.length * 3">
+                  <div class="flex items-center gap-1 pl-10">
+                    <input
+                      ref="addCategoryInput"
+                      v-model="newCategoryName"
+                      type="text"
+                      :placeholder="t('budgetMatrix.rows.newCategoryName')"
+                      class="input input-xs input-bordered flex-1 min-w-0"
+                      @keydown.enter="confirmAddCategory(group.id)"
+                      @keydown.escape="cancelAdd"
+                    />
+                    <button type="button" class="btn btn-xs btn-success" :disabled="addActing" @click="confirmAddCategory(group.id)">
+                      <span v-if="addActing" class="loading loading-spinner loading-xs" />
+                      <span v-else>{{ t('common.save') }}</span>
+                    </button>
+                    <button type="button" class="btn btn-xs btn-ghost" @click="cancelAdd">{{ t('common.cancel') }}</button>
+                  </div>
+                </td>
+              </tr>
 
               <!-- Category rows (shown when group is not collapsed) -->
               <template
@@ -95,15 +119,43 @@
                 <MatrixCategoryRow
                   :category="category"
                   :group-id="group.id"
+                  :budget-id="budgetId"
                   :visible-periods="visiblePeriods"
                   :collapsed="matrixStore.collapsedGroupIds.has(group.id)"
                   :category-collapsed="matrixStore.collapsedCategoryIds.has(category.id)"
                   :is-first="catIndex === 0"
                   :is-last="catIndex === group.categories.length - 1"
+                  :parent-deleted="!!group.deletedAt"
                   @toggle-category-collapse="matrixStore.toggleCategoryCollapse(category.id)"
                   @move-up="handleCategoryMoveUp(group.id, group.categories, catIndex)"
                   @move-down="handleCategoryMoveDown(group.id, group.categories, catIndex)"
+                  @add-line="startAddLine(category.id)"
                 />
+
+                <!-- Inline add-line row -->
+                <tr
+                  v-if="addingLineForCategory === category.id && !matrixStore.collapsedGroupIds.has(group.id)"
+                  data-testid="add-line-row"
+                >
+                  <td class="sticky left-0 z-10 bg-base-100 px-3 py-2 border-b border-base-300" :colspan="1 + visiblePeriods.length * 3">
+                    <div class="flex items-center gap-1 pl-14">
+                      <input
+                        ref="addLineInput"
+                        v-model="newLineName"
+                        type="text"
+                        :placeholder="t('budgetMatrix.rows.newLineName')"
+                        class="input input-xs input-bordered flex-1 min-w-0"
+                        @keydown.enter="confirmAddLine(category.id)"
+                        @keydown.escape="cancelAdd"
+                      />
+                      <button type="button" class="btn btn-xs btn-success" :disabled="addActing" @click="confirmAddLine(category.id)">
+                        <span v-if="addActing" class="loading loading-spinner loading-xs" />
+                        <span v-else>{{ t('common.save') }}</span>
+                      </button>
+                      <button type="button" class="btn btn-xs btn-ghost" @click="cancelAdd">{{ t('common.cancel') }}</button>
+                    </div>
+                  </td>
+                </tr>
 
                 <!-- Line rows for this category -->
                 <template
@@ -115,17 +167,14 @@
                   >
                     <MatrixLineRow
                       :line="line"
+                      :budget-id="budgetId"
                       :category-collapsed="matrixStore.collapsedCategoryIds.has(category.id)"
                       :visible-periods="visiblePeriods"
                       :is-first="lineIndex === 0"
                       :is-last="lineIndex === getLinesForCategory(category.id).length - 1"
+                      :parent-deleted="!!group.deletedAt || !!category.deletedAt"
                       @move-up="handleLineMoveUp(category.id, line.id)"
                       @move-down="handleLineMoveDown(category.id, line.id)"
-                    />
-                    <MatrixEstimatedRow
-                      :line="line"
-                      :category-collapsed="matrixStore.collapsedCategoryIds.has(category.id)"
-                      :visible-periods="visiblePeriods"
                     />
                   </template>
                 </template>
@@ -160,7 +209,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
@@ -171,7 +220,6 @@ import MatrixPeriodHeader from '../components/MatrixPeriodHeader.vue'
 import MatrixGroupRow from '../components/MatrixGroupRow.vue'
 import MatrixCategoryRow from '../components/MatrixCategoryRow.vue'
 import MatrixLineRow from '../components/MatrixLineRow.vue'
-import MatrixEstimatedRow from '../components/MatrixEstimatedRow.vue'
 import MatrixControls from '../components/MatrixControls.vue'
 import MatrixSummaryRow from '../components/MatrixSummaryRow.vue'
 import ExecutionListModal from '../components/ExecutionListModal.vue'
@@ -191,6 +239,15 @@ const { visiblePeriods, canGoPrev, canGoNext, goPrev, goNext } = useMatrixNaviga
 
 // Non-blocking error for non-critical operations (reorder, etc.)
 const reorderError = ref<string | null>(null)
+
+// Inline add state
+const addingCategoryForGroup = ref<string | null>(null)
+const newCategoryName = ref('')
+const addingLineForCategory = ref<string | null>(null)
+const newLineName = ref('')
+const addActing = ref(false)
+const addCategoryInput = ref<HTMLInputElement | null>(null)
+const addLineInput = ref<HTMLInputElement | null>(null)
 
 onMounted(async () => {
   try {
@@ -218,6 +275,70 @@ onMounted(async () => {
 // Derive lines per category from the store's budgetLines flat array
 function getLinesForCategory(categoryId: string): BudgetLineResponse[] {
   return structureStore.budgetLines.filter((l) => l.categoryId === categoryId)
+}
+
+// -------------------------------------------------------------------------
+// Inline add category
+// -------------------------------------------------------------------------
+
+function startAddCategory(groupId: string): void {
+  addingLineForCategory.value = null
+  newLineName.value = ''
+  addingCategoryForGroup.value = groupId
+  newCategoryName.value = ''
+  nextTick(() => addCategoryInput.value?.focus())
+}
+
+async function confirmAddCategory(groupId: string): Promise<void> {
+  const name = newCategoryName.value.trim()
+  if (!name) return
+  addActing.value = true
+  try {
+    await structureStore.createCategory(budgetId.value, groupId, { name })
+    addingCategoryForGroup.value = null
+    newCategoryName.value = ''
+  } finally {
+    addActing.value = false
+  }
+}
+
+// -------------------------------------------------------------------------
+// Inline add line
+// -------------------------------------------------------------------------
+
+function startAddLine(categoryId: string): void {
+  addingCategoryForGroup.value = null
+  newCategoryName.value = ''
+  addingLineForCategory.value = categoryId
+  newLineName.value = ''
+  nextTick(() => addLineInput.value?.focus())
+}
+
+async function confirmAddLine(categoryId: string): Promise<void> {
+  const name = newLineName.value.trim()
+  if (!name) return
+  const periodId = matrixStore.allPeriods[0]?.id
+  if (!periodId) return
+  addActing.value = true
+  try {
+    await structureStore.createLine(budgetId.value, periodId, {
+      name,
+      categoryId,
+      lineType: 'Expense',
+      isRecurring: false,
+    })
+    addingLineForCategory.value = null
+    newLineName.value = ''
+  } finally {
+    addActing.value = false
+  }
+}
+
+function cancelAdd(): void {
+  addingCategoryForGroup.value = null
+  addingLineForCategory.value = null
+  newCategoryName.value = ''
+  newLineName.value = ''
 }
 
 // -------------------------------------------------------------------------

@@ -9,8 +9,11 @@ export async function list(
   budgetId: string,
   periodId: string,
   lineId: string,
+  includeDeleted = false,
 ): Promise<ExecutionRecordDto[]> {
-  const { data } = await http.get<ExecutionRecordDto[]>(base(budgetId, periodId, lineId))
+  const { data } = await http.get<ExecutionRecordDto[]>(base(budgetId, periodId, lineId), {
+    params: includeDeleted ? { includeDeleted: true } : undefined,
+  })
   return data
 }
 

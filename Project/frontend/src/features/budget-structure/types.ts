@@ -79,6 +79,7 @@ export interface CategoryItem {
   id: string
   name: string
   displayOrder: number
+  deletedAt?: string | null
 }
 
 export interface CategoryGroupResponse {
@@ -105,6 +106,7 @@ export interface BudgetLineResponse {
   currencySymbol?: string
   revisedAt?: DateString
   note?: string
+  deletedAt?: string | null
 }
 
 // ---------------------------------------------------------------------------

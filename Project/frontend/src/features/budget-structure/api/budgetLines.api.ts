@@ -5,8 +5,14 @@ const base = (budgetId: string, periodId: string) =>
   `/api/budgets/${budgetId}/periods/${periodId}/lines`
 
 /** GET /api/budgets/:budgetId/periods/:periodId/lines → returns all lines for the period */
-export async function list(budgetId: string, periodId: string): Promise<BudgetLineResponse[]> {
-  const { data } = await http.get<BudgetLineResponse[]>(base(budgetId, periodId))
+export async function list(
+  budgetId: string,
+  periodId: string,
+  includeDeleted = false,
+): Promise<BudgetLineResponse[]> {
+  const { data } = await http.get<BudgetLineResponse[]>(base(budgetId, periodId), {
+    params: includeDeleted ? { includeDeleted: true } : undefined,
+  })
   return data
 }
 
@@ -42,4 +48,16 @@ export async function reorder(
   orderedIds: string[],
 ): Promise<void> {
   await http.put(`/api/budgets/${budgetId}/periods/${periodId}/budget-lines/order`, { orderedIds })
+}
+
+/** POST /api/budgets/:budgetId/periods/:periodId/lines/:lineId/restore */
+export async function restore(
+  budgetId: string,
+  periodId: string,
+  lineId: string,
+  includeExecutionRecords: boolean,
+): Promise<void> {
+  await http.post(`${base(budgetId, periodId)}/${lineId}/restore`, null, {
+    params: { includeExecutionRecords },
+  })
 }

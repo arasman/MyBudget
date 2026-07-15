@@ -49,6 +49,7 @@ vi.mock('@/features/budget-structure/store', () => ({
       { id: 'p5', name: 'May', periodNumber: 5, startDate: '2026-05-01', endDate: '2026-05-31', isClosed: false },
     ],
     loadGroups: vi.fn(),
+    loadLines: vi.fn(),
   })),
 }))
 
@@ -184,7 +185,7 @@ describe('useBudgetMatrixStore', () => {
 
     await store.openExecutionModal('line-1', 'p1')
 
-    expect(mockListExecutions).toHaveBeenCalledWith('budget-1', 'p1', 'line-1')
+    expect(mockListExecutions).toHaveBeenCalledWith('budget-1', 'p1', 'line-1', false)
   })
 
   it('openExecutionModal skips fetch when records already cached', async () => {

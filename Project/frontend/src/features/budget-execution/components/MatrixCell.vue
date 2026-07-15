@@ -1,9 +1,9 @@
 <template>
   <td
     data-testid="matrix-cell-ejecutado"
-    class="text-right cursor-pointer hover:bg-base-200 transition-colors px-3 py-2"
+    class="text-right cursor-pointer select-none hover:bg-base-200 transition-colors px-3 py-2"
     :class="{ 'opacity-50 line-through': deleted }"
-    @dblclick="$emit('dblclick')"
+    @dblclick="onDblClick"
   >
     <div v-if="loading" class="skeleton h-4 w-16 ml-auto" />
     <span v-else>{{ formatAmount(amount, currencySymbol) }}</span>
@@ -21,9 +21,14 @@ const props = defineProps<{
   deleted?: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   dblclick: []
 }>()
+
+function onDblClick(): void {
+  window.getSelection()?.removeAllRanges()
+  emit('dblclick')
+}
 
 const matrixStore = useBudgetMatrixStore()
 const { formatAmount } = useCurrencyDisplay(matrixStore)

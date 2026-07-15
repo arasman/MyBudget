@@ -11,14 +11,26 @@
         <h3 class="font-bold text-lg">
           {{ t('budgetExecution.modal.title') }}
         </h3>
-        <button
-          type="button"
-          data-testid="modal-close-btn"
-          class="btn btn-sm btn-ghost btn-square"
-          @click="matrixStore.closeExecutionModal()"
-        >
-          ✕
-        </button>
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-1.5 text-sm cursor-pointer select-none">
+            <input
+              type="checkbox"
+              data-testid="modal-include-deleted-toggle"
+              class="checkbox checkbox-xs"
+              :checked="matrixStore.showDeletedInModal"
+              @change="matrixStore.toggleShowDeletedInModal()"
+            />
+            {{ t('budgetExecution.modal.includeDeleted') }}
+          </label>
+          <button
+            type="button"
+            data-testid="modal-close-btn"
+            class="btn btn-sm btn-ghost btn-square"
+            @click="matrixStore.closeExecutionModal()"
+          >
+            ✕
+          </button>
+        </div>
       </div>
 
       <!-- Records list (scrollable) -->
@@ -99,7 +111,7 @@ const structureStore = useBudgetStructureStore()
 const lineId = computed(() => matrixStore.openModalLineId ?? '')
 const periodId = computed(() => matrixStore.openModalPeriodId ?? '')
 
-const cacheKey = computed(() => `${lineId.value}:${periodId.value}`)
+const cacheKey = computed(() => `${lineId.value}:${periodId.value}:${matrixStore.showDeletedInModal}`)
 const loadingKey = computed(() => matrixStore.loadingExecutions[cacheKey.value] ?? false)
 
 const records = computed(() => matrixStore.executionRecords[cacheKey.value] ?? [])

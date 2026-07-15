@@ -191,9 +191,8 @@
     "columns": {
       "budgeted": "Budgeted",
       "executed": "Executed",
-      "label": "Category / Line",
-      "estimatedVariance": "Est. − Real",
-      "executedVariance": "Real − Exec."
+      "difference": "Difference",
+      "label": "Category / Line"
     },
     "rows": {
       "insertLine": "Insert Line",
@@ -206,7 +205,20 @@
       "expandCategory": "Expand category",
       "collapseCategory": "Collapse category",
       "moveUp": "Move up",
-      "moveDown": "Move down"
+      "moveDown": "Move down",
+      "delete": "Delete",
+      "restore": "Restore",
+      "edit": "Edit",
+      "confirmDelete": "Delete this item?",
+      "confirmRestore": "Restore execution records too?",
+      "restoreWithExecutions": "Yes, restore all",
+      "restoreStructureOnly": "Structure only",
+      "addLine": "Add line",
+      "addCategory": "Add category",
+      "addGroup": "Add group",
+      "newLineName": "Line name",
+      "newCategoryName": "Category name",
+      "newGroupName": "Group name"
     },
     "summary": {
       "expenses": "Total Expenses",
@@ -234,7 +246,8 @@
       "title": "Executions",
       "noEntries": "No entries yet",
       "addEntry": "Add entry",
-      "periodClosed": "This period is closed. No changes allowed."
+      "periodClosed": "This period is closed. No changes allowed.",
+      "includeDeleted": "Include deleted"
     },
     "form": {
       "entryType": "Entry type",

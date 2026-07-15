@@ -44,20 +44,34 @@ public sealed class ListCategoryGroupsHandler
 
         var groupIds = groupRows.Select(g => g.Id).ToArray();
 
+        var categorySql = query.IncludeDeleted
+            ? """
+              SELECT c."Id", c."CategoryGroupId", c."Name", c."DisplayOrder", c."DeletedAt"
+              FROM "Categories" c
+              WHERE c."CategoryGroupId" = ANY(@GroupIds)
+              ORDER BY c."DisplayOrder"
+              """
+            : """
+              SELECT c."Id", c."CategoryGroupId", c."Name", c."DisplayOrder", c."DeletedAt"
+              FROM "Categories" c
+              WHERE c."CategoryGroupId" = ANY(@GroupIds) AND c."DeletedAt" IS NULL
+              ORDER BY c."DisplayOrder"
+              """;
+
         var categoryRows = (await conn.QueryAsync<CategoryRow>(
-            """
-            SELECT c."Id", c."CategoryGroupId", c."Name", c."DisplayOrder"
-            FROM "Categories" c
-            WHERE c."CategoryGroupId" = ANY(@GroupIds) AND c."DeletedAt" IS NULL
-            ORDER BY c."DisplayOrder"
-            """,
+            categorySql,
             new { GroupIds = groupIds })).ToList();
 
         var categoriesByGroup = categoryRows
             .GroupBy(c => c.CategoryGroupId)
             .ToDictionary(
                 g => g.Key,
-                g => g.Select(c => new CategoryItem(c.Id, c.Name, c.DisplayOrder)).ToList());
+                g => g.Select(c => new CategoryItem(
+                    c.Id,
+                    c.Name,
+                    c.DisplayOrder,
+                    c.DeletedAt.HasValue ? new DateTimeOffset(c.DeletedAt.Value, TimeSpan.Zero) : null))
+                  .ToList());
 
         var result = groupRows
             .Select(g => new CategoryGroupResponse(
@@ -78,8 +92,9 @@ public sealed class ListCategoryGroupsHandler
     private sealed record GroupRow(Guid Id, string Name, int DisplayOrder, DateTime? DeletedAt);
 
     private sealed record CategoryRow(
-        Guid   Id,
-        Guid   CategoryGroupId,
-        string Name,
-        int    DisplayOrder);
+        Guid      Id,
+        Guid      CategoryGroupId,
+        string    Name,
+        int       DisplayOrder,
+        DateTime? DeletedAt);
 }

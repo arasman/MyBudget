@@ -38,3 +38,14 @@ export async function remove(budgetId: string, groupId: string): Promise<void> {
 export async function reorder(budgetId: string, ids: string[]): Promise<void> {
   await http.put(`${base(budgetId)}/order`, { orderedIds: ids })
 }
+
+/** POST /api/budgets/:budgetId/category-groups/:groupId/restore */
+export async function restore(
+  budgetId: string,
+  groupId: string,
+  includeExecutionRecords: boolean,
+): Promise<void> {
+  await http.post(`${base(budgetId)}/${groupId}/restore`, null, {
+    params: { includeExecutionRecords },
+  })
+}

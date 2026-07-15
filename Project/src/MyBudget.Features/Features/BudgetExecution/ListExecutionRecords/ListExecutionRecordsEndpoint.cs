@@ -25,11 +25,12 @@ public static class ListExecutionRecordsEndpoint
         Guid id,
         Guid periodId,
         Guid lineId,
+        bool? includeDeleted,
         IMediator mediator,
         CancellationToken ct)
     {
         var result = await mediator.Send(
-            new ListExecutionRecordsQuery(id, periodId, lineId), ct);
+            new ListExecutionRecordsQuery(id, periodId, lineId, includeDeleted ?? false), ct);
 
         return result.IsSuccess
             ? Results.Ok(result.Value)

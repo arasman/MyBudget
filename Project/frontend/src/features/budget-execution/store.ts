@@ -37,6 +37,7 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
   // Execution modal
   const openModalLineId = ref<string | null>(null)
   const openModalPeriodId = ref<string | null>(null)
+  const showDeletedInModal = ref(false)
   const executionRecords = ref<Record<string, ExecutionRecordDto[]>>({})
   const loadingExecutions = ref<Record<string, boolean>>({})
   const modalError = ref<string | null>(null)
@@ -126,7 +127,11 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
     openModalPeriodId.value = periodId
     modalError.value = null
 
-    const key = `${lineId}:${periodId}`
+    await _fetchModalRecords(lineId, periodId)
+  }
+
+  async function _fetchModalRecords(lineId: string, periodId: string): Promise<void> {
+    const key = `${lineId}:${periodId}:${showDeletedInModal.value}`
 
     // Cache-first: skip fetch if records already loaded (AD-5)
     if (executionRecords.value[key] !== undefined) return
@@ -136,7 +141,7 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
     loadingExecutions.value = { ...loadingExecutions.value, [key]: true }
 
     try {
-      const records = await executionsApi.list(budgetId.value, periodId, lineId)
+      const records = await executionsApi.list(budgetId.value, periodId, lineId, showDeletedInModal.value)
       executionRecords.value = { ...executionRecords.value, [key]: records }
     } catch (e) {
       // Modal-scoped error — does NOT kill the matrix view
@@ -146,9 +151,19 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
     }
   }
 
+  async function toggleShowDeletedInModal(): Promise<void> {
+    showDeletedInModal.value = !showDeletedInModal.value
+    const lineId = openModalLineId.value
+    const periodId = openModalPeriodId.value
+    if (lineId && periodId) {
+      await _fetchModalRecords(lineId, periodId)
+    }
+  }
+
   function closeExecutionModal(): void {
     openModalLineId.value = null
     openModalPeriodId.value = null
+    showDeletedInModal.value = false
     // Cache is NOT cleared (AD-5)
   }
 
@@ -195,19 +210,25 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
 
   // Invalidate cache and re-fetch after any CRUD mutation (AD-5)
   async function _invalidateAndRefresh(lineId: string, periodId: string): Promise<void> {
-    const key = `${lineId}:${periodId}`
-    const { [key]: _r, ...restRecords } = executionRecords.value
+    // Invalidate both cache variants (with and without deleted)
+    const keyActive = `${lineId}:${periodId}:false`
+    const keyDeleted = `${lineId}:${periodId}:true`
+    const { [keyActive]: _ra, [keyDeleted]: _rd, ...restRecords } = executionRecords.value
     executionRecords.value = restRecords
 
     const { [periodId]: _t, ...restTotals } = periodTotals.value
     periodTotals.value = restTotals
 
-    // Re-fetch both
+    // Fetch period totals FIRST so matrix cells show updated amounts
+    // before the record list re-appears in the modal (avoids skeleton flash)
+    await loadPeriodTotals(periodId)
+
+    // Then re-fetch records so the modal list updates
     if (budgetId.value) {
-      const records = await executionsApi.list(budgetId.value, periodId, lineId)
+      const records = await executionsApi.list(budgetId.value, periodId, lineId, showDeletedInModal.value)
+      const key = `${lineId}:${periodId}:${showDeletedInModal.value}`
       executionRecords.value = { ...executionRecords.value, [key]: records }
     }
-    await loadPeriodTotals(periodId)
   }
 
   async function refreshPeriod(periodId: string): Promise<void> {
@@ -217,21 +238,30 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
     await loadPeriodTotals(periodId)
   }
 
+  async function invalidateAllPeriods(): Promise<void> {
+    periodTotals.value = {}
+    await loadVisiblePeriods()
+  }
+
   function setDisplayCurrency(currency: 'default' | 'alternate'): void {
     displayCurrency.value = currency
   }
 
   function setShowDeleted(value: boolean): void {
     showDeleted.value = value
-    // Clear totals cache and reload (AD-6 note: toggle is UI-filter only,
-    // but clearing cache ensures fresh data on next load)
+    // Clear totals cache and reload
     periodTotals.value = {}
     void loadVisiblePeriods()
 
-    // Reload groups so soft-deleted ones appear/disappear
     if (budgetId.value) {
       const structureStore = useBudgetStructureStore()
+      // Reload groups (and their categories) with includeDeleted flag
       void structureStore.loadGroups(budgetId.value, value)
+      // Reload lines for the loaded period with includeDeleted flag
+      const loadedPeriodId = allPeriods.value[0]?.id
+      if (loadedPeriodId) {
+        void structureStore.loadLines(budgetId.value, loadedPeriodId, value)
+      }
     }
   }
 
@@ -256,6 +286,7 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
     displayCurrency,
     openModalLineId,
     openModalPeriodId,
+    showDeletedInModal,
     executionRecords,
     loadingExecutions,
     modalError,
@@ -271,11 +302,13 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
     toggleCategoryCollapse,
     openExecutionModal,
     closeExecutionModal,
+    toggleShowDeletedInModal,
     createExecution,
     updateExecution,
     deleteExecution,
     restoreExecution,
     refreshPeriod,
+    invalidateAllPeriods,
     setDisplayCurrency,
     setShowDeleted,
   }

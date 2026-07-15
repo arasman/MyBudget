@@ -27,10 +27,8 @@ test.describe('BudgetMatrix execution CRUD', () => {
     await loginWithToken(page, fixture.accessToken, fixture.budgetId)
     await goToMatrix(page, fixture.budgetId, fixture.cycleId)
 
-    // Capture the initial Ejecutado cell amount
     const ejecutadoCell = page.locator('[data-testid="matrix-cell-ejecutado"]').first()
     await expect(ejecutadoCell).toBeVisible()
-    const initialText = await ejecutadoCell.textContent()
 
     // Open modal via double-click
     await ejecutadoCell.dispatchEvent('dblclick')
@@ -55,10 +53,8 @@ test.describe('BudgetMatrix execution CRUD', () => {
     await modal.getByTestId('modal-close-btn').click()
     await expect(modal).toBeHidden()
 
-    // Amount should no longer match the initial (empty / 0.00) value
-    const updatedText = await ejecutadoCell.textContent()
-    expect(updatedText).not.toBe(initialText)
-    expect(updatedText).toContain('100')
+    // Wait for the cell to show the updated amount (retries until timeout)
+    await expect(ejecutadoCell).toHaveText(/100/)
   })
 
   test('deleting a record updates the executed total', async ({ page, request }) => {
@@ -89,11 +85,14 @@ test.describe('BudgetMatrix execution CRUD', () => {
     ])
     expect(deleteResp.status()).toBe(204)
 
+    // Wait for the record to disappear (invalidateAndRefresh completes)
+    await expect(modal.locator('[data-testid="execution-record-row"]')).toHaveCount(0)
+
     // Close modal and verify amount is back to 0 / initial
     await modal.getByTestId('modal-close-btn').click()
     await expect(modal).toBeHidden()
 
-    const updatedText = await ejecutadoCell.textContent()
-    expect(updatedText).toMatch(/0[.,]00/)
+    // Wait for the cell to show 0 (retries until timeout)
+    await expect(ejecutadoCell).toHaveText(/0[.,]00/)
   })
 })

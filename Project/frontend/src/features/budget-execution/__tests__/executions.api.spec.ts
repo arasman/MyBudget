@@ -54,6 +54,7 @@ describe('executions.api', () => {
 
     expect(mockGet).toHaveBeenCalledWith(
       `/api/budgets/${BUDGET_ID}/periods/${PERIOD_ID}/budget-lines/${LINE_ID}/executions`,
+      { params: undefined },
     )
     expect(result).toEqual([MOCK_RECORD])
   })
@@ -130,6 +131,7 @@ describe('executions.api', () => {
     await executionsApi.list('my-budget', 'my-period', 'my-line')
     expect(mockGet).toHaveBeenCalledWith(
       '/api/budgets/my-budget/periods/my-period/budget-lines/my-line/executions',
+      { params: undefined },
     )
   })
 })

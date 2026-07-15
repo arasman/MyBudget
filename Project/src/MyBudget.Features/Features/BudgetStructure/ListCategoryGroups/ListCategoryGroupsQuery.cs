@@ -14,6 +14,7 @@ public sealed record CategoryGroupResponse(
     DateTimeOffset?               DeletedAt = null);
 
 public sealed record CategoryItem(
-    Guid   Id,
-    string Name,
-    int    DisplayOrder);
+    Guid            Id,
+    string          Name,
+    int             DisplayOrder,
+    DateTimeOffset? DeletedAt = null);
