@@ -41,7 +41,7 @@ export function formatDate(date: DateString, locale: string): string {
 export interface CurrencyItem {
   id: string
   code: string
-  name: string
+  name?: string
   symbol: string
 }
 
@@ -68,7 +68,7 @@ export interface PeriodSummary {
   periodNumber: number
   startDate: DateString
   endDate: DateString
-  status: string
+  isClosed: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -79,6 +79,7 @@ export interface CategoryItem {
   id: string
   name: string
   displayOrder: number
+  deletedAt?: string | null
 }
 
 export interface CategoryGroupResponse {
@@ -86,6 +87,7 @@ export interface CategoryGroupResponse {
   name: string
   displayOrder: number
   categories: CategoryItem[]
+  deletedAt?: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -104,6 +106,7 @@ export interface BudgetLineResponse {
   currencySymbol?: string
   revisedAt?: DateString
   note?: string
+  deletedAt?: string | null
 }
 
 // ---------------------------------------------------------------------------

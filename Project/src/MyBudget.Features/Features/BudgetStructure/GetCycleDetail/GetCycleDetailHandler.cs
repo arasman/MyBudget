@@ -22,8 +22,10 @@ public sealed class GetCycleDetailHandler
             """
             SELECT c."Id", c."Name", c."StartDate", c."EndDate", c."IsActive",
                    c."ExchangeRate",
+                   dc."Id"     AS "DefaultCurrencyId",
                    dc."Code"   AS "DefaultCurrencyCode",
                    dc."Symbol" AS "DefaultCurrencySymbol",
+                   ac."Id"     AS "AlternateCurrencyId",
                    ac."Code"   AS "AlternateCurrencyCode",
                    ac."Symbol" AS "AlternateCurrencySymbol"
             FROM "Cycles" c
@@ -56,7 +58,7 @@ public sealed class GetCycleDetailHandler
             .ToList();
 
         CurrencyDto? alternateCurrency = cycleRow.AlternateCurrencyCode is not null
-            ? new CurrencyDto(cycleRow.AlternateCurrencyCode, cycleRow.AlternateCurrencySymbol!)
+            ? new CurrencyDto(cycleRow.AlternateCurrencyId!.Value, cycleRow.AlternateCurrencyCode, cycleRow.AlternateCurrencySymbol!)
             : null;
 
         var response = new CycleDetailResponse(
@@ -65,7 +67,7 @@ public sealed class GetCycleDetailHandler
             cycleRow.StartDate,
             cycleRow.EndDate,
             cycleRow.IsActive,
-            new CurrencyDto(cycleRow.DefaultCurrencyCode, cycleRow.DefaultCurrencySymbol),
+            new CurrencyDto(cycleRow.DefaultCurrencyId, cycleRow.DefaultCurrencyCode, cycleRow.DefaultCurrencySymbol),
             alternateCurrency,
             cycleRow.ExchangeRate,
             periods);
@@ -80,8 +82,10 @@ public sealed class GetCycleDetailHandler
         DateOnly EndDate,
         bool     IsActive,
         decimal? ExchangeRate,
+        Guid     DefaultCurrencyId,
         string   DefaultCurrencyCode,
         string   DefaultCurrencySymbol,
+        Guid?    AlternateCurrencyId,
         string?  AlternateCurrencyCode,
         string?  AlternateCurrencySymbol);
 

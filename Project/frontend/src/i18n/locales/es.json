@@ -81,6 +81,7 @@
       "confirmDelete": "¿Estás seguro de que deseas eliminar este ciclo?",
       "setActive": "Establecer como activo",
       "viewPeriods": "Ver períodos",
+      "viewMatrix": "Matriz de ejecución presupuestaria",
       "name": "Nombre",
       "startDate": "Fecha de inicio",
       "endDate": "Fecha de fin",
@@ -174,6 +175,115 @@
       "confirm": "Confirmar",
       "actions": "Acciones",
       "noPermission": "No tienes permiso para realizar esta acción."
+    }
+  },
+  "budgetMatrix": {
+    "title": "Matriz",
+    "controls": {
+      "currency": "Moneda",
+      "includeDeleted": "Incluir eliminados",
+      "refresh": "Actualizar"
+    },
+    "navigation": {
+      "prevPeriod": "Período anterior",
+      "nextPeriod": "Siguiente período"
+    },
+    "columns": {
+      "budgeted": "Presupuesto",
+      "executed": "Ejecutado",
+      "difference": "Diferencia",
+      "label": "Categoría / Línea"
+    },
+    "rows": {
+      "insertLine": "Insertar Línea",
+      "insertCategory": "Insertar Categoría",
+      "insertGroup": "Insertar Grupo",
+      "estimatedVariance": "Est. - Real",
+      "executedVariance": "Real - Ejec.",
+      "expandGroup": "Expandir grupo",
+      "collapseGroup": "Colapsar grupo",
+      "expandCategory": "Expandir categoría",
+      "collapseCategory": "Colapsar categoría",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "delete": "Eliminar",
+      "restore": "Restaurar",
+      "edit": "Editar",
+      "confirmDelete": "¿Eliminar este elemento?",
+      "confirmRestore": "¿Restaurar también los registros de ejecución?",
+      "restoreWithExecutions": "Sí, restaurar todo",
+      "restoreStructureOnly": "Solo estructura",
+      "addLine": "Agregar línea",
+      "addCategory": "Agregar categoría",
+      "addGroup": "Agregar grupo",
+      "newLineName": "Nombre de la línea",
+      "newCategoryName": "Nombre de la categoría",
+      "newGroupName": "Nombre del grupo"
+    },
+    "summary": {
+      "expenses": "Total de Gastos",
+      "longTermSavings": "Total Ahorro Largo Plazo",
+      "preventiveSavings": "Total Ahorro Preventivo",
+      "budgeted": "Presupuestado",
+      "executed": "Ejecutado"
+    },
+    "empty": {
+      "title": "Sin estructura presupuestaria",
+      "description": "Primero agregue grupos y categorías.",
+      "action": "Ir a Categorías"
+    },
+    "loading": "Cargando..."
+  },
+  "budgetExecution": {
+    "title": "Ejecuciones",
+    "addEntry": "Agregar entrada",
+    "entryTypes": {
+      "expense": "Gasto",
+      "creditNote": "Nota de crédito",
+      "debitNote": "Nota de débito"
+    },
+    "modal": {
+      "title": "Ejecuciones",
+      "noEntries": "Sin registros aún",
+      "addEntry": "Agregar entrada",
+      "periodClosed": "Este período está cerrado. No se permiten cambios.",
+      "includeDeleted": "Incluir eliminados"
+    },
+    "form": {
+      "entryType": "Tipo de entrada",
+      "entryTypes": {
+        "expense": "Gasto",
+        "creditNote": "Nota de crédito",
+        "debitNote": "Nota de débito"
+      },
+      "amount": "Monto",
+      "note": "Nota",
+      "noteRequired": "La nota es obligatoria para Nota de crédito y Nota de débito",
+      "amountRequired": "El monto debe ser mayor que 0",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "error": "Ocurrió un error. Intente de nuevo.",
+      "validation": {
+        "amountRequired": "El monto debe ser mayor a 0",
+        "noteRequired": "La nota es obligatoria para notas de crédito y débito"
+      }
+    },
+    "record": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "restore": "Restaurar",
+      "confirmDelete": "¿Eliminar esta entrada?",
+      "confirmRestore": "¿Restaurar esta entrada?"
+    },
+    "row": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "restore": "Restaurar"
+    },
+    "empty": "Sin entradas aún.",
+    "refresh": {
+      "tooltip": "Actualizar datos del período",
+      "label": "Actualizar"
     }
   },
   "invitation": {

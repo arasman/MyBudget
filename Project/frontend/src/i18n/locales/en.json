@@ -81,6 +81,7 @@
       "confirmDelete": "Are you sure you want to delete this cycle?",
       "setActive": "Set as Active",
       "viewPeriods": "View Periods",
+      "viewMatrix": "Budget Execution Matrix",
       "name": "Name",
       "startDate": "Start Date",
       "endDate": "End Date",
@@ -174,6 +175,115 @@
       "confirm": "Confirm",
       "actions": "Actions",
       "noPermission": "You don't have permission to perform this action."
+    }
+  },
+  "budgetMatrix": {
+    "title": "Matrix",
+    "controls": {
+      "currency": "Currency",
+      "includeDeleted": "Include deleted",
+      "refresh": "Refresh"
+    },
+    "navigation": {
+      "prevPeriod": "Previous period",
+      "nextPeriod": "Next period"
+    },
+    "columns": {
+      "budgeted": "Budgeted",
+      "executed": "Executed",
+      "difference": "Difference",
+      "label": "Category / Line"
+    },
+    "rows": {
+      "insertLine": "Insert Line",
+      "insertCategory": "Insert Category",
+      "insertGroup": "Insert Group",
+      "estimatedVariance": "Est. - Real",
+      "executedVariance": "Real - Exec.",
+      "expandGroup": "Expand group",
+      "collapseGroup": "Collapse group",
+      "expandCategory": "Expand category",
+      "collapseCategory": "Collapse category",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "delete": "Delete",
+      "restore": "Restore",
+      "edit": "Edit",
+      "confirmDelete": "Delete this item?",
+      "confirmRestore": "Restore execution records too?",
+      "restoreWithExecutions": "Yes, restore all",
+      "restoreStructureOnly": "Structure only",
+      "addLine": "Add line",
+      "addCategory": "Add category",
+      "addGroup": "Add group",
+      "newLineName": "Line name",
+      "newCategoryName": "Category name",
+      "newGroupName": "Group name"
+    },
+    "summary": {
+      "expenses": "Total Expenses",
+      "longTermSavings": "Total Long-term Savings",
+      "preventiveSavings": "Total Preventive Savings",
+      "budgeted": "Budgeted",
+      "executed": "Executed"
+    },
+    "empty": {
+      "title": "No budget structure",
+      "description": "Add groups and categories first.",
+      "action": "Go to Categories"
+    },
+    "loading": "Loading..."
+  },
+  "budgetExecution": {
+    "title": "Executions",
+    "addEntry": "Add Entry",
+    "entryTypes": {
+      "expense": "Expense",
+      "creditNote": "Credit Note",
+      "debitNote": "Debit Note"
+    },
+    "modal": {
+      "title": "Executions",
+      "noEntries": "No entries yet",
+      "addEntry": "Add entry",
+      "periodClosed": "This period is closed. No changes allowed.",
+      "includeDeleted": "Include deleted"
+    },
+    "form": {
+      "entryType": "Entry type",
+      "entryTypes": {
+        "expense": "Expense",
+        "creditNote": "Credit Note",
+        "debitNote": "Debit Note"
+      },
+      "amount": "Amount",
+      "note": "Note",
+      "noteRequired": "Note is required for Credit Note and Debit Note",
+      "amountRequired": "Amount must be greater than 0",
+      "save": "Save",
+      "cancel": "Cancel",
+      "error": "An error occurred. Please try again.",
+      "validation": {
+        "amountRequired": "Amount must be greater than 0",
+        "noteRequired": "Note is required for Credit Note and Debit Note"
+      }
+    },
+    "record": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "restore": "Restore",
+      "confirmDelete": "Delete this entry?",
+      "confirmRestore": "Restore this entry?"
+    },
+    "row": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "restore": "Restore"
+    },
+    "empty": "No entries yet.",
+    "refresh": {
+      "tooltip": "Refresh period data",
+      "label": "Refresh"
     }
   },
   "invitation": {

@@ -134,7 +134,7 @@ watch(
       form.name = period.name
       form.startDate = period.startDate
       form.endDate = period.endDate
-      form.status = period.status
+      form.status = period.isClosed ? 'Closed' : 'Open'
     } else {
       form.name = ''
       form.startDate = ''

@@ -41,3 +41,15 @@ export async function reorder(
 ): Promise<void> {
   await http.put(`${base(budgetId, groupId)}/order`, { orderedIds: ids })
 }
+
+/** POST /api/budgets/:budgetId/category-groups/:groupId/categories/:categoryId/restore */
+export async function restore(
+  budgetId: string,
+  groupId: string,
+  categoryId: string,
+  includeExecutionRecords: boolean,
+): Promise<void> {
+  await http.post(`${base(budgetId, groupId)}/${categoryId}/restore`, null, {
+    params: { includeExecutionRecords },
+  })
+}

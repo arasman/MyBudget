@@ -28,6 +28,15 @@ public sealed class DeleteCategoryGroupHandler : IRequestHandler<DeleteCategoryG
         foreach (var category in categories)
             category.SoftDelete();
 
+        // Cascade: soft-delete all non-deleted BudgetLines in this group
+        var budgetLines = await _db.BudgetLines
+            .IgnoreQueryFilters()
+            .Where(bl => bl.CategoryGroupId == cmd.GroupId && bl.DeletedAt == null)
+            .ToListAsync(ct);
+
+        foreach (var line in budgetLines)
+            line.SoftDelete();
+
         group.SoftDelete();
         await _db.SaveChangesAsync(ct);
 

@@ -23,6 +23,7 @@ public sealed class ListCyclesHandler
             """
             SELECT c."Id", c."Name", c."StartDate", c."EndDate", c."IsActive",
                    COUNT(p."Id") AS "PeriodCount",
+                   dc."Id"     AS "DefaultCurrencyId",
                    dc."Code"   AS "DefaultCurrencyCode",
                    dc."Symbol" AS "DefaultCurrencySymbol",
                    c."AlternateCurrencyId",
@@ -35,7 +36,7 @@ public sealed class ListCyclesHandler
             LEFT  JOIN "Periods" p ON p."CycleId" = c."Id" AND p."DeletedAt" IS NULL
             WHERE c."BudgetId" = @BudgetId AND c."DeletedAt" IS NULL
             GROUP BY c."Id", c."Name", c."StartDate", c."EndDate", c."IsActive",
-                     dc."Code", dc."Symbol",
+                     dc."Id", dc."Code", dc."Symbol",
                      c."AlternateCurrencyId", c."ExchangeRate",
                      ac."Code", ac."Symbol"
             ORDER BY c."StartDate"
@@ -46,7 +47,7 @@ public sealed class ListCyclesHandler
             .Select(r =>
             {
                 CurrencyDto? alternateCurrency = r.AlternateCurrencyCode is not null
-                    ? new CurrencyDto(r.AlternateCurrencyCode, r.AlternateCurrencySymbol!)
+                    ? new CurrencyDto(r.AlternateCurrencyId!.Value, r.AlternateCurrencyCode, r.AlternateCurrencySymbol!)
                     : null;
 
                 return new CycleListItem(
@@ -56,7 +57,7 @@ public sealed class ListCyclesHandler
                     r.EndDate,
                     r.IsActive,
                     (int)r.PeriodCount,
-                    new CurrencyDto(r.DefaultCurrencyCode, r.DefaultCurrencySymbol),
+                    new CurrencyDto(r.DefaultCurrencyId, r.DefaultCurrencyCode, r.DefaultCurrencySymbol),
                     alternateCurrency,
                     r.AlternateCurrencyId,
                     r.ExchangeRate);
@@ -74,6 +75,7 @@ public sealed class ListCyclesHandler
         DateOnly EndDate,
         bool     IsActive,
         long     PeriodCount,
+        Guid     DefaultCurrencyId,
         string   DefaultCurrencyCode,
         string   DefaultCurrencySymbol,
         Guid?    AlternateCurrencyId,

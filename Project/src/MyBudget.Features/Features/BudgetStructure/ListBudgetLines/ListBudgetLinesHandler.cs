@@ -40,10 +40,11 @@ public sealed class ListBudgetLinesHandler
         if (!periodExists)
             return Result<IReadOnlyList<BudgetLineResponse>>.Failure("PERIOD_NOT_FOUND");
 
+        var deletedFilter = query.IncludeDeleted ? "" : "AND bl.\"DeletedAt\" IS NULL";
         var rows = await conn.QueryAsync<BudgetLineRow>(
-            """
+            $"""
             SELECT bl."Id", bl."Name", bl."LineType", bl."IsRecurring",
-                   bl."CategoryGroupId", bl."CategoryId",
+                   bl."CategoryGroupId", bl."CategoryId", bl."DeletedAt",
                    r."BudgetedAmount", r."CurrencyCode", r."CurrencySymbol", r."RevisedAt", r."Note"
             FROM "BudgetLines" bl
             LEFT JOIN LATERAL (
@@ -55,7 +56,7 @@ public sealed class ListBudgetLinesHandler
                 ORDER BY r2."RevisedAt" DESC
                 LIMIT 1
             ) r ON true
-            WHERE bl."PeriodId" = @PeriodId AND bl."DeletedAt" IS NULL
+            WHERE bl."PeriodId" = @PeriodId {deletedFilter}
             ORDER BY bl."DisplayOrder", bl."Name"
             """,
             new { query.PeriodId });
@@ -74,7 +75,10 @@ public sealed class ListBudgetLinesHandler
                 r.RevisedAt.HasValue
                     ? new DateTimeOffset(r.RevisedAt.Value, TimeSpan.Zero)
                     : null,
-                r.Note))
+                r.Note,
+                r.DeletedAt.HasValue
+                    ? new DateTimeOffset(r.DeletedAt.Value, TimeSpan.Zero)
+                    : null))
             .ToList();
 
         return Result<IReadOnlyList<BudgetLineResponse>>.Success(items);
@@ -87,6 +91,7 @@ public sealed class ListBudgetLinesHandler
         bool      IsRecurring,
         Guid      CategoryGroupId,
         Guid?     CategoryId,
+        DateTime? DeletedAt,
         decimal?  BudgetedAmount,
         string?   CurrencyCode,
         string?   CurrencySymbol,

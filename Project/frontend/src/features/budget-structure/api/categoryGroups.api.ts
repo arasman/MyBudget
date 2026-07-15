@@ -4,8 +4,10 @@ import type { CategoryGroupResponse, CreateGroupPayload, UpdateGroupPayload } fr
 const base = (budgetId: string) => `/api/budgets/${budgetId}/category-groups`
 
 /** GET /api/budgets/:budgetId/category-groups */
-export async function list(budgetId: string): Promise<CategoryGroupResponse[]> {
-  const { data } = await http.get<CategoryGroupResponse[]>(base(budgetId))
+export async function list(budgetId: string, includeDeleted = false): Promise<CategoryGroupResponse[]> {
+  const { data } = await http.get<CategoryGroupResponse[]>(base(budgetId), {
+    params: includeDeleted ? { includeDeleted: true } : undefined,
+  })
   return data
 }
 
@@ -35,4 +37,15 @@ export async function remove(budgetId: string, groupId: string): Promise<void> {
 /** PUT /api/budgets/:budgetId/category-groups/order  body: { orderedIds } */
 export async function reorder(budgetId: string, ids: string[]): Promise<void> {
   await http.put(`${base(budgetId)}/order`, { orderedIds: ids })
+}
+
+/** POST /api/budgets/:budgetId/category-groups/:groupId/restore */
+export async function restore(
+  budgetId: string,
+  groupId: string,
+  includeExecutionRecords: boolean,
+): Promise<void> {
+  await http.post(`${base(budgetId)}/${groupId}/restore`, null, {
+    params: { includeExecutionRecords },
+  })
 }

@@ -129,7 +129,7 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
         periodNumber: fullPayload.periodNumber,
         startDate: payload.startDate,
         endDate: payload.endDate,
-        status: 'Open',
+        isClosed: false,
       })
     })
   }
@@ -162,7 +162,7 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
       await periodsApi.patchStatus(budgetId, cycleId, periodId, payload)
       const idx = periods.value.findIndex((p) => p.id === periodId)
       if (idx !== -1) {
-        periods.value[idx] = { ...periods.value[idx]!, status: payload.status }
+        periods.value[idx] = { ...periods.value[idx]!, isClosed: payload.status === 'Closed' }
       }
     })
   }
@@ -182,9 +182,9 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   // Category groups — implemented in PR2 (load) and PR4 (mutations)
   // ---------------------------------------------------------------------------
 
-  async function loadGroups(budgetId: string): Promise<void> {
+  async function loadGroups(budgetId: string, includeDeleted = false): Promise<void> {
     await _wrap(async () => {
-      categoryGroups.value = await groupsApi.list(budgetId)
+      categoryGroups.value = await groupsApi.list(budgetId, includeDeleted)
     })
   }
 
@@ -221,7 +221,51 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   async function deleteGroup(budgetId: string, groupId: string): Promise<void> {
     await _wrap(async () => {
       await groupsApi.remove(budgetId, groupId)
-      categoryGroups.value = categoryGroups.value.filter((g) => g.id !== groupId)
+      const now = new Date().toISOString()
+      const idx = categoryGroups.value.findIndex((g) => g.id === groupId)
+      if (idx !== -1) {
+        const group = categoryGroups.value[idx]!
+        const categoryIds = group.categories.map((c) => c.id)
+        // Cascade: mark group + all its categories as deleted
+        categoryGroups.value[idx] = {
+          ...group,
+          deletedAt: now,
+          categories: group.categories.map((c) => ({ ...c, deletedAt: now })),
+        }
+        // Cascade: mark all budget lines in those categories as deleted
+        budgetLines.value = budgetLines.value.map((l) =>
+          l.categoryId !== undefined && categoryIds.includes(l.categoryId)
+            ? { ...l, deletedAt: now }
+            : l,
+        )
+      }
+    })
+  }
+
+  async function restoreGroup(
+    budgetId: string,
+    groupId: string,
+    includeExecutionRecords: boolean,
+  ): Promise<void> {
+    await _wrap(async () => {
+      await groupsApi.restore(budgetId, groupId, includeExecutionRecords)
+      const idx = categoryGroups.value.findIndex((g) => g.id === groupId)
+      if (idx !== -1) {
+        const group = categoryGroups.value[idx]!
+        const categoryIds = group.categories.map((c) => c.id)
+        // Cascade: restore group + all its categories
+        categoryGroups.value[idx] = {
+          ...group,
+          deletedAt: null,
+          categories: group.categories.map((c) => ({ ...c, deletedAt: null })),
+        }
+        // Cascade: restore all budget lines in those categories
+        budgetLines.value = budgetLines.value.map((l) =>
+          l.categoryId !== undefined && categoryIds.includes(l.categoryId)
+            ? { ...l, deletedAt: null }
+            : l,
+        )
+      }
     })
   }
 
@@ -284,10 +328,40 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   ): Promise<void> {
     await _wrap(async () => {
       await categoriesApi.remove(budgetId, groupId, categoryId)
+      const now = new Date().toISOString()
       const group = categoryGroups.value.find((g) => g.id === groupId)
       if (group) {
-        group.categories = group.categories.filter((c) => c.id !== categoryId)
+        const idx = group.categories.findIndex((c) => c.id === categoryId)
+        if (idx !== -1) {
+          group.categories[idx] = { ...group.categories[idx]!, deletedAt: now }
+        }
       }
+      // Cascade: mark all budget lines in this category as deleted
+      budgetLines.value = budgetLines.value.map((l) =>
+        l.categoryId === categoryId ? { ...l, deletedAt: now } : l,
+      )
+    })
+  }
+
+  async function restoreCategory(
+    budgetId: string,
+    groupId: string,
+    categoryId: string,
+    includeExecutionRecords: boolean,
+  ): Promise<void> {
+    await _wrap(async () => {
+      await categoriesApi.restore(budgetId, groupId, categoryId, includeExecutionRecords)
+      const group = categoryGroups.value.find((g) => g.id === groupId)
+      if (group) {
+        const idx = group.categories.findIndex((c) => c.id === categoryId)
+        if (idx !== -1) {
+          group.categories[idx] = { ...group.categories[idx]!, deletedAt: null }
+        }
+      }
+      // Cascade: restore all budget lines in this category
+      budgetLines.value = budgetLines.value.map((l) =>
+        l.categoryId === categoryId ? { ...l, deletedAt: null } : l,
+      )
     })
   }
 
@@ -312,9 +386,9 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   // Budget lines — implemented in PR5
   // ---------------------------------------------------------------------------
 
-  async function loadLines(budgetId: string, periodId: string): Promise<void> {
+  async function loadLines(budgetId: string, periodId: string, includeDeleted = false): Promise<void> {
     await _wrap(async () => {
-      budgetLines.value = await budgetLinesApi.list(budgetId, periodId)
+      budgetLines.value = await budgetLinesApi.list(budgetId, periodId, includeDeleted)
     })
   }
 
@@ -322,10 +396,11 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
     budgetId: string,
     periodId: string,
     payload: CreateBudgetLinePayload,
+    includeDeleted = false,
   ): Promise<void> {
     await _wrap(async () => {
       await budgetLinesApi.create(budgetId, periodId, payload)
-      budgetLines.value = await budgetLinesApi.list(budgetId, periodId)
+      budgetLines.value = await budgetLinesApi.list(budgetId, periodId, includeDeleted)
     })
   }
 
@@ -347,7 +422,25 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   async function deleteLine(budgetId: string, periodId: string, lineId: string): Promise<void> {
     await _wrap(async () => {
       await budgetLinesApi.remove(budgetId, periodId, lineId)
-      budgetLines.value = budgetLines.value.filter((l) => l.id !== lineId)
+      const idx = budgetLines.value.findIndex((l) => l.id === lineId)
+      if (idx !== -1) {
+        budgetLines.value[idx] = { ...budgetLines.value[idx]!, deletedAt: new Date().toISOString() }
+      }
+    })
+  }
+
+  async function restoreLine(
+    budgetId: string,
+    periodId: string,
+    lineId: string,
+    includeExecutionRecords: boolean,
+  ): Promise<void> {
+    await _wrap(async () => {
+      await budgetLinesApi.restore(budgetId, periodId, lineId, includeExecutionRecords)
+      const idx = budgetLines.value.findIndex((l) => l.id === lineId)
+      if (idx !== -1) {
+        budgetLines.value[idx] = { ...budgetLines.value[idx]!, deletedAt: null }
+      }
     })
   }
 
@@ -382,16 +475,19 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
     createGroup,
     updateGroup,
     deleteGroup,
+    restoreGroup,
     reorderGroups,
     // Categories
     createCategory,
     updateCategory,
     deleteCategory,
+    restoreCategory,
     reorderCategories,
     // Lines
     loadLines,
     createLine,
     updateLine,
     deleteLine,
+    restoreLine,
   }
 })

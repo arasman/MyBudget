@@ -23,7 +23,15 @@ public sealed class DeleteCategoryHandler : IRequestHandler<DeleteCategoryComman
             category.CategoryGroupId != cmd.CategoryGroupId)
             return Result<Guid>.Failure("CATEGORY_NOT_FOUND");
 
-        // Soft-delete the category only — BudgetLines retain the reference (PR4 read layer handles categoryDeleted flag)
+        // Cascade: soft-delete all non-deleted BudgetLines in this category
+        var budgetLines = await _db.BudgetLines
+            .IgnoreQueryFilters()
+            .Where(bl => bl.CategoryId == cmd.CategoryId && bl.DeletedAt == null)
+            .ToListAsync(ct);
+
+        foreach (var line in budgetLines)
+            line.SoftDelete();
+
         category.SoftDelete();
         await _db.SaveChangesAsync(ct);
 

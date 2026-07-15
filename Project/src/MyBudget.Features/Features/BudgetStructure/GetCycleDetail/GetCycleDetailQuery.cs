@@ -6,7 +6,7 @@ namespace MyBudget.Features.Features.BudgetStructure.GetCycleDetail;
 public sealed record GetCycleDetailQuery(Guid BudgetId, Guid CycleId)
     : IRequest<Result<CycleDetailResponse>>;
 
-public sealed record CurrencyDto(string Code, string Symbol);
+public sealed record CurrencyDto(Guid Id, string Code, string Symbol);
 
 public sealed record CycleDetailResponse(
     Guid                         Id,

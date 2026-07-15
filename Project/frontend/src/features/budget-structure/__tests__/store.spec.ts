@@ -177,7 +177,7 @@ describe('useBudgetStructureStore', () => {
   })
 
   describe('deleteLine', () => {
-    it('removes the line from budgetLines', async () => {
+    it('marks the line as deleted in budgetLines (soft delete)', async () => {
       vi.mocked(budgetLinesApi.list).mockResolvedValueOnce([
         { id: 'l1', name: 'Salary', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
         { id: 'l2', name: 'Rent', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
@@ -188,8 +188,9 @@ describe('useBudgetStructureStore', () => {
       await store.loadLines(BUDGET_ID, PERIOD_ID)
       await store.deleteLine(BUDGET_ID, PERIOD_ID, 'l1')
 
-      expect(store.budgetLines).toHaveLength(1)
-      expect(store.budgetLines[0]!.id).toBe('l2')
+      expect(store.budgetLines).toHaveLength(2)
+      expect(store.budgetLines[0]!.deletedAt).toBeTruthy()
+      expect(store.budgetLines[1]!.deletedAt).toBeFalsy()
     })
   })
 

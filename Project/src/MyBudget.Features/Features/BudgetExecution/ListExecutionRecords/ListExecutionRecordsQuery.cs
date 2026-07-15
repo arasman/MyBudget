@@ -6,7 +6,8 @@ namespace MyBudget.Features.Features.BudgetExecution.ListExecutionRecords;
 public sealed record ListExecutionRecordsQuery(
     Guid BudgetId,
     Guid PeriodId,
-    Guid BudgetLineId
+    Guid BudgetLineId,
+    bool IncludeDeleted = false
 ) : IRequest<Result<IReadOnlyList<ExecutionRecordDto>>>;
 
 public sealed record ExecutionRecordDto(
@@ -20,4 +21,5 @@ public sealed record ExecutionRecordDto(
     Guid?     PaymentMethodId,
     string?   Note,
     DateTimeOffset  CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    DateTimeOffset? DeletedAt);

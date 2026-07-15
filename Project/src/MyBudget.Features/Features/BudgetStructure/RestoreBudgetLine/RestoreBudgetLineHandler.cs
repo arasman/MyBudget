@@ -25,15 +25,24 @@ public sealed class RestoreBudgetLineHandler : IRequestHandler<RestoreBudgetLine
         if (period.DeletedAt != null)
             return Result<Guid>.Failure("PARENT_IS_DELETED");
 
-        // Load soft-deleted BudgetLine
+        // Load soft-deleted BudgetLine with parent navigation for guard checks
         var line = await _db.BudgetLines
             .IgnoreQueryFilters()
+            .Include(bl => bl.Category)
+            .Include(bl => bl.CategoryGroup)
             .FirstOrDefaultAsync(
                 bl => bl.Id == cmd.BudgetLineId && bl.PeriodId == cmd.PeriodId && bl.DeletedAt != null,
                 ct);
 
         if (line is null)
             return Result<Guid>.Failure("BUDGET_LINE_NOT_FOUND");
+
+        // Parent guards: cannot restore a line whose category or group is still deleted
+        if (line.Category?.DeletedAt != null)
+            return Result<Guid>.Failure("PARENT_IS_DELETED");
+
+        if (line.CategoryGroup?.DeletedAt != null)
+            return Result<Guid>.Failure("PARENT_IS_DELETED");
 
         line.Restore();
 

@@ -40,25 +40,44 @@ public sealed class ListExecutionRecordsHandler
         if (!lineExists)
             return Result<IReadOnlyList<ExecutionRecordDto>>.Failure("BUDGET_LINE_NOT_FOUND");
 
-        var rows = await conn.QueryAsync<ExecutionRecordRow>(
-            """
-            SELECT e."Id",
-                   e."EntryType",
-                   e."Amount",
-                   e."CurrencyId",
-                   e."ExchangeRate",
-                   e."ExchangeRateTo",
-                   e."AccountId",
-                   e."PaymentMethodId",
-                   e."Note",
-                   e."CreatedAt",
-                   e."UpdatedAt"
-            FROM "ExecutionRecords" e
-            WHERE e."BudgetLineId" = @BudgetLineId
-              AND e."DeletedAt" IS NULL
-            ORDER BY e."CreatedAt" ASC
-            """,
-            new { query.BudgetLineId });
+        var sql = query.IncludeDeleted
+            ? """
+              SELECT e."Id",
+                     e."EntryType",
+                     e."Amount",
+                     e."CurrencyId",
+                     e."ExchangeRate",
+                     e."ExchangeRateTo",
+                     e."AccountId",
+                     e."PaymentMethodId",
+                     e."Note",
+                     e."CreatedAt",
+                     e."UpdatedAt",
+                     e."DeletedAt"
+              FROM "ExecutionRecords" e
+              WHERE e."BudgetLineId" = @BudgetLineId
+              ORDER BY e."CreatedAt" ASC
+              """
+            : """
+              SELECT e."Id",
+                     e."EntryType",
+                     e."Amount",
+                     e."CurrencyId",
+                     e."ExchangeRate",
+                     e."ExchangeRateTo",
+                     e."AccountId",
+                     e."PaymentMethodId",
+                     e."Note",
+                     e."CreatedAt",
+                     e."UpdatedAt",
+                     e."DeletedAt"
+              FROM "ExecutionRecords" e
+              WHERE e."BudgetLineId" = @BudgetLineId
+                AND e."DeletedAt" IS NULL
+              ORDER BY e."CreatedAt" ASC
+              """;
+
+        var rows = await conn.QueryAsync<ExecutionRecordRow>(sql, new { query.BudgetLineId });
 
         var items = rows
             .Select(r => new ExecutionRecordDto(
@@ -72,7 +91,8 @@ public sealed class ListExecutionRecordsHandler
                 r.PaymentMethodId,
                 r.Note,
                 new DateTimeOffset(r.CreatedAt, TimeSpan.Zero),
-                r.UpdatedAt.HasValue ? new DateTimeOffset(r.UpdatedAt.Value, TimeSpan.Zero) : null))
+                r.UpdatedAt.HasValue ? new DateTimeOffset(r.UpdatedAt.Value, TimeSpan.Zero) : null,
+                r.DeletedAt.HasValue ? new DateTimeOffset(r.DeletedAt.Value, TimeSpan.Zero) : null))
             .ToList();
 
         return Result<IReadOnlyList<ExecutionRecordDto>>.Success(items);
@@ -90,5 +110,6 @@ public sealed class ListExecutionRecordsHandler
         Guid?     PaymentMethodId,
         string?   Note,
         DateTime  CreatedAt,
-        DateTime? UpdatedAt);
+        DateTime? UpdatedAt,
+        DateTime? DeletedAt);
 }
