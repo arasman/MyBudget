@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-13 (budget-execution archived)
+**Last updated**: 2026-07-14 (budget-execution-ui archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -205,14 +205,44 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 8. `budget-execution-ui` ⏳ planned
+### 8. `budget-execution-ui` ✅ archived 2026-07-14
 
-**What**: Frontend for recording and viewing actual spending per budget line.
+**What**: Multi-period budget matrix view — record and review actual spending vs budget per period.
+
+**Scope in**:
+- `budget-execution` feature folder: `useBudgetMatrixStore`, 3 composables (`useCurrencyDisplay`, `useMatrixNavigation`, `usePeriodData`), 13 components, `BudgetMatrixView`
+- Native HTML `<table>` with CSS sticky left column; 3-period sliding window with prev/next navigation
+- Per-period progressive loading with skeleton cells (`loadingPeriods` map)
+- Columns per period: Budgeted | Executed | Difference (color-coded green/red)
+- Inline CRUD for CategoryGroups, Categories, BudgetLines (edit, delete, restore with cascade)
+- Double-click budget line → `BudgetLineModal` (full edit via Teleport)
+- `ExecutionListModal`: list + create + edit + delete + restore execution records per line/period
+- `MatrixControls`: currency toggle (GTQ/USD client-side conversion), show-deleted toggle, refresh
+- `MatrixSummaryRow` footer: totals by LineType (Expense / LongTermSavings / PreventiveSavings)
+- Backend patches: cascade soft-delete to BudgetLines in `DeleteCategoryHandler` / `DeleteCategoryGroupHandler`; parent-deleted guard in `RestoreBudgetLineHandler`; `includeDeleted` on `ListCategoryGroups` and `ListBudgetLines`; `categoryGroupId` on `ListCategoryGroupsHandler`
+- BudgetTabs nav entry point for matrix view
+- 167 Vitest unit tests; 9 Playwright E2E spec files; 0 CRITICAL issues at archive
+- Delivery: 6 chained PRs (~325 lines avg)
+
+**Deferred (→ `budget-execution-ui-patch`)**:
+- Drag-and-drop reorder for matrix rows (W-02 — currently arrow-button reorder only)
+- BudgetLine currency not persisting (frontend sends `currencyCode` string, backend expects `currencyId` Guid)
+- Execution record missing fields: `operationDate`, `currency`, `exchangeRate`
+- Multi-currency matrix display using per-execution exchange rate
+
+**SDD artifacts**: `openspec/changes/budget-execution-ui/` (explore, proposal, spec, design, tasks)
+
+---
+
+### 8b. `budget-execution-ui-patch` ⏳ planned
+
+**What**: Follow-up fixes and missing fields deferred from `budget-execution-ui`.
 
 **Scope in** *(requires exploration)*:
-- Inline execution entry within BudgetLinesTable
-- Period execution summary: budgeted vs executed, variance
-- Currency conversion display (GTQ/USD with rate shown)
+- Fix BudgetLine currency: map `currencyCode` → `currencyId` Guid on create/update
+- Add `operationDate`, `currency`, `exchangeRate` fields to `ExecutionRecordForm`
+- Multi-currency matrix: display amounts in selected currency using per-execution exchange rate
+- Drag-and-drop reorder for CategoryGroups, Categories, and BudgetLines in matrix view
 
 ---
 
