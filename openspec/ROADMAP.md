@@ -239,10 +239,21 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 **What**: Follow-up fixes and missing fields deferred from `budget-execution-ui`.
 
 **Scope in** *(requires exploration)*:
-- Fix BudgetLine currency: map `currencyCode` → `currencyId` Guid on create/update
-- Add `operationDate`, `currency`, `exchangeRate` fields to `ExecutionRecordForm`
-- Multi-currency matrix: display amounts in selected currency using per-execution exchange rate
-- Drag-and-drop reorder for CategoryGroups, Categories, and BudgetLines in matrix view
+
+*Budget line maintenance:*
+- Inline create/edit: category selector not exposed in form (only group visible)
+- Fix currency bug: `BudgetLineModal` sends `currency: string` but backend expects `CurrencyId: Guid` → line always saves with default currency regardless of selection
+
+*Matrix view:*
+- Drag-and-drop reorder for Groups, Categories, and Lines (`vue-draggable-plus` installed, not wired into matrix)
+- Summary footer: reorder rows (Expenses → Preventive Savings → Long-term Savings); rename to SubTotal; add a Total row (sum of the 3 SubTotals)
+- STATUS_BREAKPOINT crash: text selected outside the matrix then dblclick on a cell still crashes; fix via `window.getSelection()?.removeAllRanges()` on dblclick or broader `user-select: none`
+- Render optimization: audit that per-mutation events don't trigger full group/category/line/period reload; target incremental updates where possible
+
+*Execution record (backend schema change + frontend):*
+- Add `operationDate`, `currency`, `exchangeRate` fields to `ExecutionRecord` (EF Core migration required)
+- Update `ExecutionRecordForm` to capture these fields
+- Multi-currency matrix display: open-period totals use cycle exchange rate; closed-period and in-progress records use their stored per-record exchange rate
 
 ---
 
