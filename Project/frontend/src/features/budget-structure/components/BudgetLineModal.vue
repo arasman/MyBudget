@@ -99,9 +99,15 @@
           <label class="label" for="line-currency">
             <span class="label-text">{{ t('budgetStructure.budgetLines.currency') }}</span>
           </label>
-          <select id="line-currency" v-model="form.currency" class="select select-bordered w-full">
-            <option value="GTQ">GTQ — Quetzal</option>
-            <option value="USD">USD — US Dollar</option>
+          <select id="line-currency" v-model="form.currencyId" class="select select-bordered w-full">
+            <option :value="undefined">— none —</option>
+            <option
+              v-for="currency in availableCurrencies"
+              :key="currency.id"
+              :value="currency.id"
+            >
+              {{ currency.code }} — {{ currency.name ?? currency.symbol }}
+            </option>
           </select>
         </div>
 
@@ -135,7 +141,8 @@
 <script setup lang="ts">
 import { reactive, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { BudgetLineResponse, CategoryGroupResponse, CreateBudgetLinePayload, LineType } from '../types'
+import type { BudgetLineResponse, CategoryGroupResponse, CreateBudgetLinePayload, CurrencyItem, LineType } from '../types'
+import { useBudgetStructureStore } from '../store'
 
 const props = defineProps<{
   modelValue: BudgetLineResponse | null
@@ -148,8 +155,19 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const structureStore = useBudgetStructureStore()
 
 const isEditMode = computed(() => props.modelValue !== null)
+
+/** Currencies available from the current cycle (default + optional alternate). */
+const availableCurrencies = computed((): CurrencyItem[] => {
+  const cycle = structureStore.currentCycle
+  if (!cycle) return []
+  const currencies: CurrencyItem[] = []
+  if (cycle.defaultCurrency) currencies.push(cycle.defaultCurrency)
+  if (cycle.alternateCurrency) currencies.push(cycle.alternateCurrency)
+  return currencies
+})
 
 const form = reactive<{
   name: string
@@ -158,7 +176,7 @@ const form = reactive<{
   categoryGroupId: string
   categoryId: string | undefined
   budgetedAmount: number | undefined
-  currency: string | undefined
+  currencyId: string | undefined
   note: string | undefined
 }>({
   name: props.modelValue?.name ?? '',
@@ -167,7 +185,7 @@ const form = reactive<{
   categoryGroupId: props.modelValue?.categoryGroupId ?? '',
   categoryId: props.modelValue?.categoryId,
   budgetedAmount: props.modelValue?.budgetedAmount,
-  currency: props.modelValue?.currencyCode ?? 'GTQ',
+  currencyId: props.modelValue?.currencyId,
   note: props.modelValue?.note,
 })
 
@@ -185,7 +203,7 @@ function handleSubmit(): void {
     categoryGroupId: form.categoryGroupId || undefined,
     categoryId: form.categoryId || undefined,
     budgetedAmount: form.budgetedAmount != null ? Number(form.budgetedAmount) : undefined,
-    currency: form.currency?.trim().toUpperCase() || undefined,
+    currencyId: form.currencyId || undefined,
     note: form.note?.trim() || undefined,
   }
   emit('submit', payload)

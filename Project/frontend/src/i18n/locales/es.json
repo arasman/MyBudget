@@ -120,6 +120,7 @@
     },
     "categoryGroups": {
       "title": "Grupos de categorías",
+      "column": "Grupo",
       "create": "Nuevo grupo",
       "edit": "Editar grupo",
       "delete": "Eliminar grupo",
@@ -133,6 +134,7 @@
       }
     },
     "categories": {
+      "title": "Categoría",
       "create": "Nueva categoría",
       "edit": "Editar categoría",
       "delete": "Eliminar categoría",
@@ -224,6 +226,10 @@
       "expenses": "Total de Gastos",
       "longTermSavings": "Total Ahorro Largo Plazo",
       "preventiveSavings": "Total Ahorro Preventivo",
+      "expensesSubTotal": "SubTotal Gastos",
+      "preventiveSavingsSubTotal": "SubTotal Ahorro Preventivo",
+      "longTermSavingsSubTotal": "SubTotal Ahorro Largo Plazo",
+      "total": "Total",
       "budgeted": "Presupuestado",
       "executed": "Ejecutado"
     },
@@ -258,14 +264,19 @@
       },
       "amount": "Monto",
       "note": "Nota",
+      "operationDate": "Fecha de operación",
+      "currency": "Moneda",
+      "exchangeRate": "Tipo de cambio",
       "noteRequired": "La nota es obligatoria para Nota de crédito y Nota de débito",
       "amountRequired": "El monto debe ser mayor que 0",
       "save": "Guardar",
       "cancel": "Cancelar",
       "error": "Ocurrió un error. Intente de nuevo.",
+      "calculatedAmount": "Monto convertido",
       "validation": {
         "amountRequired": "El monto debe ser mayor a 0",
-        "noteRequired": "La nota es obligatoria para notas de crédito y débito"
+        "noteRequired": "La nota es obligatoria para notas de crédito y débito",
+        "noteRequiredAlways": "La nota es obligatoria"
       }
     },
     "record": {

@@ -32,7 +32,8 @@ public static class CreateExecutionRecordEndpoint
             id, periodId, lineId,
             body.EntryType, body.Amount, body.Note,
             body.CurrencyId, body.ExchangeRate, body.ExchangeRateTo,
-            body.AccountId, body.PaymentMethodId);
+            body.AccountId, body.PaymentMethodId,
+            body.OperationDate);
 
         var result = await mediator.Send(cmd, ct);
 
@@ -61,4 +62,5 @@ public sealed record CreateExecutionRecordRequest(
     decimal?  ExchangeRate,
     decimal?  ExchangeRateTo,
     Guid?     AccountId,
-    Guid?     PaymentMethodId);
+    Guid?     PaymentMethodId,
+    DateOnly? OperationDate = null);

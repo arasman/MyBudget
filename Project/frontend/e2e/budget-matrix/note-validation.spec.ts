@@ -3,7 +3,7 @@ import { seedBudgetMatrixFixture, loginWithToken, goToMatrix } from './helpers'
 
 /**
  * E2E: BudgetMatrix execution form note validation.
- * CreditNote requires a note; Expense does not.
+ * Note is always required for all entry types.
  *
  * REQ-MATRIX-EXEC
  */
@@ -32,7 +32,7 @@ test.describe('BudgetMatrix note validation', () => {
     await expect(errorMsg).toBeVisible()
   })
 
-  test('Expense without note submits successfully', async ({ page, request }) => {
+  test('Expense with note submits successfully', async ({ page, request }) => {
     const fixture = await seedBudgetMatrixFixture(request, 'note-expense')
     await loginWithToken(page, fixture.accessToken, fixture.budgetId)
     await goToMatrix(page, fixture.budgetId, fixture.cycleId)
@@ -43,10 +43,10 @@ test.describe('BudgetMatrix note validation', () => {
     const modal = page.locator('[data-testid="execution-list-modal"]')
     await expect(modal).toBeVisible()
 
-    // Select Expense — note is optional
+    // Select Expense — note is required for all entry types
     await modal.locator('[data-testid="entry-type-select"]').selectOption({ label: 'Expense' })
     await modal.locator('[data-testid="amount-input"]').fill('50')
-    // Do NOT fill note
+    await modal.locator('#exec-note').fill('E2E expense note')
 
     const [createResp] = await Promise.all([
       page.waitForResponse((r) => r.url().includes('/executions') && r.request().method() === 'POST'),

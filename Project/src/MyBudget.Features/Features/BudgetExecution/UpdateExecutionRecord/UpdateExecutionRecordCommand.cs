@@ -16,5 +16,6 @@ public sealed record UpdateExecutionRecordCommand(
     decimal?  ExchangeRate,
     decimal?  ExchangeRateTo,
     Guid?     AccountId,
-    Guid?     PaymentMethodId
+    Guid?     PaymentMethodId,
+    DateOnly? OperationDate = null
 ) : IRequest<Result<Guid>>;

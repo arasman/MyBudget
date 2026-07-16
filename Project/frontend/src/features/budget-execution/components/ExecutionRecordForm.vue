@@ -1,5 +1,18 @@
 <template>
   <form data-testid="execution-record-form" class="space-y-3" @submit.prevent="handleSubmit">
+    <!-- Operation date -->
+    <div class="form-control">
+      <label class="label" for="exec-operation-date">
+        <span class="label-text">{{ t('budgetExecution.form.operationDate') }}</span>
+      </label>
+      <input
+        id="exec-operation-date"
+        v-model="form.operationDate"
+        type="date"
+        class="input input-bordered input-sm w-full"
+      />
+    </div>
+
     <!-- Entry type -->
     <div class="form-control">
       <label class="label" for="exec-entry-type">
@@ -14,6 +27,22 @@
         <option :value="EntryType.Expense">{{ t('budgetExecution.form.entryTypes.expense') }}</option>
         <option :value="EntryType.CreditNote">{{ t('budgetExecution.form.entryTypes.creditNote') }}</option>
         <option :value="EntryType.DebitNote">{{ t('budgetExecution.form.entryTypes.debitNote') }}</option>
+      </select>
+    </div>
+
+    <!-- Currency -->
+    <div class="form-control">
+      <label class="label" for="exec-currency">
+        <span class="label-text">{{ t('budgetExecution.form.currency') }}</span>
+      </label>
+      <select id="exec-currency" v-model="form.currencyId" class="select select-bordered select-sm w-full">
+        <option
+          v-for="currency in availableCurrencies"
+          :key="currency.id"
+          :value="currency.id"
+        >
+          {{ currency.code }} — {{ currency.name ?? currency.symbol }}
+        </option>
       </select>
     </div>
 
@@ -35,13 +64,39 @@
       <span v-if="errors.amount" class="label-text-alt text-error mt-1">{{ errors.amount }}</span>
     </div>
 
-    <!-- Note -->
+    <!-- Exchange rate (only when currency differs from default) -->
+    <div v-if="showExchangeRate" class="form-control">
+      <label class="label" for="exec-exchange-rate">
+        <span class="label-text">{{ t('budgetExecution.form.exchangeRate') }} *</span>
+      </label>
+      <input
+        id="exec-exchange-rate"
+        v-model.number="form.exchangeRate"
+        type="number"
+        step="0.000001"
+        min="0.000001"
+        class="input input-bordered input-sm w-full"
+      />
+    </div>
+
+    <!-- Calculated amount (read-only, shown when exchange rate is set) -->
+    <div v-if="showExchangeRate && form.amount && form.exchangeRate" class="form-control">
+      <label class="label">
+        <span class="label-text text-base-content/60">{{ t('budgetExecution.form.calculatedAmount') }}</span>
+      </label>
+      <input
+        type="text"
+        class="input input-bordered input-sm w-full bg-base-200"
+        :value="calculatedAmount"
+        readonly
+        tabindex="-1"
+      />
+    </div>
+
+    <!-- Note (always required) -->
     <div class="form-control">
       <label class="label" for="exec-note">
-        <span class="label-text">
-          {{ t('budgetExecution.form.note') }}
-          <span v-if="noteRequired" class="text-error">*</span>
-        </span>
+        <span class="label-text">{{ t('budgetExecution.form.note') }} *</span>
       </label>
       <input
         id="exec-note"
@@ -81,6 +136,7 @@
 import { reactive, ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { EntryType } from '../types'
+import type { CurrencyItem } from '@/features/budget-structure/types'
 import type { ExecutionRecordDto } from '../types'
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
@@ -104,20 +160,55 @@ const structureStore = useBudgetStructureStore()
 const submitting = ref(false)
 const submitError = ref<string | null>(null)
 
+/** Returns today as YYYY-MM-DD without timezone distortion. */
+function todayString(): string {
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const d = String(now.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+/** Currencies available from the current cycle (default + optional alternate). */
+const availableCurrencies = computed((): CurrencyItem[] => {
+  const cycle = structureStore.currentCycle
+  if (!cycle) return []
+  const currencies: CurrencyItem[] = []
+  if (cycle.defaultCurrency) currencies.push(cycle.defaultCurrency)
+  if (cycle.alternateCurrency) currencies.push(cycle.alternateCurrency)
+  return currencies
+})
+
+const defaultCurrencyId = computed(() => structureStore.currentCycle?.defaultCurrency?.id ?? '')
+
+/** Show exchange rate field only when the selected currency differs from the cycle default. */
+const showExchangeRate = computed(
+  () => form.currencyId && form.currencyId !== defaultCurrencyId.value,
+)
+
+/** Calculated amount: amount × exchangeRate, formatted for display. */
+const calculatedAmount = computed(() => {
+  if (!form.amount || !form.exchangeRate) return ''
+  const result = form.amount * form.exchangeRate
+  const defaultCurrency = structureStore.currentCycle?.defaultCurrency
+  const prefix = defaultCurrency ? `${defaultCurrency.code} ` : ''
+  return `${prefix}${result.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+})
+
 const form = reactive({
   entryType: props.editRecord?.entryType ?? EntryType.Expense,
   amount: props.editRecord?.amount ?? (null as number | null),
   note: props.editRecord?.note ?? '',
+  operationDate: props.editRecord?.operationDate ?? todayString(),
+  currencyId: props.editRecord?.currencyId ?? defaultCurrencyId.value,
+  exchangeRate: props.editRecord?.exchangeRate ?? (null as number | null),
+  exchangeRateTo: props.editRecord?.exchangeRateTo ?? (null as number | null),
 })
 
 const errors = reactive({
   amount: '' as string,
   note: '' as string,
 })
-
-const noteRequired = computed(
-  () => form.entryType === EntryType.CreditNote || form.entryType === EntryType.DebitNote,
-)
 
 function validate(): boolean {
   errors.amount = ''
@@ -130,8 +221,8 @@ function validate(): boolean {
     valid = false
   }
 
-  if (noteRequired.value && !form.note?.trim()) {
-    errors.note = t('budgetExecution.form.validation.noteRequired')
+  if (!form.note?.trim()) {
+    errors.note = t('budgetExecution.form.validation.noteRequiredAlways')
     valid = false
   }
 
@@ -144,16 +235,25 @@ async function handleSubmit(): Promise<void> {
   submitting.value = true
   submitError.value = null
 
-  // Derive currencyId from current cycle default currency
-  const cycle = structureStore.currentCycle
-  const currencyId = cycle?.defaultCurrency?.id ?? ''
+  const currencyId = form.currencyId || defaultCurrencyId.value
+  const isSameCurrency = currencyId === defaultCurrencyId.value
+
+  // Backend requires both ExchangeRate and ExchangeRateTo when currency differs.
+  // ExchangeRateTo is the inverse rate (1 / exchangeRate).
+  const exchangeRate = isSameCurrency ? null : (form.exchangeRate ?? null)
+  const exchangeRateTo =
+    isSameCurrency || !form.exchangeRate || form.exchangeRate === 0
+      ? null
+      : parseFloat((1 / form.exchangeRate).toFixed(6))
 
   const payload = {
     entryType: form.entryType,
     amount: form.amount!,
     currencyId,
     note: form.note?.trim() || null,
-    exchangeRate: null,
+    exchangeRate,
+    exchangeRateTo,
+    operationDate: form.operationDate || null,
   }
 
   try {
@@ -175,6 +275,10 @@ async function handleSubmit(): Promise<void> {
       form.entryType = EntryType.Expense
       form.amount = null
       form.note = ''
+      form.operationDate = todayString()
+      form.currencyId = defaultCurrencyId.value
+      form.exchangeRate = null
+      form.exchangeRateTo = null
     }
   } catch (e) {
     submitError.value = e instanceof Error ? e.message : t('budgetExecution.form.error')

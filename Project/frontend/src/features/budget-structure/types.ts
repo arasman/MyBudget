@@ -102,6 +102,7 @@ export interface BudgetLineResponse {
   categoryGroupId: string
   categoryId?: string
   budgetedAmount?: number
+  currencyId?: string
   currencyCode?: string
   currencySymbol?: string
   revisedAt?: DateString
@@ -171,7 +172,7 @@ export interface CreateBudgetLinePayload {
   categoryGroupId?: string
   categoryId?: string
   budgetedAmount?: number
-  currency?: string
+  currencyId?: string
   note?: string
 }
 
@@ -182,6 +183,6 @@ export interface UpdateBudgetLinePayload {
   categoryGroupId?: string
   categoryId?: string
   budgetedAmount?: number
-  currency?: string
+  currencyId?: string
   note?: string
 }

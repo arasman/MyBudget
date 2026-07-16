@@ -4,17 +4,30 @@
     :class="{ 'cursor-pointer': !readonly && !editing }"
     @dblclick="onRowDblClick"
   >
-    <!-- Name cell -->
-    <td class="font-medium">
+    <!-- Group cell -->
+    <td>
       <template v-if="editing">
-        <input
-          v-model="form.name"
-          type="text"
-          class="input input-xs input-bordered w-full"
-          :placeholder="t('budgetStructure.budgetLines.name')"
-        />
+        <select
+          v-model="form.categoryGroupId"
+          class="select select-xs select-bordered w-full"
+          @change="form.categoryId = undefined"
+        >
+          <option value="" disabled>—</option>
+          <option v-for="g in props.categoryGroups" :key="g.id" :value="g.id">{{ g.name }}</option>
+        </select>
       </template>
-      <template v-else>{{ line.name }}</template>
+      <template v-else>{{ groupName }}</template>
+    </td>
+
+    <!-- Category cell -->
+    <td>
+      <template v-if="editing">
+        <select v-model="form.categoryId" class="select select-xs select-bordered w-full">
+          <option :value="undefined">—</option>
+          <option v-for="cat in filteredCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+        </select>
+      </template>
+      <template v-else>{{ categoryName }}</template>
     </td>
 
     <!-- Line type cell -->
@@ -33,15 +46,34 @@
       </template>
     </td>
 
-    <!-- Recurring cell -->
+    <!-- Name cell -->
+    <td class="font-medium">
+      <template v-if="editing">
+        <input
+          v-model="form.name"
+          type="text"
+          class="input input-xs input-bordered w-full"
+          :placeholder="t('budgetStructure.budgetLines.name')"
+        />
+      </template>
+      <template v-else>{{ line.name }}</template>
+    </td>
+
+    <!-- Currency cell -->
     <td>
       <template v-if="editing">
-        <input v-model="form.isRecurring" type="checkbox" class="checkbox checkbox-xs" />
+        <select v-model="form.currencyId" class="select select-xs select-bordered">
+          <option :value="undefined">—</option>
+          <option
+            v-for="currency in availableCurrencies"
+            :key="currency.id"
+            :value="currency.id"
+          >
+            {{ currency.code }}
+          </option>
+        </select>
       </template>
-      <template v-else>
-        <span v-if="line.isRecurring" class="text-base-content/70" title="Recurring">↻</span>
-        <span v-else class="text-base-content/30">—</span>
-      </template>
+      <template v-else>{{ line.currencyCode ?? '—' }}</template>
     </td>
 
     <!-- Budgeted amount cell -->
@@ -62,15 +94,15 @@
       </template>
     </td>
 
-    <!-- Currency cell -->
+    <!-- Recurring cell -->
     <td>
       <template v-if="editing">
-        <select v-model="form.currency" class="select select-xs select-bordered">
-          <option value="GTQ">GTQ</option>
-          <option value="USD">USD</option>
-        </select>
+        <input v-model="form.isRecurring" type="checkbox" class="checkbox checkbox-xs" />
       </template>
-      <template v-else>{{ line.currencyCode ?? '—' }}</template>
+      <template v-else>
+        <span v-if="line.isRecurring" class="text-base-content/70" title="Recurring">↻</span>
+        <span v-else class="text-base-content/30">—</span>
+      </template>
     </td>
 
     <!-- Note cell -->
@@ -132,16 +164,17 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
+import { reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Pencil, Trash2, Check, X } from 'lucide-vue-next'
-import type { BudgetLineResponse, LineType, UpdateBudgetLinePayload } from '../types'
+import type { BudgetLineResponse, CategoryGroupResponse, CurrencyItem, LineType, UpdateBudgetLinePayload } from '../types'
+import { useBudgetStructureStore } from '../store'
 
 const props = defineProps<{
   line: BudgetLineResponse
   readonly: boolean
   editing: boolean
-  categoryGroups: { id: string; name: string }[]
+  categoryGroups: CategoryGroupResponse[]
 }>()
 
 const emit = defineEmits<{
@@ -153,15 +186,40 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const structureStore = useBudgetStructureStore()
+
+const availableCurrencies = computed((): CurrencyItem[] => {
+  const cycle = structureStore.currentCycle
+  if (!cycle) return []
+  const currencies: CurrencyItem[] = []
+  if (cycle.defaultCurrency) currencies.push(cycle.defaultCurrency)
+  if (cycle.alternateCurrency) currencies.push(cycle.alternateCurrency)
+  return currencies
+})
+
+const filteredCategories = computed(() => {
+  if (!form.categoryGroupId) return []
+  return props.categoryGroups.find((g) => g.id === form.categoryGroupId)?.categories.filter((c) => !c.deletedAt) ?? []
+})
+
+const groupName = computed(() =>
+  props.categoryGroups.find((g) => g.id === props.line.categoryGroupId)?.name ?? '—',
+)
+
+const categoryName = computed(() => {
+  const group = props.categoryGroups.find((g) => g.id === props.line.categoryGroupId)
+  return group?.categories.find((c) => c.id === props.line.categoryId)?.name ?? '—'
+})
 
 const form = reactive({
   name: '',
   lineType: 'Expense' as LineType,
   isRecurring: false,
   budgetedAmount: null as number | null,
-  currency: 'GTQ',
+  currencyId: undefined as string | undefined,
   note: '',
   categoryGroupId: undefined as string | undefined,
+  categoryId: undefined as string | undefined,
 })
 
 function resetForm(): void {
@@ -169,9 +227,10 @@ function resetForm(): void {
   form.lineType = props.line.lineType
   form.isRecurring = props.line.isRecurring
   form.budgetedAmount = props.line.budgetedAmount ?? null
-  form.currency = props.line.currencyCode ?? 'GTQ'
+  form.currencyId = props.line.currencyId
   form.note = props.line.note ?? ''
   form.categoryGroupId = props.line.categoryGroupId
+  form.categoryId = props.line.categoryId
 }
 
 watch(
@@ -193,9 +252,10 @@ function onInlineSave(): void {
     lineType: form.lineType,
     isRecurring: form.isRecurring,
     budgetedAmount: form.budgetedAmount ?? undefined,
-    currency: form.currency,
+    currencyId: form.currencyId || undefined,
     note: form.note || undefined,
     categoryGroupId: form.categoryGroupId,
+    categoryId: form.categoryId || undefined,
   }
   emit('inlineSave', props.line.id, payload)
 }

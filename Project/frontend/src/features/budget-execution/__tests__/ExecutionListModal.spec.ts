@@ -119,6 +119,7 @@ const sampleRecord: ExecutionRecordDto = {
   createdAt: '2026-01-10T10:00:00Z',
   updatedAt: null,
   deletedAt: null,
+  operationDate: null,
 }
 
 const openPeriod = {

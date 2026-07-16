@@ -20,6 +20,7 @@ vi.mock('vue-i18n', () => ({
         'budgetExecution.form.validation.amountRequired': 'Amount must be greater than 0',
         'budgetExecution.form.validation.noteRequired':
           'Note is required for Credit Note and Debit Note',
+        'budgetExecution.form.validation.noteRequiredAlways': 'Note is required',
       }
       return map[k] ?? k
     },
@@ -58,48 +59,21 @@ describe('ExecutionRecordForm.vue', () => {
     vi.clearAllMocks()
   })
 
-  it('shows note validation error when entryType is CreditNote and note is empty', async () => {
+  it('shows note validation error when note is empty (any entry type)', async () => {
     render(ExecutionRecordForm, { props: defaultProps })
 
-    // Change entry type to CreditNote
-    const select = screen.getByRole('combobox')
-    await fireEvent.change(select, { target: { value: String(EntryType.CreditNote) } })
-
-    // Set a valid amount
+    // Set a valid amount but leave note empty
     const amountInput = screen.getByRole('spinbutton')
     await fireEvent.input(amountInput, { target: { value: '100' } })
 
-    // Submit without note
     const submitBtn = screen.getByRole('button', { name: 'Save' })
     await fireEvent.click(submitBtn)
 
     await waitFor(() => {
-      expect(
-        screen.queryByText('Note is required for Credit Note and Debit Note'),
-      ).not.toBeNull()
+      expect(screen.queryByText('Note is required')).not.toBeNull()
     })
 
     expect(mockCreateExecution).not.toHaveBeenCalled()
-  })
-
-  it('does NOT show note validation error when entryType is Expense and note is empty', async () => {
-    mockCreateExecution.mockResolvedValue(undefined)
-    render(ExecutionRecordForm, { props: defaultProps })
-
-    // Entry type defaults to Expense
-    const amountInput = screen.getByRole('spinbutton')
-    await fireEvent.input(amountInput, { target: { value: '50' } })
-
-    const submitBtn = screen.getByRole('button', { name: 'Save' })
-    await fireEvent.click(submitBtn)
-
-    await waitFor(() => {
-      expect(mockCreateExecution).toHaveBeenCalled()
-    })
-
-    expect(
-      screen.queryByText('Note is required for Credit Note and Debit Note'),
-    ).toBeNull()
   })
 
   it('blocks submit when amount is empty', async () => {
@@ -123,6 +97,9 @@ describe('ExecutionRecordForm.vue', () => {
     const amountInput = screen.getByRole('spinbutton')
     await fireEvent.input(amountInput, { target: { value: '250' } })
 
+    const noteInput = screen.getByRole('textbox', { name: /note/i })
+    await fireEvent.input(noteInput, { target: { value: 'Test note' } })
+
     const submitBtn = screen.getByRole('button', { name: 'Save' })
     await fireEvent.click(submitBtn)
 
@@ -134,6 +111,7 @@ describe('ExecutionRecordForm.vue', () => {
         expect.objectContaining({
           entryType: EntryType.Expense,
           currencyId: 'currency-gtq',
+          note: 'Test note',
         }),
       )
     })
@@ -156,6 +134,7 @@ describe('ExecutionRecordForm.vue', () => {
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: null,
       deletedAt: null,
+      operationDate: null,
     }
 
     const { emitted } = render(ExecutionRecordForm, {

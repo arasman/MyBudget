@@ -56,7 +56,8 @@ public sealed class UpdateExecutionRecordHandler : IRequestHandler<UpdateExecuti
             cmd.ExchangeRate,
             cmd.ExchangeRateTo,
             cmd.AccountId,
-            cmd.PaymentMethodId);
+            cmd.PaymentMethodId,
+            cmd.OperationDate);
 
         await _db.SaveChangesAsync(ct);
 

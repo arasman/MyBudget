@@ -7,6 +7,13 @@
     <!-- Sticky label cell -->
     <td class="sticky left-0 z-10 bg-base-200 px-3 py-2 border-b border-base-300">
       <div class="flex items-center gap-1">
+        <!-- Drag handle (only non-deleted) -->
+        <span
+          v-if="!group.deletedAt"
+          class="group-drag-handle cursor-grab text-base-content/30 hover:text-base-content shrink-0 select-none"
+          title="Drag to reorder"
+        >&#8597;</span>
+
         <!-- Collapse/expand toggle -->
         <button
           data-testid="group-collapse-btn"
@@ -158,6 +165,7 @@ const acting = ref(false)
 
 function startEdit(): void {
   if (props.group.deletedAt) return
+  window.getSelection()?.removeAllRanges()
   editName.value = props.group.name
   editing.value = true
   nextTick(() => editInput.value?.focus())

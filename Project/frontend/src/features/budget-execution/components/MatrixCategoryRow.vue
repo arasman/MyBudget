@@ -159,6 +159,7 @@ const acting = ref(false)
 
 function startEdit(): void {
   if (props.category.deletedAt) return
+  window.getSelection()?.removeAllRanges()
   editName.value = props.category.name
   editing.value = true
   nextTick(() => editInput.value?.focus())
