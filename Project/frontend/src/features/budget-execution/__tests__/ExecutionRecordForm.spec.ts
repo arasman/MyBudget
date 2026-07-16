@@ -13,13 +13,14 @@ vi.mock('vue-i18n', () => ({
         'budgetExecution.form.entryTypes.creditNote': 'Credit Note',
         'budgetExecution.form.entryTypes.debitNote': 'Debit Note',
         'budgetExecution.form.amount': 'Amount',
+        'budgetExecution.form.currency': 'Currency',
+        'budgetExecution.form.exchangeRate': 'Exchange rate',
         'budgetExecution.form.note': 'Note',
         'budgetExecution.form.save': 'Save',
         'budgetExecution.form.cancel': 'Cancel',
         'budgetExecution.form.error': 'An error occurred',
         'budgetExecution.form.validation.amountRequired': 'Amount must be greater than 0',
-        'budgetExecution.form.validation.noteRequired':
-          'Note is required for Credit Note and Debit Note',
+        'budgetExecution.form.validation.exchangeRateRequired': 'Exchange rate must be greater than 0',
         'budgetExecution.form.validation.noteRequiredAlways': 'Note is required',
       }
       return map[k] ?? k
@@ -42,7 +43,8 @@ vi.mock('../store', () => ({
 vi.mock('@/features/budget-structure/store', () => ({
   useBudgetStructureStore: () => ({
     currentCycle: {
-      defaultCurrency: { id: 'currency-gtq', code: 'GTQ' },
+      defaultCurrency: { id: 'currency-gtq', code: 'GTQ', name: 'Quetzal', symbol: 'Q' },
+      alternateCurrency: { id: 'currency-usd', code: 'USD', name: 'US Dollar', symbol: '$' },
     },
   }),
 }))
@@ -117,6 +119,29 @@ describe('ExecutionRecordForm.vue', () => {
     })
 
     expect(emitted()['saved']).toBeTruthy()
+  })
+
+  it('blocks submit when alternate currency is selected and exchange rate is empty', async () => {
+    render(ExecutionRecordForm, { props: defaultProps })
+
+    // Select alternate currency — shows exchange rate field
+    const currencySelect = screen.getByRole('combobox', { name: /currency/i })
+    await fireEvent.change(currencySelect, { target: { value: 'currency-usd' } })
+
+    // Fill valid amount and note; leave exchange rate at null (default)
+    const amountInput = screen.getByRole('spinbutton', { name: /amount/i })
+    await fireEvent.input(amountInput, { target: { value: '100' } })
+
+    const noteInput = screen.getByRole('textbox', { name: /note/i })
+    await fireEvent.input(noteInput, { target: { value: 'Test' } })
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => {
+      expect(screen.queryByText('Exchange rate must be greater than 0')).not.toBeNull()
+    })
+
+    expect(mockCreateExecution).not.toHaveBeenCalled()
   })
 
   it('calls updateExecution when editRecord prop is provided', async () => {

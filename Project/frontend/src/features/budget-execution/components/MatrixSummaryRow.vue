@@ -11,13 +11,13 @@
     <!-- Per-period totals (Budgeted + Executed + Difference per period) -->
     <template v-for="period in visiblePeriods" :key="period.id">
       <td class="px-2 py-2 text-right text-xs" :class="rowClass">
-        {{ formatAmount(budgetedForPeriod(period.id)) }}
+        {{ formatAmount(budgetedForPeriod(period.id), currencySymbol) }}
       </td>
       <td class="px-2 py-2 text-right text-xs" :class="rowClass">
-        {{ formatAmount(executedForPeriod(period.id)) }}
+        {{ formatAmount(executedForPeriod(period.id), currencySymbol) }}
       </td>
       <td class="px-2 py-2 text-right text-xs" :class="rowClass">
-        {{ formatAmount(budgetedForPeriod(period.id) - executedForPeriod(period.id)) }}
+        {{ formatAmount(budgetedForPeriod(period.id) - executedForPeriod(period.id), currencySymbol) }}
       </td>
     </template>
   </tr>
@@ -48,7 +48,14 @@ const props = defineProps<{
 
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
-const { convert, formatAmount: _fmt } = useCurrencyDisplay(matrixStore)
+const { formatAmount } = useCurrencyDisplay(matrixStore)
+
+/** Currency symbol derived from cycle based on the active display currency. */
+const currencySymbol = computed((): string =>
+  matrixStore.displayCurrency === 'alternate'
+    ? structureStore.currentCycle?.alternateCurrency?.symbol ?? ''
+    : structureStore.currentCycle?.defaultCurrency?.symbol ?? '',
+)
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -96,15 +103,6 @@ function executedForPeriod(periodId: string): number {
   return totals.categoryTotals
     .filter((ct) => ct.categoryId !== null && matchingCategoryIds.value.has(ct.categoryId))
     .reduce((sum, ct) => sum + ct.netTotal, 0)
-}
-
-/** Format an amount with currency conversion applied */
-function formatAmount(amount: number): string {
-  const converted = convert(amount)
-  return converted.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
 }
 
 // ---------------------------------------------------------------------------

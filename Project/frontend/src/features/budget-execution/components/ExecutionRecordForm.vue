@@ -76,7 +76,9 @@
         step="0.000001"
         min="0.000001"
         class="input input-bordered input-sm w-full"
+        :class="{ 'input-error': errors.exchangeRate }"
       />
+      <span v-if="errors.exchangeRate" class="label-text-alt text-error mt-1">{{ errors.exchangeRate }}</span>
     </div>
 
     <!-- Calculated amount (read-only, shown when exchange rate is set) -->
@@ -208,16 +210,23 @@ const form = reactive({
 const errors = reactive({
   amount: '' as string,
   note: '' as string,
+  exchangeRate: '' as string,
 })
 
 function validate(): boolean {
   errors.amount = ''
   errors.note = ''
+  errors.exchangeRate = ''
 
   let valid = true
 
   if (!form.amount || form.amount <= 0) {
     errors.amount = t('budgetExecution.form.validation.amountRequired')
+    valid = false
+  }
+
+  if (showExchangeRate.value && (!form.exchangeRate || form.exchangeRate <= 0)) {
+    errors.exchangeRate = t('budgetExecution.form.validation.exchangeRateRequired')
     valid = false
   }
 

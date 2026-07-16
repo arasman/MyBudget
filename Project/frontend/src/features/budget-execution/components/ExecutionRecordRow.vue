@@ -12,7 +12,7 @@
     <!-- Amount -->
     <span
       class="font-mono text-sm shrink-0"
-      :class="{ 'line-through text-base-content/50': record.deletedAt }"
+      :class="[{ 'line-through text-base-content/50': record.deletedAt }, amountColorClass]"
     >
       {{ formattedAmount }}
     </span>
@@ -32,18 +32,18 @@
     <div v-if="!periodClosed && canWrite" class="flex items-center gap-1 shrink-0">
       <!-- Edit button (not shown for deleted records) -->
       <button
-        v-if="!record.deletedAt && !editing"
+        v-if="!record.deletedAt"
         type="button"
         class="btn btn-xs btn-ghost"
         :title="t('budgetExecution.row.edit')"
-        @click="editing = true"
+        @click="$emit('edit', record)"
       >
         {{ t('budgetExecution.row.edit') }}
       </button>
 
       <!-- Delete button (not shown for deleted records) -->
       <button
-        v-if="!record.deletedAt && !editing"
+        v-if="!record.deletedAt"
         type="button"
         data-testid="delete-record-btn"
         class="btn btn-xs btn-ghost text-error"
@@ -83,18 +83,6 @@
       </button>
     </div>
   </div>
-
-  <!-- Inline edit form -->
-  <div v-if="editing" class="px-2 pb-2 bg-base-200 rounded-lg mb-2">
-    <ExecutionRecordForm
-      :budget-id="budgetId"
-      :period-id="periodId"
-      :line-id="lineId"
-      :edit-record="record"
-      @saved="editing = false"
-      @cancelled="editing = false"
-    />
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -105,7 +93,6 @@ import type { ExecutionRecordDto } from '../types'
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useRoleGate } from '@/features/budget-structure/composables/useRoleGate'
-import ExecutionRecordForm from './ExecutionRecordForm.vue'
 
 const props = defineProps<{
   record: ExecutionRecordDto
@@ -115,13 +102,16 @@ const props = defineProps<{
   lineId: string
 }>()
 
+const emit = defineEmits<{
+  edit: [record: ExecutionRecordDto]
+}>()
+
 const { t } = useI18n()
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
 const { isOperator } = useRoleGate(props.budgetId)
 
 const canWrite = isOperator
-const editing = ref(false)
 const deleting = ref(false)
 const restoring = ref(false)
 
@@ -149,6 +139,11 @@ const entryTypeBadgeClass = computed(() => {
   }
 })
 
+const amountColorClass = computed(() => {
+  if (props.record.deletedAt) return ''
+  return props.record.entryType === EntryType.CreditNote ? 'text-success' : ''
+})
+
 const currencyCode = computed(() => {
   const cycle = structureStore.currentCycle
   if (!cycle || !props.record.currencyId) return ''
@@ -157,13 +152,9 @@ const currencyCode = computed(() => {
   return ''
 })
 
-// CreditNote and DebitNote show amount with negative sign visually
+// Expense and DebitNote show positive amount; CreditNote shows negative sign
 const formattedAmount = computed(() => {
-  const sign =
-    props.record.entryType === EntryType.CreditNote ||
-    props.record.entryType === EntryType.DebitNote
-      ? '-'
-      : ''
+  const sign = props.record.entryType === EntryType.CreditNote ? '-' : ''
   const code = currencyCode.value ? `${currencyCode.value} ` : ''
   return `${code}${sign}${props.record.amount.toLocaleString('en-US', {
     minimumFractionDigits: 2,

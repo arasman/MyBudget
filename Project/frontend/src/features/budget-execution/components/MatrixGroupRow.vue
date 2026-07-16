@@ -124,7 +124,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ChevronDown, ChevronRight, ArrowUp, ArrowDown, Plus, Trash2, RotateCcw, Check, X } from 'lucide-vue-next'
 import { useBudgetMatrixStore } from '../store'
@@ -152,6 +152,12 @@ const { t } = useI18n()
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
 const { formatAmount } = useCurrencyDisplay(matrixStore)
+
+const currencySymbol = computed<string>(() =>
+  matrixStore.displayCurrency === 'alternate'
+    ? structureStore.currentCycle?.alternateCurrency?.symbol ?? ''
+    : structureStore.currentCycle?.defaultCurrency?.symbol ?? '',
+)
 
 // Inline edit state
 const editing = ref(false)
@@ -220,11 +226,11 @@ function groupExecuted(periodId: string): number {
 }
 
 function formatGroupTotal(periodId: string, type: 'budgeted' | 'executed'): string {
-  return formatAmount(type === 'budgeted' ? groupBudgeted() : groupExecuted(periodId), '')
+  return formatAmount(type === 'budgeted' ? groupBudgeted() : groupExecuted(periodId), currencySymbol.value)
 }
 
 function formatGroupDifference(periodId: string): string {
-  return formatAmount(groupBudgeted() - groupExecuted(periodId), '')
+  return formatAmount(groupBudgeted() - groupExecuted(periodId), currencySymbol.value)
 }
 
 function differenceClass(periodId: string): string {

@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-15 (budget-execution-ui-patch archived)
+**Last updated**: 2026-07-15 (budget-execution-multicurrency archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -271,15 +271,27 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 8c. `budget-execution-multicurrency` ⏳ planned
+### 8c. `budget-execution-multicurrency` ✅ archived 2026-07-15
 
-**What**: Phase-3 — multi-currency totals in matrix footer + deferred cleanup from `budget-execution-ui-patch`.
+**What**: Phase-3 — currency toggle for entire matrix + inline exchange rate edit + UX modal refactor + deferred cleanup from `budget-execution-ui-patch`.
 
 **Scope in**:
-- Multi-currency totals: display executed amounts in alternate currency in matrix footer rows (open-period totals use cycle exchange rate; closed-period uses stored per-record rate)
-- Refactor `MatrixTotalRow.vue` to sum from 3 `MatrixSummaryRow` subtotals instead of raw budget lines (W-001)
-- Upgrade `SQLitePCLRaw.lib.e_sqlite3` from 2.1.11 across all 4 .NET projects (S-001)
-- Prune stale i18n key `budgetExecution.form.validation.noteRequired` from `en.json` (S-002)
+- Currency symbol displayed in all matrix cells (line, category, group, summary, total rows)
+- GTQ/USD toggle converts entire matrix view via `useCurrencyDisplay.convert()` (display-only, frontend)
+- `MatrixControls`: inline exchange rate input (`type=text inputmode=decimal`), watch-immediate sync from store, save-on-blur/Enter, readonly when all periods closed, guard `parsed > 0`
+- `MatrixTotalRow` refactored to sum via `subtotalByLineType(periodId, lineType)` getter (W-001)
+- `useBudgetMatrixStore`: added `subtotalByLineType` getter + `syncExchangeRate()` action
+- `ExecutionRecordForm`: exchange rate > 0 validation when alternate currency selected
+- `ExecutionListModal`: mode system (list/edit), pagination (PAGE\_SIZE=10), collapsible add form, fullscreen toggle
+- `ExecutionRecordRow`: lifted inline editing to parent modal; DebitNote shows positive, CreditNote shows negative in green
+- Backend fix: `Amount * ExchangeRate` (was `Amount / ExchangeRate`) in `ListPeriodExecutionTotalsHandler` — caused wrong netTotal for alternate-currency entries
+- SQLitePCLRaw pinned to 3.53.3 in all 4 .csproj files (S-001)
+- i18n: removed 2 stale keys, added `exchangeRateRequired` + 5 modal keys in EN and ES (S-002)
+- 4 new Vitest spec files; 198 tests passing
+
+**Tests**: 198 Vitest — all green
+**Commit**: `4c0ae72` on `main` (merged from `feat/budget-execution-multicurrency`)
+**SDD artifacts**: `openspec/changes/archive/2026-07-15-budget-execution-multicurrency/`
 
 ---
 

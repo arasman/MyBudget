@@ -7,15 +7,26 @@ vi.mock('vue-i18n', () => ({
   useI18n: () => ({ t: (k: string) => k }),
 }))
 
-const { mockFormatAmount } = vi.hoisted(() => ({
-  mockFormatAmount: vi.fn((amount: number) => amount.toFixed(2)),
+const { mockFormatAmount, mockMatrixStore, mockStructureStore } = vi.hoisted(() => ({
+  mockFormatAmount: vi.fn((amount: number, _symbol: string) => amount.toFixed(2)),
+  mockMatrixStore: {
+    displayCurrency: 'default' as 'default' | 'alternate',
+    exchangeRate: null as number | null,
+  },
+  mockStructureStore: {
+    currentCycle: null as {
+      defaultCurrency?: { symbol: string }
+      alternateCurrency?: { symbol: string }
+    } | null,
+  },
 }))
 
 vi.mock('../store', () => ({
-  useBudgetMatrixStore: () => ({
-    displayCurrency: { value: 'default' as const },
-    exchangeRate: { value: null },
-  }),
+  useBudgetMatrixStore: () => mockMatrixStore,
+}))
+
+vi.mock('@/features/budget-structure/store', () => ({
+  useBudgetStructureStore: () => mockStructureStore,
 }))
 
 vi.mock('../composables/useCurrencyDisplay', () => ({
@@ -28,6 +39,10 @@ describe('MatrixCell.vue', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    mockFormatAmount.mockImplementation((amount: number, _symbol: string) => amount.toFixed(2))
+    mockMatrixStore.displayCurrency = 'default'
+    mockMatrixStore.exchangeRate = null
+    mockStructureStore.currentCycle = null
   })
 
   it('emits dblclick event when double-clicked', async () => {
@@ -85,5 +100,42 @@ describe('MatrixCell.vue', () => {
 
     const td = container.querySelector('td')
     expect(td?.className).not.toContain('line-through')
+  })
+
+  // -------------------------------------------------------------------------
+  // Currency symbol resolution (Phase 3)
+  // -------------------------------------------------------------------------
+
+  it('uses defaultCurrency symbol when displayCurrency = "default"', () => {
+    mockMatrixStore.displayCurrency = 'default'
+    mockStructureStore.currentCycle = {
+      defaultCurrency: { symbol: 'Q' },
+      alternateCurrency: { symbol: '$' },
+    }
+
+    render(MatrixCell, { props: { amount: 100, loading: false } })
+
+    expect(mockFormatAmount).toHaveBeenCalledWith(100, 'Q')
+  })
+
+  it('uses alternateCurrency symbol when displayCurrency = "alternate"', () => {
+    mockMatrixStore.displayCurrency = 'alternate'
+    mockStructureStore.currentCycle = {
+      defaultCurrency: { symbol: 'Q' },
+      alternateCurrency: { symbol: '$' },
+    }
+
+    render(MatrixCell, { props: { amount: 100, loading: false } })
+
+    expect(mockFormatAmount).toHaveBeenCalledWith(100, '$')
+  })
+
+  it('falls back to empty string when currentCycle is null', () => {
+    mockMatrixStore.displayCurrency = 'default'
+    mockStructureStore.currentCycle = null
+
+    render(MatrixCell, { props: { amount: 100, loading: false } })
+
+    expect(mockFormatAmount).toHaveBeenCalledWith(100, '')
   })
 })
