@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-14 (budget-execution-ui archived)
+**Last updated**: 2026-07-15 (budget-execution-ui-patch archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -234,26 +234,52 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 8b. `budget-execution-ui-patch` ⏳ planned
+### 8b. `budget-execution-ui-patch` ✅ archived 2026-07-15
 
 **What**: Follow-up fixes and missing fields deferred from `budget-execution-ui`.
 
-**Scope in** *(requires exploration)*:
+**Scope in**:
 
 *Budget line maintenance:*
-- Inline create/edit: category selector not exposed in form (only group visible)
-- Fix currency bug: `BudgetLineModal` sends `currency: string` but backend expects `CurrencyId: Guid` → line always saves with default currency regardless of selection
+- Group and Category columns added to BudgetLinesView table and inline add/edit row
+- Category selector filtered by selected group in inline create/edit
+- Currency bug fixed: `BudgetLineModal` now sends `CurrencyId: Guid` correctly
+- Sortable columns (Group | Category | Type | Name | Currency | Budgeted Amount | Recurring); default sort Group→Category→Type→Name; reactive re-sort after inline insert
 
 *Matrix view:*
-- Drag-and-drop reorder for Groups, Categories, and Lines (`vue-draggable-plus` installed, not wired into matrix)
-- Summary footer: reorder rows (Expenses → Preventive Savings → Long-term Savings); rename to SubTotal; add a Total row (sum of the 3 SubTotals)
-- STATUS_BREAKPOINT crash: text selected outside the matrix then dblclick on a cell still crashes; fix via `window.getSelection()?.removeAllRanges()` on dblclick or broader `user-select: none`
-- Render optimization: audit that per-mutation events don't trigger full group/category/line/period reload; target incremental updates where possible
+- Drag-and-drop reorder for Groups via `Sortable.create()` (native SortableJS — VueDraggable removed due to flat `<tbody>` layout conflict)
+- Summary footer: reordered (Expenses → Preventive Savings → Long-term Savings), renamed to SubTotal, Total row added (`MatrixTotalRow.vue`)
+- STATUS_BREAKPOINT fix: `window.getSelection()?.removeAllRanges()` on dblclick in all 3 matrix row components
+- In-place name update without full reload (`MatrixSummaryRow`)
 
-*Execution record (backend schema change + frontend):*
-- Add `operationDate`, `currency`, `exchangeRate` fields to `ExecutionRecord` (EF Core migration required)
-- Update `ExecutionRecordForm` to capture these fields
-- Multi-currency matrix display: open-period totals use cycle exchange rate; closed-period and in-progress records use their stored per-record exchange rate
+*Execution record:*
+- Backend: `OperationDate (DateOnly?)` on `ExecutionRecord` + EF Core migration
+- Backend: `operationDate` exposed in list/create/update DTOs
+- Backend: `currencyId` in `ListBudgetLines` response
+- Frontend: `ExecutionRecordForm` — field reorder, currency dropdown, exchange rate input, calculated amount preview, note always required for all entry types
+- Frontend: `ExecutionRecordRow` — shows currency code + amount (e.g. "USD 50.00")
+
+**Tests**: 166 Vitest | 284 .NET unit | 137 .NET integration | 51 E2E — all green
+**Commit**: `ea3b315` on `main`
+**SDD artifacts**: `openspec/changes/archive/2026-07-15-budget-execution-ui-patch/`
+
+**Deferred (→ `budget-execution-multicurrency`)**:
+- W-001: `MatrixTotalRow.vue` sums lines directly — refactor to sum 3 SubTotals (safe for MVPA, no 4th LineType)
+- S-001: Upgrade `SQLitePCLRaw.lib.e_sqlite3` 2.1.11 pre-existing vulnerability across 4 .NET projects
+- S-002: Prune stale i18n key `budgetExecution.form.validation.noteRequired` from `en.json`
+- Multi-currency totals: display executed amounts in alternate currency in matrix footer
+
+---
+
+### 8c. `budget-execution-multicurrency` ⏳ planned
+
+**What**: Phase-3 — multi-currency totals in matrix footer + deferred cleanup from `budget-execution-ui-patch`.
+
+**Scope in**:
+- Multi-currency totals: display executed amounts in alternate currency in matrix footer rows (open-period totals use cycle exchange rate; closed-period uses stored per-record rate)
+- Refactor `MatrixTotalRow.vue` to sum from 3 `MatrixSummaryRow` subtotals instead of raw budget lines (W-001)
+- Upgrade `SQLitePCLRaw.lib.e_sqlite3` from 2.1.11 across all 4 .NET projects (S-001)
+- Prune stale i18n key `budgetExecution.form.validation.noteRequired` from `en.json` (S-002)
 
 ---
 
