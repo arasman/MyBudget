@@ -45,10 +45,10 @@ public sealed class ListBudgetLinesHandler
             $"""
             SELECT bl."Id", bl."Name", bl."LineType", bl."IsRecurring",
                    bl."CategoryGroupId", bl."CategoryId", bl."DeletedAt",
-                   r."BudgetedAmount", r."CurrencyCode", r."CurrencySymbol", r."RevisedAt", r."Note"
+                   r."BudgetedAmount", r."CurrencyId", r."CurrencyCode", r."CurrencySymbol", r."RevisedAt", r."Note"
             FROM "BudgetLines" bl
             LEFT JOIN LATERAL (
-                SELECT r2."BudgetedAmount", c."Code" AS "CurrencyCode", c."Symbol" AS "CurrencySymbol",
+                SELECT r2."BudgetedAmount", r2."CurrencyId", c."Code" AS "CurrencyCode", c."Symbol" AS "CurrencySymbol",
                        r2."RevisedAt", r2."Note"
                 FROM "BudgetLineRevisions" r2
                 LEFT JOIN "Currencies" c ON r2."CurrencyId" = c."Id"
@@ -78,7 +78,8 @@ public sealed class ListBudgetLinesHandler
                 r.Note,
                 r.DeletedAt.HasValue
                     ? new DateTimeOffset(r.DeletedAt.Value, TimeSpan.Zero)
-                    : null))
+                    : null,
+                r.CurrencyId))
             .ToList();
 
         return Result<IReadOnlyList<BudgetLineResponse>>.Success(items);
@@ -93,6 +94,7 @@ public sealed class ListBudgetLinesHandler
         Guid?     CategoryId,
         DateTime? DeletedAt,
         decimal?  BudgetedAmount,
+        Guid?     CurrencyId,
         string?   CurrencyCode,
         string?   CurrencySymbol,
         DateTime? RevisedAt,

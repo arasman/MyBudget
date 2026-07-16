@@ -143,6 +143,7 @@ const acting = ref(false)
 const loadedPeriodId = computed(() => matrixStore.allPeriods[0]?.id ?? '')
 
 function openEditModal(): void {
+  window.getSelection()?.removeAllRanges()
   showEditModal.value = true
 }
 

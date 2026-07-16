@@ -103,6 +103,7 @@ import { useI18n } from 'vue-i18n'
 import { EntryType } from '../types'
 import type { ExecutionRecordDto } from '../types'
 import { useBudgetMatrixStore } from '../store'
+import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useRoleGate } from '@/features/budget-structure/composables/useRoleGate'
 import ExecutionRecordForm from './ExecutionRecordForm.vue'
 
@@ -116,6 +117,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const matrixStore = useBudgetMatrixStore()
+const structureStore = useBudgetStructureStore()
 const { isOperator } = useRoleGate(props.budgetId)
 
 const canWrite = isOperator
@@ -147,6 +149,14 @@ const entryTypeBadgeClass = computed(() => {
   }
 })
 
+const currencyCode = computed(() => {
+  const cycle = structureStore.currentCycle
+  if (!cycle || !props.record.currencyId) return ''
+  if (cycle.defaultCurrency?.id === props.record.currencyId) return cycle.defaultCurrency.code
+  if (cycle.alternateCurrency?.id === props.record.currencyId) return cycle.alternateCurrency.code
+  return ''
+})
+
 // CreditNote and DebitNote show amount with negative sign visually
 const formattedAmount = computed(() => {
   const sign =
@@ -154,7 +164,8 @@ const formattedAmount = computed(() => {
     props.record.entryType === EntryType.DebitNote
       ? '-'
       : ''
-  return `${sign}${props.record.amount.toLocaleString('en-US', {
+  const code = currencyCode.value ? `${currencyCode.value} ` : ''
+  return `${code}${sign}${props.record.amount.toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`

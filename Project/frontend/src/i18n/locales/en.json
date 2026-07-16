@@ -120,6 +120,7 @@
     },
     "categoryGroups": {
       "title": "Category Groups",
+      "column": "Group",
       "create": "New Group",
       "edit": "Edit Group",
       "delete": "Delete Group",
@@ -133,6 +134,7 @@
       }
     },
     "categories": {
+      "title": "Category",
       "create": "New Category",
       "edit": "Edit Category",
       "delete": "Delete Category",
@@ -224,6 +226,10 @@
       "expenses": "Total Expenses",
       "longTermSavings": "Total Long-term Savings",
       "preventiveSavings": "Total Preventive Savings",
+      "expensesSubTotal": "Expenses SubTotal",
+      "preventiveSavingsSubTotal": "Preventive Savings SubTotal",
+      "longTermSavingsSubTotal": "Long-term Savings SubTotal",
+      "total": "Total",
       "budgeted": "Budgeted",
       "executed": "Executed"
     },
@@ -258,14 +264,19 @@
       },
       "amount": "Amount",
       "note": "Note",
+      "operationDate": "Operation date",
+      "currency": "Currency",
+      "exchangeRate": "Exchange rate",
       "noteRequired": "Note is required for Credit Note and Debit Note",
       "amountRequired": "Amount must be greater than 0",
       "save": "Save",
       "cancel": "Cancel",
       "error": "An error occurred. Please try again.",
+      "calculatedAmount": "Converted amount",
       "validation": {
         "amountRequired": "Amount must be greater than 0",
-        "noteRequired": "Note is required for Credit Note and Debit Note"
+        "noteRequired": "Note is required for Credit Note and Debit Note",
+        "noteRequiredAlways": "Note is required"
       }
     },
     "record": {

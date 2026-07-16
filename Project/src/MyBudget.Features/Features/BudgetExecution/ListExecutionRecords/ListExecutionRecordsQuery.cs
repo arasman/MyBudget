@@ -22,4 +22,5 @@ public sealed record ExecutionRecordDto(
     string?   Note,
     DateTimeOffset  CreatedAt,
     DateTimeOffset? UpdatedAt,
-    DateTimeOffset? DeletedAt);
+    DateTimeOffset? DeletedAt,
+    DateOnly?       OperationDate = null);

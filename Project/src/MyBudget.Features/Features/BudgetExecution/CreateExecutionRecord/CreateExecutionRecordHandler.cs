@@ -59,7 +59,8 @@ public sealed class CreateExecutionRecordHandler : IRequestHandler<CreateExecuti
             cmd.ExchangeRate,
             cmd.ExchangeRateTo,
             cmd.AccountId,
-            cmd.PaymentMethodId);
+            cmd.PaymentMethodId,
+            cmd.OperationDate);
 
         _db.ExecutionRecords.Add(record);
         await _db.SaveChangesAsync(ct);

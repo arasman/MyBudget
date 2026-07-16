@@ -70,19 +70,21 @@
           <thead>
             <MatrixPeriodHeader :periods="visiblePeriods" />
           </thead>
-          <tbody>
+
+          <!-- All rows in a single tbody to preserve group→category→line nesting -->
+          <tbody ref="matrixTbody">
             <template
-              v-for="(group, groupIndex) in structureStore.categoryGroups"
+              v-for="(group, groupIndex) in draggableGroups"
               :key="group.id"
             >
-              <!-- Group row -->
               <MatrixGroupRow
+                :data-group-id="group.id"
                 :group="group"
                 :budget-id="budgetId"
                 :visible-periods="visiblePeriods"
                 :collapsed="matrixStore.collapsedGroupIds.has(group.id)"
                 :is-first="groupIndex === 0"
-                :is-last="groupIndex === structureStore.categoryGroups.length - 1"
+                :is-last="groupIndex === draggableGroups.length - 1"
                 @toggle-collapse="matrixStore.toggleGroupCollapse(group.id)"
                 @move-up="handleGroupMoveUp(group.id, groupIndex)"
                 @move-down="handleGroupMoveDown(group.id, groupIndex)"
@@ -111,7 +113,7 @@
                 </td>
               </tr>
 
-              <!-- Category rows (shown when group is not collapsed) -->
+              <!-- Category rows -->
               <template
                 v-for="(category, catIndex) in group.categories"
                 :key="category.id"
@@ -129,10 +131,10 @@
                   @toggle-category-collapse="matrixStore.toggleCategoryCollapse(category.id)"
                   @move-up="handleCategoryMoveUp(group.id, group.categories, catIndex)"
                   @move-down="handleCategoryMoveDown(group.id, group.categories, catIndex)"
-                  @add-line="startAddLine(category.id)"
+                  @add-line="startAddLine(category.id, group.id)"
                 />
 
-                <!-- Inline add-line row -->
+                <!-- Inline add-line row (with category select filtered by group) -->
                 <tr
                   v-if="addingLineForCategory === category.id && !matrixStore.collapsedGroupIds.has(group.id)"
                   data-testid="add-line-row"
@@ -145,10 +147,23 @@
                         type="text"
                         :placeholder="t('budgetMatrix.rows.newLineName')"
                         class="input input-xs input-bordered flex-1 min-w-0"
-                        @keydown.enter="confirmAddLine(category.id)"
+                        @keydown.enter="confirmAddLine(category.id, group.id)"
                         @keydown.escape="cancelAdd"
                       />
-                      <button type="button" class="btn btn-xs btn-success" :disabled="addActing" @click="confirmAddLine(category.id)">
+                      <!-- Category selector filtered by parent group -->
+                      <select
+                        v-model="newLineCategoryId"
+                        class="select select-xs select-bordered min-w-0 w-32"
+                      >
+                        <option
+                          v-for="cat in group.categories.filter((c) => !c.deletedAt)"
+                          :key="cat.id"
+                          :value="cat.id"
+                        >
+                          {{ cat.name }}
+                        </option>
+                      </select>
+                      <button type="button" class="btn btn-xs btn-success" :disabled="addActing" @click="confirmAddLine(category.id, group.id)">
                         <span v-if="addActing" class="loading loading-spinner loading-xs" />
                         <span v-else>{{ t('common.save') }}</span>
                       </button>
@@ -180,7 +195,9 @@
                 </template>
               </template>
             </template>
+          </tbody>
 
+          <tbody>
             <!-- Inline add-group row -->
             <tr v-if="addingGroup" data-testid="add-group-row">
               <td class="sticky left-0 z-10 bg-base-200 px-3 py-2 border-b border-base-300" :colspan="1 + visiblePeriods.length * 3">
@@ -218,21 +235,26 @@
               </td>
             </tr>
           </tbody>
+
           <tfoot>
-            <!-- Summary rows: one per LineType (T-5.1) -->
+            <!-- Summary rows: Expenses → PreventiveSavings → LongTermSavings + Total -->
             <MatrixSummaryRow
               :line-type="1"
-              :label="t('budgetMatrix.summary.expenses')"
-              :visible-periods="visiblePeriods"
-            />
-            <MatrixSummaryRow
-              :line-type="2"
-              :label="t('budgetMatrix.summary.longTermSavings')"
+              :label="t('budgetMatrix.summary.expensesSubTotal')"
               :visible-periods="visiblePeriods"
             />
             <MatrixSummaryRow
               :line-type="3"
-              :label="t('budgetMatrix.summary.preventiveSavings')"
+              :label="t('budgetMatrix.summary.preventiveSavingsSubTotal')"
+              :visible-periods="visiblePeriods"
+            />
+            <MatrixSummaryRow
+              :line-type="2"
+              :label="t('budgetMatrix.summary.longTermSavingsSubTotal')"
+              :visible-periods="visiblePeriods"
+            />
+            <MatrixTotalRow
+              :label="t('budgetMatrix.summary.total')"
               :visible-periods="visiblePeriods"
             />
           </tfoot>
@@ -246,7 +268,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
+import Sortable from 'sortablejs'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
@@ -259,9 +282,10 @@ import MatrixCategoryRow from '../components/MatrixCategoryRow.vue'
 import MatrixLineRow from '../components/MatrixLineRow.vue'
 import MatrixControls from '../components/MatrixControls.vue'
 import MatrixSummaryRow from '../components/MatrixSummaryRow.vue'
+import MatrixTotalRow from '../components/MatrixTotalRow.vue'
 import ExecutionListModal from '../components/ExecutionListModal.vue'
 import * as budgetLinesApi from '@/features/budget-structure/api/budgetLines.api'
-import type { CategoryItem, BudgetLineResponse } from '@/features/budget-structure/types'
+import type { CategoryGroupResponse, CategoryItem, BudgetLineResponse } from '@/features/budget-structure/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -284,10 +308,63 @@ const addGroupInput = ref<HTMLInputElement | null>(null)
 const addingCategoryForGroup = ref<string | null>(null)
 const newCategoryName = ref('')
 const addingLineForCategory = ref<string | null>(null)
+const addingLineForGroup = ref<string | null>(null)
 const newLineName = ref('')
+const newLineCategoryId = ref<string>('')
 const addActing = ref(false)
 const addCategoryInput = ref<HTMLInputElement[]>([])
 const addLineInput = ref<HTMLInputElement[]>([])
+
+// Draggable copy of groups (kept in sync with store)
+const draggableGroups = ref<CategoryGroupResponse[]>([])
+
+// Ref for the matrix tbody — used to initialize SortableJS for group DnD
+const matrixTbody = ref<HTMLElement | null>(null)
+let sortableInstance: Sortable | null = null
+
+watch(matrixTbody, (el) => {
+  if (el && !sortableInstance) {
+    sortableInstance = Sortable.create(el, {
+      handle: '.group-drag-handle',
+      draggable: '[data-testid="matrix-group-row"]',
+      animation: 100,
+      onEnd() {
+        if (!matrixTbody.value) return
+        // Read new group order from DOM after SortableJS moves the row
+        const rows = Array.from(
+          matrixTbody.value.querySelectorAll('[data-testid="matrix-group-row"]'),
+        )
+        const orderedIds = rows
+          .map((el) => (el as HTMLElement).dataset.groupId)
+          .filter(Boolean) as string[]
+        const current = structureStore.categoryGroups
+        const reordered = orderedIds
+          .map((id) => current.find((g) => g.id === id))
+          .filter(Boolean) as CategoryGroupResponse[]
+        if (orderedIds.join(',') !== current.map((g) => g.id).join(',')) {
+          draggableGroups.value = reordered
+          void onGroupsDragEnd()
+        }
+      },
+    })
+  }
+  if (!el && sortableInstance) {
+    sortableInstance.destroy()
+    sortableInstance = null
+  }
+})
+
+// Sync draggableGroups from store whenever store data changes
+watch(
+  () => structureStore.categoryGroups,
+  (groups) => { draggableGroups.value = [...groups] },
+  { immediate: true, deep: true },
+)
+
+onUnmounted(() => {
+  sortableInstance?.destroy()
+  sortableInstance = null
+})
 
 onMounted(async () => {
   try {
@@ -375,34 +452,37 @@ async function confirmAddCategory(groupId: string): Promise<void> {
 // Inline add line
 // -------------------------------------------------------------------------
 
-function startAddLine(categoryId: string): void {
+function startAddLine(categoryId: string, groupId: string): void {
   addingCategoryForGroup.value = null
   newCategoryName.value = ''
   addingLineForCategory.value = categoryId
+  addingLineForGroup.value = groupId
   newLineName.value = ''
+  newLineCategoryId.value = categoryId
   nextTick(() => addLineInput.value[0]?.focus())
 }
 
-async function confirmAddLine(categoryId: string): Promise<void> {
+async function confirmAddLine(categoryId: string, groupId: string): Promise<void> {
   const name = newLineName.value.trim()
   if (!name) return
   const periodId = matrixStore.allPeriods[0]?.id
   if (!periodId) return
-  const categoryGroupId = structureStore.categoryGroups.find((g) =>
-    g.categories.some((c) => c.id === categoryId),
-  )?.id
-  if (!categoryGroupId) return
+  // Use the selected category from dropdown (defaults to the triggering category)
+  const selectedCategoryId = newLineCategoryId.value || categoryId
+  const categoryGroupId = groupId
   addActing.value = true
   try {
     await structureStore.createLine(
       budgetId.value,
       periodId,
-      { name, categoryId, categoryGroupId, lineType: 'Expense', isRecurring: false },
+      { name, categoryId: selectedCategoryId, categoryGroupId, lineType: 'Expense', isRecurring: false },
       matrixStore.showDeleted,
     )
     await matrixStore.invalidateAllPeriods()
     addingLineForCategory.value = null
+    addingLineForGroup.value = null
     newLineName.value = ''
+    newLineCategoryId.value = ''
   } finally {
     addActing.value = false
   }
@@ -412,14 +492,32 @@ function cancelAdd(): void {
   addingGroup.value = false
   addingCategoryForGroup.value = null
   addingLineForCategory.value = null
+  addingLineForGroup.value = null
   newGroupName.value = ''
   newCategoryName.value = ''
   newLineName.value = ''
+  newLineCategoryId.value = ''
 }
 
 // -------------------------------------------------------------------------
 // Group reorder helpers
 // -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+// Group DnD drag-end (vue-draggable-plus fires @end after DOM reorder)
+// draggableGroups already reflects the new order — just persist it.
+// -------------------------------------------------------------------------
+
+async function onGroupsDragEnd(): Promise<void> {
+  const orderedIds = draggableGroups.value.map((g) => g.id)
+  try {
+    await structureStore.reorderGroups(budgetId.value, orderedIds)
+  } catch {
+    // Revert by restoring from store
+    draggableGroups.value = [...structureStore.categoryGroups]
+    reorderError.value = 'Could not save group order. Changes reverted.'
+  }
+}
 
 async function handleGroupMoveUp(_groupId: string, currentIndex: number): Promise<void> {
   if (currentIndex === 0) return

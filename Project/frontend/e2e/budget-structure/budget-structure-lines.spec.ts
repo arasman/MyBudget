@@ -66,8 +66,6 @@ test.describe('Budget Structure — Budget Lines', () => {
     // Set budgeted amount
     const amountInput = page.getByLabel('Budgeted Amount')
     await amountInput.fill('5000')
-    // Set currency
-    await page.getByLabel('Currency').selectOption('USD')
 
     const [lineResp] = await Promise.all([
       page.waitForResponse(

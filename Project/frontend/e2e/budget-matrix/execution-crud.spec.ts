@@ -38,6 +38,7 @@ test.describe('BudgetMatrix execution CRUD', () => {
     // Fill the form — select Expense, enter amount 100
     await modal.locator('[data-testid="entry-type-select"]').selectOption({ label: 'Expense' })
     await modal.locator('[data-testid="amount-input"]').fill('100')
+    await modal.locator('#exec-note').fill('E2E test expense')
 
     // Submit
     const [createResp] = await Promise.all([
@@ -70,6 +71,7 @@ test.describe('BudgetMatrix execution CRUD', () => {
 
     await modal.locator('[data-testid="entry-type-select"]').selectOption({ label: 'Expense' })
     await modal.locator('[data-testid="amount-input"]').fill('200')
+    await modal.locator('#exec-note').fill('E2E test expense')
 
     const [createResp] = await Promise.all([
       page.waitForResponse((r) => r.url().includes('/executions') && r.request().method() === 'POST'),

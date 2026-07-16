@@ -27,6 +27,7 @@ export interface ExecutionRecordDto {
   createdAt: string // ISO 8601
   updatedAt: string | null
   deletedAt: string | null
+  operationDate: string | null // YYYY-MM-DD or null
 }
 
 export interface CreateExecutionRequest {
@@ -38,6 +39,7 @@ export interface CreateExecutionRequest {
   note?: string | null
   accountId?: string | null
   paymentMethodId?: string | null
+  operationDate?: string | null // YYYY-MM-DD
 }
 
 // UpdateExecutionRequest has the same shape as CreateExecutionRequest

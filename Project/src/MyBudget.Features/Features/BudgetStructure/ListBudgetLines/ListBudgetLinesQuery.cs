@@ -21,4 +21,5 @@ public sealed record BudgetLineResponse(
     string?         CurrencySymbol,
     DateTimeOffset? RevisedAt,
     string?         Note,
-    DateTimeOffset? DeletedAt = null);
+    DateTimeOffset? DeletedAt = null,
+    Guid?           CurrencyId = null);

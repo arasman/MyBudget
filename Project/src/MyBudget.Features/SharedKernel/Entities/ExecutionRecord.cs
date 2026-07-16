@@ -13,6 +13,7 @@ public sealed class ExecutionRecord : BaseEntity, IAuditableEntity
     public decimal?  ExchangeRateTo  { get; private set; }
     public Guid?     AccountId       { get; private set; }
     public Guid?     PaymentMethodId { get; private set; }
+    public DateOnly?  OperationDate   { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
 
     // Navigation
@@ -23,17 +24,18 @@ public sealed class ExecutionRecord : BaseEntity, IAuditableEntity
     public Guid? ResolveBudgetId() => BudgetId;
 
     public static ExecutionRecord Create(
-        Guid     budgetId,
-        Guid     periodId,
-        Guid     budgetLineId,
+        Guid      budgetId,
+        Guid      periodId,
+        Guid      budgetLineId,
         EntryType entryType,
-        decimal  amount,
-        string?  note,
-        Guid     currencyId,
-        decimal? exchangeRate,
-        decimal? exchangeRateTo,
-        Guid?    accountId,
-        Guid?    paymentMethodId)
+        decimal   amount,
+        string?   note,
+        Guid      currencyId,
+        decimal?  exchangeRate,
+        decimal?  exchangeRateTo,
+        Guid?     accountId,
+        Guid?     paymentMethodId,
+        DateOnly? operationDate = null)
     {
         return new ExecutionRecord
         {
@@ -48,6 +50,7 @@ public sealed class ExecutionRecord : BaseEntity, IAuditableEntity
             ExchangeRateTo  = exchangeRateTo,
             AccountId       = accountId,
             PaymentMethodId = paymentMethodId,
+            OperationDate   = operationDate,
         };
     }
 
@@ -59,7 +62,8 @@ public sealed class ExecutionRecord : BaseEntity, IAuditableEntity
         decimal?  exchangeRate,
         decimal?  exchangeRateTo,
         Guid?     accountId,
-        Guid?     paymentMethodId)
+        Guid?     paymentMethodId,
+        DateOnly? operationDate = null)
     {
         EntryType       = entryType;
         Amount          = amount;
@@ -69,6 +73,7 @@ public sealed class ExecutionRecord : BaseEntity, IAuditableEntity
         ExchangeRateTo  = exchangeRateTo;
         AccountId       = accountId;
         PaymentMethodId = paymentMethodId;
+        OperationDate   = operationDate;
         UpdatedAt       = DateTimeOffset.UtcNow;
     }
 

@@ -53,7 +53,8 @@ public sealed class ListExecutionRecordsHandler
                      e."Note",
                      e."CreatedAt",
                      e."UpdatedAt",
-                     e."DeletedAt"
+                     e."DeletedAt",
+                     e."OperationDate"
               FROM "ExecutionRecords" e
               WHERE e."BudgetLineId" = @BudgetLineId
               ORDER BY e."CreatedAt" ASC
@@ -70,7 +71,8 @@ public sealed class ListExecutionRecordsHandler
                      e."Note",
                      e."CreatedAt",
                      e."UpdatedAt",
-                     e."DeletedAt"
+                     e."DeletedAt",
+                     e."OperationDate"
               FROM "ExecutionRecords" e
               WHERE e."BudgetLineId" = @BudgetLineId
                 AND e."DeletedAt" IS NULL
@@ -92,7 +94,8 @@ public sealed class ListExecutionRecordsHandler
                 r.Note,
                 new DateTimeOffset(r.CreatedAt, TimeSpan.Zero),
                 r.UpdatedAt.HasValue ? new DateTimeOffset(r.UpdatedAt.Value, TimeSpan.Zero) : null,
-                r.DeletedAt.HasValue ? new DateTimeOffset(r.DeletedAt.Value, TimeSpan.Zero) : null))
+                r.DeletedAt.HasValue ? new DateTimeOffset(r.DeletedAt.Value, TimeSpan.Zero) : null,
+                r.OperationDate))
             .ToList();
 
         return Result<IReadOnlyList<ExecutionRecordDto>>.Success(items);
@@ -111,5 +114,6 @@ public sealed class ListExecutionRecordsHandler
         string?   Note,
         DateTime  CreatedAt,
         DateTime? UpdatedAt,
-        DateTime? DeletedAt);
+        DateTime? DeletedAt,
+        DateOnly? OperationDate);
 }
