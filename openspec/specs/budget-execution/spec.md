@@ -20,7 +20,7 @@
 
 | ID | Capability | Statement |
 |---|---|---|
-| REQ-EXEC-1 | `budget-execution` | An `ExecutionRecord` entity MUST exist with: `Id` (Guid PK), `BudgetLineId` (Guid FK, NOT NULL), `PeriodId` (Guid, NOT NULL, denormalized), `EntryType` (int, NOT NULL), `Amount` (decimal(18,2), NOT NULL, positive), `CurrencyId` (Guid FK, NOT NULL), `ExchangeRate` (decimal(18,6), nullable), `ExchangeRateTo` (decimal(18,6), nullable), `AccountId` (Guid?, nullable, no FK), `PaymentMethodId` (Guid?, nullable, no FK), `Note` (varchar(500), nullable), `CreatedAt`, `UpdatedAt`, `DeletedAt` (soft-delete). |
+| REQ-EXEC-1 | `budget-execution` | An `ExecutionRecord` entity MUST exist with: `Id` (Guid PK), `BudgetLineId` (Guid FK, NOT NULL), `PeriodId` (Guid, NOT NULL, denormalized), `EntryType` (int, NOT NULL), `Amount` (decimal(18,2), NOT NULL, positive), `CurrencyId` (Guid FK, NOT NULL), `ExchangeRate` (decimal(18,6), nullable), `ExchangeRateTo` (decimal(18,6), nullable), `AccountId` (Guid?, nullable, no FK), `PaymentMethodId` (Guid?, nullable, no FK), `Note` (varchar(500), nullable), `OperationDate` (DateOnly, nullable), `CreatedAt`, `UpdatedAt`, `DeletedAt` (soft-delete). |
 | REQ-EXEC-2 | `budget-execution` | `EntryType` MUST be an enum with exactly three values: `Expense = 1`, `CreditNote = 2`, `DebitNote = 3`. No other values are valid. |
 | REQ-EXEC-3 | `budget-execution` | `Amount` MUST be greater than zero. Zero and negative values MUST be rejected with error code `AMOUNT_MUST_BE_POSITIVE` (400). |
 | REQ-EXEC-4 | `budget-execution` | `Note` MUST be provided (non-null, non-empty) when `EntryType` is `CreditNote` or `DebitNote`. It MUST be rejected with error code `NOTE_REQUIRED_FOR_ENTRY_TYPE` (400) when absent. For `EntryType = Expense`, `Note` is optional. |
@@ -37,13 +37,16 @@
 | REQ-EXEC-RESTORE-1 | `budget-execution` | `POST /budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/executions/{executionId}/restore` MUST restore a soft-deleted ExecutionRecord (set `DeletedAt = null`). Returns `200 OK`. Requires role `budget:operator`. |
 | REQ-EXEC-RESTORE-2 | `budget-execution` | Restoring a non-deleted (already active) ExecutionRecord MUST return `404 Not Found`. |
 | REQ-EXEC-LIST-1 | `budget-execution` | `GET /budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/executions` MUST return all non-deleted ExecutionRecords for the specified BudgetLine, ordered by `CreatedAt` ASC. Requires role `budget:read`. |
-| REQ-EXEC-LIST-2 | `budget-execution` | Each item in the list response MUST include: `id`, `entryType`, `amount`, `currencyId`, `exchangeRate`, `exchangeRateTo`, `accountId`, `paymentMethodId`, `note`, `createdAt`, `updatedAt`. |
+| REQ-EXEC-LIST-2 | `budget-execution` | Each item in the list response MUST include: `id`, `entryType`, `amount`, `currencyId`, `exchangeRate`, `exchangeRateTo`, `accountId`, `paymentMethodId`, `note`, `operationDate`, `createdAt`, `updatedAt`. |
 | REQ-EXEC-TOTALS-1 | `budget-execution` | `GET /budgets/{budgetId}/periods/{periodId}/execution-totals` MUST return two aggregation shapes in a single response: per-BudgetLine and per-CategoryGroup/Category. Requires role `budget:read`. |
 | REQ-EXEC-TOTALS-2 | `budget-execution` | The per-BudgetLine shape MUST contain: `budgetLineId`, `totalExpenses` (sum of Amount where EntryType=Expense), `totalCreditNotes` (sum where EntryType=CreditNote), `totalDebitNotes` (sum where EntryType=DebitNote), `netAmount` (Expenses + DebitNotes − CreditNotes). Only non-deleted records count. |
 | REQ-EXEC-TOTALS-3 | `budget-execution` | The per-CategoryGroup/Category shape MUST contain: `categoryGroupId`, `categoryGroupName`, `categoryId`, `categoryName`, `netAmount`. It is grouped by the BudgetLine's CategoryGroupId and CategoryId. |
 | REQ-EXEC-TOTALS-4 | `budget-execution` | Totals MUST be computed in the Cycle's `DefaultCurrencyId`. When an ExecutionRecord has a different `CurrencyId`, the amount MUST be converted using `Amount / ExchangeRate` before summing. |
 | REQ-EXEC-CASCADE-1 | `budget-execution` | Soft-deleting a BudgetLine MUST cascade to soft-delete all its non-deleted child ExecutionRecords in the same DB operation (same `SaveChangesAsync`). |
 | REQ-EXEC-CASCADE-2 | `budget-execution` | Restoring a BudgetLine with `includeExecutionRecords=true` MUST restore all soft-deleted child ExecutionRecords. With `includeExecutionRecords=false` (default), child ExecutionRecords remain soft-deleted. The same flag and behavior apply when BudgetLines are restored via Cycle, CategoryGroup, or Category cascade. |
+| REQ-EXEC-FORM-1 | `budget-execution` | `ExecutionRecordForm.vue` MUST expose an `OperationDate` date picker field. The field MUST default to today's date when the form is opened for creation. The field MUST be editable. The field MUST be nullable (clearing it sends null to the backend). |
+| REQ-EXEC-FORM-2 | `budget-execution` | `ExecutionRecordForm.vue` MUST expose `CurrencyId` (currency dropdown) and `ExchangeRate` (numeric input) fields. These fields MUST map to the existing entity properties. Both fields MUST save and reload correctly via the create/update commands and list query. |
+| REQ-EXEC-CURRENCY-READ-1 | `budget-execution` | The `ListBudgetLines` query response MUST include `currencyId` (Guid) per line so the frontend can pre-populate the currency field in the edit form without a separate lookup. |
 
 ---
 
@@ -334,6 +337,66 @@
 - GIVEN a soft-deleted Cycle → Period → BudgetLine → 2 soft-deleted ExecutionRecords
 - WHEN POST .../cycles/{cycleId}/restore?includeExecutionRecords=true
 - THEN Cycle, Period, BudgetLine, and both ExecutionRecords are all restored
+
+---
+
+### REQ-EXEC-FORM-1 — ExecutionRecord Form — OperationDate Field
+
+#### Scenario: Form defaults OperationDate to today on create
+
+- GIVEN the user opens ExecutionRecordForm for a new record
+- WHEN the form renders
+- THEN the OperationDate input is pre-filled with today's date
+
+#### Scenario: User clears OperationDate
+
+- GIVEN the OperationDate input is populated
+- WHEN the user clears the field and submits
+- THEN the request payload includes operationDate = null
+
+#### Scenario: Form pre-populates OperationDate on edit
+
+- GIVEN an existing ExecutionRecord with OperationDate = 2026-05-15
+- WHEN the edit form opens
+- THEN the OperationDate input shows 2026-05-15
+
+---
+
+### REQ-EXEC-FORM-2 — ExecutionRecord Form — Currency and Exchange Rate Fields
+
+#### Scenario: Operator selects a non-default currency
+
+- GIVEN the user opens ExecutionRecordForm and selects a currency different from the cycle default
+- WHEN they submit with a valid ExchangeRate
+- THEN the record is created with the selected CurrencyId and ExchangeRate
+
+#### Scenario: Currency pre-populates on edit
+
+- GIVEN an existing ExecutionRecord with a specific CurrencyId
+- WHEN the edit form opens
+- THEN the currency dropdown shows the record's currency
+
+#### Scenario: Form respects existing exchange rate pair validation
+
+- GIVEN the user selects a non-default currency but leaves ExchangeRate empty
+- WHEN they submit
+- THEN submission is blocked (existing REQ-EXEC-6 validation applies)
+
+---
+
+### REQ-EXEC-CURRENCY-READ-1 — BudgetLine Read Model Includes CurrencyId
+
+#### Scenario: BudgetLine list response includes currencyId
+
+- GIVEN a BudgetLine with a specific CurrencyId
+- WHEN GET /budgets/{budgetId}/periods/{periodId}/lines
+- THEN each line item in the response includes a `currencyId` field containing the line's currency Guid
+
+#### Scenario: currencyId available for pre-population
+
+- GIVEN the inline edit form reads currencyId from the ListBudgetLines response
+- WHEN the user opens the edit form for an existing line
+- THEN the currency dropdown is pre-selected with the line's currency
 
 ---
 
