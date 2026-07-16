@@ -253,7 +253,12 @@
       "noEntries": "Sin registros aún",
       "addEntry": "Agregar entrada",
       "periodClosed": "Este período está cerrado. No se permiten cambios.",
-      "includeDeleted": "Incluir eliminados"
+      "includeDeleted": "Incluir eliminados",
+      "editEntry": "Editar Registro",
+      "fullscreen": "Pantalla completa",
+      "exitFullscreen": "Salir de pantalla completa",
+      "previous": "Anterior",
+      "next": "Siguiente"
     },
     "form": {
       "entryType": "Tipo de entrada",
@@ -267,7 +272,6 @@
       "operationDate": "Fecha de operación",
       "currency": "Moneda",
       "exchangeRate": "Tipo de cambio",
-      "noteRequired": "La nota es obligatoria para Nota de crédito y Nota de débito",
       "amountRequired": "El monto debe ser mayor que 0",
       "save": "Guardar",
       "cancel": "Cancelar",
@@ -275,7 +279,7 @@
       "calculatedAmount": "Monto convertido",
       "validation": {
         "amountRequired": "El monto debe ser mayor a 0",
-        "noteRequired": "La nota es obligatoria para notas de crédito y débito",
+        "exchangeRateRequired": "El tipo de cambio debe ser mayor a 0",
         "noteRequiredAlways": "La nota es obligatoria"
       }
     },

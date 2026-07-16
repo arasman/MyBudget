@@ -131,6 +131,13 @@ const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
 const { formatAmount } = useCurrencyDisplay(matrixStore)
 
+/** Currency symbol derived from cycle based on the active display currency. */
+const currencySymbol = computed<string>(() =>
+  matrixStore.displayCurrency === 'alternate'
+    ? structureStore.currentCycle?.alternateCurrency?.symbol ?? ''
+    : structureStore.currentCycle?.defaultCurrency?.symbol ?? '',
+)
+
 // Edit modal state
 const showEditModal = ref(false)
 
@@ -190,13 +197,13 @@ function getLineTotal(periodId: string): LineTotalDto | undefined {
 }
 
 function formatLineAmount(): string {
-  return formatAmount(props.line.budgetedAmount ?? 0, '')
+  return formatAmount(props.line.budgetedAmount ?? 0, currencySymbol.value)
 }
 
 function formatDifference(periodId: string): string {
   const budgeted = props.line.budgetedAmount ?? 0
   const executed = getLineTotal(periodId)?.netTotal ?? 0
-  return formatAmount(budgeted - executed, '')
+  return formatAmount(budgeted - executed, currencySymbol.value)
 }
 
 function differenceClass(periodId: string): string {

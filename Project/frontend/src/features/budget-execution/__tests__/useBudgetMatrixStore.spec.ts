@@ -5,9 +5,10 @@ import { setActivePinia, createPinia } from 'pinia'
 // Hoist mock references — vi.mock factories are hoisted by Vitest
 // ---------------------------------------------------------------------------
 
-const { mockGetPeriodTotals, mockListExecutions } = vi.hoisted(() => ({
+const { mockGetPeriodTotals, mockListExecutions, mockUseBudgetStructureStore } = vi.hoisted(() => ({
   mockGetPeriodTotals: vi.fn(),
   mockListExecutions: vi.fn(),
+  mockUseBudgetStructureStore: vi.fn(),
 }))
 
 vi.mock('@/features/budget-execution/api/executionTotals.api', () => ({
@@ -24,23 +25,18 @@ vi.mock('@/features/budget-execution/api/executions.api', () => ({
 
 // Mock budgetStructureStore so initMatrix can read cycle + periods
 vi.mock('@/features/budget-structure/store', () => ({
-  useBudgetStructureStore: vi.fn(() => ({
-    currentCycle: {
-      id: 'cycle-1',
-      name: 'Cycle 2026',
-      startDate: '2026-01-01',
-      endDate: '2026-12-31',
-      isActive: true,
-      exchangeRate: 7.5,
-      alternateCurrencyId: 'usd-id',
-      periods: [
-        { id: 'p1', name: 'Jan', periodNumber: 1, startDate: '2026-01-01', endDate: '2026-01-31', isClosed: false },
-        { id: 'p2', name: 'Feb', periodNumber: 2, startDate: '2026-02-01', endDate: '2026-02-28', isClosed: false },
-        { id: 'p3', name: 'Mar', periodNumber: 3, startDate: '2026-03-01', endDate: '2026-03-31', isClosed: false },
-        { id: 'p4', name: 'Apr', periodNumber: 4, startDate: '2026-04-01', endDate: '2026-04-30', isClosed: false },
-        { id: 'p5', name: 'May', periodNumber: 5, startDate: '2026-05-01', endDate: '2026-05-31', isClosed: false },
-      ],
-    },
+  useBudgetStructureStore: mockUseBudgetStructureStore,
+}))
+
+const DEFAULT_STRUCTURE_STATE = {
+  currentCycle: {
+    id: 'cycle-1',
+    name: 'Cycle 2026',
+    startDate: '2026-01-01',
+    endDate: '2026-12-31',
+    isActive: true,
+    exchangeRate: 7.5,
+    alternateCurrencyId: 'usd-id',
     periods: [
       { id: 'p1', name: 'Jan', periodNumber: 1, startDate: '2026-01-01', endDate: '2026-01-31', isClosed: false },
       { id: 'p2', name: 'Feb', periodNumber: 2, startDate: '2026-02-01', endDate: '2026-02-28', isClosed: false },
@@ -48,10 +44,18 @@ vi.mock('@/features/budget-structure/store', () => ({
       { id: 'p4', name: 'Apr', periodNumber: 4, startDate: '2026-04-01', endDate: '2026-04-30', isClosed: false },
       { id: 'p5', name: 'May', periodNumber: 5, startDate: '2026-05-01', endDate: '2026-05-31', isClosed: false },
     ],
-    loadGroups: vi.fn(),
-    loadLines: vi.fn(),
-  })),
-}))
+  },
+  periods: [
+    { id: 'p1', name: 'Jan', periodNumber: 1, startDate: '2026-01-01', endDate: '2026-01-31', isClosed: false },
+    { id: 'p2', name: 'Feb', periodNumber: 2, startDate: '2026-02-01', endDate: '2026-02-28', isClosed: false },
+    { id: 'p3', name: 'Mar', periodNumber: 3, startDate: '2026-03-01', endDate: '2026-03-31', isClosed: false },
+    { id: 'p4', name: 'Apr', periodNumber: 4, startDate: '2026-04-01', endDate: '2026-04-30', isClosed: false },
+    { id: 'p5', name: 'May', periodNumber: 5, startDate: '2026-05-01', endDate: '2026-05-31', isClosed: false },
+  ],
+  budgetLines: [],
+  loadGroups: vi.fn(),
+  loadLines: vi.fn(),
+}
 
 import { useBudgetMatrixStore } from '../store'
 
@@ -63,6 +67,7 @@ describe('useBudgetMatrixStore', () => {
     vi.clearAllMocks()
     mockGetPeriodTotals.mockResolvedValue(MOCK_TOTALS)
     mockListExecutions.mockResolvedValue([])
+    mockUseBudgetStructureStore.mockReturnValue({ ...DEFAULT_STRUCTURE_STATE })
   })
 
   // -------------------------------------------------------------------------
@@ -214,5 +219,125 @@ describe('useBudgetMatrixStore', () => {
 
     expect(store.openModalLineId).toBeNull()
     expect(store.openModalPeriodId).toBeNull()
+  })
+
+  // -------------------------------------------------------------------------
+  // subtotalByLineType
+  // -------------------------------------------------------------------------
+
+  it('subtotalByLineType returns correct budgeted sum for Expense lineType', () => {
+    const store = useBudgetMatrixStore()
+
+    mockUseBudgetStructureStore.mockReturnValue({
+      ...DEFAULT_STRUCTURE_STATE,
+      budgetLines: [
+        { id: 'l1', name: 'Food', lineType: 'Expense', isRecurring: false, categoryGroupId: 'g1', categoryId: 'cat-1', budgetedAmount: 500, deletedAt: null },
+        { id: 'l2', name: 'Transport', lineType: 'Expense', isRecurring: false, categoryGroupId: 'g1', categoryId: 'cat-2', budgetedAmount: 200, deletedAt: null },
+        { id: 'l3', name: 'Emergency', lineType: 'LongTermSavings', isRecurring: false, categoryGroupId: 'g2', categoryId: 'cat-3', budgetedAmount: 300, deletedAt: null },
+      ],
+    })
+
+    store.$patch({
+      periodTotals: {
+        'p1': {
+          lineTotals: [],
+          categoryTotals: [
+            { categoryGroupId: 'g1', categoryGroupName: 'G1', categoryId: 'cat-1', categoryName: 'Food', totalExpenses: 400, totalCreditNotes: 0, totalDebitNotes: 0, netTotal: 400 },
+            { categoryGroupId: 'g1', categoryGroupName: 'G1', categoryId: 'cat-2', categoryName: 'Transport', totalExpenses: 150, totalCreditNotes: 0, totalDebitNotes: 0, netTotal: 150 },
+          ],
+        },
+      },
+    })
+
+    const result = store.subtotalByLineType('p1', 'Expense')
+    expect(result.budgeted).toBe(700)
+    expect(result.executed).toBe(550)
+  })
+
+  it('subtotalByLineType returns correct executed sum filtered by periodId', () => {
+    const store = useBudgetMatrixStore()
+
+    mockUseBudgetStructureStore.mockReturnValue({
+      ...DEFAULT_STRUCTURE_STATE,
+      budgetLines: [
+        { id: 'l1', name: 'Food', lineType: 'Expense', isRecurring: false, categoryGroupId: 'g1', categoryId: 'cat-1', budgetedAmount: 500, deletedAt: null },
+      ],
+    })
+
+    store.$patch({
+      periodTotals: {
+        'p1': { lineTotals: [], categoryTotals: [{ categoryGroupId: 'g1', categoryGroupName: 'G1', categoryId: 'cat-1', categoryName: 'Food', totalExpenses: 300, totalCreditNotes: 0, totalDebitNotes: 0, netTotal: 300 }] },
+        'p2': { lineTotals: [], categoryTotals: [{ categoryGroupId: 'g1', categoryGroupName: 'G1', categoryId: 'cat-1', categoryName: 'Food', totalExpenses: 450, totalCreditNotes: 0, totalDebitNotes: 0, netTotal: 450 }] },
+      },
+    })
+
+    expect(store.subtotalByLineType('p1', 'Expense').executed).toBe(300)
+    expect(store.subtotalByLineType('p2', 'Expense').executed).toBe(450)
+  })
+
+  it('subtotalByLineType returns { budgeted: 0, executed: 0 } for lineType with no matching lines', () => {
+    const store = useBudgetMatrixStore()
+
+    mockUseBudgetStructureStore.mockReturnValue({
+      ...DEFAULT_STRUCTURE_STATE,
+      budgetLines: [
+        { id: 'l1', name: 'Food', lineType: 'Expense', isRecurring: false, categoryGroupId: 'g1', categoryId: 'cat-1', budgetedAmount: 500, deletedAt: null },
+      ],
+    })
+
+    store.$patch({
+      periodTotals: { 'p1': { lineTotals: [], categoryTotals: [] } },
+    })
+
+    const result = store.subtotalByLineType('p1', 'PreventiveSavings')
+    expect(result.budgeted).toBe(0)
+    expect(result.executed).toBe(0)
+  })
+
+  it('subtotalByLineType excludes deleted budget lines from budgeted sum', () => {
+    const store = useBudgetMatrixStore()
+
+    mockUseBudgetStructureStore.mockReturnValue({
+      ...DEFAULT_STRUCTURE_STATE,
+      budgetLines: [
+        { id: 'l1', name: 'Food', lineType: 'Expense', isRecurring: false, categoryGroupId: 'g1', categoryId: 'cat-1', budgetedAmount: 500, deletedAt: null },
+        { id: 'l2', name: 'Deleted', lineType: 'Expense', isRecurring: false, categoryGroupId: 'g1', categoryId: 'cat-2', budgetedAmount: 999, deletedAt: '2026-01-01' },
+      ],
+    })
+
+    store.$patch({ periodTotals: { 'p1': { lineTotals: [], categoryTotals: [] } } })
+
+    const result = store.subtotalByLineType('p1', 'Expense')
+    expect(result.budgeted).toBe(500)
+  })
+
+  // -------------------------------------------------------------------------
+  // syncExchangeRate
+  // -------------------------------------------------------------------------
+
+  it('syncExchangeRate copies exchangeRate from structureStore.currentCycle', () => {
+    const store = useBudgetMatrixStore()
+    store.$patch({ exchangeRate: 7.5 })
+
+    mockUseBudgetStructureStore.mockReturnValue({
+      ...DEFAULT_STRUCTURE_STATE,
+      currentCycle: { ...DEFAULT_STRUCTURE_STATE.currentCycle, exchangeRate: 10.0 },
+    })
+
+    store.syncExchangeRate()
+    expect(store.exchangeRate).toBe(10.0)
+  })
+
+  it('syncExchangeRate sets exchangeRate to null when currentCycle has no rate', () => {
+    const store = useBudgetMatrixStore()
+    store.$patch({ exchangeRate: 7.5 })
+
+    mockUseBudgetStructureStore.mockReturnValue({
+      ...DEFAULT_STRUCTURE_STATE,
+      currentCycle: null,
+    })
+
+    store.syncExchangeRate()
+    expect(store.exchangeRate).toBeNull()
   })
 })

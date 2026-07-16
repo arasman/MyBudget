@@ -8,19 +8,20 @@
     <!-- Per-period totals -->
     <template v-for="period in visiblePeriods" :key="period.id">
       <td class="px-2 py-2 text-right text-xs">
-        {{ formatAmount(totalBudgeted(period.id)) }}
+        {{ formatAmount(totalBudgeted(period.id), currencySymbol) }}
       </td>
       <td class="px-2 py-2 text-right text-xs">
-        {{ formatAmount(totalExecuted(period.id)) }}
+        {{ formatAmount(totalExecuted(period.id), currencySymbol) }}
       </td>
       <td class="px-2 py-2 text-right text-xs" :class="differenceClass(period.id)">
-        {{ formatAmount(totalBudgeted(period.id) - totalExecuted(period.id)) }}
+        {{ formatAmount(totalBudgeted(period.id) - totalExecuted(period.id), currencySymbol) }}
       </td>
     </template>
   </tr>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useCurrencyDisplay } from '../composables/useCurrencyDisplay'
@@ -34,28 +35,29 @@ const props = defineProps<{
 
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
-const { convert } = useCurrencyDisplay(matrixStore)
+const { formatAmount } = useCurrencyDisplay(matrixStore)
 
-/** Sum budgeted amounts across ALL non-deleted budget lines. */
-function totalBudgeted(_periodId: string): number {
-  return structureStore.budgetLines
-    .filter((l) => !l.deletedAt)
-    .reduce((sum, l) => sum + (l.budgetedAmount ?? 0), 0)
+/** Currency symbol derived from cycle based on the active display currency */
+const currencySymbol = computed<string>(() =>
+  matrixStore.displayCurrency === 'alternate'
+    ? structureStore.currentCycle?.alternateCurrency?.symbol ?? ''
+    : structureStore.currentCycle?.defaultCurrency?.symbol ?? '',
+)
+
+/** Sum budgeted across all 3 lineTypes for a given period. */
+function totalBudgeted(periodId: string): number {
+  const expense = matrixStore.subtotalByLineType(periodId, 'Expense')
+  const preventive = matrixStore.subtotalByLineType(periodId, 'PreventiveSavings')
+  const longTerm = matrixStore.subtotalByLineType(periodId, 'LongTermSavings')
+  return expense.budgeted + preventive.budgeted + longTerm.budgeted
 }
 
-/** Sum net-executed amounts across ALL categories for a given period. */
+/** Sum executed across all 3 lineTypes for a given period. */
 function totalExecuted(periodId: string): number {
-  const totals = matrixStore.periodTotals[periodId]
-  if (!totals) return 0
-  return totals.categoryTotals.reduce((sum, ct) => sum + ct.netTotal, 0)
-}
-
-function formatAmount(amount: number): string {
-  const converted = convert(amount)
-  return converted.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
+  const expense = matrixStore.subtotalByLineType(periodId, 'Expense')
+  const preventive = matrixStore.subtotalByLineType(periodId, 'PreventiveSavings')
+  const longTerm = matrixStore.subtotalByLineType(periodId, 'LongTermSavings')
+  return expense.executed + preventive.executed + longTerm.executed
 }
 
 function differenceClass(periodId: string): string {

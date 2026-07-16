@@ -253,7 +253,12 @@
       "noEntries": "No entries yet",
       "addEntry": "Add entry",
       "periodClosed": "This period is closed. No changes allowed.",
-      "includeDeleted": "Include deleted"
+      "includeDeleted": "Include deleted",
+      "editEntry": "Edit Entry",
+      "fullscreen": "Fullscreen",
+      "exitFullscreen": "Exit fullscreen",
+      "previous": "Previous",
+      "next": "Next"
     },
     "form": {
       "entryType": "Entry type",
@@ -267,7 +272,6 @@
       "operationDate": "Operation date",
       "currency": "Currency",
       "exchangeRate": "Exchange rate",
-      "noteRequired": "Note is required for Credit Note and Debit Note",
       "amountRequired": "Amount must be greater than 0",
       "save": "Save",
       "cancel": "Cancel",
@@ -275,7 +279,7 @@
       "calculatedAmount": "Converted amount",
       "validation": {
         "amountRequired": "Amount must be greater than 0",
-        "noteRequired": "Note is required for Credit Note and Debit Note",
+        "exchangeRateRequired": "Exchange rate must be greater than 0",
         "noteRequiredAlways": "Note is required"
       }
     },

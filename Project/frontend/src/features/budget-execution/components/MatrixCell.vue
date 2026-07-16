@@ -13,6 +13,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useBudgetMatrixStore } from '../store'
+import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useCurrencyDisplay } from '../composables/useCurrencyDisplay'
 
 const props = defineProps<{
@@ -31,13 +32,13 @@ function onDblClick(): void {
 }
 
 const matrixStore = useBudgetMatrixStore()
+const structureStore = useBudgetStructureStore()
 const { formatAmount } = useCurrencyDisplay(matrixStore)
 
-// Derive currency symbol from the cycle's default currency
-const currencySymbol = computed<string>(() => {
-  // The currency symbol comes from the structure store's currentCycle
-  // At this level we use a simple placeholder; MatrixControls (PR5) will
-  // expose the full symbol. For the skeleton we fall back to an empty string.
-  return ''
-})
+/** Currency symbol derived from cycle based on the active display currency. */
+const currencySymbol = computed<string>(() =>
+  matrixStore.displayCurrency === 'alternate'
+    ? structureStore.currentCycle?.alternateCurrency?.symbol ?? ''
+    : structureStore.currentCycle?.defaultCurrency?.symbol ?? '',
+)
 </script>

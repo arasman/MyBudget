@@ -9,6 +9,8 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.*" />
     <!-- Pin transitive dep to non-vulnerable version: GHSA-v5pm-xwqc-g5wc affects 2.0.0 -->
     <PackageReference Include="Microsoft.OpenApi" Version="2.*" />
+    <!-- Pin transitive dep to non-vulnerable version: GHSA-2m69-gcr7-jv3q affects 2.1.11 -->
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.*">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

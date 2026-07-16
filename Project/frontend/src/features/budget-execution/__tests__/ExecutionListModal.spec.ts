@@ -92,7 +92,6 @@ vi.mock('vue-i18n', () => ({
         'budgetExecution.form.cancel': 'Cancel',
         'budgetExecution.form.error': 'An error occurred',
         'budgetExecution.form.validation.amountRequired': 'Amount must be greater than 0',
-        'budgetExecution.form.validation.noteRequired': 'Note required',
         'budgetExecution.row.edit': 'Edit',
         'budgetExecution.row.delete': 'Delete',
         'budgetExecution.row.restore': 'Restore',

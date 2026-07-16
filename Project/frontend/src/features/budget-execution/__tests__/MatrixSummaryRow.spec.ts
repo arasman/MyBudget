@@ -80,7 +80,7 @@ const budgetLines = [
 // Helper
 // ---------------------------------------------------------------------------
 
-function renderRow(lineType: number, label: string) {
+function renderRow(lineType: number, label: string, displayCurrency: 'default' | 'alternate' = 'default') {
   const pinia = createPinia()
   setActivePinia(pinia)
 
@@ -95,12 +95,23 @@ function renderRow(lineType: number, label: string) {
         categoryTotals,
       },
     },
-    displayCurrency: 'default',
-    exchangeRate: null,
+    displayCurrency,
+    exchangeRate: displayCurrency === 'alternate' ? 7.5 : null,
   })
 
-  // Seed structure store with budget lines
-  structureStore.$patch({ budgetLines })
+  // Seed structure store with budget lines and cycle currencies
+  structureStore.$patch({
+    budgetLines,
+    currentCycle: {
+      id: 'cycle-1',
+      name: 'Test',
+      startDate: '2025-01-01' as never,
+      endDate: '2025-12-31' as never,
+      isActive: true,
+      defaultCurrency: { id: 'gtq', code: 'GTQ', symbol: 'Q' },
+      alternateCurrency: { id: 'usd', code: 'USD', symbol: '$' },
+    } as never,
+  })
 
   return render(MatrixSummaryRow, {
     props: {
@@ -146,22 +157,28 @@ describe('MatrixSummaryRow', () => {
 
   it('shows correct executed total for Expense categories', () => {
     const { getByText } = renderRow(1, 'Total Expenses')
-    // cat-expense has netTotal=450; budgeted column always shows 0
-    expect(getByText('450.00')).not.toBeNull()
+    // cat-expense has netTotal=450; formatAmount with symbol 'Q' → 'Q 450.00'
+    expect(getByText('Q 450.00')).not.toBeNull()
   })
 
   it('shows correct totals for LongTermSavings categories', () => {
     const { getByText } = renderRow(2, 'Total Long-term Savings')
-    // cat-savings has netTotal=180; budgeted column always shows 0
-    expect(getByText('180.00')).not.toBeNull()
+    // cat-savings has netTotal=180; formatAmount with symbol 'Q' → 'Q 180.00'
+    expect(getByText('Q 180.00')).not.toBeNull()
   })
 
-  it('displays zero amounts as "0.00" when no matching categories have data', () => {
+  it('displays zero amounts as "Q 0.00" when no matching categories have data', () => {
     const { getAllByText } = renderRow(3, 'Total Preventive Savings')
     // lineType=3 (PreventiveSavings) — no budget lines of that type in fixture
-    const zeroElements = getAllByText('0.00')
+    const zeroElements = getAllByText('Q 0.00')
     // 2 columns (budgeted + executed) × 1 period = 2 zeros
     expect(zeroElements.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('shows alternate currency symbol when displayCurrency = "alternate"', () => {
+    // 450 GTQ / 7.5 = 60.00 USD → displayed as '$ 60.00'
+    const { getByText } = renderRow(1, 'Total Expenses', 'alternate')
+    expect(getByText('$ 60.00')).not.toBeNull()
   })
 
   it('renders the label in the sticky header cell', () => {

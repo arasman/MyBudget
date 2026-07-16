@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { PeriodTotalsDto, ExecutionRecordDto, CreateExecutionRequest, UpdateExecutionRequest } from './types'
-import type { PeriodSummary } from '@/features/budget-structure/types'
+import type { PeriodSummary, LineType } from '@/features/budget-structure/types'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import * as executionTotalsApi from './api/executionTotals.api'
 import * as executionsApi from './api/executions.api'
@@ -247,6 +247,53 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
     displayCurrency.value = currency
   }
 
+  // ---------------------------------------------------------------------------
+  // Getters
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Returns budgeted and executed subtotals for a given lineType and periodId.
+   * - budgeted: sum of budgetedAmount for non-deleted lines matching lineType
+   * - executed: sum of netTotal for categoryTotals whose categories match lineType
+   */
+  function subtotalByLineType(
+    periodId: string,
+    lineType: LineType,
+  ): { budgeted: number; executed: number } {
+    const structureStore = useBudgetStructureStore()
+
+    const budgeted = structureStore.budgetLines
+      .filter((l) => l.lineType === lineType && !l.deletedAt)
+      .reduce((sum, l) => sum + (l.budgetedAmount ?? 0), 0)
+
+    // Collect matching categoryIds from budget lines
+    const matchingCategoryIds = new Set<string>()
+    for (const line of structureStore.budgetLines) {
+      if (line.lineType === lineType && line.categoryId) {
+        matchingCategoryIds.add(line.categoryId)
+      }
+    }
+
+    const totals = periodTotals.value[periodId]
+    const executed = totals
+      ? totals.categoryTotals
+          .filter((ct) => ct.categoryId !== null && matchingCategoryIds.has(ct.categoryId))
+          .reduce((sum, ct) => sum + ct.netTotal, 0)
+      : 0
+
+    return { budgeted, executed }
+  }
+
+  /**
+   * Syncs exchangeRate from structureStore.currentCycle to this store.
+   * Called after updateCycle to keep useCurrencyDisplay in sync.
+   */
+  function syncExchangeRate(): void {
+    const structureStore = useBudgetStructureStore()
+    const rate = structureStore.currentCycle?.exchangeRate
+    exchangeRate.value = rate ?? null
+  }
+
   function setShowDeleted(value: boolean): void {
     showDeleted.value = value
     // Clear totals cache and reload
@@ -311,5 +358,7 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
     invalidateAllPeriods,
     setDisplayCurrency,
     setShowDeleted,
+    subtotalByLineType,
+    syncExchangeRate,
   }
 })

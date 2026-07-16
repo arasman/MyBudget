@@ -7,7 +7,7 @@ namespace MyBudget.Features.Features.BudgetExecution.ListPeriodExecutionTotals;
 
 /// <summary>
 /// Dapper read — UNION ALL query returning per-BudgetLine and per-Category totals.
-/// Currency conversion: Amount / ExchangeRate when CurrencyId != Cycle.DefaultCurrencyId.
+/// Currency conversion: Amount * ExchangeRate when CurrencyId != Cycle.DefaultCurrencyId.
 /// Discriminator column GroupLevel: 'Line' | 'Category'.
 /// REQ-EXEC-TOTALS-1 to REQ-EXEC-TOTALS-4.
 /// </summary>
@@ -24,7 +24,7 @@ public sealed class ListPeriodExecutionTotalsHandler
         using var conn = _factory.CreateConnection();
 
         // REQ-EXEC-TOTALS-2: netAmount = Expenses + DebitNotes - CreditNotes
-        // REQ-EXEC-TOTALS-4: currency conversion Amount / ExchangeRate when != DefaultCurrency
+        // REQ-EXEC-TOTALS-4: currency conversion Amount * ExchangeRate when != DefaultCurrency
         // Rows: GroupLevel = 'Line' or 'Category'
         const string sql = """
             WITH period_check AS (
@@ -44,7 +44,7 @@ public sealed class ListPeriodExecutionTotalsHandler
                     CASE
                         WHEN e."CurrencyId" = pc."DefaultCurrencyId" OR e."ExchangeRate" IS NULL
                             THEN e."Amount"
-                        ELSE e."Amount" / e."ExchangeRate"
+                        ELSE e."Amount" * e."ExchangeRate"
                     END AS "ConvertedAmount"
                 FROM "ExecutionRecords" e
                 CROSS JOIN period_check pc
