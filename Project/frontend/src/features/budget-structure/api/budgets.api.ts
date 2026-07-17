@@ -12,7 +12,7 @@ export async function renameBudget(
   newName: string,
 ): Promise<{ id: string; name: string }> {
   const { data } = await http.put<{ id: string; name: string }>(`/api/budgets/${budgetId}`, {
-    newName,
+    name: newName,
   })
   return data
 }

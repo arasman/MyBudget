@@ -32,57 +32,108 @@
     <ul v-else class="space-y-3">
       <li v-for="m in visibleMemberships" :key="m.budgetId">
         <div
-          class="card card-border w-full"
-          :class="m.isDeleted ? 'opacity-60' : ''"
+          class="card card-border w-full select-none"
+          :class="[m.isDeleted ? 'opacity-60' : '', !m.isDeleted && inlineEditingBudgetId !== m.budgetId ? 'cursor-pointer' : '']"
+          @dblclick="canEdit(m) && inlineEditingBudgetId !== m.budgetId ? startInlineEdit(m.budgetId, m.budgetName) : undefined"
         >
           <div class="card-body flex-row items-center justify-between py-4">
-            <div class="flex items-center gap-2">
-              <button
-                v-if="!m.isDeleted"
-                type="button"
-                class="font-medium text-base hover:underline cursor-pointer"
-                @click="selectBudget(m.budgetId, m.budgetName)"
-              >
-                {{ m.budgetName }}
-              </button>
-              <span v-else class="font-medium text-base">{{ m.budgetName }}</span>
-              <span v-if="m.isDeleted" class="badge badge-error badge-sm">
-                {{ t('budgetStructure.selection.deletedBadge') }}
-              </span>
+            <!-- Name area -->
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <!-- Inline edit input -->
+              <template v-if="inlineEditingBudgetId === m.budgetId">
+                <input
+                  v-model="inlineEditName"
+                  type="text"
+                  class="input input-xs input-bordered flex-1"
+                  maxlength="200"
+                  autocomplete="off"
+                  @keyup.enter="saveInlineEdit(m.budgetId)"
+                  @keyup.escape="cancelInlineEdit"
+                />
+              </template>
+              <template v-else>
+                <span class="font-medium text-base truncate">{{ m.budgetName }}</span>
+                <span v-if="m.isDeleted" class="badge badge-error badge-sm shrink-0">
+                  {{ t('budgetStructure.selection.deletedBadge') }}
+                </span>
+              </template>
             </div>
 
-            <div class="flex items-center gap-2">
-              <span class="badge badge-outline capitalize">{{ m.role }}</span>
+            <!-- Actions -->
+            <div class="flex items-center gap-1 shrink-0 ml-3">
+              <span class="badge badge-outline capitalize mr-1">{{ m.role }}</span>
 
-              <!-- Restore button — only on deleted budgets -->
-              <button
-                v-if="m.isDeleted"
-                type="button"
-                class="btn btn-success btn-xs"
-                :disabled="actionInProgress === m.budgetId"
-                @click="onRestore(m.budgetId)"
-              >
-                <span
-                  v-if="actionInProgress === m.budgetId"
-                  class="loading loading-spinner loading-xs"
-                />
-                {{ t('budgetStructure.selection.restoreBudget') }}
-              </button>
+              <!-- Inline edit: save / cancel -->
+              <template v-if="inlineEditingBudgetId === m.budgetId">
+                <button
+                  type="button"
+                  class="btn btn-xs btn-ghost btn-square text-success"
+                  :disabled="!!actionInProgress"
+                  :title="t('budgetStructure.common.save')"
+                  @click.stop="saveInlineEdit(m.budgetId)"
+                >
+                  <span v-if="actionInProgress === m.budgetId" class="loading loading-spinner loading-xs" />
+                  <Check v-else :size="14" />
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-xs btn-ghost btn-square"
+                  :title="t('budgetStructure.common.cancel')"
+                  @click.stop="cancelInlineEdit"
+                >
+                  <X :size="14" />
+                </button>
+              </template>
 
-              <!-- Delete button — only on active budgets owned by the user -->
-              <button
-                v-if="!m.isDeleted && m.role === 'owner'"
-                type="button"
-                class="btn btn-error btn-xs btn-outline"
-                :disabled="actionInProgress === m.budgetId"
-                @click="onDelete(m.budgetId)"
-              >
-                <span
-                  v-if="actionInProgress === m.budgetId"
-                  class="loading loading-spinner loading-xs"
-                />
-                {{ t('budgetStructure.selection.deleteBudget') }}
-              </button>
+              <!-- Active budget actions -->
+              <template v-else-if="!m.isDeleted">
+                <!-- View cycles -->
+                <button
+                  type="button"
+                  class="btn btn-xs btn-ghost btn-square"
+                  :title="t('budgetStructure.selection.viewCycles')"
+                  @click.stop="selectBudget(m.budgetId, m.budgetName)"
+                >
+                  <List :size="14" />
+                </button>
+
+                <!-- Rename (owner or admin only) -->
+                <button
+                  v-if="canEdit(m)"
+                  type="button"
+                  class="btn btn-xs btn-ghost btn-square"
+                  :title="t('budgetStructure.selection.renameBudget')"
+                  @click.stop="startInlineEdit(m.budgetId, m.budgetName)"
+                >
+                  <Pencil :size="14" />
+                </button>
+
+                <!-- Delete (owner only) -->
+                <button
+                  v-if="m.role === 'owner'"
+                  type="button"
+                  class="btn btn-xs btn-ghost btn-square text-error"
+                  :disabled="!!actionInProgress"
+                  :title="t('budgetStructure.selection.deleteBudget')"
+                  :aria-label="t('budgetStructure.selection.deleteBudget')"
+                  @click.stop="onDelete(m.budgetId)"
+                >
+                  <Trash2 :size="14" />
+                </button>
+              </template>
+
+              <!-- Deleted budget: restore only -->
+              <template v-else>
+                <button
+                  type="button"
+                  class="btn btn-success btn-xs"
+                  :disabled="actionInProgress === m.budgetId"
+                  @click.stop="onRestore(m.budgetId)"
+                >
+                  <span v-if="actionInProgress === m.budgetId" class="loading loading-spinner loading-xs" />
+                  {{ t('budgetStructure.selection.restoreBudget') }}
+                </button>
+              </template>
             </div>
           </div>
         </div>
@@ -120,10 +171,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { Check, List, Pencil, Trash2, X } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLayoutStore } from '@/stores/layout.store'
-import { deleteBudget, restoreBudget } from '../api/budgets.api'
+import { deleteBudget, renameBudget, restoreBudget } from '../api/budgets.api'
 import CreateBudgetModal from '../components/CreateBudgetModal.vue'
+import type { BudgetMembershipDto } from '@/stores/auth.store'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
@@ -136,6 +189,10 @@ const actionInProgress = ref<string | null>(null)
 const pendingDeleteId = ref<string | null>(null)
 const createModal = ref<InstanceType<typeof CreateBudgetModal>>()
 
+// Inline edit state
+const inlineEditingBudgetId = ref<string | null>(null)
+const inlineEditName = ref('')
+
 const memberships = computed(() => authStore.user?.memberships ?? [])
 
 const visibleMemberships = computed(() => {
@@ -144,6 +201,10 @@ const visibleMemberships = computed(() => {
 })
 
 const activeCount = computed(() => memberships.value.filter((m) => !m.isDeleted).length)
+
+function canEdit(m: BudgetMembershipDto): boolean {
+  return m.role === 'owner' || m.role === 'admin'
+}
 
 function selectBudget(budgetId: string, budgetName: string): void {
   layoutStore.setActiveBudget(budgetId, budgetName)
@@ -158,6 +219,37 @@ async function onBudgetCreated(budget: { id: string; name: string }): Promise<vo
   await authStore.fetchMe()
   selectBudget(budget.id, budget.name)
 }
+
+// ── Inline rename ──────────────────────────────────────────────────────────
+
+function startInlineEdit(budgetId: string, currentName: string): void {
+  inlineEditingBudgetId.value = budgetId
+  inlineEditName.value = currentName
+}
+
+function cancelInlineEdit(): void {
+  inlineEditingBudgetId.value = null
+  inlineEditName.value = ''
+}
+
+async function saveInlineEdit(budgetId: string): Promise<void> {
+  const trimmed = inlineEditName.value.trim()
+  if (!trimmed) return
+  actionInProgress.value = budgetId
+  try {
+    await renameBudget(budgetId, trimmed)
+    await authStore.fetchMe()
+    // Update navbar if this was the active budget
+    if (layoutStore.activeBudgetId === budgetId) {
+      layoutStore.setActiveBudget(budgetId, trimmed)
+    }
+    inlineEditingBudgetId.value = null
+  } finally {
+    actionInProgress.value = null
+  }
+}
+
+// ── Delete ─────────────────────────────────────────────────────────────────
 
 function onDelete(budgetId: string): void {
   pendingDeleteId.value = budgetId
@@ -183,6 +275,8 @@ async function confirmDelete(): Promise<void> {
     actionInProgress.value = null
   }
 }
+
+// ── Restore ────────────────────────────────────────────────────────────────
 
 async function onRestore(budgetId: string): Promise<void> {
   actionInProgress.value = budgetId
