@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { seedOwnerAndLogin } from './helpers'
+import { seedOwnerAndLogin, expectToast } from './helpers'
 
 /**
  * E2E: Budget Lines CRUD — create → inline edit via dblclick → delete
@@ -76,6 +76,8 @@ test.describe('Budget Structure — Budget Lines', () => {
     ])
     expect(lineResp.status()).toBe(201)
 
+    await expectToast(page, 'Budget line created successfully')
+
     await expect(page.getByText('Salary')).toBeVisible({ timeout: 5_000 })
 
     // --- Edit via dblclick (inline edit — no modal) ---
@@ -89,6 +91,8 @@ test.describe('Budget Structure — Budget Lines', () => {
     // Save via the Check icon button (title="Save")
     await page.getByRole('button', { name: 'Save' }).first().click()
 
+    await expectToast(page, 'Budget line updated successfully')
+
     await expect(page.getByText('Monthly Salary')).toBeVisible({ timeout: 5_000 })
 
     // --- Delete line ---
@@ -96,6 +100,8 @@ test.describe('Budget Structure — Budget Lines', () => {
     // The BudgetLineRow emits delete — find the delete button
     await page.getByRole('button', { name: 'Delete Line' }).first().click()
     await page.getByRole('button', { name: 'Confirm' }).click()
+
+    await expectToast(page, 'Budget line deleted successfully')
 
     await expect(page.getByText('Monthly Salary')).not.toBeVisible({ timeout: 5_000 })
   })

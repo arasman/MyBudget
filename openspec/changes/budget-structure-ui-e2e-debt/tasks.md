@@ -56,10 +56,10 @@ Chain strategy: stacked-to-main
 
 ## Phase 3: Retrofit Toast Assertions into Existing CRUD Tests
 
-- [ ] 3.1 `e2e/budget-structure/budget-structure-cycles.spec.ts` — in `'create cycle → edit → set active → delete'`: add `await expectToast(page, 'Cycle created successfully')` after create, `'Cycle updated successfully'` after edit, `'Cycle set as active'` after set-active, `'Cycle deleted successfully'` after delete (REQ-E2E-TOAST-1)
-- [ ] 3.2 `e2e/budget-structure/budget-structure-periods.spec.ts` — in `'create period → change status → delete'`: add `expectToast` for `'Period created successfully'`, `'Period status updated'`, `'Period deleted successfully'` (REQ-E2E-TOAST-2)
-- [ ] 3.3 `e2e/budget-structure/budget-structure-categories.spec.ts` — in `'create group → add categories → delete category → delete group'`: add `expectToast` for 4 operations (REQ-E2E-TOAST-3)
-- [ ] 3.4 `e2e/budget-structure/budget-structure-lines.spec.ts` — in `'create line → edit via dblclick → delete'`: add `expectToast` for 3 operations (REQ-E2E-TOAST-4)
+- [x] 3.1 `e2e/budget-structure/budget-structure-cycles.spec.ts` — in `'create cycle → edit → set active → delete'`: add `await expectToast(page, 'Cycle created successfully')` after create, `'Cycle updated successfully'` after edit, `'Cycle set as active'` after set-active, `'Cycle deleted successfully'` after delete (REQ-E2E-TOAST-1)
+- [x] 3.2 `e2e/budget-structure/budget-structure-periods.spec.ts` — in `'create period → change status → delete'`: add `expectToast` for `'Period created successfully'`, `'Period status updated'`, `'Period deleted successfully'` (REQ-E2E-TOAST-2)
+- [x] 3.3 `e2e/budget-structure/budget-structure-categories.spec.ts` — in `'create group → add categories → delete category → delete group'`: add `expectToast` for 4 operations (REQ-E2E-TOAST-3)
+- [x] 3.4 `e2e/budget-structure/budget-structure-lines.spec.ts` — in `'create line → edit via dblclick → delete'`: add `expectToast` for 3 operations (REQ-E2E-TOAST-4)
 
 ---
 

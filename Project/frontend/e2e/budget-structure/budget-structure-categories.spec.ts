@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { seedOwnerAndLogin } from './helpers'
+import { seedOwnerAndLogin, expectToast } from './helpers'
 
 /**
  * E2E: Category structure — create group → add categories → delete
@@ -27,6 +27,8 @@ test.describe('Budget Structure — Categories', () => {
     ])
     expect(groupResp.status()).toBe(201)
 
+    await expectToast(page, 'Category group created successfully')
+
     await expect(page.getByText('Expenses')).toBeVisible({ timeout: 5_000 })
 
     // --- Add category "Food" to group ---
@@ -41,6 +43,8 @@ test.describe('Budget Structure — Categories', () => {
       page.getByRole('button', { name: 'Save' }).click(),
     ])
     expect(catRespFood.status()).toBe(201)
+
+    await expectToast(page, 'Category created successfully')
 
     await expect(page.getByText('Food')).toBeVisible({ timeout: 5_000 })
 
@@ -57,6 +61,8 @@ test.describe('Budget Structure — Categories', () => {
     ])
     expect(catRespTransport.status()).toBe(201)
 
+    await expectToast(page, 'Category created successfully')
+
     await expect(page.getByText('Transport')).toBeVisible({ timeout: 5_000 })
 
     // --- Delete one category ---
@@ -65,11 +71,15 @@ test.describe('Budget Structure — Categories', () => {
     await deleteCatBtns.first().click()
     await page.getByRole('button', { name: 'Confirm' }).click()
 
+    await expectToast(page, 'Category deleted successfully')
+
     await expect(page.getByText('Food')).not.toBeVisible({ timeout: 5_000 })
 
     // --- Delete the group (should remove remaining categories) ---
     await page.getByRole('button', { name: 'Delete Group' }).first().click()
     await page.getByRole('button', { name: 'Confirm' }).click()
+
+    await expectToast(page, 'Category group deleted successfully')
 
     await expect(page.getByText('Expenses')).not.toBeVisible({ timeout: 5_000 })
   })

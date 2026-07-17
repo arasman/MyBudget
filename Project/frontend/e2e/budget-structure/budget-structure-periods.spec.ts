@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { seedOwnerAndLogin } from './helpers'
+import { seedOwnerAndLogin, expectToast } from './helpers'
 
 /**
  * E2E: Period management within a cycle
@@ -32,6 +32,8 @@ test.describe('Budget Structure — Period Management', () => {
     await page.getByLabel('End Date').fill('2024-01-31')
     await page.getByRole('button', { name: 'Save' }).click()
 
+    await expectToast(page, 'Period created successfully')
+
     await expect(page.getByText('January 2024')).toBeVisible({ timeout: 5_000 })
 
     // --- Change status to Closed ---
@@ -41,11 +43,15 @@ test.describe('Budget Structure — Period Management', () => {
     await statusSelect.selectOption('Closed')
     await page.getByRole('button', { name: 'Save' }).click()
 
+    await expectToast(page, 'Period status updated')
+
     await expect(page.getByText('Closed')).toBeVisible({ timeout: 5_000 })
 
     // --- Delete period ---
     await page.getByRole('button', { name: 'Delete Period' }).first().click()
     await page.getByRole('button', { name: 'Confirm' }).click()
+
+    await expectToast(page, 'Period deleted successfully')
 
     await expect(page.getByText('January 2024')).not.toBeVisible({ timeout: 5_000 })
   })

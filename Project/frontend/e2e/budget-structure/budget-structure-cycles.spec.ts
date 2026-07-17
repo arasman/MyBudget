@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { seedOwnerAndLogin } from './helpers'
+import { seedOwnerAndLogin, expectToast } from './helpers'
 
 /**
  * E2E: Full Cycle CRUD flow
@@ -25,6 +25,8 @@ test.describe('Budget Structure — Cycles CRUD', () => {
     await page.getByLabel('End Date').fill('2024-12-31')
     await page.getByRole('button', { name: 'Save' }).click()
 
+    await expectToast(page, 'Cycle created successfully')
+
     // Verify cycle appears in the list
     await expect(page.getByText('Test Cycle 2024')).toBeVisible({ timeout: 5_000 })
 
@@ -34,6 +36,8 @@ test.describe('Budget Structure — Cycles CRUD', () => {
     await page.getByLabel('Name').fill('Updated Cycle 2024')
     await page.getByRole('button', { name: 'Save' }).click()
 
+    await expectToast(page, 'Cycle updated successfully')
+
     await expect(page.getByText('Updated Cycle 2024')).toBeVisible({ timeout: 5_000 })
 
     // --- Set active ---
@@ -41,6 +45,7 @@ test.describe('Budget Structure — Cycles CRUD', () => {
     // Button may be disabled if already active; only click when enabled
     if (await setActiveBtn.isEnabled()) {
       await setActiveBtn.click()
+      await expectToast(page, 'Cycle set as active')
       // After setting active, the Active badge should be visible
       await expect(page.getByText('Active').first()).toBeVisible({ timeout: 5_000 })
     }
@@ -49,6 +54,8 @@ test.describe('Budget Structure — Cycles CRUD', () => {
     await page.getByRole('button', { name: 'Delete Cycle' }).first().click()
     // Confirm the delete dialog
     await page.getByRole('button', { name: 'Confirm' }).click()
+
+    await expectToast(page, 'Cycle deleted successfully')
 
     // Verify cycle removed
     await expect(page.getByText('Updated Cycle 2024')).not.toBeVisible({ timeout: 5_000 })
