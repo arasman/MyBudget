@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-16 (multi-budget archived)
+**Last updated**: 2026-07-17 (budget-structure-ui-e2e-debt archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -292,6 +292,40 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 **Tests**: 198 Vitest — all green
 **Commit**: `4c0ae72` on `main` (merged from `feat/budget-execution-multicurrency`)
 **SDD artifacts**: `openspec/changes/archive/2026-07-15-budget-execution-multicurrency/`
+
+---
+
+### 9a. `soft-delete-ux` ✅ archived 2026-07-17
+
+**What**: Soft-delete UX consistency — show-deleted toggles, restore actions, and ephemeral toast feedback across all budget-structure entities.
+
+**Scope in**:
+- Ephemeral toast system: `useToastStore` (Pinia) + `AppToast.vue` component, decoupled from notification bell
+- Show-deleted toggles per entity (Cycle, Period, CategoryGroup, Category, BudgetLine) in `useBudgetStructureStore`
+- Restore actions: `RestorePeriod` backend slice + frontend restore buttons for all 5 entities
+- `ListCycles` and `ListPeriods` backend: `includeDeleted` query param support
+- Two-step confirm modals for destructive actions (delete + restore with cascade disclosure for Period)
+- i18n keys: `ephemeralToast.*` namespace + restore/delete feedback strings in EN and ES
+- E2E: two-step confirm flows, multi-budget anchor, ListPeriods endpoint fixes
+
+**Tests**: all green at archive
+**SDD artifacts**: `openspec/changes/archive/2026-07-17-soft-delete-ux/`
+
+---
+
+### 9b. `budget-structure-ui-e2e-debt` ✅ archived 2026-07-17
+
+**What**: E2E test debt closure for budget-structure-ui — toast audit/fix + soft-delete/restore E2E coverage.
+
+**Scope in**:
+- Phase 1: 7 missing toast calls added to 4 view files (CycleListView, CycleDetailView, CategoryTreeView, BudgetLinesView) + 7 i18n keys (updateSuccess, setActiveSuccess, statusSuccess per entity) in EN + ES
+- Phase 2: `expectToast(page, text)` helper + 5 `seedDeleted*` API-seed helpers in `helpers.ts`
+- Phase 3: Toast assertions retrofitted into all existing CRUD E2E tests (14 assertions across 4 spec files)
+- Phase 4: 15 new soft-delete/restore E2E tests — toggle ON/OFF, restore + cascade Period disclosure, success toasts per entity
+- Review fixes: broken `data-id` selector (R3-001 CRITICAL), trivial negative assertions (R3-002), slug collision risk (R3-003), toast timeout (R3-004)
+
+**Tests**: 23/23 E2E passing; 313 backend unit + 161 integration; 0 TypeScript errors
+**SDD artifacts**: `openspec/changes/archive/2026-07-17-budget-structure-ui-e2e-debt/`
 
 ---
 
