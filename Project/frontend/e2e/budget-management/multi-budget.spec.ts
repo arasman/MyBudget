@@ -180,6 +180,9 @@ test.describe('Multi-budget — navigation guard', () => {
   test('navigating to a deleted budget URL redirects to /', async ({ page }) => {
     const { accessToken } = await seedOwnerAndLogin(page, 'mb-guard')
     const targetId = await createSecondBudget(page, accessToken, 'Guard Test Budget')
+    // Third budget keeps activeCount >= 2 after deletion so BudgetSelectionView
+    // does NOT auto-redirect and the URL stays at / (the expected value).
+    await createSecondBudget(page, accessToken, 'Anchor Budget')
 
     await page.goto('/')
     await expect(page).toHaveURL('/', { timeout: 5_000 })
