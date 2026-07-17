@@ -313,6 +313,22 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
+### 9c. `budget-execution-ui-e2e-debt` ✅ archived 2026-07-17
+
+**What**: E2E test debt closure for budget-execution-ui — toast on create/update + shared E2E helpers + UI-level coverage for delete/restore/edit flows.
+
+**Scope in**:
+- Phase 1: `ExecutionRecordForm.vue` patched with `toastStore.push` on create and update; i18n keys `budgetExecution.record.createSuccess` + `updateSuccess` added (EN + ES)
+- Phase 1: Shared `e2e/helpers/auth.ts` (`loginWithToken` with `refreshToken` injection) extracted from duplicated budget-matrix/budget-structure impls; shared `e2e/helpers/toast.ts` (`expectToast`) extracted; both helpers refactored to delegate
+- Phase 2: 3 new `{ page, request }` specs — `execution-ui-crud.spec.ts` (4 tests), `execution-ui-delete-restore.spec.ts` (5 tests incl. closed-period restore edge case), `execution-ui-toast.spec.ts` (4 tests)
+
+**Scope out**: 11 existing `{ request }` API-only specs in `e2e/budget-execution/` (left untouched).
+
+**Tests**: 24/24 E2E passing (13 new + 11 existing); 0 TypeScript errors
+**SDD artifacts**: `openspec/changes/archive/2026-07-17-budget-execution-ui-e2e-debt/`
+
+---
+
 ### 9b. `budget-structure-ui-e2e-debt` ✅ archived 2026-07-17
 
 **What**: E2E test debt closure for budget-structure-ui — toast audit/fix + soft-delete/restore E2E coverage.
