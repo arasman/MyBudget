@@ -2,6 +2,7 @@ import type { Page } from '@playwright/test'
 import { expect } from '@playwright/test'
 
 const PASSWORD = 'Password1!'
+const DEFAULT_CURRENCY_ID = '11111111-1111-1111-1111-111111111111'
 
 /**
  * Registers a fresh user via the API and injects tokens into localStorage.
@@ -98,4 +99,186 @@ export async function loginViaUi(page: Page, email: string): Promise<void> {
   await page.getByPlaceholder('Password').fill(PASSWORD)
   await page.getByRole('button', { name: 'Sign In' }).click()
   await expect(page).toHaveURL(/\/(budgets\/[^/]+\/cycles)?$/, { timeout: 10_000 })
+}
+
+/**
+ * Asserts that a toast alert with the given text is visible within 5 seconds.
+ */
+export async function expectToast(page: Page, text: string): Promise<void> {
+  await expect(
+    page.getByRole('alert').filter({ hasText: text }),
+  ).toBeVisible({ timeout: 5_000 })
+}
+
+/**
+ * Creates a cycle via API and immediately soft-deletes it.
+ * Returns the deleted cycle's id.
+ */
+export async function seedDeletedCycle(
+  page: Page,
+  budgetId: string,
+  token: string,
+): Promise<string> {
+  const headers = { Authorization: `Bearer ${token}` }
+
+  const createResp = await page.request.post(`/api/budgets/${budgetId}/cycles`, {
+    headers,
+    data: {
+      name: `Deleted Cycle ${Date.now()}`,
+      startDate: '2023-01-01',
+      endDate: '2023-12-31',
+      defaultCurrencyId: DEFAULT_CURRENCY_ID,
+    },
+  })
+  expect(createResp.status()).toBe(201)
+  const { id } = await createResp.json()
+
+  const deleteResp = await page.request.delete(`/api/budgets/${budgetId}/cycles/${id}`, {
+    headers,
+  })
+  expect(deleteResp.status()).toBe(204)
+
+  return id as string
+}
+
+/**
+ * Creates a period within a cycle via API and immediately soft-deletes it.
+ * Returns the deleted period's id.
+ */
+export async function seedDeletedPeriod(
+  page: Page,
+  budgetId: string,
+  cycleId: string,
+  token: string,
+): Promise<string> {
+  const headers = { Authorization: `Bearer ${token}` }
+
+  const createResp = await page.request.post(
+    `/api/budgets/${budgetId}/cycles/${cycleId}/periods`,
+    {
+      headers,
+      data: {
+        name: `Deleted Period ${Date.now()}`,
+        periodNumber: 99,
+        startDate: '2023-11-01',
+        endDate: '2023-11-30',
+      },
+    },
+  )
+  expect(createResp.status()).toBe(201)
+  const { id } = await createResp.json()
+
+  const deleteResp = await page.request.delete(
+    `/api/budgets/${budgetId}/cycles/${cycleId}/periods/${id}`,
+    { headers },
+  )
+  expect(deleteResp.status()).toBe(204)
+
+  return id as string
+}
+
+/**
+ * Creates a category group via API and immediately soft-deletes it.
+ * Returns the deleted category group's id.
+ */
+export async function seedDeletedCategoryGroup(
+  page: Page,
+  budgetId: string,
+  token: string,
+): Promise<string> {
+  const headers = { Authorization: `Bearer ${token}` }
+
+  const createResp = await page.request.post(`/api/budgets/${budgetId}/category-groups`, {
+    headers,
+    data: { name: `Deleted Group ${Date.now()}`, displayOrder: 99 },
+  })
+  expect(createResp.status()).toBe(201)
+  const { id } = await createResp.json()
+
+  const deleteResp = await page.request.delete(
+    `/api/budgets/${budgetId}/category-groups/${id}`,
+    { headers },
+  )
+  expect(deleteResp.status()).toBe(204)
+
+  return id as string
+}
+
+/**
+ * Creates a category within a group via API and immediately soft-deletes it.
+ * Returns the deleted category's id.
+ */
+export async function seedDeletedCategory(
+  page: Page,
+  budgetId: string,
+  groupId: string,
+  token: string,
+): Promise<string> {
+  const headers = { Authorization: `Bearer ${token}` }
+
+  const createResp = await page.request.post(
+    `/api/budgets/${budgetId}/category-groups/${groupId}/categories`,
+    {
+      headers,
+      data: { name: `Deleted Category ${Date.now()}`, displayOrder: 99 },
+    },
+  )
+  expect(createResp.status()).toBe(201)
+  const { id } = await createResp.json()
+
+  const deleteResp = await page.request.delete(
+    `/api/budgets/${budgetId}/category-groups/${groupId}/categories/${id}`,
+    { headers },
+  )
+  expect(deleteResp.status()).toBe(204)
+
+  return id as string
+}
+
+/**
+ * Creates a budget line within a period via API and immediately soft-deletes it.
+ * Internally creates a temporary category group to satisfy the line's required FK.
+ * Returns the deleted budget line's id.
+ */
+export async function seedDeletedBudgetLine(
+  page: Page,
+  budgetId: string,
+  periodId: string,
+  token: string,
+): Promise<string> {
+  const headers = { Authorization: `Bearer ${token}` }
+
+  // Create a transient category group (required FK for budget lines)
+  const groupResp = await page.request.post(`/api/budgets/${budgetId}/category-groups`, {
+    headers,
+    data: { name: `Seed Group ${Date.now()}`, displayOrder: 99 },
+  })
+  expect(groupResp.status()).toBe(201)
+  const { id: categoryGroupId } = await groupResp.json()
+
+  const createResp = await page.request.post(
+    `/api/budgets/${budgetId}/periods/${periodId}/lines`,
+    {
+      headers,
+      data: {
+        name: `Deleted Line ${Date.now()}`,
+        lineType: 'Expense',
+        isRecurring: false,
+        categoryGroupId,
+        categoryId: null,
+        budgetedAmount: 100,
+        currencyId: DEFAULT_CURRENCY_ID,
+      },
+    },
+  )
+  expect(createResp.status()).toBe(201)
+  const { id } = await createResp.json()
+
+  const deleteResp = await page.request.delete(
+    `/api/budgets/${budgetId}/periods/${periodId}/lines/${id}`,
+    { headers },
+  )
+  expect(deleteResp.status()).toBe(204)
+
+  return id as string
 }

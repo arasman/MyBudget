@@ -45,12 +45,12 @@ Chain strategy: stacked-to-main
 
 ## Phase 2: E2E Helpers — `expectToast` + `seedDeleted*`
 
-- [ ] 2.1 `e2e/budget-structure/helpers.ts` — export `expectToast(page: Page, text: string): Promise<void>` using `page.getByRole('alert').filter({ hasText: text })` with `toBeVisible({ timeout: 5_000 })`
-- [ ] 2.2 `e2e/budget-structure/helpers.ts` — export `seedDeletedCycle(page, budgetId, token): Promise<string>` — POST create (assert 201) then DELETE (assert 204), return `id`
-- [ ] 2.3 `e2e/budget-structure/helpers.ts` — export `seedDeletedPeriod(page, budgetId, cycleId, token): Promise<string>`
-- [ ] 2.4 `e2e/budget-structure/helpers.ts` — export `seedDeletedCategoryGroup(page, budgetId, token): Promise<string>`
-- [ ] 2.5 `e2e/budget-structure/helpers.ts` — export `seedDeletedCategory(page, budgetId, groupId, token): Promise<string>`
-- [ ] 2.6 `e2e/budget-structure/helpers.ts` — export `seedDeletedBudgetLine(page, budgetId, periodId, token): Promise<string>`
+- [x] 2.1 `e2e/budget-structure/helpers.ts` — export `expectToast(page: Page, text: string): Promise<void>` using `page.getByRole('alert').filter({ hasText: text })` with `toBeVisible({ timeout: 5_000 })`
+- [x] 2.2 `e2e/budget-structure/helpers.ts` — export `seedDeletedCycle(page, budgetId, token): Promise<string>` — POST create (assert 201) then DELETE (assert 204), return `id`
+- [x] 2.3 `e2e/budget-structure/helpers.ts` — export `seedDeletedPeriod(page, budgetId, cycleId, token): Promise<string>`
+- [x] 2.4 `e2e/budget-structure/helpers.ts` — export `seedDeletedCategoryGroup(page, budgetId, token): Promise<string>`
+- [x] 2.5 `e2e/budget-structure/helpers.ts` — export `seedDeletedCategory(page, budgetId, groupId, token): Promise<string>`
+- [x] 2.6 `e2e/budget-structure/helpers.ts` — export `seedDeletedBudgetLine(page, budgetId, periodId, token): Promise<string>`
 
 ---
 
