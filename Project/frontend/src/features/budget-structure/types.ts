@@ -70,6 +70,7 @@ export interface PeriodSummary {
   startDate: DateString
   endDate: DateString
   isClosed: boolean
+  deletedAt?: string | null
 }
 
 // ---------------------------------------------------------------------------

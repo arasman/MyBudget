@@ -19,6 +19,19 @@
 
     <BudgetTabs :budget-id="budgetId" class="mb-6" />
 
+    <!-- Show-deleted toggle -->
+    <div class="flex items-center gap-2 mb-4">
+      <input
+        id="show-deleted-lines"
+        v-model="store.showDeletedBudgetLines"
+        type="checkbox"
+        class="checkbox checkbox-sm"
+      />
+      <label for="show-deleted-lines" class="label-text cursor-pointer">
+        {{ t('budgetStructure.budgetLines.showDeleted') }}
+      </label>
+    </div>
+
     <!-- Loading indicator -->
     <div v-if="store.loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-md" />
@@ -80,6 +93,7 @@
             :category-groups="store.categoryGroups"
             @edit="openEditModal"
             @delete="confirmDelete"
+            @restore="handleRestore"
             @start-edit="handleStartEdit"
             @inline-save="handleInlineSave"
             @inline-cancel="handleInlineCancel"
@@ -221,12 +235,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Check, X } from 'lucide-vue-next'
 import { useBudgetStructureStore } from '../store'
 import { useLayoutStore } from '@/stores/layout.store'
+import { useToastStore } from '@/stores/toast.store'
 import { useRoleGate } from '../composables/useRoleGate'
 import BudgetTabs from '../components/BudgetTabs.vue'
 import BudgetLineRow from '../components/BudgetLineRow.vue'
@@ -243,6 +258,7 @@ const periodId = route.params.periodId as string
 
 const store = useBudgetStructureStore()
 const layoutStore = useLayoutStore()
+const toastStore = useToastStore()
 const { canWriteLines } = useRoleGate(budgetId)
 
 // Modal state
@@ -358,6 +374,12 @@ async function handleDelete(): Promise<void> {
   await store.deleteLine(budgetId, periodId, deletingLineId.value)
   showDeleteConfirm.value = false
   deletingLineId.value = null
+  toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.deleteSuccess') })
+}
+
+async function handleRestore(lineId: string): Promise<void> {
+  await store.restoreLine(budgetId, periodId, lineId, false)
+  toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.restoreSuccess') })
 }
 
 async function handleModalSubmit(payload: CreateBudgetLinePayload): Promise<void> {
@@ -365,6 +387,7 @@ async function handleModalSubmit(payload: CreateBudgetLinePayload): Promise<void
     await store.updateLine(budgetId, periodId, editingLine.value.id, payload)
   } else {
     await store.createLine(budgetId, periodId, payload)
+    toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.createSuccess') })
   }
   closeModal()
 }
@@ -412,8 +435,13 @@ async function handleInlineAddSave(): Promise<void> {
     categoryGroupId: inlineAddForm.categoryGroupId || undefined,
     categoryId: inlineAddForm.categoryId || undefined,
   })
+  toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.createSuccess') })
   showInlineAdd.value = false
 }
+
+watch(() => store.showDeletedBudgetLines, async () => {
+  await store.loadLines(budgetId, periodId)
+})
 
 onMounted(async () => {
   await Promise.all([

@@ -9,8 +9,13 @@ import type {
 const base = (budgetId: string) => `/api/budgets/${budgetId}/cycles`
 
 /** GET /api/budgets/:budgetId/cycles */
-export async function list(budgetId: string): Promise<CycleListItem[]> {
-  const { data } = await http.get<CycleListItem[]>(base(budgetId))
+export async function list(
+  budgetId: string,
+  opts?: { includeDeleted?: boolean },
+): Promise<CycleListItem[]> {
+  const { data } = await http.get<CycleListItem[]>(base(budgetId), {
+    params: opts?.includeDeleted ? { includeDeleted: true } : undefined,
+  })
   return data
 }
 
@@ -46,4 +51,15 @@ export async function remove(budgetId: string, cycleId: string): Promise<void> {
 /** PUT /api/budgets/:budgetId/active-cycle  body: { cycleId } */
 export async function setActive(budgetId: string, cycleId: string): Promise<void> {
   await http.put(`/api/budgets/${budgetId}/active-cycle`, { cycleId })
+}
+
+/** POST /api/budgets/:budgetId/cycles/:cycleId/restore */
+export async function restore(
+  budgetId: string,
+  cycleId: string,
+  includeExecutionRecords = false,
+): Promise<void> {
+  await http.post(`${base(budgetId)}/${cycleId}/restore`, null, {
+    params: { includeExecutionRecords },
+  })
 }

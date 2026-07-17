@@ -10,8 +10,14 @@ const base = (budgetId: string, cycleId: string) =>
   `/api/budgets/${budgetId}/cycles/${cycleId}/periods`
 
 /** GET /api/budgets/:budgetId/cycles/:cycleId/periods */
-export async function list(budgetId: string, cycleId: string): Promise<PeriodSummary[]> {
-  const { data } = await http.get<PeriodSummary[]>(base(budgetId, cycleId))
+export async function list(
+  budgetId: string,
+  cycleId: string,
+  opts?: { includeDeleted?: boolean },
+): Promise<PeriodSummary[]> {
+  const { data } = await http.get<PeriodSummary[]>(base(budgetId, cycleId), {
+    params: opts?.includeDeleted ? { includeDeleted: true } : undefined,
+  })
   return data
 }
 
@@ -52,4 +58,16 @@ export async function remove(
   periodId: string,
 ): Promise<void> {
   await http.delete(`${base(budgetId, cycleId)}/${periodId}`)
+}
+
+/** POST /api/budgets/:budgetId/cycles/:cycleId/periods/:periodId/restore */
+export async function restore(
+  budgetId: string,
+  cycleId: string,
+  periodId: string,
+  includeExecutionRecords = false,
+): Promise<void> {
+  await http.post(`${base(budgetId, cycleId)}/${periodId}/restore`, null, {
+    params: { includeExecutionRecords },
+  })
 }

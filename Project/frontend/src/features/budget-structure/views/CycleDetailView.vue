@@ -29,6 +29,19 @@
       </span>
     </div>
 
+    <!-- Show-deleted toggle -->
+    <div class="flex items-center gap-2 mb-4">
+      <input
+        id="show-deleted-periods"
+        v-model="store.showDeletedPeriods"
+        type="checkbox"
+        class="checkbox checkbox-sm"
+      />
+      <label for="show-deleted-periods" class="label-text cursor-pointer">
+        {{ t('budgetStructure.periods.showDeleted') }}
+      </label>
+    </div>
+
     <!-- Empty state -->
     <div v-if="!store.loading && store.periods.length === 0" class="text-center py-16">
       <p class="text-base-content/60 text-lg mb-2">{{ t('budgetStructure.periods.empty.title') }}</p>
@@ -60,15 +73,23 @@
             v-for="period in store.periods"
             :key="period.id"
             class="hover select-none"
-            :class="{ 'cursor-pointer': canWriteStructure && inlineEditingPeriodId !== period.id }"
-            @dblclick="canWriteStructure ? handleStartEdit(period) : undefined"
+            :class="{
+              'cursor-pointer': canWriteStructure && inlineEditingPeriodId !== period.id && !period.deletedAt,
+              'opacity-60': !!period.deletedAt,
+            }"
+            @dblclick="!period.deletedAt && canWriteStructure ? handleStartEdit(period) : undefined"
           >
             <!-- Name -->
             <td class="font-medium">
               <template v-if="inlineEditingPeriodId === period.id">
                 <input v-model="inlineEditForm.name" type="text" class="input input-xs input-bordered w-full" />
               </template>
-              <template v-else>{{ period.name }}</template>
+              <template v-else>
+                <span>{{ period.name }}</span>
+                <span v-if="period.deletedAt" class="badge badge-error badge-sm ml-2">
+                  {{ t('budgetStructure.common.deleted') }}
+                </span>
+              </template>
             </td>
 
             <!-- startDate -->
@@ -115,6 +136,22 @@
                     <X :size="14" />
                   </button>
                 </template>
+                <!-- Deleted period: restore only (two-step) -->
+                <template v-else-if="period.deletedAt">
+                  <button
+                    v-if="canWriteStructure"
+                    type="button"
+                    class="btn btn-success btn-xs"
+                    :disabled="restoreLoading && restoringPeriodId === period.id"
+                    @click="startRestore(period.id)"
+                  >
+                    <span v-if="restoreLoading && restoringPeriodId === period.id" class="loading loading-spinner loading-xs" />
+                    <RotateCcw v-else :size="14" />
+                    {{ t('budgetStructure.common.restore') }}
+                  </button>
+                </template>
+
+                <!-- Active period: normal actions -->
                 <template v-else>
                   <button
                     type="button"
@@ -214,19 +251,41 @@
       </div>
       <div class="modal-backdrop" @click="showDeleteConfirm = false" />
     </dialog>
+
+    <!-- Restore cascade disclosure dialog -->
+    <dialog v-if="restoreConfirmStep === 'disclosure'" class="modal modal-open">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">{{ t('budgetStructure.common.restore') }}</h3>
+        <p class="mb-3">{{ t('budgetStructure.periods.confirmRestore') }}</p>
+        <div v-if="restoreDeletedLineCount > 0" class="alert alert-warning text-sm mb-4">
+          <span>{{ t('budgetStructure.periods.restoreCascadeWarning', { count: restoreDeletedLineCount }) }}</span>
+        </div>
+        <div class="modal-action">
+          <button type="button" class="btn btn-ghost" @click="cancelRestore">
+            {{ t('budgetStructure.common.cancel') }}
+          </button>
+          <button type="button" class="btn btn-success" @click="confirmRestore">
+            {{ t('budgetStructure.common.confirm') }}
+          </button>
+        </div>
+      </div>
+      <div class="modal-backdrop" @click="cancelRestore" />
+    </dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBudgetStructureStore } from '../store'
 import { useLayoutStore } from '@/stores/layout.store'
+import { useToastStore } from '@/stores/toast.store'
 import { useRoleGate } from '../composables/useRoleGate'
-import { Check, List, Pencil, RefreshCw, Trash2, X } from 'lucide-vue-next'
+import { Check, List, Pencil, RefreshCw, RotateCcw, Trash2, X } from 'lucide-vue-next'
 import BudgetTabs from '../components/BudgetTabs.vue'
 import PeriodForm from '../components/PeriodForm.vue'
+import * as budgetLinesApi from '../api/budgetLines.api'
 import type { PeriodSummary, DateString } from '../types'
 
 const route = useRoute()
@@ -238,6 +297,7 @@ const cycleId = route.params.cycleId as string
 
 const store = useBudgetStructureStore()
 const layoutStore = useLayoutStore()
+const toastStore = useToastStore()
 const { canWriteStructure } = useRoleGate(budgetId)
 
 // Modal state
@@ -310,6 +370,38 @@ async function handleDelete(): Promise<void> {
   await store.deletePeriod(budgetId, cycleId, deletingPeriodId.value)
   showDeleteConfirm.value = false
   deletingPeriodId.value = null
+  toastStore.push({ type: 'success', title: t('budgetStructure.periods.deleteSuccess') })
+}
+
+// Restore — two-step with cascade disclosure
+const restoringPeriodId = ref<string | null>(null)
+const restoreConfirmStep = ref<'idle' | 'disclosure'>('idle')
+const restoreDeletedLineCount = ref(0)
+const restoreLoading = ref(false)
+
+async function startRestore(periodId: string): Promise<void> {
+  restoringPeriodId.value = periodId
+  restoreLoading.value = true
+  try {
+    const lines = await budgetLinesApi.list(budgetId, periodId, true)
+    restoreDeletedLineCount.value = lines.filter((l) => !!l.deletedAt).length
+    restoreConfirmStep.value = 'disclosure'
+  } finally {
+    restoreLoading.value = false
+  }
+}
+
+function cancelRestore(): void {
+  restoringPeriodId.value = null
+  restoreConfirmStep.value = 'idle'
+  restoreDeletedLineCount.value = 0
+}
+
+async function confirmRestore(): Promise<void> {
+  if (!restoringPeriodId.value) return
+  await store.restorePeriod(budgetId, cycleId, restoringPeriodId.value)
+  cancelRestore()
+  toastStore.push({ type: 'success', title: t('budgetStructure.periods.restoreSuccess') })
 }
 
 async function handleStatusChange(): Promise<void> {
@@ -339,6 +431,7 @@ async function handleFormSubmit(payload: {
       startDate: payload.startDate,
       endDate: payload.endDate,
     })
+    toastStore.push({ type: 'success', title: t('budgetStructure.periods.createSuccess') })
   }
   closeModal()
 }
@@ -346,6 +439,10 @@ async function handleFormSubmit(payload: {
 function goToLines(periodId: string): void {
   router.push({ name: 'BudgetLines', params: { budgetId, cycleId, periodId } })
 }
+
+watch(() => store.showDeletedPeriods, async () => {
+  await store.loadPeriods(budgetId, cycleId)
+})
 
 onMounted(async () => {
   await store.loadPeriods(budgetId, cycleId)

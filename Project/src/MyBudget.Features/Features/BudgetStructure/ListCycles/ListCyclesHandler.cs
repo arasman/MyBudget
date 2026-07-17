@@ -16,6 +16,8 @@ public sealed class ListCyclesHandler
 
     // Two static queries avoid string interpolation for structural SQL differences.
     // Dapper parameterization covers values only (@BudgetId); column/clause changes require separate statements.
+    // Two separate CycleRow record types are used because Dapper infers System.DateTime (not DateTimeOffset?)
+    // for NULL literal columns — using separate records avoids the constructor type-mismatch at materialisation.
     private const string SqlActive = """
         SELECT c."Id", c."Name", c."StartDate", c."EndDate", c."IsActive",
                COUNT(p."Id") AS "PeriodCount",
@@ -71,33 +73,41 @@ public sealed class ListCyclesHandler
     {
         using var conn = _factory.CreateConnection();
 
-        var sql = query.IncludeDeleted ? SqlIncludeDeleted : SqlActive;
+        if (query.IncludeDeleted)
+        {
+            var rows = await conn.QueryAsync<CycleRowDeleted>(SqlIncludeDeleted, new { BudgetId = query.BudgetId });
+            return Result<IReadOnlyList<CycleListItem>>.Success(rows.Select(MapDeleted).ToList());
+        }
+        else
+        {
+            var rows = await conn.QueryAsync<CycleRow>(SqlActive, new { BudgetId = query.BudgetId });
+            return Result<IReadOnlyList<CycleListItem>>.Success(rows.Select(MapActive).ToList());
+        }
+    }
 
-        var rows = await conn.QueryAsync<CycleRow>(sql, new { BudgetId = query.BudgetId });
+    private static CycleListItem MapActive(CycleRow r)
+    {
+        CurrencyDto? alt = r.AlternateCurrencyCode is not null
+            ? new CurrencyDto(r.AlternateCurrencyId!.Value, r.AlternateCurrencyCode, r.AlternateCurrencySymbol!)
+            : null;
+        return new CycleListItem(
+            r.Id, r.Name, r.StartDate, r.EndDate, r.IsActive, (int)r.PeriodCount,
+            new CurrencyDto(r.DefaultCurrencyId, r.DefaultCurrencyCode, r.DefaultCurrencySymbol),
+            alt, r.AlternateCurrencyId, r.ExchangeRate, null);
+    }
 
-        var items = rows
-            .Select(r =>
-            {
-                CurrencyDto? alternateCurrency = r.AlternateCurrencyCode is not null
-                    ? new CurrencyDto(r.AlternateCurrencyId!.Value, r.AlternateCurrencyCode, r.AlternateCurrencySymbol!)
-                    : null;
-
-                return new CycleListItem(
-                    r.Id,
-                    r.Name,
-                    r.StartDate,
-                    r.EndDate,
-                    r.IsActive,
-                    (int)r.PeriodCount,
-                    new CurrencyDto(r.DefaultCurrencyId, r.DefaultCurrencyCode, r.DefaultCurrencySymbol),
-                    alternateCurrency,
-                    r.AlternateCurrencyId,
-                    r.ExchangeRate,
-                    r.DeletedAt);
-            })
-            .ToList();
-
-        return Result<IReadOnlyList<CycleListItem>>.Success(items);
+    private static CycleListItem MapDeleted(CycleRowDeleted r)
+    {
+        CurrencyDto? alt = r.AlternateCurrencyCode is not null
+            ? new CurrencyDto(r.AlternateCurrencyId!.Value, r.AlternateCurrencyCode, r.AlternateCurrencySymbol!)
+            : null;
+        DateTimeOffset? deletedAt = r.DeletedAt.HasValue
+            ? new DateTimeOffset(r.DeletedAt.Value, TimeSpan.Zero)
+            : null;
+        return new CycleListItem(
+            r.Id, r.Name, r.StartDate, r.EndDate, r.IsActive, (int)r.PeriodCount,
+            new CurrencyDto(r.DefaultCurrencyId, r.DefaultCurrencyCode, r.DefaultCurrencySymbol),
+            alt, r.AlternateCurrencyId, r.ExchangeRate, deletedAt);
     }
 
     // Npgsql 10 maps PostgreSQL date as DateOnly and COUNT as Int64.
@@ -114,6 +124,23 @@ public sealed class ListCyclesHandler
         Guid?            AlternateCurrencyId,
         decimal?         ExchangeRate,
         string?          AlternateCurrencyCode,
-        string?          AlternateCurrencySymbol,
-        DateTimeOffset?  DeletedAt = null);
+        string?          AlternateCurrencySymbol);
+
+    // Extends CycleRow with DeletedAt for the IncludeDeleted=true branch.
+    // Npgsql maps timestamptz → DateTime in this project's mode; MapDeleted converts to DateTimeOffset.
+    private sealed record CycleRowDeleted(
+        Guid      Id,
+        string    Name,
+        DateOnly  StartDate,
+        DateOnly  EndDate,
+        bool      IsActive,
+        long      PeriodCount,
+        Guid      DefaultCurrencyId,
+        string    DefaultCurrencyCode,
+        string    DefaultCurrencySymbol,
+        Guid?     AlternateCurrencyId,
+        decimal?  ExchangeRate,
+        string?   AlternateCurrencyCode,
+        string?   AlternateCurrencySymbol,
+        DateTime? DeletedAt);
 }

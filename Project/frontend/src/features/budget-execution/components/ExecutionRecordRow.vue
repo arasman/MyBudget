@@ -30,9 +30,9 @@
 
     <!-- Actions -->
     <div v-if="!periodClosed && canWrite" class="flex items-center gap-1 shrink-0">
-      <!-- Edit button (not shown for deleted records) -->
+      <!-- Edit button (not shown for deleted records or confirm mode) -->
       <button
-        v-if="!record.deletedAt"
+        v-if="!record.deletedAt && !confirmingDelete"
         type="button"
         class="btn btn-xs btn-ghost"
         :title="t('budgetExecution.row.edit')"
@@ -41,19 +41,43 @@
         {{ t('budgetExecution.row.edit') }}
       </button>
 
-      <!-- Delete button (not shown for deleted records) -->
-      <button
-        v-if="!record.deletedAt"
-        type="button"
-        data-testid="delete-record-btn"
-        class="btn btn-xs btn-ghost text-error"
-        :title="t('budgetExecution.row.delete')"
-        :disabled="deleting"
-        @click="handleDelete"
-      >
-        <span v-if="deleting" class="loading loading-spinner loading-xs" />
-        <span v-else>{{ t('budgetExecution.row.delete') }}</span>
-      </button>
+      <!-- Delete — two-step confirm (not shown for deleted records) -->
+      <template v-if="!record.deletedAt">
+        <!-- Confirm state: show "Delete this entry?" label + confirm/cancel buttons -->
+        <template v-if="confirmingDelete">
+          <span class="text-xs text-error">{{ t('budgetExecution.record.confirmDelete') }}</span>
+          <button
+            type="button"
+            data-testid="delete-record-confirm-btn"
+            class="btn btn-xs btn-error"
+            :disabled="deleting"
+            @click="handleDelete"
+          >
+            <span v-if="deleting" class="loading loading-spinner loading-xs" />
+            <span v-else>{{ t('budgetExecution.row.delete') }}</span>
+          </button>
+          <button
+            type="button"
+            data-testid="delete-record-cancel-btn"
+            class="btn btn-xs btn-ghost"
+            @click="confirmingDelete = false"
+          >
+            {{ t('common.cancel') }}
+          </button>
+        </template>
+
+        <!-- Normal state: show delete button -->
+        <button
+          v-else
+          type="button"
+          data-testid="delete-record-btn"
+          class="btn btn-xs btn-ghost text-error"
+          :title="t('budgetExecution.row.delete')"
+          @click="confirmingDelete = true"
+        >
+          {{ t('budgetExecution.row.delete') }}
+        </button>
+      </template>
 
       <!-- Restore button (shown only for deleted records) -->
       <button
@@ -93,6 +117,7 @@ import type { ExecutionRecordDto } from '../types'
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useRoleGate } from '@/features/budget-structure/composables/useRoleGate'
+import { useToastStore } from '@/stores/toast.store'
 
 const props = defineProps<{
   record: ExecutionRecordDto
@@ -109,11 +134,13 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
+const toastStore = useToastStore()
 const { isOperator } = useRoleGate(props.budgetId)
 
 const canWrite = isOperator
 const deleting = ref(false)
 const restoring = ref(false)
+const confirmingDelete = ref(false)
 
 const entryTypeLabel = computed(() => {
   switch (props.record.entryType) {
@@ -174,6 +201,8 @@ async function handleDelete(): Promise<void> {
   deleting.value = true
   try {
     await matrixStore.deleteExecution(props.budgetId, props.periodId, props.lineId, props.record.id)
+    confirmingDelete.value = false
+    toastStore.push({ type: 'success', title: t('budgetExecution.record.deleteSuccess') })
   } catch {
     // Store handles error state
   } finally {
@@ -190,6 +219,7 @@ async function handleRestore(): Promise<void> {
       props.lineId,
       props.record.id,
     )
+    toastStore.push({ type: 'success', title: t('budgetExecution.record.restoreSuccess') })
   } catch {
     // Store handles error state
   } finally {

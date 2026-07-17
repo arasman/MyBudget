@@ -21,16 +21,17 @@ public static class ListCyclesEndpoint
 
     private static async Task<IResult> Handle(
         Guid id,
-        bool includeDeleted,
         IMediator mediator,
         IAuthorizationService authz,
         HttpContext httpContext,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool includeDeleted = false)
     {
-        // includeDeleted requires elevated budget:admin policy
+        // includeDeleted requires elevated budget:admin policy; pass budget id as resource
+        // so BudgetAuthorizationHandler can resolve membership correctly.
         if (includeDeleted)
         {
-            var authResult = await authz.AuthorizeAsync(httpContext.User, null, "budget:admin");
+            var authResult = await authz.AuthorizeAsync(httpContext.User, httpContext, "budget:admin");
             if (!authResult.Succeeded)
                 return Results.Forbid();
         }

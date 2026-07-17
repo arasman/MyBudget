@@ -2,6 +2,19 @@
   <div class="container mx-auto px-4 py-6">
     <BudgetTabs :budget-id="budgetId" class="mb-6" />
 
+    <!-- Show-deleted toggle -->
+    <div class="flex items-center gap-2 mb-4">
+      <input
+        id="show-deleted-groups"
+        v-model="store.showDeletedCategoryGroups"
+        type="checkbox"
+        class="checkbox checkbox-sm"
+      />
+      <label for="show-deleted-groups" class="label-text cursor-pointer">
+        {{ t('budgetStructure.categoryGroups.showDeleted') }}
+      </label>
+    </div>
+
     <!-- Loading indicator -->
     <div v-if="store.loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-md" />
@@ -30,11 +43,15 @@
           v-for="group in draggableGroups"
           :key="group.id"
           class="card bg-base-200 mb-4 shadow-sm"
+          :class="{ 'opacity-60': !!group.deletedAt }"
         >
           <div class="card-body p-4">
             <!-- Group header -->
             <div class="flex items-center gap-2 mb-3">
-              <span class="group-drag-handle cursor-grab text-base-content/40 hover:text-base-content">
+              <span
+                class="group-drag-handle cursor-grab text-base-content/40 hover:text-base-content"
+                :class="{ 'pointer-events-none': !!group.deletedAt }"
+              >
                 &#8597;
               </span>
               <template v-if="inlineEditingGroupId === group.id">
@@ -46,7 +63,10 @@
                   @keyup.escape="inlineEditingGroupId = null"
                 />
               </template>
-              <h3 v-else class="font-semibold text-base flex-1 cursor-pointer select-none" @dblclick="isAdmin ? startGroupEdit(group) : undefined">{{ group.name }}</h3>
+              <h3 v-else class="font-semibold text-base flex-1 cursor-pointer select-none" @dblclick="isAdmin && !group.deletedAt ? startGroupEdit(group) : undefined">
+                {{ group.name }}
+                <span v-if="group.deletedAt" class="badge badge-error badge-sm ml-2">{{ t('budgetStructure.common.deleted') }}</span>
+              </h3>
               <template v-if="inlineEditingGroupId === group.id">
                 <button
                   type="button"
@@ -65,6 +85,18 @@
                   <X :size="14" />
                 </button>
               </template>
+              <!-- Deleted group: restore only -->
+              <template v-else-if="group.deletedAt">
+                <button
+                  type="button"
+                  class="btn btn-success btn-xs"
+                  @click="handleRestoreGroup(group.id)"
+                >
+                  <RotateCcw :size="14" />
+                  {{ t('budgetStructure.common.restore') }}
+                </button>
+              </template>
+              <!-- Active group: edit + delete -->
               <template v-else>
                 <button
                   type="button"
@@ -85,17 +117,19 @@
               </template>
             </div>
 
-            <!-- Categories list (draggable) -->
+            <!-- Categories list (draggable) — skip drag for deleted groups -->
             <VueDraggable
               v-model="group.categories"
               handle=".cat-drag-handle"
               :animation="150"
+              :disabled="!!group.deletedAt"
               @end="() => onCategoriesReordered(group.id, group.categories)"
             >
               <div
                 v-for="category in group.categories"
                 :key="category.id"
                 class="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-base-300"
+                :class="{ 'opacity-60': !!category.deletedAt }"
               >
                 <span class="cat-drag-handle cursor-grab text-base-content/40 hover:text-base-content text-sm">
                   &#8597;
@@ -109,7 +143,10 @@
                     @keyup.escape="inlineEditingCategoryId = null"
                   />
                 </template>
-                <span v-else class="flex-1 text-sm cursor-pointer select-none" @dblclick="isAdmin ? startCategoryEdit(category) : undefined">{{ category.name }}</span>
+                <span v-else class="flex-1 text-sm cursor-pointer select-none" @dblclick="isAdmin && !category.deletedAt ? startCategoryEdit(category) : undefined">
+                  {{ category.name }}
+                  <span v-if="category.deletedAt" class="badge badge-error badge-xs ml-1">{{ t('budgetStructure.common.deleted') }}</span>
+                </span>
                 <template v-if="inlineEditingCategoryId === category.id">
                   <button
                     type="button"
@@ -128,6 +165,18 @@
                     <X :size="14" />
                   </button>
                 </template>
+                <!-- Deleted category: restore only -->
+                <template v-else-if="category.deletedAt">
+                  <button
+                    type="button"
+                    class="btn btn-success btn-xs"
+                    @click="handleRestoreCategory(group.id, category.id)"
+                  >
+                    <RotateCcw :size="14" />
+                    {{ t('budgetStructure.common.restore') }}
+                  </button>
+                </template>
+                <!-- Active category: edit + delete -->
                 <template v-else>
                   <button
                     type="button"
@@ -149,8 +198,8 @@
               </div>
             </VueDraggable>
 
-            <!-- Add category button -->
-            <div class="mt-2">
+            <!-- Add category button — only for non-deleted groups -->
+            <div v-if="!group.deletedAt" class="mt-2">
               <button
                 type="button"
                 class="btn btn-xs btn-ghost text-primary"
@@ -188,7 +237,7 @@
     <CategoryGroupForm
       v-if="showGroupForm"
       :model-value="editingGroup"
-      @submit="handleGroupFormSubmit"
+      @submit="handleGroupFormSubmitWithToast"
       @cancel="closeGroupModal"
     />
 
@@ -197,7 +246,7 @@
       v-if="showCategoryForm"
       :model-value="editingCategory"
       :group-id="activeCategoryGroupId ?? ''"
-      @submit="handleCategoryFormSubmit"
+      @submit="handleCategoryFormSubmitWithToast"
       @cancel="closeCategoryModal"
     />
 
@@ -238,13 +287,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { VueDraggable } from 'vue-draggable-plus'
-import { Check, Pencil, Trash2, X } from 'lucide-vue-next'
+import { Check, Pencil, RotateCcw, Trash2, X } from 'lucide-vue-next'
 import { useBudgetStructureStore } from '../store'
 import { useLayoutStore } from '@/stores/layout.store'
+import { useToastStore } from '@/stores/toast.store'
 import { useRoleGate } from '../composables/useRoleGate'
 import BudgetTabs from '../components/BudgetTabs.vue'
 import CategoryGroupForm from '../components/CategoryGroupForm.vue'
@@ -259,6 +309,7 @@ const budgetId = route.params.budgetId as string
 
 const store = useBudgetStructureStore()
 const layoutStore = useLayoutStore()
+const toastStore = useToastStore()
 const { isAdmin } = useRoleGate(budgetId)
 
 // Local reactive proxy for draggable (synced from store)
@@ -341,6 +392,12 @@ async function handleDeleteGroup(): Promise<void> {
   await store.deleteGroup(budgetId, deletingGroupId.value)
   showDeleteGroupConfirm.value = false
   deletingGroupId.value = null
+  toastStore.push({ type: 'success', title: t('budgetStructure.categoryGroups.deleteSuccess') })
+}
+
+async function handleRestoreGroup(groupId: string): Promise<void> {
+  await store.restoreGroup(budgetId, groupId, false)
+  toastStore.push({ type: 'success', title: t('budgetStructure.categoryGroups.restoreSuccess') })
 }
 
 // --- Category modal state ---
@@ -398,6 +455,30 @@ async function handleDeleteCategory(): Promise<void> {
   showDeleteCategoryConfirm.value = false
   deletingCategoryId.value = null
   deletingCategoryGroupId.value = null
+  toastStore.push({ type: 'success', title: t('budgetStructure.categories.deleteSuccess') })
+}
+
+async function handleRestoreCategory(groupId: string, categoryId: string): Promise<void> {
+  await store.restoreCategory(budgetId, groupId, categoryId, false)
+  toastStore.push({ type: 'success', title: t('budgetStructure.categories.restoreSuccess') })
+}
+
+// Also toast on group create
+async function handleGroupFormSubmitWithToast(payload: { name: string }): Promise<void> {
+  const isNew = !editingGroup.value
+  await handleGroupFormSubmit(payload)
+  if (isNew) {
+    toastStore.push({ type: 'success', title: t('budgetStructure.categoryGroups.createSuccess') })
+  }
+}
+
+// Also toast on category create
+async function handleCategoryFormSubmitWithToast(payload: { name: string }): Promise<void> {
+  const isNew = !editingCategory.value
+  await handleCategoryFormSubmit(payload)
+  if (isNew) {
+    toastStore.push({ type: 'success', title: t('budgetStructure.categories.createSuccess') })
+  }
 }
 
 // --- Drag-and-drop handlers ---
@@ -415,6 +496,10 @@ async function onCategoriesReordered(
 }
 
 // --- Lifecycle ---
+watch(() => store.showDeletedCategoryGroups, async () => {
+  await store.loadGroups(budgetId)
+})
+
 onMounted(async () => {
   await store.loadGroups(budgetId)
 

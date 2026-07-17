@@ -2,6 +2,19 @@
   <div class="container mx-auto px-4 py-6">
     <BudgetTabs :budget-id="budgetId" class="mb-6" />
 
+    <!-- Show-deleted toggle -->
+    <div class="flex items-center gap-2 mb-4">
+      <input
+        id="show-deleted-cycles"
+        v-model="store.showDeletedCycles"
+        type="checkbox"
+        class="checkbox checkbox-sm"
+      />
+      <label for="show-deleted-cycles" class="label-text cursor-pointer">
+        {{ t('budgetStructure.cycles.showDeleted') }}
+      </label>
+    </div>
+
     <!-- Empty state -->
     <EmptyState
       v-if="!store.loading && store.cycles.length === 0"
@@ -30,15 +43,23 @@
             v-for="cycle in store.cycles"
             :key="cycle.id"
             class="hover select-none"
-            :class="{ 'cursor-pointer': canWriteStructure && inlineEditingCycleId !== cycle.id }"
-            @dblclick="canWriteStructure ? handleStartEdit(cycle) : undefined"
+            :class="{
+              'cursor-pointer': canWriteStructure && inlineEditingCycleId !== cycle.id && !cycle.deletedAt,
+              'opacity-60': !!cycle.deletedAt,
+            }"
+            @dblclick="!cycle.deletedAt && canWriteStructure ? handleStartEdit(cycle) : undefined"
           >
             <!-- Name -->
             <td class="font-medium">
               <template v-if="inlineEditingCycleId === cycle.id">
                 <input v-model="inlineEditForm.name" type="text" class="input input-xs input-bordered w-full" />
               </template>
-              <template v-else>{{ cycle.name }}</template>
+              <template v-else>
+                <span>{{ cycle.name }}</span>
+                <span v-if="cycle.deletedAt" class="badge badge-error badge-sm ml-2">
+                  {{ t('budgetStructure.common.deleted') }}
+                </span>
+              </template>
             </td>
 
             <!-- startDate -->
@@ -95,6 +116,21 @@
                     <X :size="14" />
                   </button>
                 </template>
+                <!-- Deleted cycle: restore only -->
+                <template v-else-if="cycle.deletedAt">
+                  <button
+                    v-if="canWriteStructure"
+                    type="button"
+                    class="btn btn-success btn-xs"
+                    :title="t('budgetStructure.cycles.restoreSuccess')"
+                    @click="handleRestore(cycle.id)"
+                  >
+                    <RotateCcw :size="14" />
+                    {{ t('budgetStructure.common.restore') }}
+                  </button>
+                </template>
+
+                <!-- Active cycle: normal actions -->
                 <template v-else>
                   <button
                     type="button"
@@ -188,8 +224,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBudgetStructureStore } from '../store'
 import { useLayoutStore } from '@/stores/layout.store'
+import { useToastStore } from '@/stores/toast.store'
 import { useRoleGate } from '../composables/useRoleGate'
-import { Check, LayoutGrid, List, Pencil, Star, Trash2, X } from 'lucide-vue-next'
+import { Check, LayoutGrid, List, Pencil, RotateCcw, Star, Trash2, X } from 'lucide-vue-next'
 import BudgetTabs from '../components/BudgetTabs.vue'
 import CycleForm from '../components/CycleForm.vue'
 import EmptyState from '../components/EmptyState.vue'
@@ -203,6 +240,7 @@ const budgetId = computed(() => route.params.budgetId as string)
 
 const store = useBudgetStructureStore()
 const layoutStore = useLayoutStore()
+const toastStore = useToastStore()
 const { canWriteStructure } = useRoleGate(budgetId)
 
 // Modal state
@@ -262,6 +300,12 @@ async function handleDelete(): Promise<void> {
   await store.deleteCycle(budgetId.value, deletingCycleId.value)
   showDeleteConfirm.value = false
   deletingCycleId.value = null
+  toastStore.push({ type: 'success', title: t('budgetStructure.cycles.deleteSuccess') })
+}
+
+async function handleRestore(cycleId: string): Promise<void> {
+  await store.restoreCycle(budgetId.value, cycleId)
+  toastStore.push({ type: 'success', title: t('budgetStructure.cycles.restoreSuccess') })
 }
 
 async function handleSetActive(cycleId: string): Promise<void> {
@@ -280,6 +324,7 @@ async function handleFormSubmit(payload: {
     await store.updateCycle(budgetId.value, editingCycle.value.id, payload)
   } else {
     await store.createCycle(budgetId.value, payload)
+    toastStore.push({ type: 'success', title: t('budgetStructure.cycles.createSuccess') })
   }
   closeModal()
 }
@@ -310,6 +355,10 @@ function syncPageActions(): void {
 watch(budgetId, async (newId) => {
   await store.loadCycles(newId)
   syncPageActions()
+})
+
+watch(() => store.showDeletedCycles, async () => {
+  await store.loadCycles(budgetId.value)
 })
 
 onMounted(async () => {

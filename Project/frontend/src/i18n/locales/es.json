@@ -114,6 +114,8 @@
       "createSuccess": "Período creado exitosamente",
       "deleteSuccess": "Período eliminado exitosamente",
       "restoreSuccess": "Período restaurado exitosamente",
+      "confirmRestore": "¿Estás seguro de que deseas restaurar este período?",
+      "restoreCascadeWarning": "Esto también restaurará {count} línea(s) de presupuesto eliminada(s).",
       "showDeleted": "Mostrar eliminados",
       "changeStatus": "Cambiar estado",
       "name": "Nombre",
@@ -214,6 +216,8 @@
       "cancel": "Cancelar",
       "confirm": "Confirmar",
       "actions": "Acciones",
+      "restore": "Restaurar",
+      "deleted": "Eliminado",
       "noPermission": "No tienes permiso para realizar esta acción."
     }
   },

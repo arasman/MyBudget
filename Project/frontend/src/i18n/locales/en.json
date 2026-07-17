@@ -114,6 +114,8 @@
       "createSuccess": "Period created successfully",
       "deleteSuccess": "Period deleted successfully",
       "restoreSuccess": "Period restored successfully",
+      "confirmRestore": "Are you sure you want to restore this period?",
+      "restoreCascadeWarning": "This will also restore {count} deleted budget line(s).",
       "showDeleted": "Show deleted",
       "changeStatus": "Change Status",
       "name": "Name",
@@ -214,6 +216,8 @@
       "cancel": "Cancel",
       "confirm": "Confirm",
       "actions": "Actions",
+      "restore": "Restore",
+      "deleted": "Deleted",
       "noPermission": "You don't have permission to perform this action."
     }
   },

@@ -1,7 +1,10 @@
 <template>
   <tr
     class="hover select-none"
-    :class="{ 'cursor-pointer': !readonly && !editing }"
+    :class="{
+      'cursor-pointer': !readonly && !editing && !line.deletedAt,
+      'opacity-60': !!line.deletedAt,
+    }"
     @dblclick="onRowDblClick"
   >
     <!-- Group cell -->
@@ -56,7 +59,10 @@
           :placeholder="t('budgetStructure.budgetLines.name')"
         />
       </template>
-      <template v-else>{{ line.name }}</template>
+      <template v-else>
+        {{ line.name }}
+        <span v-if="line.deletedAt" class="badge badge-error badge-xs ml-1">{{ t('budgetStructure.common.deleted') }}</span>
+      </template>
     </td>
 
     <!-- Currency cell -->
@@ -139,6 +145,18 @@
             <X :size="14" />
           </button>
         </template>
+        <!-- Deleted line: restore only -->
+        <template v-else-if="line.deletedAt">
+          <button
+            type="button"
+            class="btn btn-success btn-xs"
+            @click.stop="emit('restore', line.id)"
+          >
+            <RotateCcw :size="14" />
+            {{ t('budgetStructure.common.restore') }}
+          </button>
+        </template>
+        <!-- Active line: edit + delete -->
         <template v-else>
           <button
             type="button"
@@ -166,7 +184,7 @@
 <script setup lang="ts">
 import { reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Pencil, Trash2, Check, X } from 'lucide-vue-next'
+import { Pencil, RotateCcw, Trash2, Check, X } from 'lucide-vue-next'
 import type { BudgetLineResponse, CategoryGroupResponse, CurrencyItem, LineType, UpdateBudgetLinePayload } from '../types'
 import { useBudgetStructureStore } from '../store'
 
@@ -180,6 +198,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   edit: [line: BudgetLineResponse]
   delete: [lineId: string]
+  restore: [lineId: string]
   startEdit: [line: BudgetLineResponse]
   inlineSave: [lineId: string, payload: UpdateBudgetLinePayload]
   inlineCancel: [lineId: string]
@@ -241,7 +260,7 @@ watch(
 )
 
 function onRowDblClick(): void {
-  if (!props.readonly && !props.editing) {
+  if (!props.readonly && !props.editing && !props.line.deletedAt) {
     emit('startEdit', props.line)
   }
 }

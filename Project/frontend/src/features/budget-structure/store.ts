@@ -37,6 +37,12 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
+  // Show-deleted toggle state (session-scoped, default OFF)
+  const showDeletedCycles = ref(false)
+  const showDeletedPeriods = ref(false)
+  const showDeletedCategoryGroups = ref(false)
+  const showDeletedBudgetLines = ref(false)
+
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
@@ -53,9 +59,10 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   // Cycles — implemented in PR2
   // ---------------------------------------------------------------------------
 
-  async function loadCycles(budgetId: string): Promise<void> {
+  async function loadCycles(budgetId: string, includeDeleted?: boolean): Promise<void> {
+    const deleted = includeDeleted ?? showDeletedCycles.value
     await _wrap(async () => {
-      cycles.value = await cyclesApi.list(budgetId)
+      cycles.value = await cyclesApi.list(budgetId, { includeDeleted: deleted })
     })
   }
 
@@ -90,7 +97,22 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   async function deleteCycle(budgetId: string, cycleId: string): Promise<void> {
     await _wrap(async () => {
       await cyclesApi.remove(budgetId, cycleId)
-      cycles.value = cycles.value.filter((c) => c.id !== cycleId)
+      if (showDeletedCycles.value) {
+        // keep row but mark deleted
+        const idx = cycles.value.findIndex((c) => c.id === cycleId)
+        if (idx !== -1) {
+          cycles.value[idx] = { ...cycles.value[idx]!, deletedAt: new Date().toISOString() }
+        }
+      } else {
+        cycles.value = cycles.value.filter((c) => c.id !== cycleId)
+      }
+    })
+  }
+
+  async function restoreCycle(budgetId: string, cycleId: string): Promise<void> {
+    await _wrap(async () => {
+      await cyclesApi.restore(budgetId, cycleId)
+      cycles.value = await cyclesApi.list(budgetId, { includeDeleted: showDeletedCycles.value })
     })
   }
 
@@ -105,10 +127,16 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   // Periods — implemented in PR3
   // ---------------------------------------------------------------------------
 
-  async function loadPeriods(budgetId: string, cycleId: string): Promise<void> {
+  async function loadPeriods(budgetId: string, cycleId: string, includeDeleted?: boolean): Promise<void> {
+    const deleted = includeDeleted ?? showDeletedPeriods.value
     await _wrap(async () => {
       currentCycle.value = await cyclesApi.get(budgetId, cycleId)
-      periods.value = currentCycle.value.periods
+      if (deleted) {
+        // Load periods separately with includeDeleted flag
+        periods.value = await periodsApi.list(budgetId, cycleId, { includeDeleted: true })
+      } else {
+        periods.value = currentCycle.value.periods
+      }
     })
   }
 
@@ -174,7 +202,21 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   ): Promise<void> {
     await _wrap(async () => {
       await periodsApi.remove(budgetId, cycleId, periodId)
-      periods.value = periods.value.filter((p) => p.id !== periodId)
+      if (showDeletedPeriods.value) {
+        const idx = periods.value.findIndex((p) => p.id === periodId)
+        if (idx !== -1) {
+          periods.value[idx] = { ...periods.value[idx]!, deletedAt: new Date().toISOString() }
+        }
+      } else {
+        periods.value = periods.value.filter((p) => p.id !== periodId)
+      }
+    })
+  }
+
+  async function restorePeriod(budgetId: string, cycleId: string, periodId: string): Promise<void> {
+    await _wrap(async () => {
+      await periodsApi.restore(budgetId, cycleId, periodId)
+      periods.value = await periodsApi.list(budgetId, cycleId, { includeDeleted: showDeletedPeriods.value })
     })
   }
 
@@ -182,9 +224,10 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   // Category groups — implemented in PR2 (load) and PR4 (mutations)
   // ---------------------------------------------------------------------------
 
-  async function loadGroups(budgetId: string, includeDeleted = false): Promise<void> {
+  async function loadGroups(budgetId: string, includeDeleted?: boolean): Promise<void> {
+    const deleted = includeDeleted ?? showDeletedCategoryGroups.value
     await _wrap(async () => {
-      categoryGroups.value = await groupsApi.list(budgetId, includeDeleted)
+      categoryGroups.value = await groupsApi.list(budgetId, deleted)
     })
   }
 
@@ -386,9 +429,10 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   // Budget lines — implemented in PR5
   // ---------------------------------------------------------------------------
 
-  async function loadLines(budgetId: string, periodId: string, includeDeleted = false): Promise<void> {
+  async function loadLines(budgetId: string, periodId: string, includeDeleted?: boolean): Promise<void> {
+    const deleted = includeDeleted ?? showDeletedBudgetLines.value
     await _wrap(async () => {
-      budgetLines.value = await budgetLinesApi.list(budgetId, periodId, includeDeleted)
+      budgetLines.value = await budgetLinesApi.list(budgetId, periodId, deleted)
     })
   }
 
@@ -457,12 +501,18 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
     budgetLines,
     loading,
     error,
+    // Show-deleted toggles
+    showDeletedCycles,
+    showDeletedPeriods,
+    showDeletedCategoryGroups,
+    showDeletedBudgetLines,
     // Cycles
     loadCycles,
     loadCycleDetail,
     createCycle,
     updateCycle,
     deleteCycle,
+    restoreCycle,
     setActiveCycle,
     // Periods
     loadPeriods,
@@ -470,6 +520,7 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
     updatePeriod,
     patchPeriodStatus,
     deletePeriod,
+    restorePeriod,
     // Groups
     loadGroups,
     createGroup,
