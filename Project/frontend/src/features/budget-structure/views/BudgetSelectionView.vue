@@ -34,7 +34,7 @@
         <div
           class="card card-border w-full select-none"
           :class="[m.isDeleted ? 'opacity-60' : '', !m.isDeleted && inlineEditingBudgetId !== m.budgetId ? 'cursor-pointer' : '']"
-          @dblclick="canEdit(m) && inlineEditingBudgetId !== m.budgetId ? startInlineEdit(m.budgetId, m.budgetName) : undefined"
+          @dblclick="!m.isDeleted && canEdit(m) && inlineEditingBudgetId !== m.budgetId ? startInlineEdit(m.budgetId, m.budgetName) : undefined"
         >
           <div class="card-body flex-row items-center justify-between py-4">
             <!-- Name area -->
