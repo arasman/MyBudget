@@ -201,7 +201,8 @@ test.describe('Budget Structure — Categories', () => {
 
     await expectToast(page, 'Category deleted successfully')
 
-    await expect(page.getByText('Food')).not.toBeVisible({ timeout: 5_000 })
+    // Soft-delete keeps the category visible with a "Deleted" badge — assert that
+    await expect(page.getByText('Food').locator('..').getByText('Deleted')).toBeVisible({ timeout: 5_000 })
 
     // --- Delete the group (should remove remaining categories) ---
     await page.getByRole('button', { name: 'Delete Group' }).first().click()
@@ -209,6 +210,7 @@ test.describe('Budget Structure — Categories', () => {
 
     await expectToast(page, 'Category group deleted successfully')
 
-    await expect(page.getByText('Expenses')).not.toBeVisible({ timeout: 5_000 })
+    // Soft-delete keeps the group visible with a "Deleted" badge — assert that
+    await expect(page.getByText('Expenses').locator('..').getByText('Deleted')).toBeVisible({ timeout: 5_000 })
   })
 })

@@ -213,6 +213,9 @@ test.describe('Budget Structure — Budget Lines', () => {
 
     await expectToast(page, 'Budget line deleted successfully')
 
-    await expect(page.getByText('Monthly Salary')).not.toBeVisible({ timeout: 8_000 })
+    // Soft-delete keeps the row visible with a "Deleted" badge (opacity-60) — assert that
+    await expect(
+      page.getByRole('row', { name: /Monthly Salary/i }).getByText('Deleted'),
+    ).toBeVisible({ timeout: 5_000 })
   })
 })
