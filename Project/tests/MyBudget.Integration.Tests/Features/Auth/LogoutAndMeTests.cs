@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyBudget.Features.SharedKernel.Persistence;
 using MyBudget.Integration.Tests.Infrastructure;
 using Shouldly;
+using MyBudget.Features.SharedKernel.Entities;
 
 namespace MyBudget.Integration.Tests.Features.Auth;
 
@@ -83,6 +84,52 @@ public sealed class LogoutAndMeTests : IntegrationTestBase
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
+    // --- GetCurrentUser IsDeleted field ---
+
+    [Fact]
+    public async Task Me_ActiveMembership_ReturnsIsDeletedFalse()
+    {
+        var login = await RegisterUserAsync("me-isdeleted-active@example.com");
+        AuthorizeClient(login.AccessToken);
+
+        var response = await Client.GetAsync("/api/auth/me");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var body = await response.Content.ReadFromJsonAsync<MeResponse>(JsonOpts);
+        body.ShouldNotBeNull();
+        body.Memberships.ShouldNotBeEmpty();
+        body.Memberships[0].IsDeleted.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Me_SoftDeletedBudget_IncludesMembershipWithIsDeletedTrue()
+    {
+        var login = await RegisterUserAsync("me-isdeleted-deleted@example.com");
+        AuthorizeClient(login.AccessToken);
+
+        // Get the auto-created budget id
+        var meInitial = await Client.GetAsync("/api/auth/me");
+        var meBody    = await meInitial.Content.ReadFromJsonAsync<MeResponse>(JsonOpts);
+        var budgetId  = meBody!.Memberships[0].BudgetId;
+
+        // Soft-delete the budget directly via the DB to bypass auth handler 404
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db     = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var budget = await db.Budgets.FindAsync(budgetId);
+            budget!.SoftDelete();
+            await db.SaveChangesAsync();
+        }
+
+        var response = await Client.GetAsync("/api/auth/me");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var body = await response.Content.ReadFromJsonAsync<MeResponse>(JsonOpts);
+        body.ShouldNotBeNull();
+        // Deleted membership MUST be included (not filtered)
+        body.Memberships.ShouldContain(m => m.BudgetId == budgetId && m.IsDeleted == true);
+    }
+
     private sealed record MeResponse(
         Guid   Id,
         string Email,
@@ -90,5 +137,5 @@ public sealed class LogoutAndMeTests : IntegrationTestBase
         string LastName,
         MembershipEntry[] Memberships);
 
-    private sealed record MembershipEntry(Guid BudgetId, string BudgetName, string Role);
+    private sealed record MembershipEntry(Guid BudgetId, string BudgetName, string Role, bool IsDeleted);
 }

@@ -7,6 +7,10 @@ public sealed class Budget : BaseEntity, IAuditableEntity
 
     public Guid OwnerId { get; private set; }
 
+    public bool IsDeleted { get; private set; } = false;
+
+    public DateTimeOffset? DeletedAt { get; private set; }
+
     // Navigation
     public User? Owner { get; private set; }
     public ICollection<BudgetMembership> Memberships { get; private set; } = new List<BudgetMembership>();
@@ -20,8 +24,32 @@ public sealed class Budget : BaseEntity, IAuditableEntity
     {
         return new Budget
         {
-            Name    = name.Trim(),
-            OwnerId = ownerId,
+            Name      = name.Trim(),
+            OwnerId   = ownerId,
+            IsDeleted = false,
         };
+    }
+
+    /// <summary>Renames the budget. Trims leading/trailing whitespace.</summary>
+    public void Rename(string newName)
+    {
+        Name      = newName.Trim();
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Soft-deletes the budget. Sets IsDeleted = true and records deletion timestamp.</summary>
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTimeOffset.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Restores a soft-deleted budget. Clears IsDeleted and DeletedAt.</summary>
+    public void Restore()
+    {
+        IsDeleted = false;
+        DeletedAt = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

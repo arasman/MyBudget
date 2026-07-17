@@ -8,7 +8,8 @@
     "confirm": "Confirm"
   },
   "nav": {
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "budgets": "Budgets"
   },
   "auth": {
     "login": {
@@ -169,7 +170,24 @@
       "title": "My Budgets",
       "singleRedirect": "Redirecting to your budget...",
       "noBudgets": "You are not a member of any budget yet.",
-      "selectBudget": "Select a budget to continue"
+      "selectBudget": "Select a budget to continue",
+      "createBudget": "New Budget",
+      "createBudgetTitle": "Create Budget",
+      "budgetNameLabel": "Budget name",
+      "budgetNamePlaceholder": "Enter budget name",
+      "budgetNameRequired": "Budget name is required",
+      "budgetNameTooLong": "Budget name must be 200 characters or fewer",
+      "createSuccess": "Budget created successfully",
+      "renameBudget": "Rename budget",
+      "viewCycles": "View cycles",
+      "deleteBudget": "Delete",
+      "confirmDeleteTitle": "Delete Budget",
+      "confirmDelete": "Are you sure you want to delete this budget?",
+      "restoreBudget": "Restore",
+      "restoreSuccess": "Budget restored successfully",
+      "showDeleted": "Show deleted",
+      "deletedBadge": "Deleted",
+      "deleteSuccess": "Budget deleted successfully"
     },
     "common": {
       "save": "Save",

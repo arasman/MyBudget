@@ -150,6 +150,15 @@ router.beforeEach(async (to) => {
         return '/login'
       }
     }
+
+    // Guard: redirect to / if navigating to a deleted budget
+    const budgetId = to.params['budgetId']
+    if (typeof budgetId === 'string' && authStore.user) {
+      const membership = authStore.user.memberships.find((m) => m.budgetId === budgetId)
+      if (membership?.isDeleted) {
+        return '/'
+      }
+    }
   }
 })
 

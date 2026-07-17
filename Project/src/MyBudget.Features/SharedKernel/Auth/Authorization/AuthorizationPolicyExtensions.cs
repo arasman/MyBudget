@@ -16,5 +16,8 @@ public static class AuthorizationPolicyExtensions
 
         opts.AddPolicy("budget:admin", policy =>
             policy.Requirements.Add(new BudgetRequirement(BudgetRole.Admin)));
+
+        opts.AddPolicy("budget:owner", policy =>
+            policy.Requirements.Add(new BudgetRequirement(BudgetRole.Owner)));
     }
 }
