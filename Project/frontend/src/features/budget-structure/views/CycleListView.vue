@@ -273,6 +273,7 @@ async function handleInlineSave(cycleId: string): Promise<void> {
     defaultCurrencyId: existing?.defaultCurrency?.id ?? '11111111-1111-1111-1111-111111111111',
   })
   inlineEditingCycleId.value = null
+  toastStore.push({ type: 'success', title: t('budgetStructure.cycles.updateSuccess') })
 }
 
 function openCreateModal(): void {
@@ -310,6 +311,7 @@ async function handleRestore(cycleId: string): Promise<void> {
 
 async function handleSetActive(cycleId: string): Promise<void> {
   await store.setActiveCycle(budgetId.value, cycleId)
+  toastStore.push({ type: 'success', title: t('budgetStructure.cycles.setActiveSuccess') })
 }
 
 async function handleFormSubmit(payload: {
@@ -322,6 +324,7 @@ async function handleFormSubmit(payload: {
 }): Promise<void> {
   if (editingCycle.value) {
     await store.updateCycle(budgetId.value, editingCycle.value.id, payload)
+    toastStore.push({ type: 'success', title: t('budgetStructure.cycles.updateSuccess') })
   } else {
     await store.createCycle(budgetId.value, payload)
     toastStore.push({ type: 'success', title: t('budgetStructure.cycles.createSuccess') })

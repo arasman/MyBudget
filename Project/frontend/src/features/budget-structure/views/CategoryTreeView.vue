@@ -333,6 +333,7 @@ async function handleGroupInlineSave(groupId: string): Promise<void> {
   if (!inlineGroupName.value.trim()) return
   await store.updateGroup(budgetId, groupId, { name: inlineGroupName.value })
   inlineEditingGroupId.value = null
+  toastStore.push({ type: 'success', title: t('budgetStructure.categoryGroups.updateSuccess') })
 }
 
 // --- Category inline edit state ---
@@ -348,6 +349,7 @@ async function handleCategoryInlineSave(groupId: string, categoryId: string): Pr
   if (!inlineCategoryName.value.trim()) return
   await store.updateCategory(budgetId, groupId, categoryId, { name: inlineCategoryName.value })
   inlineEditingCategoryId.value = null
+  toastStore.push({ type: 'success', title: t('budgetStructure.categories.updateSuccess') })
 }
 
 // --- Group modal state ---
@@ -469,6 +471,8 @@ async function handleGroupFormSubmitWithToast(payload: { name: string }): Promis
   await handleGroupFormSubmit(payload)
   if (isNew) {
     toastStore.push({ type: 'success', title: t('budgetStructure.categoryGroups.createSuccess') })
+  } else {
+    toastStore.push({ type: 'success', title: t('budgetStructure.categoryGroups.updateSuccess') })
   }
 }
 
@@ -478,6 +482,8 @@ async function handleCategoryFormSubmitWithToast(payload: { name: string }): Pro
   await handleCategoryFormSubmit(payload)
   if (isNew) {
     toastStore.push({ type: 'success', title: t('budgetStructure.categories.createSuccess') })
+  } else {
+    toastStore.push({ type: 'success', title: t('budgetStructure.categories.updateSuccess') })
   }
 }
 

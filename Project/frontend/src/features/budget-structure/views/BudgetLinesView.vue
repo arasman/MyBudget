@@ -385,6 +385,7 @@ async function handleRestore(lineId: string): Promise<void> {
 async function handleModalSubmit(payload: CreateBudgetLinePayload): Promise<void> {
   if (editingLine.value) {
     await store.updateLine(budgetId, periodId, editingLine.value.id, payload)
+    toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.updateSuccess') })
   } else {
     await store.createLine(budgetId, periodId, payload)
     toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.createSuccess') })
@@ -402,6 +403,7 @@ function handleStartEdit(line: BudgetLineResponse): void {
 async function handleInlineSave(lineId: string, payload: UpdateBudgetLinePayload): Promise<void> {
   await store.updateLine(budgetId, periodId, lineId, payload)
   inlineEditingLineId.value = null
+  toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.updateSuccess') })
 }
 
 function handleInlineCancel(_lineId: string): void {
