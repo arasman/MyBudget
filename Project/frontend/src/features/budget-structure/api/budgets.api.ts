@@ -2,8 +2,8 @@ import http from '@/api/axios'
 
 /** POST /api/budgets — creates a new budget owned by the authenticated user */
 export async function createBudget(name: string): Promise<{ id: string; name: string }> {
-  const { data } = await http.post<{ id: string; name: string }>('/api/budgets', { name })
-  return data
+  const { data } = await http.post<{ budgetId: string; name: string }>('/api/budgets', { name })
+  return { id: data.budgetId, name: data.name }
 }
 
 /** PUT /api/budgets/:id — renames an existing budget */

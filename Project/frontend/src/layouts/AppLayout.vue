@@ -50,8 +50,8 @@ const activeRoleBadge = computed(() => {
   return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
 })
 
-// Budget switcher: all memberships
-const memberships = computed(() => authStore.user?.memberships ?? [])
+// Budget switcher: active memberships only (deleted budgets excluded)
+const memberships = computed(() => authStore.user?.memberships.filter((m) => !m.isDeleted) ?? [])
 
 function switchBudget(budgetId: string, budgetName: string): void {
   layoutStore.setActiveBudget(budgetId, budgetName)
@@ -95,7 +95,7 @@ function variantClass(action: PageAction): string {
 
       <!-- Center: Budget switcher -->
       <div class="flex-1 px-2">
-        <div v-if="memberships.length > 0" class="dropdown">
+        <div v-if="memberships.length > 0 && route.name !== 'BudgetSelection'" class="dropdown">
           <label tabindex="0" class="btn btn-ghost gap-1">
             <span class="font-medium">
               {{ layoutStore.activeBudgetName ?? $t('common.appName') }}

@@ -90,12 +90,35 @@
     </ul>
 
     <CreateBudgetModal ref="createModal" @created="onBudgetCreated" />
+
+    <!-- Delete confirmation modal -->
+    <dialog v-if="pendingDeleteId" class="modal modal-open">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-2">{{ t('budgetStructure.selection.confirmDeleteTitle') }}</h3>
+        <p class="text-base-content/70">{{ t('budgetStructure.selection.confirmDelete') }}</p>
+        <div class="modal-action">
+          <button type="button" class="btn btn-ghost" :disabled="!!actionInProgress" @click="cancelDelete">
+            {{ t('common.cancel') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-error"
+            :disabled="!!actionInProgress"
+            @click="confirmDelete"
+          >
+            <span v-if="actionInProgress" class="loading loading-spinner loading-sm" />
+            {{ t('budgetStructure.selection.deleteBudget') }}
+          </button>
+        </div>
+      </div>
+      <div class="modal-backdrop" @click="cancelDelete" />
+    </dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLayoutStore } from '@/stores/layout.store'
@@ -106,9 +129,11 @@ const { t } = useI18n()
 const authStore = useAuthStore()
 const layoutStore = useLayoutStore()
 const router = useRouter()
+const route = useRoute()
 
 const showDeleted = ref(false)
 const actionInProgress = ref<string | null>(null)
+const pendingDeleteId = ref<string | null>(null)
 const createModal = ref<InstanceType<typeof CreateBudgetModal>>()
 
 const memberships = computed(() => authStore.user?.memberships ?? [])
@@ -134,12 +159,26 @@ async function onBudgetCreated(budget: { id: string; name: string }): Promise<vo
   selectBudget(budget.id, budget.name)
 }
 
-async function onDelete(budgetId: string): Promise<void> {
-  if (!confirm(t('budgetStructure.selection.confirmDelete'))) return
+function onDelete(budgetId: string): void {
+  pendingDeleteId.value = budgetId
+}
+
+function cancelDelete(): void {
+  if (actionInProgress.value) return
+  pendingDeleteId.value = null
+}
+
+async function confirmDelete(): Promise<void> {
+  if (!pendingDeleteId.value) return
+  const budgetId = pendingDeleteId.value
   actionInProgress.value = budgetId
   try {
     await deleteBudget(budgetId)
     await authStore.fetchMe()
+    if (layoutStore.activeBudgetId === budgetId) {
+      layoutStore.clearActiveBudget()
+    }
+    pendingDeleteId.value = null
   } finally {
     actionInProgress.value = null
   }
@@ -156,7 +195,9 @@ async function onRestore(budgetId: string): Promise<void> {
 }
 
 onMounted(() => {
-  // Auto-redirect when the user belongs to exactly one active budget.
+  // Auto-redirect when the user belongs to exactly one active budget,
+  // but NOT when navigating intentionally via ?manage=1 (e.g. from BudgetTabs back-link).
+  if (route.query.manage) return
   if (activeCount.value === 1) {
     const m = memberships.value.find((m) => !m.isDeleted)!
     selectBudget(m.budgetId, m.budgetName)

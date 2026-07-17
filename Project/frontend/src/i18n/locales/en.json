@@ -8,7 +8,8 @@
     "confirm": "Confirm"
   },
   "nav": {
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "budgets": "Budgets"
   },
   "auth": {
     "login": {
@@ -178,6 +179,7 @@
       "budgetNameTooLong": "Budget name must be 200 characters or fewer",
       "createSuccess": "Budget created successfully",
       "deleteBudget": "Delete",
+      "confirmDeleteTitle": "Delete Budget",
       "confirmDelete": "Are you sure you want to delete this budget?",
       "restoreBudget": "Restore",
       "restoreSuccess": "Budget restored successfully",

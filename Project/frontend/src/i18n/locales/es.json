@@ -8,7 +8,8 @@
     "confirm": "Confirmar"
   },
   "nav": {
-    "backToHome": "Volver al inicio"
+    "backToHome": "Volver al inicio",
+    "budgets": "Presupuestos"
   },
   "auth": {
     "login": {
@@ -178,6 +179,7 @@
       "budgetNameTooLong": "El nombre del presupuesto debe tener 200 caracteres o menos",
       "createSuccess": "Presupuesto creado exitosamente",
       "deleteBudget": "Eliminar",
+      "confirmDeleteTitle": "Eliminar presupuesto",
       "confirmDelete": "¿Estás seguro de que deseas eliminar este presupuesto?",
       "restoreBudget": "Restaurar",
       "restoreSuccess": "Presupuesto restaurado exitosamente",

@@ -1,30 +1,40 @@
 <template>
-  <div role="tablist" class="tabs tabs-border">
-    <RouterLink
-      :to="{ name: 'CycleList', params: { budgetId } }"
-      role="tab"
-      class="tab"
-      :class="{ 'tab-active': isActive('CycleList') }"
-    >
-      Cycles
-    </RouterLink>
-    <RouterLink
-      :to="{ name: 'CategoryTree', params: { budgetId } }"
-      role="tab"
-      class="tab"
-      :class="{ 'tab-active': isActive('CategoryTree') }"
-    >
-      Categories
-    </RouterLink>
-    <RouterLink
-      v-if="cycleId"
-      :to="{ name: 'BudgetMatrix', params: { budgetId, cycleId } }"
-      role="tab"
-      class="tab"
-      :class="{ 'tab-active': isActive('BudgetMatrix') }"
-    >
-      {{ t('budgetMatrix.title') }}
-    </RouterLink>
+  <div>
+    <div class="px-1 pb-1">
+      <RouterLink
+        :to="{ name: 'BudgetSelection', query: { manage: '1' } }"
+        class="text-xs text-base-content/50 hover:text-base-content transition-colors"
+      >
+        ← {{ t('nav.budgets') }}
+      </RouterLink>
+    </div>
+    <div role="tablist" class="tabs tabs-border">
+      <RouterLink
+        :to="{ name: 'CycleList', params: { budgetId } }"
+        role="tab"
+        class="tab"
+        :class="{ 'tab-active': isActive('CycleList') }"
+      >
+        Cycles
+      </RouterLink>
+      <RouterLink
+        :to="{ name: 'CategoryTree', params: { budgetId } }"
+        role="tab"
+        class="tab"
+        :class="{ 'tab-active': isActive('CategoryTree') }"
+      >
+        Categories
+      </RouterLink>
+      <RouterLink
+        v-if="cycleId"
+        :to="{ name: 'BudgetMatrix', params: { budgetId, cycleId } }"
+        role="tab"
+        class="tab"
+        :class="{ 'tab-active': isActive('BudgetMatrix') }"
+      >
+        {{ t('budgetMatrix.title') }}
+      </RouterLink>
+    </div>
   </div>
 </template>
 

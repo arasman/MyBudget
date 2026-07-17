@@ -183,7 +183,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBudgetStructureStore } from '../store'
@@ -199,7 +199,7 @@ const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 
-const budgetId = route.params.budgetId as string
+const budgetId = computed(() => route.params.budgetId as string)
 
 const store = useBudgetStructureStore()
 const layoutStore = useLayoutStore()
@@ -228,7 +228,7 @@ function handleStartEdit(cycle: CycleListItem): void {
 
 async function handleInlineSave(cycleId: string): Promise<void> {
   const existing = store.cycles.find((c) => c.id === cycleId)
-  await store.updateCycle(budgetId, cycleId, {
+  await store.updateCycle(budgetId.value, cycleId, {
     name: inlineEditForm.name,
     startDate: inlineEditForm.startDate,
     endDate: inlineEditForm.endDate,
@@ -259,13 +259,13 @@ function confirmDelete(cycleId: string): void {
 
 async function handleDelete(): Promise<void> {
   if (!deletingCycleId.value) return
-  await store.deleteCycle(budgetId, deletingCycleId.value)
+  await store.deleteCycle(budgetId.value, deletingCycleId.value)
   showDeleteConfirm.value = false
   deletingCycleId.value = null
 }
 
 async function handleSetActive(cycleId: string): Promise<void> {
-  await store.setActiveCycle(budgetId, cycleId)
+  await store.setActiveCycle(budgetId.value, cycleId)
 }
 
 async function handleFormSubmit(payload: {
@@ -277,24 +277,22 @@ async function handleFormSubmit(payload: {
   exchangeRate?: number
 }): Promise<void> {
   if (editingCycle.value) {
-    await store.updateCycle(budgetId, editingCycle.value.id, payload)
+    await store.updateCycle(budgetId.value, editingCycle.value.id, payload)
   } else {
-    await store.createCycle(budgetId, payload)
+    await store.createCycle(budgetId.value, payload)
   }
   closeModal()
 }
 
 function goToDetail(cycleId: string): void {
-  router.push({ name: 'CycleDetail', params: { budgetId, cycleId } })
+  router.push({ name: 'CycleDetail', params: { budgetId: budgetId.value, cycleId } })
 }
 
 function goToMatrix(cycleId: string): void {
-  router.push({ name: 'BudgetMatrix', params: { budgetId, cycleId } })
+  router.push({ name: 'BudgetMatrix', params: { budgetId: budgetId.value, cycleId } })
 }
 
-onMounted(async () => {
-  await store.loadCycles(budgetId)
-
+function syncPageActions(): void {
   if (canWriteStructure.value) {
     layoutStore.setPageActions([
       {
@@ -304,7 +302,19 @@ onMounted(async () => {
         variant: 'primary',
       },
     ])
+  } else {
+    layoutStore.clearPageActions()
   }
+}
+
+watch(budgetId, async (newId) => {
+  await store.loadCycles(newId)
+  syncPageActions()
+})
+
+onMounted(async () => {
+  await store.loadCycles(budgetId.value)
+  syncPageActions()
 })
 
 onUnmounted(() => {
