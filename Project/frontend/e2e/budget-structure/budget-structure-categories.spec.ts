@@ -22,13 +22,16 @@ test.describe('Budget Structure — Categories', () => {
       await page.goto(`/budgets/${budgetId}/categories`)
       await expect(page).toHaveURL(`/budgets/${budgetId}/categories`, { timeout: 10_000 })
 
+      // Wait for the list container to mount before asserting absence
+      await expect(page.getByRole('table')).toBeVisible({ timeout: 10_000 })
+
       // Deleted group must NOT be visible with toggle OFF (default)
       await expect(page.getByText('Deleted Group').first()).not.toBeVisible({ timeout: 5_000 })
 
       // Toggle ON
       await page.getByLabel('Show deleted').check()
 
-      await expect(page.locator(`[data-id="${deletedGroupId}"], tr, li`).filter({ hasText: 'Deleted Group' }).first()).toBeVisible({ timeout: 5_000 })
+      await expect(page.getByRole('row').filter({ hasText: 'Deleted Group' }).first()).toBeVisible({ timeout: 5_000 })
     })
 
     test('toggle OFF hides deleted category group', async ({ page }) => {
@@ -65,6 +68,9 @@ test.describe('Budget Structure — Categories', () => {
 
       await page.goto(`/budgets/${budgetId}/categories`)
       await expect(page).toHaveURL(`/budgets/${budgetId}/categories`, { timeout: 10_000 })
+
+      // Wait for the list container to mount before asserting absence
+      await expect(page.getByRole('table')).toBeVisible({ timeout: 10_000 })
 
       // Deleted category must NOT be visible with toggle OFF (default)
       await expect(page.getByText('Deleted Category').first()).not.toBeVisible({ timeout: 5_000 })

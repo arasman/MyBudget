@@ -15,7 +15,7 @@ export async function seedOwnerAndLogin(page: Page, prefix = 'bs'): Promise<{
   budgetId: string
   budgetName: string
 }> {
-  const email = `e2e-${prefix}-${Date.now()}@example.com`
+  const email = `e2e-${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`
 
   // Register → get tokens
   const regResp = await page.request.post('/api/auth/register', {
@@ -107,7 +107,7 @@ export async function loginViaUi(page: Page, email: string): Promise<void> {
 export async function expectToast(page: Page, text: string): Promise<void> {
   await expect(
     page.getByRole('alert').filter({ hasText: text }),
-  ).toBeVisible({ timeout: 5_000 })
+  ).toBeVisible({ timeout: 8_000 })
 }
 
 /**

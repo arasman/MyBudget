@@ -71,6 +71,9 @@ test.describe('Budget Structure — Cycles CRUD', () => {
       await page.goto(`/budgets/${budgetId}/cycles`)
       await expect(page).toHaveURL(`/budgets/${budgetId}/cycles`, { timeout: 10_000 })
 
+      // Wait for the list container to mount before asserting absence
+      await expect(page.getByRole('table')).toBeVisible({ timeout: 10_000 })
+
       // Deleted cycle must NOT be visible with toggle OFF (default)
       await expect(page.getByText(`Deleted Cycle`).first()).not.toBeVisible({ timeout: 5_000 })
 
@@ -78,7 +81,7 @@ test.describe('Budget Structure — Cycles CRUD', () => {
       await page.getByLabel('Show deleted').check()
 
       // Deleted cycle must appear after toggle ON
-      await expect(page.locator(`[data-id="${deletedCycleId}"], tr`).filter({ hasText: 'Deleted Cycle' }).first()).toBeVisible({ timeout: 5_000 })
+      await expect(page.getByRole('row').filter({ hasText: 'Deleted Cycle' }).first()).toBeVisible({ timeout: 5_000 })
     })
 
     test('toggle OFF hides deleted cycle', async ({ page }) => {

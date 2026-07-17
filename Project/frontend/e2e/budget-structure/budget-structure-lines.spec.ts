@@ -56,13 +56,16 @@ test.describe('Budget Structure — Budget Lines', () => {
         { timeout: 10_000 },
       )
 
+      // Wait for the list container to mount before asserting absence
+      await expect(page.getByRole('table')).toBeVisible({ timeout: 10_000 })
+
       // Deleted line must NOT be visible with toggle OFF (default)
       await expect(page.getByText('Deleted Line').first()).not.toBeVisible({ timeout: 5_000 })
 
       // Toggle ON
       await page.getByLabel('Show deleted').check()
 
-      await expect(page.locator(`[data-id="${deletedLineId}"], tr`).filter({ hasText: 'Deleted Line' }).first()).toBeVisible({ timeout: 5_000 })
+      await expect(page.getByRole('row').filter({ hasText: 'Deleted Line' }).first()).toBeVisible({ timeout: 5_000 })
     })
 
     test('toggle OFF hides deleted budget line', async ({ page }) => {
