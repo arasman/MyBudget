@@ -7,6 +7,7 @@ export interface BudgetMembershipDto {
   budgetId: string
   budgetName: string
   role: string
+  isDeleted: boolean
 }
 
 export interface User {

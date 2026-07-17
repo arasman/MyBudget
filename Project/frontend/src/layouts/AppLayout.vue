@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLayoutStore } from '@/stores/layout.store'
 import { useNotificationStore } from '@/stores/notification.store'
@@ -8,9 +8,23 @@ import type { PageAction } from '@/stores/layout.store'
 import ChangePasswordModal from '@/components/auth/ChangePasswordModal.vue'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const layoutStore = useLayoutStore()
 const notificationStore = useNotificationStore()
+
+// On mount: restore activeBudgetName from memberships when missing (e.g. after page reload)
+onMounted(() => {
+  if (!layoutStore.activeBudgetName) {
+    const budgetId = route.params['budgetId']
+    if (typeof budgetId === 'string' && authStore.user) {
+      const membership = authStore.user.memberships.find((m) => m.budgetId === budgetId)
+      if (membership && !membership.isDeleted) {
+        layoutStore.setActiveBudget(budgetId, membership.budgetName)
+      }
+    }
+  }
+})
 
 const changePasswordModal = ref<InstanceType<typeof ChangePasswordModal>>()
 

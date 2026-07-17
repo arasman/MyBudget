@@ -169,7 +169,21 @@
       "title": "Mis presupuestos",
       "singleRedirect": "Redirigiendo a tu presupuesto...",
       "noBudgets": "Aún no eres miembro de ningún presupuesto.",
-      "selectBudget": "Selecciona un presupuesto para continuar"
+      "selectBudget": "Selecciona un presupuesto para continuar",
+      "createBudget": "Nuevo Presupuesto",
+      "createBudgetTitle": "Crear Presupuesto",
+      "budgetNameLabel": "Nombre del presupuesto",
+      "budgetNamePlaceholder": "Ingresa el nombre del presupuesto",
+      "budgetNameRequired": "El nombre del presupuesto es obligatorio",
+      "budgetNameTooLong": "El nombre del presupuesto debe tener 200 caracteres o menos",
+      "createSuccess": "Presupuesto creado exitosamente",
+      "deleteBudget": "Eliminar",
+      "confirmDelete": "¿Estás seguro de que deseas eliminar este presupuesto?",
+      "restoreBudget": "Restaurar",
+      "restoreSuccess": "Presupuesto restaurado exitosamente",
+      "showDeleted": "Mostrar eliminados",
+      "deletedBadge": "Eliminado",
+      "deleteSuccess": "Presupuesto eliminado exitosamente"
     },
     "common": {
       "save": "Guardar",
