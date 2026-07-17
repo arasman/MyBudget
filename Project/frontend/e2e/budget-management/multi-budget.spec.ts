@@ -119,8 +119,11 @@ test.describe('Multi-budget — delete (soft)', () => {
   test('owner can soft-delete a budget; deleted budget disappears from active list', async ({ page }) => {
     const { accessToken } = await seedOwnerAndLogin(page, 'mb-delete')
     const targetId = await createSecondBudget(page, accessToken, 'Budget To Delete')
+    // Third budget keeps activeCount >= 2 after deletion so BudgetSelectionView
+    // does NOT auto-redirect and the URL stays at / (the expected value).
+    await createSecondBudget(page, accessToken, 'Anchor Budget')
 
-    // 2 budgets → no auto-redirect
+    // 3 budgets → no auto-redirect
     await page.goto('/')
     await expect(page).toHaveURL('/', { timeout: 5_000 })
 

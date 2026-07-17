@@ -80,10 +80,12 @@ test.describe('BudgetMatrix execution CRUD', () => {
     expect(createResp.status()).toBe(201)
     await expect(modal.locator('[data-testid="execution-record-row"]')).toHaveCount(1)
 
-    // Delete the record
+    // Delete the record — two-step confirm: first click enters confirm state
+    await modal.locator('[data-testid="execution-record-row"]').first().getByTestId('delete-record-btn').click()
+    // Second click on confirm button triggers the actual DELETE request
     const [deleteResp] = await Promise.all([
       page.waitForResponse((r) => r.url().includes('/executions/') && r.request().method() === 'DELETE'),
-      modal.locator('[data-testid="execution-record-row"]').first().getByTestId('delete-record-btn').click(),
+      modal.locator('[data-testid="execution-record-row"]').first().getByTestId('delete-record-confirm-btn').click(),
     ])
     expect(deleteResp.status()).toBe(204)
 
