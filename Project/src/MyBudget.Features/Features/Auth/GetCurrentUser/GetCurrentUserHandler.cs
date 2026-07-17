@@ -37,7 +37,7 @@ public sealed class GetCurrentUserHandler
 
         var memberships = (await conn.QueryAsync<MembershipRow>(
             """
-            SELECT bm."BudgetId", b."Name" AS BudgetName, bm."Role"
+            SELECT bm."BudgetId", b."Name" AS BudgetName, bm."Role", b."IsDeleted"
             FROM "BudgetMemberships" bm
             JOIN "Budgets" b ON b."Id" = bm."BudgetId"
             WHERE bm."UserId" = @UserId
@@ -49,7 +49,8 @@ public sealed class GetCurrentUserHandler
             .Select(m => new BudgetMembershipDto(
                 m.BudgetId,
                 m.BudgetName,
-                ((BudgetRole)m.Role).ToString().ToLowerInvariant()))
+                ((BudgetRole)m.Role).ToString().ToLowerInvariant(),
+                m.IsDeleted))
             .ToList();
 
         var response = new CurrentUserResponse(
@@ -74,5 +75,5 @@ public sealed class GetCurrentUserHandler
         DateTime? LastLoginAt,
         DateTime  CreatedAt);  // Dapper reads timestamp with time zone as DateTime (UTC) via Npgsql 8+
 
-    private sealed record MembershipRow(Guid BudgetId, string BudgetName, int Role);
+    private sealed record MembershipRow(Guid BudgetId, string BudgetName, int Role, bool IsDeleted);
 }

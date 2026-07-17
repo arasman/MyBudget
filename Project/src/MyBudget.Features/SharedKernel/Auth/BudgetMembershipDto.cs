@@ -4,4 +4,5 @@ namespace MyBudget.Features.SharedKernel.Auth;
 public sealed record BudgetMembershipDto(
     Guid   BudgetId,
     string BudgetName,
-    string Role);
+    string Role,
+    bool   IsDeleted);

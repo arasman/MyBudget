@@ -49,20 +49,22 @@ public sealed class BudgetAuthorizationHandler
         var cacheKey = $"budget-membership:{userId}:{budgetId}";
         if (!_cache.TryGetValue(cacheKey, out BudgetRole? cachedRole))
         {
-            // 4. Dapper fallback
+            // 4. Dapper fallback — JOIN Budgets to filter out soft-deleted budgets
             using var conn  = _factory.CreateConnection();
             var role = await conn.QuerySingleOrDefaultAsync<int?>(
                 """
-                SELECT "Role"
-                FROM "BudgetMemberships"
-                WHERE "UserId" = @UserId AND "BudgetId" = @BudgetId
+                SELECT bm."Role"
+                FROM "BudgetMemberships" bm
+                JOIN "Budgets" b ON b."Id" = bm."BudgetId"
+                WHERE bm."UserId" = @UserId AND bm."BudgetId" = @BudgetId
+                  AND b."IsDeleted" = false
                 LIMIT 1
                 """,
                 new { UserId = userId, BudgetId = budgetId });
 
             if (!role.HasValue)
             {
-                // Distinguish "budget not found" from "user not a member" so the
+                // Distinguish "budget not found or deleted" from "user not a member" so the
                 // middleware result handler can return 404 instead of 403.
                 var budgetExists = await conn.ExecuteScalarAsync<bool>(
                     """SELECT COUNT(1) > 0 FROM "Budgets" WHERE "Id" = @BudgetId""",
@@ -70,6 +72,17 @@ public sealed class BudgetAuthorizationHandler
 
                 if (!budgetExists && httpContext is not null)
                     httpContext.Items["budget-not-found"] = true;
+
+                // If budget exists but is soft-deleted, also set budget-not-found flag
+                if (budgetExists && httpContext is not null)
+                {
+                    var isDeleted = await conn.ExecuteScalarAsync<bool>(
+                        """SELECT "IsDeleted" FROM "Budgets" WHERE "Id" = @BudgetId LIMIT 1""",
+                        new { BudgetId = budgetId });
+
+                    if (isDeleted)
+                        httpContext.Items["budget-not-found"] = true;
+                }
 
                 context.Fail();
                 return;

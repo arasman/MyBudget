@@ -14,6 +14,13 @@ public sealed class BudgetConfiguration : IEntityTypeConfiguration<Budget>
             .IsRequired()
             .HasMaxLength(200);
 
+        builder.Property(b => b.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(b => b.DeletedAt)
+            .IsRequired(false);
+
         builder.HasOne(b => b.Owner)
             .WithMany()
             .HasForeignKey(b => b.OwnerId)
