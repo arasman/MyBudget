@@ -331,6 +331,7 @@ async function handleInlineSave(periodId: string): Promise<void> {
     endDate: inlineEditForm.endDate,
   })
   inlineEditingPeriodId.value = null
+  toastStore.push({ type: 'success', title: t('budgetStructure.periods.updateSuccess') })
 }
 
 function statusBadgeClass(status: string): string {
@@ -411,6 +412,7 @@ async function handleStatusChange(): Promise<void> {
   })
   showStatusDialog.value = false
   statusTargetId.value = null
+  toastStore.push({ type: 'success', title: t('budgetStructure.periods.statusSuccess') })
 }
 
 async function handleFormSubmit(payload: {
@@ -425,6 +427,7 @@ async function handleFormSubmit(payload: {
       startDate: payload.startDate,
       endDate: payload.endDate,
     })
+    toastStore.push({ type: 'success', title: t('budgetStructure.periods.updateSuccess') })
   } else {
     await store.createPeriod(budgetId, cycleId, {
       name: payload.name,
