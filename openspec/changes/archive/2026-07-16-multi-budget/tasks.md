@@ -121,8 +121,8 @@ Chain strategy: feature-branch-chain
 
 ## Phase 5: Verification
 
-- [ ] 5.1 — Run `dotnet test` in `Project/tests/`; all tests green including new slices and modified auth tests.
+- [x] 5.1 — Run `dotnet test` in `Project/tests/`; all tests green including new slices and modified auth tests. (306 backend tests passed; marked complete per verify-report)
 
-- [ ] 5.2 — Run `npm run test:unit` in `Project/frontend/`; all new component and existing tests pass.
+- [x] 5.2 — Run `npm run test:unit` in `Project/frontend/`; all new component and existing tests pass. (211 frontend tests passed; marked complete per verify-report)
 
-- [ ] 5.3 — Apply migration against dev DB (`dotnet ef database update`) and verify: existing budgets have `IsDeleted = false`; `GET /api/auth/me` includes `isDeleted` on memberships; `POST /api/budgets` creates budget; `DELETE` + `POST .../restore` round-trip; router guard redirects on deleted budget navigation.
+- [ ] 5.3 — Apply migration against dev DB (`dotnet ef database update`) and verify: existing budgets have `IsDeleted = false`; `GET /api/auth/me` includes `isDeleted` on memberships; `POST /api/budgets` creates budget; `DELETE` + `POST .../restore` round-trip; router guard redirects on deleted budget navigation. (Manual smoke — not a blocker for archive per PASS WITH WARNINGS verdict)

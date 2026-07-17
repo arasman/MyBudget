@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-15 (budget-execution-multicurrency archived)
+**Last updated**: 2026-07-16 (multi-budget archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -295,18 +295,22 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 9. `multi-budget` ⏳ planned
+### 9. `multi-budget` ✅ archived 2026-07-16
 
-**What**: Allow each user to own and belong to multiple budgets.
+**What**: Allow each user to own and belong to multiple budgets — create, rename, soft-delete, restore.
 
-**Domain**: Currently a budget is auto-created on registration and users land directly on it. With multi-budget, users can create additional budgets, switch between them, and receive invitations to multiple budgets.
+**Scope in**:
+- Backend: `IsDeleted`/`DeletedAt` soft-delete columns on Budget; 4 VSA slices (CreateBudget, RenameBudget, DeleteBudget, RestoreBudget); `budget:owner` policy for delete; `BudgetAuthorizationHandler` JOIN filters deleted budgets (returns 404); `isDeleted` field on `GET /auth/me` memberships
+- Frontend: `BudgetSelectionView` — create modal (daisyUI `showModal()`), delete confirm modal, restore, show-deleted toggle, inline rename (double-click / pencil icon), icon actions (List / Pencil / Trash2); `BudgetTabs` back-link `← Budgets` with `?manage=1` redirect bypass; `AppLayout` budget switcher filters deleted budgets and hides on BudgetSelection route; `CycleListView` reactive `budgetId` computed + watch for budget switch without remount; router guard redirects deleted budget URLs to `/`
+- E2E: `e2e/budget-management/multi-budget.spec.ts` — 8 tests (create, validate, delete, restore, guard, reload)
+- i18n: budget-management keys (EN + ES)
 
-**Scope in** *(requires full SDD exploration)*:
-- Backend: `CreateBudget`, `ListMyBudgets`, `DeleteBudget` slices; remove auto-redirect assumption
-- Frontend: BudgetSelector shows all budgets with create option; `/budgets` landing page lists budgets; budget switcher in sidebar
-- RBAC: only owners can delete a budget; existing per-budget roles unchanged
+**Scope out**: Budget templates, cloning, shared budgets beyond invitation model.
+**Deferred (→ `soft-delete-ux`)**: Confirmation modal + show-deleted toggle + restore in CategoryTree, BudgetLines, CycleDetail.
+**Deferred (→ backlog)**: Success toasts for create/delete/restore; E2E debt (budget-structure-ui 16 specs, budget-execution-ui 11 specs).
 
-**Scope out**: Budget templates, budget cloning, shared budgets beyond the invitation model.
+**Tests**: 306 backend + 211 frontend — all green; 8 E2E passing
+**SDD artifacts**: `openspec/changes/archive/2026-07-16-multi-budget/`
 
 ---
 
