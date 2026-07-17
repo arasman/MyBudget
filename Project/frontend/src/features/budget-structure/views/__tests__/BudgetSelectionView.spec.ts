@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/vue'
 import { createI18n } from 'vue-i18n'
 import { createRouter, createMemoryHistory } from 'vue-router'
+import { createPinia, setActivePinia } from 'pinia'
 import BudgetSelectionView from '../BudgetSelectionView.vue'
 
 // Hoist mocks for stable references inside vi.mock factories
@@ -65,6 +66,8 @@ function makeI18n() {
             restoreBudget: 'Restore',
             deleteBudget: 'Delete',
             confirmDelete: 'Are you sure you want to delete this budget?',
+            deleteSuccess: 'Budget deleted successfully',
+            restoreSuccess: 'Budget restored successfully',
           },
         },
       },
@@ -123,9 +126,11 @@ function renderView(
   }>,
 ) {
   setupStores(memberships)
+  const pinia = createPinia()
+  setActivePinia(pinia)
   return render(BudgetSelectionView, {
     global: {
-      plugins: [makeI18n(), makeRouter()],
+      plugins: [pinia, makeI18n(), makeRouter()],
     },
   })
 }

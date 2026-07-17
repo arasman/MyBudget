@@ -9,6 +9,8 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.{test,spec}.ts'],
     passWithNoTests: true,
+    // Fail CI if test.only / describe.only is committed
+    allowOnly: !process.env['CI'],
   },
   resolve: {
     alias: {

@@ -4,16 +4,20 @@ using MyBudget.Features.Features.BudgetStructure.GetCycleDetail;
 
 namespace MyBudget.Features.Features.BudgetStructure.ListCycles;
 
-public sealed record ListCyclesQuery(Guid BudgetId) : IRequest<Result<IReadOnlyList<CycleListItem>>>;
+public sealed record ListCyclesQuery(
+    Guid BudgetId,
+    bool IncludeDeleted = false
+) : IRequest<Result<IReadOnlyList<CycleListItem>>>;
 
 public sealed record CycleListItem(
-    Guid        Id,
-    string      Name,
-    DateOnly    StartDate,
-    DateOnly    EndDate,
-    bool        IsActive,
-    int         PeriodCount,
-    CurrencyDto  DefaultCurrency,
-    CurrencyDto? AlternateCurrency,
-    Guid?       AlternateCurrencyId,
-    decimal?    ExchangeRate);
+    Guid              Id,
+    string            Name,
+    DateOnly          StartDate,
+    DateOnly          EndDate,
+    bool              IsActive,
+    int               PeriodCount,
+    CurrencyDto       DefaultCurrency,
+    CurrencyDto?      AlternateCurrency,
+    Guid?             AlternateCurrencyId,
+    decimal?          ExchangeRate,
+    DateTimeOffset?   DeletedAt = null);

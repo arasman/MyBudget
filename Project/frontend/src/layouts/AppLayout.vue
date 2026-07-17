@@ -6,6 +6,7 @@ import { useLayoutStore } from '@/stores/layout.store'
 import { useNotificationStore } from '@/stores/notification.store'
 import type { PageAction } from '@/stores/layout.store'
 import ChangePasswordModal from '@/components/auth/ChangePasswordModal.vue'
+import AppToast from '@/components/AppToast.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -259,5 +260,8 @@ function variantClass(action: PageAction): string {
     <main>
       <RouterView />
     </main>
+
+    <!-- Ephemeral toast overlay (bottom-right, above modals) -->
+    <AppToast />
   </div>
 </template>

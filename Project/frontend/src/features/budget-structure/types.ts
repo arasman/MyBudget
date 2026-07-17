@@ -56,6 +56,7 @@ export interface CycleListItem {
   alternateCurrency?: CurrencyItem | null
   alternateCurrencyId?: string | null
   exchangeRate?: number | null
+  deletedAt?: string | null
 }
 
 export interface CycleDetail extends Omit<CycleListItem, 'periodCount'> {

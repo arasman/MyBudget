@@ -174,6 +174,7 @@ import { useI18n } from 'vue-i18n'
 import { Check, List, Pencil, Trash2, X } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLayoutStore } from '@/stores/layout.store'
+import { useToastStore } from '@/stores/toast.store'
 import { deleteBudget, renameBudget, restoreBudget } from '../api/budgets.api'
 import CreateBudgetModal from '../components/CreateBudgetModal.vue'
 import type { BudgetMembershipDto } from '@/stores/auth.store'
@@ -181,6 +182,7 @@ import type { BudgetMembershipDto } from '@/stores/auth.store'
 const { t } = useI18n()
 const authStore = useAuthStore()
 const layoutStore = useLayoutStore()
+const toastStore = useToastStore()
 const router = useRouter()
 const route = useRoute()
 
@@ -271,6 +273,7 @@ async function confirmDelete(): Promise<void> {
       layoutStore.clearActiveBudget()
     }
     pendingDeleteId.value = null
+    toastStore.push({ type: 'success', title: t('budgetStructure.selection.deleteSuccess') })
   } finally {
     actionInProgress.value = null
   }
@@ -283,6 +286,7 @@ async function onRestore(budgetId: string): Promise<void> {
   try {
     await restoreBudget(budgetId)
     await authStore.fetchMe()
+    toastStore.push({ type: 'success', title: t('budgetStructure.selection.restoreSuccess') })
   } finally {
     actionInProgress.value = null
   }

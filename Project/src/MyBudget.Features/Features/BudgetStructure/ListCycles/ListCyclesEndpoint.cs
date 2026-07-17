@@ -1,4 +1,5 @@
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -20,10 +21,21 @@ public static class ListCyclesEndpoint
 
     private static async Task<IResult> Handle(
         Guid id,
+        bool includeDeleted,
         IMediator mediator,
+        IAuthorizationService authz,
+        HttpContext httpContext,
         CancellationToken ct)
     {
-        var result = await mediator.Send(new ListCyclesQuery(id), ct);
+        // includeDeleted requires elevated budget:admin policy
+        if (includeDeleted)
+        {
+            var authResult = await authz.AuthorizeAsync(httpContext.User, null, "budget:admin");
+            if (!authResult.Succeeded)
+                return Results.Forbid();
+        }
+
+        var result = await mediator.Send(new ListCyclesQuery(id, includeDeleted), ct);
         return result.IsSuccess
             ? Results.Ok(result.Value)
             : Results.Problem(result.Error, statusCode: StatusCodes.Status500InternalServerError);
