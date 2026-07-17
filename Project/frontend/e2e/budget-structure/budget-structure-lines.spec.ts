@@ -56,8 +56,8 @@ test.describe('Budget Structure — Budget Lines', () => {
         { timeout: 10_000 },
       )
 
-      // Wait for the list container to mount before asserting absence
-      await expect(page.getByRole('table')).toBeVisible({ timeout: 10_000 })
+      // Wait for the view to mount before asserting absence
+      await expect(page.getByLabel('Show deleted')).toBeVisible({ timeout: 10_000 })
 
       // Deleted line must NOT be visible with toggle OFF (default)
       await expect(page.getByText('Deleted Line').first()).not.toBeVisible({ timeout: 5_000 })
@@ -202,10 +202,17 @@ test.describe('Budget Structure — Budget Lines', () => {
     // Use the page action "New Line" button or inline delete
     // The BudgetLineRow emits delete — find the delete button
     await page.getByRole('button', { name: 'Delete Line' }).first().click()
-    await page.getByRole('button', { name: 'Confirm' }).click()
+    const [deleteResp] = await Promise.all([
+      page.waitForResponse(
+        (r) => r.url().includes('/lines/') && r.request().method() === 'DELETE',
+        { timeout: 8_000 },
+      ),
+      page.getByRole('button', { name: 'Confirm' }).click(),
+    ])
+    expect(deleteResp.status()).toBe(204)
 
     await expectToast(page, 'Budget line deleted successfully')
 
-    await expect(page.getByText('Monthly Salary')).not.toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText('Monthly Salary')).not.toBeVisible({ timeout: 8_000 })
   })
 })

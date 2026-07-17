@@ -106,7 +106,7 @@ export async function loginViaUi(page: Page, email: string): Promise<void> {
  */
 export async function expectToast(page: Page, text: string): Promise<void> {
   await expect(
-    page.getByRole('alert').filter({ hasText: text }),
+    page.getByRole('alert').filter({ hasText: text }).first(),
   ).toBeVisible({ timeout: 8_000 })
 }
 
@@ -160,8 +160,8 @@ export async function seedDeletedPeriod(
       data: {
         name: `Deleted Period ${Date.now()}`,
         periodNumber: 99,
-        startDate: '2023-11-01',
-        endDate: '2023-11-30',
+        startDate: '2024-11-01',
+        endDate: '2024-11-30',
       },
     },
   )
