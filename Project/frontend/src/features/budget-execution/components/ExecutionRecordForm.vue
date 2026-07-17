@@ -142,6 +142,7 @@ import type { CurrencyItem } from '@/features/budget-structure/types'
 import type { ExecutionRecordDto } from '../types'
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
+import { useToastStore } from '@/stores/toast.store'
 
 const props = defineProps<{
   budgetId: string
@@ -158,6 +159,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
+const toastStore = useToastStore()
 
 const submitting = ref(false)
 const submitError = ref<string | null>(null)
@@ -274,8 +276,10 @@ async function handleSubmit(): Promise<void> {
         props.editRecord.id,
         payload,
       )
+      toastStore.push({ type: 'success', title: t('budgetExecution.record.updateSuccess') })
     } else {
       await matrixStore.createExecution(props.budgetId, props.periodId, props.lineId, payload)
+      toastStore.push({ type: 'success', title: t('budgetExecution.record.createSuccess') })
     }
     emit('saved')
 

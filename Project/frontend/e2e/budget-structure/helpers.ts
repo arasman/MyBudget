@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test'
 import { expect } from '@playwright/test'
+export { expectToast } from '../helpers/toast'
 
 const PASSWORD = 'Password1!'
 const DEFAULT_CURRENCY_ID = '11111111-1111-1111-1111-111111111111'
@@ -101,14 +102,6 @@ export async function loginViaUi(page: Page, email: string): Promise<void> {
   await expect(page).toHaveURL(/\/(budgets\/[^/]+\/cycles)?$/, { timeout: 10_000 })
 }
 
-/**
- * Asserts that a toast alert with the given text is visible within 5 seconds.
- */
-export async function expectToast(page: Page, text: string): Promise<void> {
-  await expect(
-    page.getByRole('alert').filter({ hasText: text }).first(),
-  ).toBeVisible({ timeout: 8_000 })
-}
 
 /**
  * Creates a cycle via API and immediately soft-deletes it.
