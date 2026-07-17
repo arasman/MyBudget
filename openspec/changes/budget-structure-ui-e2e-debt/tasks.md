@@ -65,7 +65,7 @@ Chain strategy: stacked-to-main
 
 ## Phase 4: New Soft-Delete / Restore Describe Blocks
 
-- [ ] 4.1 `e2e/budget-structure/budget-structure-cycles.spec.ts` — add `test.describe('soft-delete / restore')` with: toggle ON reveals deleted cycle (SCENARIO-TOGGLE-3.1), toggle OFF hides it (SCENARIO-TOGGLE-3.2), restore returns cycle to active list with toast (SCENARIO-RESTORE-3.1)
-- [ ] 4.2 `e2e/budget-structure/budget-structure-periods.spec.ts` — add `test.describe('soft-delete / restore')` with: toggle ON/OFF for period (SCENARIO-TOGGLE-3.3, 3.4), restore confirm path (SCENARIO-RESTORE-3.2), restore cancel path (SCENARIO-RESTORE-3.3)
-- [ ] 4.3 `e2e/budget-structure/budget-structure-categories.spec.ts` — add `test.describe('soft-delete / restore')` with: toggle ON/OFF for group (SCENARIO-TOGGLE-3.5) and category (3.6), restore group (SCENARIO-RESTORE-3.4), restore category (SCENARIO-RESTORE-3.5)
-- [ ] 4.4 `e2e/budget-structure/budget-structure-lines.spec.ts` — add `test.describe('soft-delete / restore')` with: toggle ON/OFF for budget line (SCENARIO-TOGGLE-3.7), restore line (SCENARIO-RESTORE-3.6)
+- [x] 4.1 `e2e/budget-structure/budget-structure-cycles.spec.ts` — add `test.describe('soft-delete / restore')` with: toggle ON reveals deleted cycle (SCENARIO-TOGGLE-3.1), toggle OFF hides it (SCENARIO-TOGGLE-3.2), restore returns cycle to active list with toast (SCENARIO-RESTORE-3.1)
+- [x] 4.2 `e2e/budget-structure/budget-structure-periods.spec.ts` — add `test.describe('soft-delete / restore')` with: toggle ON/OFF for period (SCENARIO-TOGGLE-3.3, 3.4), restore confirm path (SCENARIO-RESTORE-3.2), restore cancel path (SCENARIO-RESTORE-3.3)
+- [x] 4.3 `e2e/budget-structure/budget-structure-categories.spec.ts` — add `test.describe('soft-delete / restore')` with: toggle ON/OFF for group (SCENARIO-TOGGLE-3.5) and category (3.6), restore group (SCENARIO-RESTORE-3.4), restore category (SCENARIO-RESTORE-3.5)
+- [x] 4.4 `e2e/budget-structure/budget-structure-lines.spec.ts` — add `test.describe('soft-delete / restore')` with: toggle ON/OFF for budget line (SCENARIO-TOGGLE-3.7), restore line (SCENARIO-RESTORE-3.6)
