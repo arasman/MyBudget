@@ -1,5 +1,6 @@
 import type { APIRequestContext, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
+import { loginWithToken as _loginWithToken } from '../helpers/auth'
 
 export const PASSWORD = 'Password1!'
 export const GTQ_CURRENCY_ID = '11111111-1111-1111-1111-111111111111'
@@ -155,20 +156,16 @@ export async function seedBudgetMatrixFixture(
 /**
  * Injects the access token and active budget into browser localStorage so
  * the Vue app considers the user authenticated without a UI login.
+ *
+ * Delegates to the shared e2e/helpers/auth.ts implementation.
+ * Keeps the original positional signature so existing callers need no changes.
  */
 export async function loginWithToken(
   page: Page,
   accessToken: string,
   budgetId: string,
 ): Promise<void> {
-  await page.goto('/')
-  await page.evaluate(
-    ({ token, bid }) => {
-      localStorage.setItem('accessToken', token)
-      localStorage.setItem('activeBudgetId', bid)
-    },
-    { token: accessToken, bid: budgetId },
-  )
+  return _loginWithToken(page, { accessToken, activeBudgetId: budgetId })
 }
 
 /**

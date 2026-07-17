@@ -339,7 +339,9 @@
       "confirmDelete": "¿Eliminar esta entrada?",
       "confirmRestore": "¿Restaurar esta entrada?",
       "deleteSuccess": "Entrada eliminada exitosamente",
-      "restoreSuccess": "Entrada restaurada exitosamente"
+      "restoreSuccess": "Entrada restaurada exitosamente",
+      "createSuccess": "Entrada creada exitosamente",
+      "updateSuccess": "Entrada actualizada exitosamente"
     },
     "row": {
       "edit": "Editar",
