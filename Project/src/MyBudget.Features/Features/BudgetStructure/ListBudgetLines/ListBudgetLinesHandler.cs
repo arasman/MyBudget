@@ -22,16 +22,19 @@ public sealed class ListBudgetLinesHandler
     {
         using var conn = _factory.CreateConnection();
 
-        // Verify period belongs to the budget via Period → Cycle chain
+        // Verify period belongs to the budget via Period → Cycle chain.
+        // When IncludeDeleted=true the period itself may be soft-deleted (e.g. restore flow),
+        // so we only filter p."DeletedAt" in the default case.
+        var periodDeletedFilter = query.IncludeDeleted ? "" : "AND p.\"DeletedAt\" IS NULL";
         var periodExists = await conn.ExecuteScalarAsync<bool>(
-            """
+            $"""
             SELECT EXISTS (
                 SELECT 1
                 FROM "Periods" p
                 JOIN "Cycles" c ON c."Id" = p."CycleId"
                 WHERE p."Id" = @PeriodId
                   AND c."BudgetId" = @BudgetId
-                  AND p."DeletedAt" IS NULL
+                  {periodDeletedFilter}
                   AND c."DeletedAt" IS NULL
             )
             """,
