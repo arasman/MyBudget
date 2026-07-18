@@ -129,6 +129,7 @@ import { useI18n } from 'vue-i18n'
 import { ChevronDown, ChevronRight, ArrowUp, ArrowDown, Plus, Trash2, RotateCcw, Check, X } from 'lucide-vue-next'
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
+import { useToastStore } from '@/stores/toast.store'
 import { useCurrencyDisplay } from '../composables/useCurrencyDisplay'
 import type { CategoryGroupResponse, PeriodSummary } from '@/features/budget-structure/types'
 
@@ -151,6 +152,7 @@ defineEmits<{
 const { t } = useI18n()
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
+const toast = useToastStore()
 const { formatAmount } = useCurrencyDisplay(matrixStore)
 
 const currencySymbol = computed<string>(() =>
@@ -186,6 +188,7 @@ async function saveEdit(): Promise<void> {
   if (!name) return cancelEdit()
   editing.value = false
   await structureStore.updateGroup(props.budgetId, props.group.id, { name })
+  toast.push({ type: 'success', title: t('budgetMatrix.rows.updateGroupSuccess') })
 }
 
 async function doDelete(): Promise<void> {
@@ -194,6 +197,7 @@ async function doDelete(): Promise<void> {
     await structureStore.deleteGroup(props.budgetId, props.group.id)
     confirmingDelete.value = false
     await matrixStore.invalidateAllPeriods()
+    toast.push({ type: 'success', title: t('budgetMatrix.rows.deleteSuccess') })
   } finally {
     acting.value = false
   }
@@ -205,6 +209,7 @@ async function doRestore(includeExecutionRecords: boolean): Promise<void> {
     await structureStore.restoreGroup(props.budgetId, props.group.id, includeExecutionRecords)
     confirmingRestore.value = false
     await matrixStore.invalidateAllPeriods()
+    toast.push({ type: 'success', title: t('budgetMatrix.rows.restoreSuccess') })
   } finally {
     acting.value = false
   }

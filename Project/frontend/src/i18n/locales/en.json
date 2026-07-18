@@ -207,6 +207,7 @@
       "budgetNameRequired": "Budget name is required",
       "budgetNameTooLong": "Budget name must be 200 characters or fewer",
       "createSuccess": "Budget created successfully",
+      "renameSuccess": "Budget renamed successfully",
       "renameBudget": "Rename budget",
       "viewCycles": "View cycles",
       "deleteBudget": "Delete",
@@ -269,7 +270,14 @@
       "addGroup": "Add group",
       "newLineName": "Line name",
       "newCategoryName": "Category name",
-      "newGroupName": "Group name"
+      "newGroupName": "Group name",
+      "createGroupSuccess": "Group created successfully",
+      "updateGroupSuccess": "Group updated successfully",
+      "deleteSuccess": "Item deleted successfully",
+      "restoreSuccess": "Item restored successfully",
+      "createCategorySuccess": "Category created successfully",
+      "updateCategorySuccess": "Category updated successfully",
+      "createLineSuccess": "Budget line created successfully"
     },
     "summary": {
       "expenses": "Total Expenses",

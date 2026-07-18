@@ -207,6 +207,7 @@
       "budgetNameRequired": "El nombre del presupuesto es obligatorio",
       "budgetNameTooLong": "El nombre del presupuesto debe tener 200 caracteres o menos",
       "createSuccess": "Presupuesto creado exitosamente",
+      "renameSuccess": "Presupuesto renombrado correctamente",
       "renameBudget": "Renombrar presupuesto",
       "viewCycles": "Ver ciclos",
       "deleteBudget": "Eliminar",
@@ -269,7 +270,14 @@
       "addGroup": "Agregar grupo",
       "newLineName": "Nombre de la línea",
       "newCategoryName": "Nombre de la categoría",
-      "newGroupName": "Nombre del grupo"
+      "newGroupName": "Nombre del grupo",
+      "createGroupSuccess": "Grupo creado correctamente",
+      "updateGroupSuccess": "Grupo actualizado correctamente",
+      "deleteSuccess": "Elemento eliminado correctamente",
+      "restoreSuccess": "Elemento restaurado correctamente",
+      "createCategorySuccess": "Categoría creada correctamente",
+      "updateCategorySuccess": "Categoría actualizada correctamente",
+      "createLineSuccess": "Línea presupuestaria creada correctamente"
     },
     "summary": {
       "expenses": "Total de Gastos",

@@ -6,14 +6,14 @@ import { createPinia, setActivePinia } from 'pinia'
 import BudgetSelectionView from '../BudgetSelectionView.vue'
 
 // Hoist mocks for stable references inside vi.mock factories
-const { mockFetchMe, mockSetActiveBudget, mockDeleteBudget, mockRestoreBudget } = vi.hoisted(
-  () => ({
+const { mockFetchMe, mockSetActiveBudget, mockDeleteBudget, mockRestoreBudget, mockToastPush } =
+  vi.hoisted(() => ({
     mockFetchMe: vi.fn().mockResolvedValue(undefined),
     mockSetActiveBudget: vi.fn(),
     mockDeleteBudget: vi.fn().mockResolvedValue(undefined),
     mockRestoreBudget: vi.fn().mockResolvedValue({ id: 'b-deleted', name: 'Old Budget' }),
-  }),
-)
+    mockToastPush: vi.fn(),
+  }))
 
 vi.mock('@/stores/auth.store', () => ({
   useAuthStore: vi.fn(),
@@ -23,10 +23,19 @@ vi.mock('@/stores/layout.store', () => ({
   useLayoutStore: vi.fn(),
 }))
 
+vi.mock('@/stores/toast.store', () => ({
+  useToastStore: () => ({ push: mockToastPush }),
+}))
+
+const { mockRenameBudget } = vi.hoisted(() => ({
+  mockRenameBudget: vi.fn().mockResolvedValue(undefined),
+}))
+
 vi.mock('../../api/budgets.api', () => ({
   createBudget: vi.fn(),
   deleteBudget: mockDeleteBudget,
   restoreBudget: mockRestoreBudget,
+  renameBudget: mockRenameBudget,
 }))
 
 // Stub CreateBudgetModal so it doesn't interfere
@@ -68,6 +77,20 @@ function makeI18n() {
             confirmDelete: 'Are you sure you want to delete this budget?',
             deleteSuccess: 'Budget deleted successfully',
             restoreSuccess: 'Budget restored successfully',
+            createSuccess: 'Budget created successfully',
+            renameSuccess: 'Budget renamed successfully',
+            renameBudget: 'Rename budget',
+            viewCycles: 'View cycles',
+            confirmDeleteTitle: 'Delete Budget',
+          },
+          common: {
+            save: 'Save',
+            cancel: 'Cancel',
+            confirm: 'Confirm',
+            actions: 'Actions',
+            restore: 'Restore',
+            deleted: 'Deleted',
+            noPermission: 'No permission',
           },
         },
       },
@@ -248,5 +271,102 @@ describe('BudgetSelectionView — restore action', () => {
       expect(mockRestoreBudget).toHaveBeenCalledWith('b-deleted')
       expect(mockFetchMe).toHaveBeenCalled()
     })
+  })
+})
+
+// REQ-TOAST-BUDGET-CREATE, REQ-TOAST-BUDGET-RENAME
+describe('BudgetSelectionView — toast on create and rename', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('onBudgetCreated calls toast.push with createSuccess key', async () => {
+    const { getByTestId } = renderView([])
+
+    // Simulate the CreateBudgetModal emitting 'created'
+    const stub = getByTestId('create-modal-stub')
+    await waitFor(() => expect(stub).toBeTruthy())
+
+    // The stub declares no props, so @created="onBudgetCreated" lands in attrs (not props)
+    const instance = (stub as unknown as { __vueParentComponent?: { attrs?: Record<string, unknown>; props?: Record<string, unknown> } }).__vueParentComponent
+    const onCreated = (instance?.attrs?.['onCreated'] ?? instance?.props?.['onCreated']) as ((arg: unknown) => void) | undefined
+    if (onCreated) {
+      await onCreated({ id: 'new-budget', name: 'My New Budget' })
+    }
+
+    await waitFor(() => {
+      expect(mockToastPush).toHaveBeenCalledWith({
+        type: 'success',
+        title: 'Budget created successfully',
+      })
+    })
+  })
+
+  it('saveInlineEdit calls toast.push with renameSuccess key on success', async () => {
+    renderView([
+      { budgetId: 'b-1', budgetName: 'My Budget', role: 'owner', isDeleted: false },
+    ])
+
+    await waitFor(() => expect(screen.getByText('My Budget')).toBeTruthy())
+
+    // Start inline edit via double-click on the budget name span
+    const budgetName = screen.getByText('My Budget')
+    await fireEvent.dblClick(budgetName)
+
+    await waitFor(() => {
+      const input = screen.getByRole<HTMLInputElement>('textbox')
+      expect(input).toBeTruthy()
+    })
+
+    const input = screen.getByRole<HTMLInputElement>('textbox')
+    await fireEvent.input(input, { target: { value: 'Renamed Budget' } })
+    await fireEvent.keyUp(input, { key: 'Enter' })
+
+    await waitFor(() => {
+      expect(mockRenameBudget).toHaveBeenCalledWith('b-1', 'Renamed Budget')
+      expect(mockToastPush).toHaveBeenCalledWith({
+        type: 'success',
+        title: 'Budget renamed successfully',
+      })
+    })
+  })
+
+  it('saveInlineEdit does NOT call toast.push when renameBudget rejects', async () => {
+    // Vitest skips reporting an unhandled rejection when listeners.length > 1.
+    // Add a noop listener to suppress it; keep it alive until after the rejection fires.
+    const noop = () => {}
+    process.on('unhandledRejection', noop)
+
+    mockRenameBudget.mockRejectedValueOnce(new Error('Network error'))
+
+    renderView([
+      { budgetId: 'b-1', budgetName: 'My Budget', role: 'owner', isDeleted: false },
+    ])
+
+    await waitFor(() => expect(screen.getByText('My Budget')).toBeTruthy())
+
+    const budgetName = screen.getByText('My Budget')
+    await fireEvent.dblClick(budgetName)
+
+    await waitFor(() => {
+      const input = screen.getByRole<HTMLInputElement>('textbox')
+      expect(input).toBeTruthy()
+    })
+
+    const input = screen.getByRole<HTMLInputElement>('textbox')
+    await fireEvent.input(input, { target: { value: 'Renamed Budget' } })
+    await fireEvent.keyUp(input, { key: 'Enter' })
+
+    await waitFor(() => {
+      expect(mockRenameBudget).toHaveBeenCalled()
+    })
+    // Flush microtask queue so the rejection fires before removing the guard
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(mockToastPush).not.toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Budget renamed successfully' }),
+    )
+
+    process.off('unhandledRejection', noop)
   })
 })
