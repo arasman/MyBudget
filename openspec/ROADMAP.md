@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-17 (budget-structure-ui-e2e-debt archived)
+**Last updated**: 2026-07-18 (global-toast-audit archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -361,6 +361,27 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 **Tests**: 306 backend + 211 frontend — all green; 8 E2E passing
 **SDD artifacts**: `openspec/changes/archive/2026-07-16-multi-budget/`
+
+---
+
+### 9d. `global-toast-audit` ✅ archived 2026-07-18
+
+**What**: Cross-slice toast audit — close all missing success feedback across every frontend CRUD operation.
+
+**Scope in**:
+- `BudgetSelectionView`: wired orphaned `createSuccess` key to `onBudgetCreated` (post-navigation toast); added `renameSuccess` toast to inline rename handler
+- `BudgetMatrixView`: injected `useToastStore`; added toasts to `confirmAddGroup`, `confirmAddCategory`, `confirmAddLine`
+- `MatrixGroupRow`: added toasts to `saveEdit` (update-name), `doDelete`, `doRestore`
+- `MatrixCategoryRow`: added toasts to `saveEdit` (update-name), `doDelete`, `doRestore`
+- `MatrixLineRow`: added toasts to `doDelete`, `doRestore`, `handleEditSubmit` (modal-based edit — post-apply fix)
+- `ChangePasswordModal`: migrated from `notificationStore` → `toastStore` (consistency fix)
+- i18n: 9 new keys in both `en.json` and `es.json` (`budgetMatrix.rows.*`, `budgetStructure.selection.renameSuccess`, `budgetMatrix.rows.updateLineSuccess`)
+- Tests: 7 component test files extended + 1 new i18n integration spec (277 Vitest total)
+
+**Deferred**: `InviteUserModal` inline `successMessage` feedback (adequate UX, low priority); error toast audit (→ `global-error-toast-audit` if needed).
+
+**Tests**: 277 Vitest — all green; TypeScript build clean
+**SDD artifacts**: `openspec/changes/archive/2026-07-18-global-toast-audit/`
 
 ---
 
