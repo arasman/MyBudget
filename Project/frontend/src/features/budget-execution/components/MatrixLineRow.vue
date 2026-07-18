@@ -169,6 +169,7 @@ async function handleEditSubmit(payload: CreateBudgetLinePayload): Promise<void>
     budgetedAmount: payload.budgetedAmount,
   })
   await matrixStore.invalidateAllPeriods()
+  toast.push({ type: 'success', title: t('budgetMatrix.rows.updateLineSuccess') })
 }
 
 async function doDelete(): Promise<void> {

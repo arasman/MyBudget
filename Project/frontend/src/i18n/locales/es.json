@@ -277,7 +277,8 @@
       "restoreSuccess": "Elemento restaurado correctamente",
       "createCategorySuccess": "Categoría creada correctamente",
       "updateCategorySuccess": "Categoría actualizada correctamente",
-      "createLineSuccess": "Línea presupuestaria creada correctamente"
+      "createLineSuccess": "Línea presupuestaria creada correctamente",
+      "updateLineSuccess": "Línea presupuestaria actualizada correctamente"
     },
     "summary": {
       "expenses": "Total de Gastos",

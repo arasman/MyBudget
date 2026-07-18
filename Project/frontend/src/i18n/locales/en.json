@@ -277,7 +277,8 @@
       "restoreSuccess": "Item restored successfully",
       "createCategorySuccess": "Category created successfully",
       "updateCategorySuccess": "Category updated successfully",
-      "createLineSuccess": "Budget line created successfully"
+      "createLineSuccess": "Budget line created successfully",
+      "updateLineSuccess": "Budget line updated successfully"
     },
     "summary": {
       "expenses": "Total Expenses",

@@ -52,8 +52,32 @@ vi.mock('../components/MatrixCell.vue', () => ({
   default: { template: '<td />', props: ['amount', 'loading'] },
 }))
 
+// Hoisted so the factory closure can reference it before module evaluation
+const { triggerModalSubmit } = vi.hoisted(() => {
+  let _handler: ((payload: unknown) => void) | null = null
+  return {
+    triggerModalSubmit: {
+      set(h: (payload: unknown) => void) {
+        _handler = h
+      },
+      call(payload: unknown) {
+        _handler?.(payload)
+      },
+    },
+  }
+})
+
 vi.mock('@/features/budget-structure/components/BudgetLineModal.vue', () => ({
-  default: { template: '<div />', props: ['modelValue', 'categoryGroups'] },
+  default: {
+    name: 'BudgetLineModal',
+    props: ['modelValue', 'categoryGroups', 'line'],
+    emits: ['submit', 'update:modelValue'],
+    setup(_props: unknown, { emit }: { emit: (e: string, ...a: unknown[]) => void }) {
+      triggerModalSubmit.set((payload: unknown) => emit('submit', payload))
+      return {}
+    },
+    template: '<div />',
+  },
 }))
 
 import MatrixLineRow from '../components/MatrixLineRow.vue'
@@ -201,5 +225,48 @@ describe('MatrixLineRow.vue — toast on delete and restore', () => {
     }
 
     process.off('unhandledRejection', noop)
+  })
+})
+
+// REQ-TOAST-MATRIX-LINE-UPDATE: handleEditSubmit fires updateLineSuccess
+describe('MatrixLineRow.vue — toast on modal edit (handleEditSubmit)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+    mockMatrixStore.allPeriods = [{ id: 'period-1' }]
+    mockStructureStore.updateLine = vi.fn().mockResolvedValue(undefined)
+    mockMatrixStore.invalidateAllPeriods.mockResolvedValue(undefined)
+  })
+
+  it('handleEditSubmit calls toast.push with updateLineSuccess on success', async () => {
+    const { getByText } = render(MatrixLineRow, {
+      props: {
+        line: { ...baseLine },
+        budgetId: 'budget-1',
+        categoryCollapsed: false,
+        visiblePeriods: [basePeriod],
+        isFirst: false,
+        isLast: false,
+      },
+    })
+
+    // dblclick the name span to open the modal — the modal is teleported to body
+    await fireEvent.dblClick(getByText('Internet'))
+
+    // Wait for the BudgetLineModal stub setup() to run and register the submit handler
+    await waitFor(() => {
+      triggerModalSubmit.call({
+        name: 'Updated Line',
+        lineType: 'Expense',
+        isRecurring: false,
+        categoryGroupId: 'group-1',
+        categoryId: 'cat-1',
+        budgetedAmount: 200,
+      })
+      expect(mockToastPush).toHaveBeenCalledWith({
+        type: 'success',
+        title: 'budgetMatrix.rows.updateLineSuccess',
+      })
+    })
   })
 })
