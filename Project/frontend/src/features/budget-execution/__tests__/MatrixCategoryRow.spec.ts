@@ -209,13 +209,10 @@ describe('MatrixCategoryRow.vue — toast on actions', () => {
       if (restoreAllBtn) return fireEvent.click(restoreAllBtn)
     })
 
-    await waitFor(() => {
-      if (mockStructureStore.restoreCategory.mock.calls.length > 0) {
-        expect(mockToastPush).toHaveBeenCalledWith({
-          type: 'success',
-          title: 'budgetMatrix.rows.restoreSuccess',
-        })
-      }
+    await waitFor(() => expect(mockStructureStore.restoreCategory).toHaveBeenCalled())
+    expect(mockToastPush).toHaveBeenCalledWith({
+      type: 'success',
+      title: 'budgetMatrix.rows.restoreSuccess',
     })
   })
 })

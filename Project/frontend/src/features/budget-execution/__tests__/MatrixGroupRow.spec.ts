@@ -203,13 +203,10 @@ describe('MatrixGroupRow.vue — toast on actions', () => {
       if (restoreAllBtn) return fireEvent.click(restoreAllBtn)
     })
 
-    await waitFor(() => {
-      if (mockStructureStore.restoreGroup.mock.calls.length > 0) {
-        expect(mockToastPush).toHaveBeenCalledWith({
-          type: 'success',
-          title: 'budgetMatrix.rows.restoreSuccess',
-        })
-      }
+    await waitFor(() => expect(mockStructureStore.restoreGroup).toHaveBeenCalled())
+    expect(mockToastPush).toHaveBeenCalledWith({
+      type: 'success',
+      title: 'budgetMatrix.rows.restoreSuccess',
     })
   })
 })

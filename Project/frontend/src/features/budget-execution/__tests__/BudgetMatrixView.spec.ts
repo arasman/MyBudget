@@ -83,10 +83,18 @@ vi.mock('../components/MatrixPeriodHeader.vue', () => ({
   default: { template: '<thead />', props: ['periods'] },
 }))
 vi.mock('../components/MatrixGroupRow.vue', () => ({
-  default: { template: '<tr />', props: ['group', 'budgetId', 'visiblePeriods', 'collapsed', 'isFirst', 'isLast'] },
+  default: {
+    template: '<tr><button data-testid="stub-add-category" @click="$emit(\'add-category\')" /></tr>',
+    props: ['group', 'budgetId', 'visiblePeriods', 'collapsed', 'isFirst', 'isLast'],
+    emits: ['add-category'],
+  },
 }))
 vi.mock('../components/MatrixCategoryRow.vue', () => ({
-  default: { template: '<tr />', props: ['category', 'groupId', 'budgetId', 'visiblePeriods', 'collapsed', 'categoryCollapsed', 'isFirst', 'isLast', 'parentDeleted'] },
+  default: {
+    template: '<tr><button data-testid="stub-add-line" @click="$emit(\'add-line\')" /></tr>',
+    props: ['category', 'groupId', 'budgetId', 'visiblePeriods', 'collapsed', 'categoryCollapsed', 'isFirst', 'isLast', 'parentDeleted'],
+    emits: ['add-line'],
+  },
 }))
 vi.mock('../components/MatrixLineRow.vue', () => ({
   default: { template: '<tr />', props: ['line', 'budgetId', 'categoryCollapsed', 'visiblePeriods', 'isFirst', 'isLast', 'parentDeleted'] },
@@ -179,5 +187,64 @@ describe('BudgetMatrixView — add group/category/line toasts', () => {
     )
 
     process.off('unhandledRejection', noop)
+  })
+
+  // REQ-TOAST-MATRIX-CAT-CREATE
+  it('confirmAddCategory fires toast.push with createCategorySuccess on success', async () => {
+    mockStructureStore.categoryGroups = [
+      { id: 'group-1', name: 'Group 1', categories: [{ id: 'cat-1', name: 'Cat 1', lines: [], deletedAt: null }], deletedAt: null },
+    ] as unknown[]
+
+    renderView()
+
+    // Trigger add-category via the MatrixGroupRow stub button
+    await waitFor(() => expect(screen.getByTestId('stub-add-category')).toBeTruthy())
+    await fireEvent.click(screen.getByTestId('stub-add-category'))
+
+    await waitFor(() => expect(screen.getByTestId('add-category-row')).toBeTruthy())
+
+    const input = screen.getByPlaceholderText('budgetMatrix.rows.newCategoryName')
+    await fireEvent.input(input, { target: { value: 'New Category' } })
+    await fireEvent.keyDown(input, { key: 'Enter' })
+
+    await waitFor(() => {
+      expect(mockStructureStore.createCategory).toHaveBeenCalled()
+      expect(mockToastPush).toHaveBeenCalledWith({
+        type: 'success',
+        title: 'budgetMatrix.rows.createCategorySuccess',
+      })
+    })
+  })
+
+  // REQ-TOAST-MATRIX-LINE-CREATE
+  it('confirmAddLine fires toast.push with createLineSuccess on success', async () => {
+    mockStructureStore.categoryGroups = [
+      {
+        id: 'group-1',
+        name: 'Group 1',
+        deletedAt: null,
+        categories: [{ id: 'cat-1', name: 'Cat 1', lines: [], deletedAt: null }],
+      },
+    ] as unknown[]
+
+    renderView()
+
+    // Trigger add-line via the MatrixCategoryRow stub button
+    await waitFor(() => expect(screen.getByTestId('stub-add-line')).toBeTruthy())
+    await fireEvent.click(screen.getByTestId('stub-add-line'))
+
+    await waitFor(() => expect(screen.getByTestId('add-line-row')).toBeTruthy())
+
+    const input = screen.getByPlaceholderText('budgetMatrix.rows.newLineName')
+    await fireEvent.input(input, { target: { value: 'New Line' } })
+    await fireEvent.keyDown(input, { key: 'Enter' })
+
+    await waitFor(() => {
+      expect(mockStructureStore.createLine).toHaveBeenCalled()
+      expect(mockToastPush).toHaveBeenCalledWith({
+        type: 'success',
+        title: 'budgetMatrix.rows.createLineSuccess',
+      })
+    })
   })
 })

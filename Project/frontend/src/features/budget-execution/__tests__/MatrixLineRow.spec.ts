@@ -186,13 +186,10 @@ describe('MatrixLineRow.vue — toast on delete and restore', () => {
       if (restoreAllBtn) return fireEvent.click(restoreAllBtn)
     })
 
-    await waitFor(() => {
-      if (mockStructureStore.restoreLine.mock.calls.length > 0) {
-        expect(mockToastPush).toHaveBeenCalledWith({
-          type: 'success',
-          title: 'budgetMatrix.rows.restoreSuccess',
-        })
-      }
+    await waitFor(() => expect(mockStructureStore.restoreLine).toHaveBeenCalled())
+    expect(mockToastPush).toHaveBeenCalledWith({
+      type: 'success',
+      title: 'budgetMatrix.rows.restoreSuccess',
     })
   })
 
@@ -218,11 +215,10 @@ describe('MatrixLineRow.vue — toast on delete and restore', () => {
     // Flush microtask queue so the rejection fires before removing the guard
     await new Promise((resolve) => setTimeout(resolve, 0))
 
-    if (mockStructureStore.restoreLine.mock.calls.length > 0) {
-      expect(mockToastPush).not.toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'budgetMatrix.rows.restoreSuccess' }),
-      )
-    }
+    expect(mockStructureStore.restoreLine).toHaveBeenCalled()
+    expect(mockToastPush).not.toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'budgetMatrix.rows.restoreSuccess' }),
+    )
 
     process.off('unhandledRejection', noop)
   })
