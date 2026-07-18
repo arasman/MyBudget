@@ -67,7 +67,7 @@ const baseLine = {
   categoryId: 'cat-1',
   categoryGroupId: 'group-1',
   displayOrder: 1,
-  deletedAt: null,
+  deletedAt: null as string | null,
 }
 
 const basePeriod = {
