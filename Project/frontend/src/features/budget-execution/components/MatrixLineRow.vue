@@ -105,6 +105,7 @@ import { useI18n } from 'vue-i18n'
 import { ArrowUp, ArrowDown, Trash2, RotateCcw } from 'lucide-vue-next'
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
+import { useToastStore } from '@/stores/toast.store'
 import { useCurrencyDisplay } from '../composables/useCurrencyDisplay'
 import MatrixCell from './MatrixCell.vue'
 import BudgetLineModal from '@/features/budget-structure/components/BudgetLineModal.vue'
@@ -129,6 +130,7 @@ defineEmits<{
 const { t } = useI18n()
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
+const toast = useToastStore()
 const { formatAmount } = useCurrencyDisplay(matrixStore)
 
 /** Currency symbol derived from cycle based on the active display currency. */
@@ -167,6 +169,7 @@ async function handleEditSubmit(payload: CreateBudgetLinePayload): Promise<void>
     budgetedAmount: payload.budgetedAmount,
   })
   await matrixStore.invalidateAllPeriods()
+  toast.push({ type: 'success', title: t('budgetMatrix.rows.updateLineSuccess') })
 }
 
 async function doDelete(): Promise<void> {
@@ -175,6 +178,7 @@ async function doDelete(): Promise<void> {
     await structureStore.deleteLine(props.budgetId, loadedPeriodId.value, props.line.id)
     confirmingDelete.value = false
     await matrixStore.invalidateAllPeriods()
+    toast.push({ type: 'success', title: t('budgetMatrix.rows.deleteSuccess') })
   } finally {
     acting.value = false
   }
@@ -186,6 +190,7 @@ async function doRestore(includeExecutionRecords: boolean): Promise<void> {
     await structureStore.restoreLine(props.budgetId, loadedPeriodId.value, props.line.id, includeExecutionRecords)
     confirmingRestore.value = false
     await matrixStore.invalidateAllPeriods()
+    toast.push({ type: 'success', title: t('budgetMatrix.rows.restoreSuccess') })
   } finally {
     acting.value = false
   }

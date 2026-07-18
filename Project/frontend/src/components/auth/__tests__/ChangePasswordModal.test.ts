@@ -16,14 +16,9 @@ vi.mock('@/stores/auth.store', () => ({
   }),
 }))
 
-vi.mock('@/stores/notification.store', () => ({
-  useNotificationStore: () => ({
+vi.mock('@/stores/toast.store', () => ({
+  useToastStore: () => ({
     push: mockPush,
-    notifications: [],
-    unreadCount: 0,
-    markRead: vi.fn(),
-    markAllRead: vi.fn(),
-    remove: vi.fn(),
   }),
 }))
 

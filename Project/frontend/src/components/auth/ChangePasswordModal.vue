@@ -2,11 +2,11 @@
 import { ref, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth.store'
-import { useNotificationStore } from '@/stores/notification.store'
+import { useToastStore } from '@/stores/toast.store'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
-const notificationStore = useNotificationStore()
+const toast = useToastStore()
 
 const modal = ref<HTMLDialogElement>()
 
@@ -51,11 +51,7 @@ async function onSubmit() {
   isSubmitting.value = true
   try {
     await authStore.changePassword(form.currentPassword, form.newPassword)
-    notificationStore.push({
-      type: 'success',
-      title: t('auth.password.changeSuccess'),
-      message: '',
-    })
+    toast.push({ type: 'success', title: t('auth.password.changeSuccess') })
     close()
   } catch (err: unknown) {
     const axiosErr = err as { response?: { data?: { detail?: string } } }

@@ -1,82 +1,6 @@
-# ephemeral-toast Specification
+# Delta for ephemeral-toast
 
-## Purpose
-
-Defines the ephemeral toast overlay system — a transient, auto-dismissing feedback layer separate
-from the persistent notification bell. Used to confirm create/delete/restore actions across all
-entities.
-
----
-
-## Requirements
-
-### Requirement: REQ-TOAST-1 — Toast Store
-
-The system MUST provide a `useToastStore` Pinia store (or equivalent module-level reactive
-singleton) that manages a list of active toast messages. Each toast MUST have: `id` (auto-generated),
-`message` (string), `type` (`success` | `error` | `info`), and `autoDismiss` (ms, default 3000).
-
-#### Scenario: Push and auto-dismiss
-
-- GIVEN the toast store is initialized
-- WHEN `push({ message: "Done", type: "success" })` is called
-- THEN a toast entry appears in the list
-- AND it is removed automatically after 3000 ms
-
-#### Scenario: Manual close removes toast
-
-- GIVEN a toast is visible
-- WHEN the user clicks its × button
-- THEN the toast is removed immediately without waiting for the timer
-
-#### Scenario: Multiple toasts stack
-
-- GIVEN two pushes with no dismissal between them
-- WHEN the component renders
-- THEN both toasts are visible simultaneously (stacked)
-
----
-
-### Requirement: REQ-TOAST-2 — AppToast Component
-
-`AppToast.vue` MUST be mounted once in `AppLayout.vue`. It MUST render all active toasts as a
-stack using DaisyUI `toast` + `alert` classes. Each toast MUST include a visible × close button.
-The component MUST be positioned at a z-index above modals so toasts remain visible when a modal
-is open.
-
-#### Scenario: Renders at correct z-index
-
-- GIVEN a modal is open in the application
-- WHEN a toast is pushed
-- THEN the toast overlay appears above the modal without being clipped
-
-#### Scenario: Close button on each toast
-
-- GIVEN two stacked toasts are visible
-- WHEN the user clicks × on the first toast
-- THEN only that toast is removed; the second toast remains
-
----
-
-### Requirement: REQ-TOAST-3 — Bell Exclusion
-
-Toasts pushed via `useToastStore` MUST NOT be written to `useNotificationStore`. The notification
-bell dropdown MUST only contain persistent notifications. Auto-dismiss toasts MUST NOT accumulate
-in the bell inbox.
-
-#### Scenario: Toast does not appear in bell
-
-- GIVEN a delete success toast is pushed via useToastStore
-- WHEN the user opens the notification bell dropdown
-- THEN no entry corresponding to that toast appears in the bell list
-
-#### Scenario: Existing bell notifications unaffected
-
-- GIVEN a persistent notification exists in the bell
-- WHEN a toast is pushed and auto-dismissed
-- THEN the bell notification count is unchanged
-
----
+## ADDED Requirements
 
 ### Requirement: REQ-TOAST-BUDGET-CREATE
 
@@ -265,9 +189,40 @@ in the bell inbox.
 
 ---
 
+### Requirement: REQ-I18N-KEYS
+
+The following 8 keys MUST be present in both `en.json` and `es.json` before any toast call site references them.
+
+| Namespace | Key | Shared across |
+|---|---|---|
+| `budgetStructure.selection` | `renameSuccess` | budget rename |
+| `budgetMatrix.rows` | `createGroupSuccess` | group create |
+| `budgetMatrix.rows` | `updateGroupSuccess` | group rename |
+| `budgetMatrix.rows` | `deleteSuccess` | group / category / line delete |
+| `budgetMatrix.rows` | `restoreSuccess` | group / category / line restore |
+| `budgetMatrix.rows` | `createCategorySuccess` | category create |
+| `budgetMatrix.rows` | `updateCategorySuccess` | category rename |
+| `budgetMatrix.rows` | `createLineSuccess` | line create |
+
+#### Scenario: All new keys present in both locales
+
+- GIVEN the application builds with locale files loaded
+- WHEN any matrix or selection toast references the keys above
+- THEN no i18n missing-key warning is emitted in either EN or ES locale
+
+#### Scenario: Orphaned key wired up
+
+- GIVEN `budgetStructure.selection.createSuccess` already exists in both locale files
+- WHEN a budget create operation succeeds
+- THEN the toast displays the correct translated title with no missing-key fallback
+
+## MODIFIED Requirements
+
 ### Requirement: REQ-TOAST-I18N-1 — Toast i18n Keys
 
-The following keys MUST be present in both `en.json` and `es.json` under their entity namespaces.
+The keys listed in the base spec (`budgetStructure.*`, `budgetExecution.record.*`) remain required. The following additional keys are NOW ALSO REQUIRED in both `en.json` and `es.json`.
+
+(Previously: covered only budget-structure and budget-execution entities; matrix rows and budget selection operations were not in scope.)
 
 | Namespace | Key | Purpose |
 |---|---|---|
@@ -308,9 +263,3 @@ The following keys MUST be present in both `en.json` and `es.json` under their e
 - GIVEN the application builds with locale files loaded
 - WHEN any toast message references the keys above
 - THEN no i18n missing-key warning is emitted in either EN or ES locale
-
-#### Scenario: Orphaned key wired up
-
-- GIVEN `budgetStructure.selection.createSuccess` already exists in both locale files
-- WHEN a budget create operation succeeds
-- THEN the toast displays the correct translated title with no missing-key fallback

@@ -220,6 +220,7 @@ function openCreateModal(): void {
 async function onBudgetCreated(budget: { id: string; name: string }): Promise<void> {
   await authStore.fetchMe()
   selectBudget(budget.id, budget.name)
+  toastStore.push({ type: 'success', title: t('budgetStructure.selection.createSuccess') })
 }
 
 // ── Inline rename ──────────────────────────────────────────────────────────
@@ -246,6 +247,7 @@ async function saveInlineEdit(budgetId: string): Promise<void> {
       layoutStore.setActiveBudget(budgetId, trimmed)
     }
     inlineEditingBudgetId.value = null
+    toastStore.push({ type: 'success', title: t('budgetStructure.selection.renameSuccess') })
   } finally {
     actionInProgress.value = null
   }

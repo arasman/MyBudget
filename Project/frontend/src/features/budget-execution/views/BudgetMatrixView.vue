@@ -274,6 +274,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useBudgetMatrixStore } from '../store'
+import { useToastStore } from '@/stores/toast.store'
 import { useMatrixNavigation } from '../composables/useMatrixNavigation'
 import BudgetTabs from '@/features/budget-structure/components/BudgetTabs.vue'
 import MatrixPeriodHeader from '../components/MatrixPeriodHeader.vue'
@@ -296,6 +297,7 @@ const cycleId = computed(() => route.params.cycleId as string)
 
 const structureStore = useBudgetStructureStore()
 const matrixStore = useBudgetMatrixStore()
+const toast = useToastStore()
 const { visiblePeriods, canGoPrev, canGoNext, goPrev, goNext } = useMatrixNavigation(matrixStore)
 
 // Non-blocking error for non-critical operations (reorder, etc.)
@@ -415,6 +417,7 @@ async function confirmAddGroup(): Promise<void> {
   try {
     await structureStore.createGroup(budgetId.value, { name })
     await matrixStore.invalidateAllPeriods()
+    toast.push({ type: 'success', title: t('budgetMatrix.rows.createGroupSuccess') })
     addingGroup.value = false
     newGroupName.value = ''
   } finally {
@@ -441,6 +444,7 @@ async function confirmAddCategory(groupId: string): Promise<void> {
   try {
     await structureStore.createCategory(budgetId.value, groupId, { name })
     await matrixStore.invalidateAllPeriods()
+    toast.push({ type: 'success', title: t('budgetMatrix.rows.createCategorySuccess') })
     addingCategoryForGroup.value = null
     newCategoryName.value = ''
   } finally {
@@ -479,6 +483,7 @@ async function confirmAddLine(categoryId: string, groupId: string): Promise<void
       matrixStore.showDeleted,
     )
     await matrixStore.invalidateAllPeriods()
+    toast.push({ type: 'success', title: t('budgetMatrix.rows.createLineSuccess') })
     addingLineForCategory.value = null
     addingLineForGroup.value = null
     newLineName.value = ''
