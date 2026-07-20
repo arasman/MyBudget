@@ -26,6 +26,17 @@ public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCo
         if (period.IsClosed)
             return Result<Guid>.Failure("PERIOD_CLOSED");
 
+        // Name uniqueness per (PeriodId, CategoryGroupId, CategoryId) — includes soft-deleted lines (REQ-BL-NAME-1)
+        var normalizedName = cmd.Name.Trim().ToLowerInvariant();
+        var isDuplicateName = await _db.BudgetLines.IgnoreQueryFilters().AnyAsync(l =>
+            l.PeriodId        == cmd.PeriodId        &&
+            l.CategoryGroupId == cmd.CategoryGroupId &&
+            l.CategoryId      == cmd.CategoryId      &&
+            l.Name.ToLower() == normalizedName, ct);
+
+        if (isDuplicateName)
+            return Result<Guid>.Failure("BUDGET_LINE_NAME_DUPLICATE");
+
         // Resolve CurrencyId: explicit or fall back to Cycle.DefaultCurrencyId
         var currencyId = cmd.CurrencyId ?? period.Cycle.DefaultCurrencyId;
 

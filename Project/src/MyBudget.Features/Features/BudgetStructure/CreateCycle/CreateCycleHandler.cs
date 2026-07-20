@@ -14,6 +14,15 @@ public sealed class CreateCycleHandler : IRequestHandler<CreateCycleCommand, Res
 
     public async ValueTask<Result<Guid>> Handle(CreateCycleCommand cmd, CancellationToken ct)
     {
+        // Name uniqueness per budget — includes soft-deleted cycles (REQ-CYC-NAME-1)
+        var normalizedName = cmd.Name.Trim().ToLowerInvariant();
+        var isDuplicateName = await _db.Cycles.IgnoreQueryFilters().AnyAsync(c =>
+            c.BudgetId == cmd.BudgetId &&
+            c.Name.ToLower() == normalizedName, ct);
+
+        if (isDuplicateName)
+            return Result<Guid>.Failure("CYCLE_NAME_DUPLICATE");
+
         // Check for overlapping non-deleted cycles in the same budget
         var hasOverlap = await _db.Cycles.AnyAsync(c =>
             c.BudgetId == cmd.BudgetId &&

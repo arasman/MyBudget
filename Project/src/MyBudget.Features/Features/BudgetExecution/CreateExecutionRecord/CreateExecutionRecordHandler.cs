@@ -38,6 +38,12 @@ public sealed class CreateExecutionRecordHandler : IRequestHandler<CreateExecuti
         if (line.DeletedAt != null)
             return Result<Guid>.Failure("PARENT_IS_DELETED");
 
+        // REQ-EXEC-DATE-RANGE-1: OperationDate must fall within Period range (null = skip check)
+        var period = line.Period!;
+        if (cmd.OperationDate.HasValue &&
+            (cmd.OperationDate.Value < period.StartDate || cmd.OperationDate.Value > period.EndDate))
+            return Result<Guid>.Failure("OPERATION_DATE_OUT_OF_RANGE");
+
         // REQ-EXEC-5/REQ-EXEC-6: ExchangeRate pair rule
         var defaultCurrencyId = line.Period.Cycle.DefaultCurrencyId;
         var isSameCurrency = cmd.CurrencyId == defaultCurrencyId;
