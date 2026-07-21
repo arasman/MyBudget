@@ -91,7 +91,6 @@ describe('ExecutionRecordForm — decimal precision validation (REQ-EXEC-DECIMAL
     await fireEvent.click(submitBtn)
 
     await waitFor(() => {
-      const errorEl = document.querySelector('[data-testid="amount-input"] + span, #exec-amount + span, span.text-error')
       // find any element containing our text
       const allSpans = Array.from(document.querySelectorAll('span'))
       const found = allSpans.some((s) => s.textContent?.includes('Amount can have at most 2 decimal places'))
