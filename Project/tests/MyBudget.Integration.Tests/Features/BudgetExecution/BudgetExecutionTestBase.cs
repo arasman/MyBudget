@@ -20,14 +20,17 @@ public abstract class BudgetExecutionTestBase : BudgetStructureTestBase
     /// Creates an ExecutionRecord of type Expense (same currency as cycle default = no exchange rate).
     /// </summary>
     protected async Task<Guid> CreateExecutionRecordAsync(
-        Guid    budgetId,
-        Guid    periodId,
-        Guid    lineId,
-        decimal amount      = 100m,
-        int     entryType   = 1,    // 1=Expense, 2=CreditNote, 3=DebitNote
-        string? note        = null,
-        Guid?   currencyId  = null)
+        Guid      budgetId,
+        Guid      periodId,
+        Guid      lineId,
+        decimal   amount        = 100m,
+        int       entryType     = 1,    // 1=Expense, 2=CreditNote, 3=DebitNote
+        string?   note          = "Test execution note",
+        Guid?     currencyId    = null,
+        DateOnly? operationDate = null)
     {
+        var opDate = operationDate ?? new DateOnly(2025, 1, 15);
+
         var response = await Client.PostAsJsonAsync(
             $"/api/budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/executions",
             new
@@ -35,10 +38,11 @@ public abstract class BudgetExecutionTestBase : BudgetStructureTestBase
                 entryType,
                 amount,
                 note,
-                currencyId    = currencyId ?? GtqId,
-                exchangeRate  = (decimal?)null,
-                exchangeRateTo = (decimal?)null,
-                accountId     = (Guid?)null,
+                operationDate   = opDate,
+                currencyId      = currencyId ?? GtqId,
+                exchangeRate    = (decimal?)null,
+                exchangeRateTo  = (decimal?)null,
+                accountId       = (Guid?)null,
                 paymentMethodId = (Guid?)null,
             });
 
