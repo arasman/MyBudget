@@ -25,6 +25,6 @@ public sealed class CreateBudgetLineValidator : AbstractValidator<CreateBudgetLi
             .WithErrorCode("FIELD_INVALID");
 
         RuleFor(x => x.BudgetedAmount)
-            .GreaterThanOrEqualTo(0).WithErrorCode("FIELD_INVALID");
+            .GreaterThan(0).WithErrorCode("FIELD_INVALID"); // REQ-BL-AMOUNT-1: amount must be > 0
     }
 }

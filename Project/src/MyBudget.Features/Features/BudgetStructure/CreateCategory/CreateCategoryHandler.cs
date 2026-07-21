@@ -21,9 +21,9 @@ public sealed class CreateCategoryHandler : IRequestHandler<CreateCategoryComman
         if (group is null || group.BudgetId != cmd.BudgetId)
             return Result<Guid>.Failure("CATEGORY_GROUP_NOT_FOUND");
 
-        // Case-insensitive unique name within group
+        // Case-insensitive unique name within group — includes soft-deleted rows (REQ-CAT-01)
         var normalizedName = cmd.Name.Trim().ToLowerInvariant();
-        var isDuplicate = await _db.Categories.AnyAsync(c =>
+        var isDuplicate = await _db.Categories.IgnoreQueryFilters().AnyAsync(c =>
             c.CategoryGroupId == cmd.CategoryGroupId &&
             c.Name.ToLower() == normalizedName, ct);
 

@@ -19,9 +19,9 @@ public sealed class UpdateCategoryGroupHandler : IRequestHandler<UpdateCategoryG
         if (group is null || group.BudgetId != cmd.BudgetId)
             return Result<Guid>.Failure("CATEGORY_GROUP_NOT_FOUND");
 
-        // Uniqueness check excluding self
+        // Uniqueness check excluding self — includes soft-deleted rows (REQ-CG-02)
         var normalizedName = cmd.Name.Trim().ToLowerInvariant();
-        var isDuplicate = await _db.CategoryGroups.AnyAsync(g =>
+        var isDuplicate = await _db.CategoryGroups.IgnoreQueryFilters().AnyAsync(g =>
             g.BudgetId == cmd.BudgetId &&
             g.Id       != cmd.GroupId  &&
             g.Name.ToLower() == normalizedName, ct);

@@ -23,9 +23,9 @@ public sealed class UpdateCategoryHandler : IRequestHandler<UpdateCategoryComman
             category.CategoryGroupId != cmd.CategoryGroupId)
             return Result<Guid>.Failure("CATEGORY_NOT_FOUND");
 
-        // Uniqueness check excluding self
+        // Uniqueness check excluding self — includes soft-deleted rows (REQ-CAT-02)
         var normalizedName = cmd.Name.Trim().ToLowerInvariant();
-        var isDuplicate = await _db.Categories.AnyAsync(c =>
+        var isDuplicate = await _db.Categories.IgnoreQueryFilters().AnyAsync(c =>
             c.CategoryGroupId == cmd.CategoryGroupId &&
             c.Id       != cmd.CategoryId            &&
             c.Name.ToLower() == normalizedName, ct);

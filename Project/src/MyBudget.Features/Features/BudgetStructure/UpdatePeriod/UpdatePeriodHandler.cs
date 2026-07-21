@@ -22,6 +22,16 @@ public sealed class UpdatePeriodHandler : IRequestHandler<UpdatePeriodCommand, R
 
         var cycle = period.Cycle!;
 
+        // Name uniqueness per cycle, self-excluded — includes soft-deleted periods (REQ-PER-NAME-1)
+        var normalizedName = cmd.Name.Trim().ToLowerInvariant();
+        var isDuplicateName = await _db.Periods.IgnoreQueryFilters().AnyAsync(p =>
+            p.CycleId == cmd.CycleId &&
+            p.Id      != cmd.PeriodId &&
+            p.Name.ToLower() == normalizedName, ct);
+
+        if (isDuplicateName)
+            return Result<Guid>.Failure("PERIOD_NAME_DUPLICATE");
+
         // Period dates must fall within Cycle range
         if (cmd.StartDate < cycle.StartDate || cmd.EndDate > cycle.EndDate)
             return Result<Guid>.Failure("PERIOD_OUT_OF_CYCLE_RANGE");

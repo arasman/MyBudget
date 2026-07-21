@@ -31,6 +31,11 @@ public sealed class BudgetLineRevisionConfiguration : IEntityTypeConfiguration<B
         builder.Property(r => r.BudgetedAmount)
             .HasPrecision(18, 2);
 
+        // REQ-BL-NOTE-MAX-1: Note max 200 chars.
+        // IMPORTANT: verify existing data has no rows with Note length > 200 before running migration in production.
+        builder.Property(r => r.Note)
+            .HasMaxLength(200);
+
         // No query filter — BudgetLineRevision is immutable/append-only; no soft delete
 
         builder.HasIndex(r => r.BudgetId)

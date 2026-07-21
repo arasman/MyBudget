@@ -20,6 +20,16 @@ public sealed class UpdateCycleHandler : IRequestHandler<UpdateCycleCommand, Res
         if (cycle is null || cycle.BudgetId != cmd.BudgetId)
             return Result<Guid>.Failure("CYCLE_NOT_FOUND");
 
+        // Name uniqueness per budget, self-excluded — includes soft-deleted cycles (REQ-CYC-NAME-1)
+        var normalizedName = cmd.Name.Trim().ToLowerInvariant();
+        var isDuplicateName = await _db.Cycles.IgnoreQueryFilters().AnyAsync(c =>
+            c.BudgetId == cmd.BudgetId &&
+            c.Id       != cmd.CycleId  &&
+            c.Name.ToLower() == normalizedName, ct);
+
+        if (isDuplicateName)
+            return Result<Guid>.Failure("CYCLE_NAME_DUPLICATE");
+
         // Overlap check excluding self
         var hasOverlap = await _db.Cycles.AnyAsync(c =>
             c.BudgetId  == cmd.BudgetId &&

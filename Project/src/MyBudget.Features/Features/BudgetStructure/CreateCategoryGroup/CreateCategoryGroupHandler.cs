@@ -14,9 +14,9 @@ public sealed class CreateCategoryGroupHandler : IRequestHandler<CreateCategoryG
 
     public async ValueTask<Result<Guid>> Handle(CreateCategoryGroupCommand cmd, CancellationToken ct)
     {
-        // Case-insensitive unique name check per budget
+        // Case-insensitive unique name check per budget — includes soft-deleted rows (REQ-CG-01)
         var normalizedName = cmd.Name.Trim().ToLowerInvariant();
-        var isDuplicate = await _db.CategoryGroups.AnyAsync(g =>
+        var isDuplicate = await _db.CategoryGroups.IgnoreQueryFilters().AnyAsync(g =>
             g.BudgetId == cmd.BudgetId &&
             g.Name.ToLower() == normalizedName, ct);
 

@@ -1,4 +1,5 @@
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyBudget.Features.SharedKernel.Entities;
 using MyBudget.Features.SharedKernel.Persistence;
@@ -21,6 +22,15 @@ public sealed class CreateBudgetHandler
     public async ValueTask<Result<CreateBudgetResponse>> Handle(
         CreateBudgetCommand cmd, CancellationToken ct)
     {
+        // Name uniqueness per owner — includes soft-deleted budgets (REQ-BUDGET-UNIQUE-1)
+        var normalizedName = cmd.Name.Trim().ToLowerInvariant();
+        var isDuplicate = await _db.Budgets.IgnoreQueryFilters().AnyAsync(b =>
+            b.OwnerId == cmd.UserId &&
+            b.Name.ToLower() == normalizedName, ct);
+
+        if (isDuplicate)
+            return Result<CreateBudgetResponse>.Failure("BUDGET_NAME_DUPLICATE");
+
         var budget = Budget.Create(cmd.Name, cmd.UserId);
         _db.Budgets.Add(budget);
 
