@@ -226,6 +226,7 @@ import { useBudgetStructureStore } from '../store'
 import { useLayoutStore } from '@/stores/layout.store'
 import { useToastStore } from '@/stores/toast.store'
 import { useRoleGate } from '../composables/useRoleGate'
+import { extractApiErrorCode } from '../utils/apiError'
 import { Check, LayoutGrid, List, Pencil, RotateCcw, Star, Trash2, X } from 'lucide-vue-next'
 import BudgetTabs from '../components/BudgetTabs.vue'
 import CycleForm from '../components/CycleForm.vue'
@@ -264,16 +265,40 @@ function handleStartEdit(cycle: CycleListItem): void {
   inlineEditForm.endDate = cycle.endDate
 }
 
+function _cycleErrorToast(err: unknown): void {
+  const code = extractApiErrorCode(err)
+  if (code === 'CYCLE_NAME_DUPLICATE') {
+    toastStore.push({ type: 'error', title: t('budgetStructure.cycles.errors.nameDuplicate') })
+  } else if (code === 'CYCLE_DATE_OVERLAP') {
+    toastStore.push({ type: 'error', title: t('budgetStructure.cycles.errors.dateOverlap') })
+  } else {
+    toastStore.push({ type: 'error', title: t('common.errors.serverError') })
+  }
+}
+
 async function handleInlineSave(cycleId: string): Promise<void> {
+  // Client-side validation for inline edit
+  if (!inlineEditForm.name.trim()) {
+    toastStore.push({ type: 'error', title: t('budgetStructure.cycles.validation.nameRequired') })
+    return
+  }
+  if (inlineEditForm.name.trim().length > 200) {
+    toastStore.push({ type: 'error', title: t('budgetStructure.cycles.validation.nameTooLong') })
+    return
+  }
   const existing = store.cycles.find((c) => c.id === cycleId)
-  await store.updateCycle(budgetId.value, cycleId, {
-    name: inlineEditForm.name,
-    startDate: inlineEditForm.startDate,
-    endDate: inlineEditForm.endDate,
-    defaultCurrencyId: existing?.defaultCurrency?.id ?? '11111111-1111-1111-1111-111111111111',
-  })
-  inlineEditingCycleId.value = null
-  toastStore.push({ type: 'success', title: t('budgetStructure.cycles.updateSuccess') })
+  try {
+    await store.updateCycle(budgetId.value, cycleId, {
+      name: inlineEditForm.name.trim(),
+      startDate: inlineEditForm.startDate,
+      endDate: inlineEditForm.endDate,
+      defaultCurrencyId: existing?.defaultCurrency?.id ?? '11111111-1111-1111-1111-111111111111',
+    })
+    inlineEditingCycleId.value = null
+    toastStore.push({ type: 'success', title: t('budgetStructure.cycles.updateSuccess') })
+  } catch (err) {
+    _cycleErrorToast(err)
+  }
 }
 
 function openCreateModal(): void {
@@ -322,14 +347,18 @@ async function handleFormSubmit(payload: {
   alternateCurrencyId?: string
   exchangeRate?: number
 }): Promise<void> {
-  if (editingCycle.value) {
-    await store.updateCycle(budgetId.value, editingCycle.value.id, payload)
-    toastStore.push({ type: 'success', title: t('budgetStructure.cycles.updateSuccess') })
-  } else {
-    await store.createCycle(budgetId.value, payload)
-    toastStore.push({ type: 'success', title: t('budgetStructure.cycles.createSuccess') })
+  try {
+    if (editingCycle.value) {
+      await store.updateCycle(budgetId.value, editingCycle.value.id, payload)
+      toastStore.push({ type: 'success', title: t('budgetStructure.cycles.updateSuccess') })
+    } else {
+      await store.createCycle(budgetId.value, payload)
+      toastStore.push({ type: 'success', title: t('budgetStructure.cycles.createSuccess') })
+    }
+    closeModal()
+  } catch (err) {
+    _cycleErrorToast(err)
   }
-  closeModal()
 }
 
 function goToDetail(cycleId: string): void {

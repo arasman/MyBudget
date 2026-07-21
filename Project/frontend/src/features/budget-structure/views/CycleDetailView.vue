@@ -282,6 +282,7 @@ import { useBudgetStructureStore } from '../store'
 import { useLayoutStore } from '@/stores/layout.store'
 import { useToastStore } from '@/stores/toast.store'
 import { useRoleGate } from '../composables/useRoleGate'
+import { extractApiErrorCode } from '../utils/apiError'
 import { Check, List, Pencil, RefreshCw, RotateCcw, Trash2, X } from 'lucide-vue-next'
 import BudgetTabs from '../components/BudgetTabs.vue'
 import PeriodForm from '../components/PeriodForm.vue'
@@ -324,14 +325,31 @@ function handleStartEdit(period: PeriodSummary): void {
   inlineEditForm.endDate = period.endDate
 }
 
+function _periodErrorToast(err: unknown): void {
+  const code = extractApiErrorCode(err)
+  if (code === 'PERIOD_NAME_DUPLICATE') {
+    toastStore.push({ type: 'error', title: t('budgetStructure.periods.errors.nameDuplicate') })
+  } else if (code === 'PERIOD_OUT_OF_CYCLE_RANGE') {
+    toastStore.push({ type: 'error', title: t('budgetStructure.periods.errors.outOfCycleRange') })
+  } else if (code === 'PERIOD_DATE_OVERLAP') {
+    toastStore.push({ type: 'error', title: t('budgetStructure.periods.errors.dateOverlap') })
+  } else {
+    toastStore.push({ type: 'error', title: t('common.errors.serverError') })
+  }
+}
+
 async function handleInlineSave(periodId: string): Promise<void> {
-  await store.updatePeriod(budgetId, cycleId, periodId, {
-    name: inlineEditForm.name,
-    startDate: inlineEditForm.startDate,
-    endDate: inlineEditForm.endDate,
-  })
-  inlineEditingPeriodId.value = null
-  toastStore.push({ type: 'success', title: t('budgetStructure.periods.updateSuccess') })
+  try {
+    await store.updatePeriod(budgetId, cycleId, periodId, {
+      name: inlineEditForm.name,
+      startDate: inlineEditForm.startDate,
+      endDate: inlineEditForm.endDate,
+    })
+    inlineEditingPeriodId.value = null
+    toastStore.push({ type: 'success', title: t('budgetStructure.periods.updateSuccess') })
+  } catch (err) {
+    _periodErrorToast(err)
+  }
 }
 
 function statusBadgeClass(status: string): string {
@@ -421,22 +439,26 @@ async function handleFormSubmit(payload: {
   endDate: DateString
   status?: string
 }): Promise<void> {
-  if (editingPeriod.value) {
-    await store.updatePeriod(budgetId, cycleId, editingPeriod.value.id, {
-      name: payload.name,
-      startDate: payload.startDate,
-      endDate: payload.endDate,
-    })
-    toastStore.push({ type: 'success', title: t('budgetStructure.periods.updateSuccess') })
-  } else {
-    await store.createPeriod(budgetId, cycleId, {
-      name: payload.name,
-      startDate: payload.startDate,
-      endDate: payload.endDate,
-    })
-    toastStore.push({ type: 'success', title: t('budgetStructure.periods.createSuccess') })
+  try {
+    if (editingPeriod.value) {
+      await store.updatePeriod(budgetId, cycleId, editingPeriod.value.id, {
+        name: payload.name,
+        startDate: payload.startDate,
+        endDate: payload.endDate,
+      })
+      toastStore.push({ type: 'success', title: t('budgetStructure.periods.updateSuccess') })
+    } else {
+      await store.createPeriod(budgetId, cycleId, {
+        name: payload.name,
+        startDate: payload.startDate,
+        endDate: payload.endDate,
+      })
+      toastStore.push({ type: 'success', title: t('budgetStructure.periods.createSuccess') })
+    }
+    closeModal()
+  } catch (err) {
+    _periodErrorToast(err)
   }
-  closeModal()
 }
 
 function goToLines(periodId: string): void {
