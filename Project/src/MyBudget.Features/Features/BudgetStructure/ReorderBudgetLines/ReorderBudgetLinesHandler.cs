@@ -5,7 +5,6 @@ using MyBudget.Features.SharedKernel.Results;
 
 namespace MyBudget.Features.Features.BudgetStructure.ReorderBudgetLines;
 
-// TODO PR2a: full handler rewrite — budget-scoped reorder (no PeriodId)
 public sealed class ReorderBudgetLinesHandler : IRequestHandler<ReorderBudgetLinesCommand, Result<bool>>
 {
     private readonly AppDbContext _db;

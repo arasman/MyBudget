@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Routing;
 
 namespace MyBudget.Features.Features.BudgetStructure.ReorderBudgetLines;
 
-// TODO PR2a: route updated — periodId removed; route is now /api/budgets/{id}/lines/order
 public static class ReorderBudgetLinesEndpoint
 {
     public static IEndpointRouteBuilder Map(IEndpointRouteBuilder app)
