@@ -69,8 +69,11 @@ public sealed class RestorePeriodHandlerTests : IDisposable
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        var line1 = BudgetLine.Create(budgetId, periodId, group.Id, null, "Rent", LineType.Expense, true, 1);
-        var line2 = BudgetLine.Create(budgetId, periodId, group.Id, null, "Food", LineType.Expense, false, 2);
+        // TODO PR4: update to new BudgetLine.Create signature; Period cascade removed (REQ-CYC-03)
+        var line1 = BudgetLine.Create(budgetId, group.Id, null, "Rent", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 1);
+        var line2 = BudgetLine.Create(budgetId, group.Id, null, "Food", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 2);
         line1.SoftDelete();
         line2.SoftDelete();
         _db.BudgetLines.AddRange(line1, line2);
@@ -79,12 +82,8 @@ public sealed class RestorePeriodHandlerTests : IDisposable
         var cmd    = new RestorePeriodCommand(budgetId, cycleId, periodId, false);
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
+        // TODO PR4: period restore no longer cascades BudgetLines — assertion will be updated
         result.IsSuccess.ShouldBeTrue();
-
-        var lines = await _db.BudgetLines.IgnoreQueryFilters()
-            .Where(bl => bl.PeriodId == periodId)
-            .ToListAsync();
-        lines.ShouldAllBe(bl => bl.DeletedAt == null);
     }
 
     [Fact]
@@ -149,7 +148,9 @@ public sealed class RestorePeriodHandlerTests : IDisposable
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        var line = BudgetLine.Create(budgetId, periodId, group.Id, null, "Rent", LineType.Expense, true, 1);
+        // TODO PR4: update to new BudgetLine.Create signature
+        var line = BudgetLine.Create(budgetId, group.Id, null, "Rent", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 1);
         line.SoftDelete();
         _db.BudgetLines.Add(line);
         await _db.SaveChangesAsync();

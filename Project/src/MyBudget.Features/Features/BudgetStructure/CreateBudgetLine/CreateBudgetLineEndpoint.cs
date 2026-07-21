@@ -6,11 +6,12 @@ using MyBudget.Features.SharedKernel.Entities;
 
 namespace MyBudget.Features.Features.BudgetStructure.CreateBudgetLine;
 
+// TODO PR2a: update route to /api/budgets/{id}/lines (remove periodId)
 public static class CreateBudgetLineEndpoint
 {
     public static IEndpointRouteBuilder Map(IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/budgets/{id}/periods/{periodId}/lines", Handle)
+        app.MapPost("/api/budgets/{id}/lines", Handle)
             .WithTags("BudgetStructure")
             .WithName("CreateBudgetLine")
             .Produces<Guid>(StatusCodes.Status201Created)
@@ -22,39 +23,38 @@ public static class CreateBudgetLineEndpoint
 
     private static async Task<IResult> Handle(
         Guid id,
-        Guid periodId,
         CreateBudgetLineRequest body,
         IMediator mediator,
         CancellationToken ct)
     {
         var cmd = new CreateBudgetLineCommand(
-            id, periodId,
+            id,
             body.CategoryGroupId, body.CategoryId,
-            body.Name, body.LineType, body.IsRecurring,
-            body.BudgetedAmount, body.CurrencyId);
+            body.Name, body.LineType,
+            body.StartDate, body.EndDate,
+            body.InitialAmount, body.CurrencyId);
 
         var result = await mediator.Send(cmd, ct);
 
         if (!result.IsSuccess)
         {
-            if (result.Error == "PERIOD_CLOSED")
-                return Results.Conflict(new { error = "PERIOD_CLOSED" });
-            if (result.Error == "PERIOD_NOT_FOUND")
+            if (result.Error == "BUDGET_NOT_FOUND")
                 return Results.NotFound(new { error = result.Error });
             return Results.Problem(result.Error, statusCode: StatusCodes.Status422UnprocessableEntity);
         }
 
         return Results.Created(
-            $"/api/budgets/{id}/periods/{periodId}/lines/{result.Value}",
+            $"/api/budgets/{id}/lines/{result.Value}",
             new { id = result.Value });
     }
 }
 
 public sealed record CreateBudgetLineRequest(
-    Guid     CategoryGroupId,
-    Guid?    CategoryId,
-    string   Name,
-    LineType LineType,
-    bool     IsRecurring,
-    decimal  BudgetedAmount,
-    Guid?    CurrencyId);
+    Guid      CategoryGroupId,
+    Guid?     CategoryId,
+    string    Name,
+    LineType  LineType,
+    DateOnly  StartDate,
+    DateOnly? EndDate,
+    decimal   InitialAmount,
+    Guid?     CurrencyId);

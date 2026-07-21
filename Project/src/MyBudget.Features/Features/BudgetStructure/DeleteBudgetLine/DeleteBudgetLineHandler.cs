@@ -13,21 +13,15 @@ public sealed class DeleteBudgetLineHandler : IRequestHandler<DeleteBudgetLineCo
 
     public async ValueTask<Result<Guid>> Handle(DeleteBudgetLineCommand cmd, CancellationToken ct)
     {
-        // Load BudgetLine -> Period -> Cycle -> verify BudgetId
+        // Stub: load BudgetLine by BudgetId + LineId (no PeriodId — PR2a scope for full guard)
         var line = await _db.BudgetLines
-            .Include(l => l.Period)
-                .ThenInclude(p => p!.Cycle)
-            .FirstOrDefaultAsync(l => l.Id == cmd.LineId && l.PeriodId == cmd.PeriodId, ct);
+            .FirstOrDefaultAsync(l => l.Id == cmd.LineId && l.BudgetId == cmd.BudgetId, ct);
 
-        if (line is null || line.Period is null || line.Period.Cycle is null ||
-            line.Period.Cycle.BudgetId != cmd.BudgetId)
+        if (line is null)
             return Result<Guid>.Failure("BUDGET_LINE_NOT_FOUND");
 
-        // ADR-BS-05: IsClosed guard -> HTTP 409
-        if (line.Period.IsClosed)
-            return Result<Guid>.Failure("PERIOD_CLOSED");
+        // TODO PR2a: IsClosed guard removed (REQ-BL-04 — closed period no longer blocks delete)
 
-        // ADR-BS-01: BudgetLineRevision has NO soft delete (immutable, append-only)
         // REQ-EXEC-CASCADE-1: cascade soft-delete to all non-deleted child ExecutionRecords
         line.SoftDelete();
 

@@ -4,6 +4,7 @@ using Shouldly;
 
 namespace MyBudget.Features.Tests.Features.BudgetStructure.UpdateBudgetLine;
 
+// TODO PR2a: full rewrite — validator tests for new command shape (no PeriodId/IsRecurring)
 public sealed class UpdateBudgetLineValidatorTests
 {
     private readonly UpdateBudgetLineValidator _sut = new();
@@ -11,13 +12,13 @@ public sealed class UpdateBudgetLineValidatorTests
     private static UpdateBudgetLineCommand ValidCommand() =>
         new(
             BudgetId:        Guid.NewGuid(),
-            PeriodId:        Guid.NewGuid(),
             LineId:          Guid.NewGuid(),
             CategoryGroupId: Guid.NewGuid(),
             CategoryId:      null,
             Name:            "Rent",
             LineType:        LineType.Expense,
-            IsRecurring:     true,
+            ValidFrom:       null,
+            ValidTo:         null,
             BudgetedAmount:  2000m,
             CurrencyId:      CurrencySeeds.UsdId);
 
@@ -41,14 +42,6 @@ public sealed class UpdateBudgetLineValidatorTests
         var result = _sut.Validate(ValidCommand() with { BudgetId = Guid.Empty });
         result.IsValid.ShouldBeFalse();
         result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateBudgetLineCommand.BudgetId));
-    }
-
-    [Fact]
-    public void PeriodId_Empty_Fails()
-    {
-        var result = _sut.Validate(ValidCommand() with { PeriodId = Guid.Empty });
-        result.IsValid.ShouldBeFalse();
-        result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateBudgetLineCommand.PeriodId));
     }
 
     [Fact]
@@ -98,7 +91,7 @@ public sealed class UpdateBudgetLineValidatorTests
         result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateBudgetLineCommand.BudgetedAmount));
     }
 
-    // REQ-BL-AMOUNT-1: amount must be > 0 (changed from >= 0)
+    // REQ-BL-AMOUNT-1: amount must be > 0
     [Fact]
     public void BudgetedAmount_Zero_Rejected()
     {

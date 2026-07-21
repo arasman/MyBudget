@@ -11,6 +11,7 @@ namespace MyBudget.Features.Features.BudgetExecution.RestoreExecutionRecord;
 /// REQ-EXEC-RESTORE-2: non-deleted record -> 404.
 /// REQ-EXEC-CLOSED-1: IsClosed -> PERIOD_CLOSED 409.
 /// </summary>
+// TODO PR2b: full handler rewrite verified — Period loaded directly (BudgetLine no longer has Period nav)
 public sealed class RestoreExecutionRecordHandler : IRequestHandler<RestoreExecutionRecordCommand, Result<Guid>>
 {
     private readonly AppDbContext _db;
@@ -19,12 +20,9 @@ public sealed class RestoreExecutionRecordHandler : IRequestHandler<RestoreExecu
 
     public async ValueTask<Result<Guid>> Handle(RestoreExecutionRecordCommand cmd, CancellationToken ct)
     {
-        // Load soft-deleted ExecutionRecord (IgnoreQueryFilters to bypass DeletedAt == null filter)
         // REQ-EXEC-RESTORE-2: a non-deleted record is NOT found here -> 404
         var record = await _db.ExecutionRecords
             .IgnoreQueryFilters()
-            .Include(e => e.BudgetLine)
-                .ThenInclude(bl => bl!.Period)
             .FirstOrDefaultAsync(
                 e => e.Id            == cmd.ExecutionId
                   && e.BudgetLineId  == cmd.BudgetLineId
@@ -36,7 +34,10 @@ public sealed class RestoreExecutionRecordHandler : IRequestHandler<RestoreExecu
         if (record is null)
             return Result<Guid>.Failure("EXECUTION_RECORD_NOT_FOUND");
 
-        var period = record.BudgetLine?.Period;
+        // Load Period directly (BudgetLine no longer carries Period nav)
+        var period = await _db.Periods
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.Id == cmd.PeriodId, ct);
 
         if (period is null)
             return Result<Guid>.Failure("EXECUTION_RECORD_NOT_FOUND");

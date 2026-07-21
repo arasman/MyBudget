@@ -6,7 +6,8 @@ using Shouldly;
 
 namespace MyBudget.Features.Tests.Features.BudgetStructure.CreateBudgetLine;
 
-/// <summary>Tests for REQ-BL-NAME-1: budget line name uniqueness per (period, categoryGroup, category).</summary>
+/// <summary>Tests for REQ-BL-NAME-1: budget line name uniqueness per Budget.</summary>
+// TODO PR4: full rewrite — name uniqueness is now scoped to BudgetId only (not PeriodId)
 public sealed class CreateBudgetLineNameDuplicateHandlerTests : IDisposable
 {
     private readonly AppDbContext _db;
@@ -20,40 +21,30 @@ public sealed class CreateBudgetLineNameDuplicateHandlerTests : IDisposable
 
     public void Dispose() => _db.Dispose();
 
-    private async Task<(Guid budgetId, Guid periodId, Guid groupId)> SeedAsync()
+    private async Task<(Guid budgetId, Guid groupId)> SeedAsync()
     {
         var budgetId = await DbTestHelpers.SeedBudgetAsync(_db);
-
-        var cycle = Cycle.Create(budgetId, "Test Cycle",
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(365)),
-            CurrencySeeds.GtqId);
-        _db.Cycles.Add(cycle);
-        await _db.SaveChangesAsync();
-
-        var period = Period.Create(budgetId, cycle.Id, "January", 1,
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
-        _db.Periods.Add(period);
-        await _db.SaveChangesAsync();
 
         var group = CategoryGroup.Create(budgetId, "Housing", 1);
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        return (budgetId, period.Id, group.Id);
+        return (budgetId, group.Id);
     }
 
     [Fact]
     public async Task ActiveDuplicate_Returns_BUDGET_LINE_NAME_DUPLICATE()
     {
-        var (budgetId, periodId, groupId) = await SeedAsync();
+        // TODO PR4: full rewrite — stub compile-only version
+        var (budgetId, groupId) = await SeedAsync();
 
-        _db.BudgetLines.Add(BudgetLine.Create(budgetId, periodId, groupId, null, "Rent", LineType.Expense, true));
+        // TODO PR4: update to new BudgetLine.Create signature
+        _db.BudgetLines.Add(BudgetLine.Create(budgetId, groupId, null, "Rent", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId));
         await _db.SaveChangesAsync();
 
-        var cmd    = new CreateBudgetLineCommand(budgetId, periodId, groupId, null,
-            "Rent", LineType.Expense, false, 500m, CurrencySeeds.GtqId);
+        var cmd    = new CreateBudgetLineCommand(budgetId, groupId, null,
+            "Rent", LineType.Expense, new DateOnly(2025, 1, 1), null, 500m, CurrencySeeds.GtqId);
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeFalse();
@@ -63,15 +54,18 @@ public sealed class CreateBudgetLineNameDuplicateHandlerTests : IDisposable
     [Fact]
     public async Task SoftDeletedDuplicate_Returns_BUDGET_LINE_NAME_DUPLICATE()
     {
-        var (budgetId, periodId, groupId) = await SeedAsync();
+        // TODO PR4: full rewrite — stub compile-only version
+        var (budgetId, groupId) = await SeedAsync();
 
-        var deleted = BudgetLine.Create(budgetId, periodId, groupId, null, "Rent", LineType.Expense, true);
+        // TODO PR4: update to new BudgetLine.Create signature
+        var deleted = BudgetLine.Create(budgetId, groupId, null, "Rent", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId);
         deleted.SoftDelete();
         _db.BudgetLines.Add(deleted);
         await _db.SaveChangesAsync();
 
-        var cmd    = new CreateBudgetLineCommand(budgetId, periodId, groupId, null,
-            "Rent", LineType.Expense, false, 500m, CurrencySeeds.GtqId);
+        var cmd    = new CreateBudgetLineCommand(budgetId, groupId, null,
+            "Rent", LineType.Expense, new DateOnly(2025, 1, 1), null, 500m, CurrencySeeds.GtqId);
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeFalse();
@@ -81,10 +75,11 @@ public sealed class CreateBudgetLineNameDuplicateHandlerTests : IDisposable
     [Fact]
     public async Task UniqueName_Succeeds()
     {
-        var (budgetId, periodId, groupId) = await SeedAsync();
+        // TODO PR4: full rewrite — stub compile-only version
+        var (budgetId, groupId) = await SeedAsync();
 
-        var cmd    = new CreateBudgetLineCommand(budgetId, periodId, groupId, null,
-            "Utilities", LineType.Expense, false, 200m, CurrencySeeds.GtqId);
+        var cmd    = new CreateBudgetLineCommand(budgetId, groupId, null,
+            "Utilities", LineType.Expense, new DateOnly(2025, 1, 1), null, 200m, CurrencySeeds.GtqId);
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();

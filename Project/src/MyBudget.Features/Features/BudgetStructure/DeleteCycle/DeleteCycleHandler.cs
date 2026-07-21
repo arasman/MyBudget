@@ -19,29 +19,17 @@ public sealed class DeleteCycleHandler : IRequestHandler<DeleteCycleCommand, Res
         if (cycle is null || cycle.BudgetId != cmd.BudgetId)
             return Result<Guid>.Failure("CYCLE_NOT_FOUND");
 
-        // Load non-deleted periods (bypassing global query filter for explicit control)
+        // Load non-deleted periods
         var periods = await _db.Periods
             .IgnoreQueryFilters()
             .Where(p => p.CycleId == cmd.CycleId && p.DeletedAt == null)
             .ToListAsync(ct);
 
-        var periodIds = periods.Select(p => p.Id).ToList();
+        foreach (var period in periods)
+            period.SoftDelete();
 
-        if (periodIds.Count > 0)
-        {
-            // Soft-delete BudgetLines within those periods
-            var budgetLines = await _db.BudgetLines
-                .IgnoreQueryFilters()
-                .Where(bl => periodIds.Contains(bl.PeriodId) && bl.DeletedAt == null)
-                .ToListAsync(ct);
-
-            var now = DateTimeOffset.UtcNow;
-            foreach (var line in budgetLines)
-                line.SoftDelete();
-
-            foreach (var period in periods)
-                period.SoftDelete();
-        }
+        // TODO PR2a: BudgetLines are now Budget-scoped — no cascade soft-delete from Cycle via PeriodId.
+        // REQ-CYC-03: BudgetLines MUST NOT be cascade-deleted when Cycle is deleted.
 
         cycle.SoftDelete();
         await _db.SaveChangesAsync(ct);

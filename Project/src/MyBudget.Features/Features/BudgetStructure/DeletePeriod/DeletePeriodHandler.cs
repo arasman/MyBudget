@@ -20,14 +20,8 @@ public sealed class DeletePeriodHandler : IRequestHandler<DeletePeriodCommand, R
         if (period is null || period.CycleId != cmd.CycleId || period.Cycle?.BudgetId != cmd.BudgetId)
             return Result<Guid>.Failure("PERIOD_NOT_FOUND");
 
-        // Soft-delete BudgetLines in this Period
-        var budgetLines = await _db.BudgetLines
-            .IgnoreQueryFilters()
-            .Where(bl => bl.PeriodId == cmd.PeriodId && bl.DeletedAt == null)
-            .ToListAsync(ct);
-
-        foreach (var line in budgetLines)
-            line.SoftDelete();
+        // TODO PR2a: BudgetLines are now Budget-scoped — no cascade soft-delete from Period.
+        // REQ-CYC-03: BudgetLines MUST NOT be cascade-deleted when Period is deleted.
 
         period.SoftDelete();
         await _db.SaveChangesAsync(ct);

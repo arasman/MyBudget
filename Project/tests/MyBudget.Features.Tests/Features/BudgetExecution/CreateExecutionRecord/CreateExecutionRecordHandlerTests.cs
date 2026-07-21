@@ -43,7 +43,9 @@ public sealed class CreateExecutionRecordHandlerTests : IDisposable
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        var line = BudgetLine.Create(budgetId, period.Id, group.Id, null, "Rent", LineType.Expense, true);
+        // TODO PR4: update to new BudgetLine.Create signature
+        var line = BudgetLine.Create(budgetId, group.Id, null, "Rent", LineType.Expense,
+            DateOnly.FromDateTime(DateTime.UtcNow), null, 1000m, CurrencySeeds.GtqId);
         if (lineSoftDeleted) line.SoftDelete();
         _db.BudgetLines.Add(line);
         await _db.SaveChangesAsync();
