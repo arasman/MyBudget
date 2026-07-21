@@ -1,63 +1,54 @@
 import http from '@/api/axios'
 import type { BudgetLineResponse, CreateBudgetLinePayload, UpdateBudgetLinePayload } from '../types'
 
-const base = (budgetId: string, periodId: string) =>
-  `/api/budgets/${budgetId}/periods/${periodId}/lines`
+const base = (budgetId: string) => `/api/budgets/${budgetId}/lines`
 
-/** GET /api/budgets/:budgetId/periods/:periodId/lines → returns all lines for the period */
+/** GET /api/budgets/:budgetId/lines — returns all lines for the budget (no periodId) */
 export async function list(
   budgetId: string,
-  periodId: string,
   includeDeleted = false,
 ): Promise<BudgetLineResponse[]> {
-  const { data } = await http.get<BudgetLineResponse[]>(base(budgetId, periodId), {
+  const { data } = await http.get<BudgetLineResponse[]>(base(budgetId), {
     params: includeDeleted ? { includeDeleted: true } : undefined,
   })
   return data
 }
 
-/** POST /api/budgets/:budgetId/periods/:periodId/lines → returns created line id */
+/** POST /api/budgets/:budgetId/lines — creates a new budget line */
 export async function create(
   budgetId: string,
-  periodId: string,
   payload: CreateBudgetLinePayload,
 ): Promise<{ id: string }> {
-  const { data } = await http.post<{ id: string }>(base(budgetId, periodId), payload)
+  const { data } = await http.post<{ id: string }>(base(budgetId), payload)
   return data
 }
 
-/** PUT /api/budgets/:budgetId/periods/:periodId/lines/:lineId */
+/** PUT /api/budgets/:budgetId/lines/:lineId */
 export async function update(
   budgetId: string,
-  periodId: string,
   lineId: string,
   payload: UpdateBudgetLinePayload,
 ): Promise<void> {
-  await http.put(`${base(budgetId, periodId)}/${lineId}`, payload)
+  await http.put(`${base(budgetId)}/${lineId}`, payload)
 }
 
-/** DELETE /api/budgets/:budgetId/periods/:periodId/lines/:lineId */
-export async function remove(budgetId: string, periodId: string, lineId: string): Promise<void> {
-  await http.delete(`${base(budgetId, periodId)}/${lineId}`)
+/** DELETE /api/budgets/:budgetId/lines/:lineId */
+export async function remove(budgetId: string, lineId: string): Promise<void> {
+  await http.delete(`${base(budgetId)}/${lineId}`)
 }
 
-/** PUT /api/budgets/:budgetId/periods/:periodId/budget-lines/order */
-export async function reorder(
-  budgetId: string,
-  periodId: string,
-  orderedIds: string[],
-): Promise<void> {
-  await http.put(`/api/budgets/${budgetId}/periods/${periodId}/budget-lines/order`, { orderedIds })
+/** PUT /api/budgets/:budgetId/lines/order */
+export async function reorder(budgetId: string, orderedIds: string[]): Promise<void> {
+  await http.put(`${base(budgetId)}/order`, { orderedIds })
 }
 
-/** POST /api/budgets/:budgetId/periods/:periodId/lines/:lineId/restore */
+/** POST /api/budgets/:budgetId/lines/:lineId/restore */
 export async function restore(
   budgetId: string,
-  periodId: string,
   lineId: string,
   includeExecutionRecords: boolean,
 ): Promise<void> {
-  await http.post(`${base(budgetId, periodId)}/${lineId}/restore`, null, {
+  await http.post(`${base(budgetId)}/${lineId}/restore`, null, {
     params: { includeExecutionRecords },
   })
 }

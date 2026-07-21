@@ -100,14 +100,14 @@ export interface BudgetLineResponse {
   id: string
   name: string
   lineType: LineType
-  isRecurring: boolean
+  startDate: DateString
+  endDate: DateString | null
+  budgetedAmount: number
+  currencyId: string
   categoryGroupId: string
   categoryId?: string
-  budgetedAmount?: number
-  currencyId?: string
   currencyCode?: string
   currencySymbol?: string
-  revisedAt?: DateString
   note?: string
   deletedAt?: string | null
 }
@@ -170,21 +170,24 @@ export interface UpdateCategoryPayload {
 export interface CreateBudgetLinePayload {
   name: string
   lineType: LineType
-  isRecurring: boolean
+  startDate: string
+  endDate?: string
+  initialAmount: number
+  currencyId: string
   categoryGroupId?: string
   categoryId?: string
-  budgetedAmount?: number
-  currencyId?: string
   note?: string
 }
 
 export interface UpdateBudgetLinePayload {
   name: string
   lineType: LineType
-  isRecurring: boolean
   categoryGroupId?: string
   categoryId?: string
-  budgetedAmount?: number
-  currencyId?: string
   note?: string
+  // Optional amount revision fields — required together when changing the budgeted amount
+  validFrom?: string
+  validTo?: string
+  newAmount?: number
+  currencyId?: string
 }
