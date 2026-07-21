@@ -3,6 +3,9 @@
     "appName": "MyBudget",
     "loading": "Loading...",
     "error": "An error occurred",
+    "errors": {
+      "serverError": "An unexpected error occurred. Please try again."
+    },
     "save": "Save",
     "cancel": "Cancel",
     "confirm": "Confirm"
@@ -77,6 +80,14 @@
     "cycles": {
       "title": "Cycles",
       "create": "New Cycle",
+      "validation": {
+        "nameRequired": "Name is required",
+        "nameTooLong": "Name must be 200 characters or fewer"
+      },
+      "errors": {
+        "nameDuplicate": "A cycle with this name already exists in this budget",
+        "dateOverlap": "Cycle dates overlap with an existing cycle"
+      },
       "edit": "Edit Cycle",
       "delete": "Delete Cycle",
       "confirmDelete": "Are you sure you want to delete this cycle?",
@@ -110,6 +121,18 @@
     "periods": {
       "title": "Periods",
       "create": "New Period",
+      "validation": {
+        "nameRequired": "Name is required",
+        "nameTooLong": "Name must be 200 characters or fewer",
+        "startDateRequired": "Start date is required",
+        "endDateRequired": "End date is required",
+        "dateOrder": "End date must be after start date"
+      },
+      "errors": {
+        "nameDuplicate": "A period with this name already exists in this cycle",
+        "outOfCycleRange": "Period dates are outside the cycle range",
+        "dateOverlap": "Period dates overlap with an existing period"
+      },
       "edit": "Edit Period",
       "delete": "Delete Period",
       "confirmDelete": "Are you sure you want to delete this period?",
@@ -135,6 +158,13 @@
     },
     "categoryGroups": {
       "title": "Category Groups",
+      "validation": {
+        "nameRequired": "Name is required",
+        "nameTooLong": "Name must be 200 characters or fewer"
+      },
+      "errors": {
+        "nameDuplicate": "A category group with this name already exists"
+      },
       "column": "Group",
       "create": "New Group",
       "edit": "Edit Group",
@@ -155,6 +185,13 @@
     },
     "categories": {
       "title": "Category",
+      "validation": {
+        "nameRequired": "Name is required",
+        "nameTooLong": "Name must be 200 characters or fewer"
+      },
+      "errors": {
+        "nameDuplicate": "A category with this name already exists in this group"
+      },
       "create": "New Category",
       "edit": "Edit Category",
       "delete": "Delete Category",
@@ -169,6 +206,15 @@
     },
     "budgetLines": {
       "title": "Budget Lines",
+      "validation": {
+        "nameRequired": "Name is required",
+        "nameTooLong": "Name must be 200 characters or fewer",
+        "amountRequired": "Amount is required",
+        "amountPositive": "Amount must be greater than 0"
+      },
+      "errors": {
+        "nameDuplicate": "A budget line with this name already exists in this category"
+      },
       "create": "New Line",
       "edit": "Edit Line",
       "delete": "Delete Line",
@@ -197,6 +243,7 @@
     },
     "selection": {
       "title": "My Budgets",
+      "budgetNameDuplicate": "A budget with this name already exists",
       "singleRedirect": "Redirecting to your budget...",
       "noBudgets": "You are not a member of any budget yet.",
       "selectBudget": "Select a budget to continue",
@@ -338,7 +385,14 @@
       "validation": {
         "amountRequired": "Amount must be greater than 0",
         "exchangeRateRequired": "Exchange rate must be greater than 0",
-        "noteRequiredAlways": "Note is required"
+        "noteRequiredAlways": "Note is required",
+        "operationDateRequired": "Operation date is required",
+        "operationDateOutOfRange": "Operation date must be within the period range",
+        "amountDecimals": "Amount can have at most 2 decimal places",
+        "exchangeRateDecimals": "Exchange rate can have at most 6 decimal places"
+      },
+      "errors": {
+        "operationDateOutOfRange": "Operation date is outside the period range"
       }
     },
     "record": {

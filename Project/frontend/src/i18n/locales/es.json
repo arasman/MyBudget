@@ -3,6 +3,9 @@
     "appName": "MyBudget",
     "loading": "Cargando...",
     "error": "Ocurrió un error",
+    "errors": {
+      "serverError": "Ocurrió un error inesperado. Por favor, inténtelo de nuevo."
+    },
     "save": "Guardar",
     "cancel": "Cancelar",
     "confirm": "Confirmar"
@@ -77,6 +80,14 @@
     "cycles": {
       "title": "Ciclos",
       "create": "Nuevo ciclo",
+      "validation": {
+        "nameRequired": "El nombre es obligatorio",
+        "nameTooLong": "El nombre debe tener 200 caracteres o menos"
+      },
+      "errors": {
+        "nameDuplicate": "Ya existe un ciclo con este nombre en este presupuesto",
+        "dateOverlap": "Las fechas del ciclo se solapan con un ciclo existente"
+      },
       "edit": "Editar ciclo",
       "delete": "Eliminar ciclo",
       "confirmDelete": "¿Estás seguro de que deseas eliminar este ciclo?",
@@ -110,6 +121,18 @@
     "periods": {
       "title": "Períodos",
       "create": "Nuevo período",
+      "validation": {
+        "nameRequired": "El nombre es obligatorio",
+        "nameTooLong": "El nombre debe tener 200 caracteres o menos",
+        "startDateRequired": "La fecha de inicio es obligatoria",
+        "endDateRequired": "La fecha de fin es obligatoria",
+        "dateOrder": "La fecha de fin debe ser posterior a la de inicio"
+      },
+      "errors": {
+        "nameDuplicate": "Ya existe un período con este nombre en este ciclo",
+        "outOfCycleRange": "Las fechas del período están fuera del rango del ciclo",
+        "dateOverlap": "Las fechas del período se solapan con un período existente"
+      },
       "edit": "Editar período",
       "delete": "Eliminar período",
       "confirmDelete": "¿Estás seguro de que deseas eliminar este período?",
@@ -135,6 +158,13 @@
     },
     "categoryGroups": {
       "title": "Grupos de categorías",
+      "validation": {
+        "nameRequired": "El nombre es obligatorio",
+        "nameTooLong": "El nombre debe tener 200 caracteres o menos"
+      },
+      "errors": {
+        "nameDuplicate": "Ya existe un grupo de categorías con este nombre"
+      },
       "column": "Grupo",
       "create": "Nuevo grupo",
       "edit": "Editar grupo",
@@ -155,6 +185,13 @@
     },
     "categories": {
       "title": "Categoría",
+      "validation": {
+        "nameRequired": "El nombre es obligatorio",
+        "nameTooLong": "El nombre debe tener 200 caracteres o menos"
+      },
+      "errors": {
+        "nameDuplicate": "Ya existe una categoría con este nombre en este grupo"
+      },
       "create": "Nueva categoría",
       "edit": "Editar categoría",
       "delete": "Eliminar categoría",
@@ -169,6 +206,15 @@
     },
     "budgetLines": {
       "title": "Líneas de presupuesto",
+      "validation": {
+        "nameRequired": "El nombre es obligatorio",
+        "nameTooLong": "El nombre debe tener 200 caracteres o menos",
+        "amountRequired": "El monto es obligatorio",
+        "amountPositive": "El monto debe ser mayor que 0"
+      },
+      "errors": {
+        "nameDuplicate": "Ya existe una línea de presupuesto con este nombre en esta categoría"
+      },
       "create": "Nueva línea",
       "edit": "Editar línea",
       "delete": "Eliminar línea",
@@ -197,6 +243,7 @@
     },
     "selection": {
       "title": "Mis presupuestos",
+      "budgetNameDuplicate": "Ya existe un presupuesto con este nombre",
       "singleRedirect": "Redirigiendo a tu presupuesto...",
       "noBudgets": "Aún no eres miembro de ningún presupuesto.",
       "selectBudget": "Selecciona un presupuesto para continuar",
@@ -338,7 +385,14 @@
       "validation": {
         "amountRequired": "El monto debe ser mayor a 0",
         "exchangeRateRequired": "El tipo de cambio debe ser mayor a 0",
-        "noteRequiredAlways": "La nota es obligatoria"
+        "noteRequiredAlways": "La nota es obligatoria",
+        "operationDateRequired": "La fecha de operación es obligatoria",
+        "operationDateOutOfRange": "La fecha de operación debe estar dentro del rango del período",
+        "amountDecimals": "El monto puede tener como máximo 2 decimales",
+        "exchangeRateDecimals": "El tipo de cambio puede tener como máximo 6 decimales"
+      },
+      "errors": {
+        "operationDateOutOfRange": "La fecha de operación está fuera del rango del período"
       }
     },
     "record": {
