@@ -1,3 +1,4 @@
+// REQ-BL-1, REQ-BL-STORE-1
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/vue'
 import { createPinia, setActivePinia } from 'pinia'
@@ -58,12 +59,11 @@ import { useLayoutStore } from '@/stores/layout.store'
 
 const BUDGET_ID = 'budget-1'
 const CYCLE_ID = 'cycle-1'
-const PERIOD_ID = 'period-1'
 
 const mockLines: BudgetLineResponse[] = [
-  { id: 'l1', name: 'Salary', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
-  { id: 'l2', name: 'Rent', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
-  { id: 'l3', name: 'Groceries', lineType: 'Expense', isRecurring: false, categoryGroupId: 'g1' },
+  { id: 'l1', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01' as any, endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
+  { id: 'l2', name: 'Rent', lineType: 'Expense', startDate: '2025-01-01' as any, endDate: null, budgetedAmount: 500, currencyId: 'gtq', categoryGroupId: 'g1' },
+  { id: 'l3', name: 'Groceries', lineType: 'Expense', startDate: '2025-01-01' as any, endDate: null, budgetedAmount: 300, currencyId: 'gtq', categoryGroupId: 'g1' },
 ]
 
 function makeRouter() {
@@ -71,7 +71,7 @@ function makeRouter() {
     history: createMemoryHistory(),
     routes: [
       {
-        path: '/budgets/:budgetId/cycles/:cycleId/periods/:periodId/lines',
+        path: '/budgets/:budgetId/cycles/:cycleId/lines',
         name: 'BudgetLines',
         component: BudgetLinesView,
       },
@@ -105,7 +105,8 @@ function makeI18n() {
             confirmDelete: 'Are you sure?',
             name: 'Name',
             lineType: 'Type',
-            isRecurring: 'Recurring',
+            startDate: 'Start Date',
+            endDate: 'End Date',
             budgetedAmount: 'Budgeted Amount',
             currency: 'Currency',
             note: 'Note',
@@ -165,7 +166,7 @@ describe('BudgetLinesView', () => {
 
   async function renderView() {
     const router = makeRouter()
-    await router.push(`/budgets/${BUDGET_ID}/cycles/${CYCLE_ID}/periods/${PERIOD_ID}/lines`)
+    await router.push(`/budgets/${BUDGET_ID}/cycles/${CYCLE_ID}/lines`)
     await router.isReady()
 
     const result = render(BudgetLinesView, {
@@ -232,6 +233,15 @@ describe('BudgetLinesView', () => {
       await fireEvent.dblClick(firstRow)
 
       expect(screen.getByTestId('budget-line-modal')).toBeTruthy()
+    })
+  })
+
+  describe('store called without periodId', () => {
+    it('calls loadLines with budgetId only (no periodId argument)', async () => {
+      const { layoutStoreMock: _ } = setupMocks({ lines: [] })
+      await renderView()
+      const store = vi.mocked(useBudgetStructureStore)()
+      expect(store.loadLines).toHaveBeenCalledWith(BUDGET_ID)
     })
   })
 })

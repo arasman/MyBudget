@@ -210,10 +210,15 @@
         "nameRequired": "Name is required",
         "nameTooLong": "Name must be 200 characters or fewer",
         "amountRequired": "Amount is required",
-        "amountPositive": "Amount must be greater than 0"
+        "amountPositive": "Amount must be greater than 0",
+        "startDateRequired": "Start date is required",
+        "endDateAfterStartDate": "End date must be after start date",
+        "validFromRequired": "Valid from date is required",
+        "validFromNotInPast": "Valid from date cannot be in the past",
+        "validFromOutOfRange": "Valid from date is outside the budget line date range"
       },
       "errors": {
-        "nameDuplicate": "A budget line with this name already exists in this category"
+        "nameDuplicate": "A budget line with this name already exists in this budget"
       },
       "create": "New Line",
       "edit": "Edit Line",
@@ -226,10 +231,17 @@
       "showDeleted": "Show deleted",
       "name": "Name",
       "lineType": "Type",
-      "isRecurring": "Recurring",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "endDatePlaceholder": "Perpetual / No expiry",
+      "validFrom": "Valid From",
+      "validTo": "Valid To",
+      "newAmount": "New Amount",
+      "amountRevision": "Amount Revision",
       "budgetedAmount": "Budgeted Amount",
       "currency": "Currency",
       "note": "Note",
+      "perpetual": "Perpetual",
       "types": {
         "expense": "Expense",
         "longTermSavings": "Long-term Savings",
@@ -237,7 +249,7 @@
       },
       "empty": {
         "title": "No budget lines yet",
-        "description": "Add budget lines to track income and expenses for this period.",
+        "description": "Add budget lines to track income and expenses for this budget.",
         "action": "New Line"
       }
     },

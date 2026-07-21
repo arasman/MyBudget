@@ -67,6 +67,7 @@
               {{ t('budgetStructure.budgetLines.name') }}
               <span v-if="sortColumn === 'name'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
             </th>
+            <th>{{ t('budgetStructure.budgetLines.startDate') }}</th>
             <th class="cursor-pointer select-none" @click="toggleSort('currency')">
               {{ t('budgetStructure.budgetLines.currency') }}
               <span v-if="sortColumn === 'currency'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
@@ -74,10 +75,6 @@
             <th class="cursor-pointer select-none" @click="toggleSort('budgetedAmount')">
               {{ t('budgetStructure.budgetLines.budgetedAmount') }}
               <span v-if="sortColumn === 'budgetedAmount'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
-            </th>
-            <th class="cursor-pointer select-none" @click="toggleSort('isRecurring')">
-              {{ t('budgetStructure.budgetLines.isRecurring') }}
-              <span v-if="sortColumn === 'isRecurring'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
             </th>
             <th>{{ t('budgetStructure.budgetLines.note') }}</th>
             <th>{{ t('budgetStructure.common.actions') }}</th>
@@ -144,6 +141,14 @@
               />
             </td>
             <td>
+              <input
+                v-model="inlineAddForm.startDate"
+                type="date"
+                class="input input-xs input-bordered w-full"
+                :placeholder="t('budgetStructure.budgetLines.startDate')"
+              />
+            </td>
+            <td>
               <select v-model="inlineAddForm.currencyId" class="select select-xs select-bordered">
                 <option :value="undefined">—</option>
                 <option
@@ -157,14 +162,11 @@
             </td>
             <td>
               <input
-                v-model.number="inlineAddForm.budgetedAmount"
+                v-model.number="inlineAddForm.initialAmount"
                 type="number"
                 step="0.01"
                 class="input input-xs input-bordered w-24"
               />
-            </td>
-            <td>
-              <input v-model="inlineAddForm.isRecurring" type="checkbox" class="checkbox checkbox-xs" />
             </td>
             <td>
               <input
@@ -255,7 +257,6 @@ const { t } = useI18n()
 
 const budgetId = route.params.budgetId as string
 const cycleId = route.params.cycleId as string
-const periodId = route.params.periodId as string
 
 const store = useBudgetStructureStore()
 const layoutStore = useLayoutStore()
@@ -274,7 +275,7 @@ const deletingLineId = ref<string | null>(null)
 const inlineEditingLineId = ref<string | null>(null)
 
 // Sort state
-type SortColumn = 'group' | 'category' | 'type' | 'name' | 'currency' | 'budgetedAmount' | 'isRecurring'
+type SortColumn = 'group' | 'category' | 'type' | 'name' | 'currency' | 'budgetedAmount'
 type SortDir = 'asc' | 'desc'
 
 const sortColumn = ref<SortColumn>('group')
@@ -329,9 +330,6 @@ const sortedLines = computed(() => {
       case 'budgetedAmount':
         primary = (a.budgetedAmount ?? 0) - (b.budgetedAmount ?? 0)
         break
-      case 'isRecurring':
-        primary = Number(a.isRecurring) - Number(b.isRecurring)
-        break
     }
     return primary !== 0 ? dir * primary : defaultSort(a, b)
   })
@@ -342,8 +340,8 @@ const showInlineAdd = ref(false)
 const inlineAddForm = reactive({
   name: '',
   lineType: 'Expense' as LineType,
-  isRecurring: false,
-  budgetedAmount: null as number | null,
+  startDate: '',
+  initialAmount: null as number | null,
   currencyId: undefined as string | undefined,
   note: '',
   categoryGroupId: '',
@@ -372,14 +370,14 @@ function confirmDelete(lineId: string): void {
 
 async function handleDelete(): Promise<void> {
   if (!deletingLineId.value) return
-  await store.deleteLine(budgetId, periodId, deletingLineId.value)
+  await store.deleteLine(budgetId, deletingLineId.value)
   showDeleteConfirm.value = false
   deletingLineId.value = null
   toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.deleteSuccess') })
 }
 
 async function handleRestore(lineId: string): Promise<void> {
-  await store.restoreLine(budgetId, periodId, lineId, false)
+  await store.restoreLine(budgetId, lineId, false)
   toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.restoreSuccess') })
 }
 
@@ -392,13 +390,13 @@ function _lineErrorToast(err: unknown): void {
   }
 }
 
-async function handleModalSubmit(payload: CreateBudgetLinePayload): Promise<void> {
+async function handleModalSubmit(payload: CreateBudgetLinePayload | UpdateBudgetLinePayload): Promise<void> {
   try {
     if (editingLine.value) {
-      await store.updateLine(budgetId, periodId, editingLine.value.id, payload)
+      await store.updateLine(budgetId, editingLine.value.id, payload as UpdateBudgetLinePayload)
       toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.updateSuccess') })
     } else {
-      await store.createLine(budgetId, periodId, payload)
+      await store.createLine(budgetId, payload as CreateBudgetLinePayload)
       toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.createSuccess') })
     }
     closeModal()
@@ -416,7 +414,7 @@ function handleStartEdit(line: BudgetLineResponse): void {
 
 async function handleInlineSave(lineId: string, payload: UpdateBudgetLinePayload): Promise<void> {
   try {
-    await store.updateLine(budgetId, periodId, lineId, payload)
+    await store.updateLine(budgetId, lineId, payload)
     inlineEditingLineId.value = null
     toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.updateSuccess') })
   } catch (err) {
@@ -434,8 +432,8 @@ function openInlineAdd(): void {
   inlineEditingLineId.value = null
   inlineAddForm.name = ''
   inlineAddForm.lineType = 'Expense'
-  inlineAddForm.isRecurring = false
-  inlineAddForm.budgetedAmount = null
+  inlineAddForm.startDate = ''
+  inlineAddForm.initialAmount = null
   inlineAddForm.currencyId = undefined
   inlineAddForm.note = ''
   inlineAddForm.categoryGroupId = store.categoryGroups[0]?.id ?? ''
@@ -444,14 +442,14 @@ function openInlineAdd(): void {
 }
 
 async function handleInlineAddSave(): Promise<void> {
-  if (!inlineAddForm.name.trim()) return
+  if (!inlineAddForm.name.trim() || !inlineAddForm.startDate) return
   try {
-    await store.createLine(budgetId, periodId, {
+    await store.createLine(budgetId, {
       name: inlineAddForm.name,
       lineType: inlineAddForm.lineType,
-      isRecurring: inlineAddForm.isRecurring,
-      budgetedAmount: inlineAddForm.budgetedAmount ?? undefined,
-      currencyId: inlineAddForm.currencyId || undefined,
+      startDate: inlineAddForm.startDate,
+      initialAmount: inlineAddForm.initialAmount ?? 0,
+      currencyId: inlineAddForm.currencyId ?? '',
       note: inlineAddForm.note || undefined,
       categoryGroupId: inlineAddForm.categoryGroupId || undefined,
       categoryId: inlineAddForm.categoryId || undefined,
@@ -464,12 +462,12 @@ async function handleInlineAddSave(): Promise<void> {
 }
 
 watch(() => store.showDeletedBudgetLines, async () => {
-  await store.loadLines(budgetId, periodId)
+  await store.loadLines(budgetId)
 })
 
 onMounted(async () => {
   await Promise.all([
-    store.loadLines(budgetId, periodId),
+    store.loadLines(budgetId),
     store.loadGroups(budgetId),
   ])
 

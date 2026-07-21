@@ -210,10 +210,15 @@
         "nameRequired": "El nombre es obligatorio",
         "nameTooLong": "El nombre debe tener 200 caracteres o menos",
         "amountRequired": "El monto es obligatorio",
-        "amountPositive": "El monto debe ser mayor que 0"
+        "amountPositive": "El monto debe ser mayor que 0",
+        "startDateRequired": "La fecha de inicio es obligatoria",
+        "endDateAfterStartDate": "La fecha de fin debe ser posterior a la fecha de inicio",
+        "validFromRequired": "La fecha de vigencia es obligatoria",
+        "validFromNotInPast": "La fecha de vigencia no puede estar en el pasado",
+        "validFromOutOfRange": "La fecha de vigencia está fuera del rango de la línea"
       },
       "errors": {
-        "nameDuplicate": "Ya existe una línea de presupuesto con este nombre en esta categoría"
+        "nameDuplicate": "Ya existe una línea de presupuesto con este nombre en este presupuesto"
       },
       "create": "Nueva línea",
       "edit": "Editar línea",
@@ -226,10 +231,17 @@
       "showDeleted": "Mostrar eliminadas",
       "name": "Nombre",
       "lineType": "Tipo",
-      "isRecurring": "Recurrente",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "endDatePlaceholder": "Perpetuo / Sin vencimiento",
+      "validFrom": "Válido desde",
+      "validTo": "Válido hasta",
+      "newAmount": "Nuevo monto",
+      "amountRevision": "Revisión de monto",
       "budgetedAmount": "Monto presupuestado",
       "currency": "Moneda",
       "note": "Nota",
+      "perpetual": "Perpetuo",
       "types": {
         "expense": "Gasto",
         "longTermSavings": "Ahorro a largo plazo",
@@ -237,7 +249,7 @@
       },
       "empty": {
         "title": "Aún no hay líneas de presupuesto",
-        "description": "Agrega líneas de presupuesto para registrar ingresos y gastos de este período.",
+        "description": "Agrega líneas de presupuesto para este presupuesto.",
         "action": "Nueva línea"
       }
     },
