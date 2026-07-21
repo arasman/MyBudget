@@ -140,7 +140,7 @@ describe('CreateBudgetModal', () => {
     })
   })
 
-  it('shows server error on API failure', async () => {
+  it('pushes error toast on API failure (no inline banner)', async () => {
     mockCreateBudget.mockRejectedValue({ response: { data: { detail: '' }, status: 500 } })
 
     renderModal()
@@ -152,7 +152,10 @@ describe('CreateBudgetModal', () => {
     await fireEvent.submit(form)
 
     await waitFor(() => {
-      expect(screen.getByText('An error occurred')).toBeTruthy()
+      // The API was called and rejected
+      expect(mockCreateBudget).toHaveBeenCalled()
+      // No inline server error banner should remain — errors go to toast
+      expect(document.querySelector('.alert.alert-error')).toBeNull()
     })
   })
 })

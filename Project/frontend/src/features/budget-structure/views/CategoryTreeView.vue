@@ -296,6 +296,7 @@ import { useBudgetStructureStore } from '../store'
 import { useLayoutStore } from '@/stores/layout.store'
 import { useToastStore } from '@/stores/toast.store'
 import { useRoleGate } from '../composables/useRoleGate'
+import { extractApiErrorCode } from '../utils/apiError'
 import BudgetTabs from '../components/BudgetTabs.vue'
 import CategoryGroupForm from '../components/CategoryGroupForm.vue'
 import CategoryForm from '../components/CategoryForm.vue'
@@ -329,11 +330,33 @@ function startGroupEdit(group: CategoryGroupResponse): void {
   inlineGroupName.value = group.name
 }
 
+function _groupErrorToast(err: unknown): void {
+  const code = extractApiErrorCode(err)
+  if (code === 'CATEGORY_GROUP_NAME_DUPLICATE') {
+    toastStore.push({ type: 'error', title: t('budgetStructure.categoryGroups.errors.nameDuplicate') })
+  } else {
+    toastStore.push({ type: 'error', title: t('common.errors.serverError') })
+  }
+}
+
+function _categoryErrorToast(err: unknown): void {
+  const code = extractApiErrorCode(err)
+  if (code === 'CATEGORY_NAME_DUPLICATE') {
+    toastStore.push({ type: 'error', title: t('budgetStructure.categories.errors.nameDuplicate') })
+  } else {
+    toastStore.push({ type: 'error', title: t('common.errors.serverError') })
+  }
+}
+
 async function handleGroupInlineSave(groupId: string): Promise<void> {
   if (!inlineGroupName.value.trim()) return
-  await store.updateGroup(budgetId, groupId, { name: inlineGroupName.value })
-  inlineEditingGroupId.value = null
-  toastStore.push({ type: 'success', title: t('budgetStructure.categoryGroups.updateSuccess') })
+  try {
+    await store.updateGroup(budgetId, groupId, { name: inlineGroupName.value })
+    inlineEditingGroupId.value = null
+    toastStore.push({ type: 'success', title: t('budgetStructure.categoryGroups.updateSuccess') })
+  } catch (err) {
+    _groupErrorToast(err)
+  }
 }
 
 // --- Category inline edit state ---
@@ -347,9 +370,13 @@ function startCategoryEdit(category: CategoryItem): void {
 
 async function handleCategoryInlineSave(groupId: string, categoryId: string): Promise<void> {
   if (!inlineCategoryName.value.trim()) return
-  await store.updateCategory(budgetId, groupId, categoryId, { name: inlineCategoryName.value })
-  inlineEditingCategoryId.value = null
-  toastStore.push({ type: 'success', title: t('budgetStructure.categories.updateSuccess') })
+  try {
+    await store.updateCategory(budgetId, groupId, categoryId, { name: inlineCategoryName.value })
+    inlineEditingCategoryId.value = null
+    toastStore.push({ type: 'success', title: t('budgetStructure.categories.updateSuccess') })
+  } catch (err) {
+    _categoryErrorToast(err)
+  }
 }
 
 // --- Group modal state ---
@@ -468,22 +495,30 @@ async function handleRestoreCategory(groupId: string, categoryId: string): Promi
 // Also toast on group create
 async function handleGroupFormSubmitWithToast(payload: { name: string }): Promise<void> {
   const isNew = !editingGroup.value
-  await handleGroupFormSubmit(payload)
-  if (isNew) {
-    toastStore.push({ type: 'success', title: t('budgetStructure.categoryGroups.createSuccess') })
-  } else {
-    toastStore.push({ type: 'success', title: t('budgetStructure.categoryGroups.updateSuccess') })
+  try {
+    await handleGroupFormSubmit(payload)
+    if (isNew) {
+      toastStore.push({ type: 'success', title: t('budgetStructure.categoryGroups.createSuccess') })
+    } else {
+      toastStore.push({ type: 'success', title: t('budgetStructure.categoryGroups.updateSuccess') })
+    }
+  } catch (err) {
+    _groupErrorToast(err)
   }
 }
 
 // Also toast on category create
 async function handleCategoryFormSubmitWithToast(payload: { name: string }): Promise<void> {
   const isNew = !editingCategory.value
-  await handleCategoryFormSubmit(payload)
-  if (isNew) {
-    toastStore.push({ type: 'success', title: t('budgetStructure.categories.createSuccess') })
-  } else {
-    toastStore.push({ type: 'success', title: t('budgetStructure.categories.updateSuccess') })
+  try {
+    await handleCategoryFormSubmit(payload)
+    if (isNew) {
+      toastStore.push({ type: 'success', title: t('budgetStructure.categories.createSuccess') })
+    } else {
+      toastStore.push({ type: 'success', title: t('budgetStructure.categories.updateSuccess') })
+    }
+  } catch (err) {
+    _categoryErrorToast(err)
   }
 }
 

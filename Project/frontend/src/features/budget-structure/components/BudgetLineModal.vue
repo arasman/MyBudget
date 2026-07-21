@@ -9,7 +9,7 @@
         }}
       </h3>
 
-      <form @submit.prevent="handleSubmit">
+      <form novalidate @submit.prevent="handleSubmit">
         <!-- Name -->
         <div class="form-control mb-3">
           <label class="label" for="line-name">
@@ -20,8 +20,12 @@
             v-model="form.name"
             type="text"
             class="input input-bordered w-full"
-            required
+            :class="{ 'input-error': errors.name }"
+            maxlength="200"
           />
+          <div v-if="errors.name" class="label">
+            <span class="label-text-alt text-error">{{ errors.name }}</span>
+          </div>
         </div>
 
         <!-- Line type -->
@@ -89,9 +93,13 @@
             v-model.number="form.budgetedAmount"
             type="number"
             step="0.01"
-            min="0"
+            min="0.01"
             class="input input-bordered w-full"
+            :class="{ 'input-error': errors.budgetedAmount }"
           />
+          <div v-if="errors.budgetedAmount" class="label">
+            <span class="label-text-alt text-error">{{ errors.budgetedAmount }}</span>
+          </div>
         </div>
 
         <!-- Currency -->
@@ -144,6 +152,11 @@ import { useI18n } from 'vue-i18n'
 import type { BudgetLineResponse, CategoryGroupResponse, CreateBudgetLinePayload, CurrencyItem, LineType } from '../types'
 import { useBudgetStructureStore } from '../store'
 
+const errors = reactive({
+  name: '',
+  budgetedAmount: '',
+})
+
 const props = defineProps<{
   modelValue: BudgetLineResponse | null
   categoryGroups: CategoryGroupResponse[]
@@ -195,9 +208,29 @@ const filteredCategories = computed(() => {
   return group?.categories ?? []
 })
 
+function validate(): boolean {
+  if (!form.name.trim()) {
+    errors.name = t('budgetStructure.budgetLines.validation.nameRequired')
+  } else if (form.name.trim().length > 200) {
+    errors.name = t('budgetStructure.budgetLines.validation.nameTooLong')
+  } else {
+    errors.name = ''
+  }
+
+  if (form.budgetedAmount != null && form.budgetedAmount <= 0) {
+    errors.budgetedAmount = t('budgetStructure.budgetLines.validation.amountPositive')
+  } else {
+    errors.budgetedAmount = ''
+  }
+
+  return !errors.name && !errors.budgetedAmount
+}
+
 function handleSubmit(): void {
+  if (!validate()) return
+
   const payload: CreateBudgetLinePayload = {
-    name: form.name,
+    name: form.name.trim(),
     lineType: form.lineType,
     isRecurring: form.isRecurring,
     categoryGroupId: form.categoryGroupId || undefined,
