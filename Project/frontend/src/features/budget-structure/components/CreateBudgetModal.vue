@@ -2,12 +2,15 @@
 import { ref, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { createBudget } from '../api/budgets.api'
+import { useToastStore } from '@/stores/toast.store'
+import { extractApiErrorCode } from '../utils/apiError'
 
 const emit = defineEmits<{
   created: [{ id: string; name: string }]
 }>()
 
 const { t } = useI18n()
+const toastStore = useToastStore()
 
 const modal = ref<HTMLDialogElement>()
 
@@ -52,14 +55,15 @@ async function onSubmit() {
     emit('created', result)
     close()
   } catch (err: unknown) {
-    const axiosErr = err as { response?: { data?: { detail?: string }; status?: number } }
-    const detail = axiosErr.response?.data?.detail ?? ''
-    if (detail.includes('BUDGET_NAME_TOO_LONG')) {
+    const code = extractApiErrorCode(err)
+    if (code === 'BUDGET_NAME_DUPLICATE') {
+      toastStore.push({ type: 'error', title: t('budgetStructure.selection.budgetNameDuplicate') })
+    } else if (code === 'BUDGET_NAME_TOO_LONG') {
       nameError.value = t('budgetStructure.selection.budgetNameTooLong')
-    } else if (detail.includes('BUDGET_NAME_REQUIRED')) {
+    } else if (code === 'BUDGET_NAME_REQUIRED') {
       nameError.value = t('budgetStructure.selection.budgetNameRequired')
     } else {
-      serverError.value = t('common.error')
+      toastStore.push({ type: 'error', title: t('common.errors.serverError') })
     }
   } finally {
     isSubmitting.value = false
@@ -71,11 +75,6 @@ async function onSubmit() {
   <dialog ref="modal" class="modal">
     <div class="modal-box">
       <h3 class="font-bold text-lg mb-4">{{ t('budgetStructure.selection.createBudgetTitle') }}</h3>
-
-      <!-- Server error -->
-      <div v-if="serverError" role="alert" class="alert alert-error mb-4">
-        <span>{{ serverError }}</span>
-      </div>
 
       <form @submit.prevent="onSubmit" class="space-y-4" novalidate>
         <!-- Budget name -->

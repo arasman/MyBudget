@@ -21,6 +21,7 @@
             type="text"
             class="input input-bordered w-full"
             :class="{ 'input-error': errors.name }"
+            maxlength="200"
             required
           />
           <div v-if="errors.name" class="label">
@@ -76,7 +77,13 @@ watch(
 )
 
 function validate(): boolean {
-  errors.name = form.name.trim() ? '' : 'Name is required'
+  if (!form.name.trim()) {
+    errors.name = t('budgetStructure.categories.validation.nameRequired')
+  } else if (form.name.trim().length > 200) {
+    errors.name = t('budgetStructure.categories.validation.nameTooLong')
+  } else {
+    errors.name = ''
+  }
   return !errors.name
 }
 

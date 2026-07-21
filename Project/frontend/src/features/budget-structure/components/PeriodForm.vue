@@ -17,6 +17,7 @@
             type="text"
             class="input input-bordered w-full"
             :class="{ 'input-error': errors.name }"
+            maxlength="200"
             required
           />
           <div v-if="errors.name" class="label">
@@ -149,12 +150,18 @@ watch(
 )
 
 function validate(): boolean {
-  errors.name = form.name.trim() ? '' : 'Name is required'
-  errors.startDate = form.startDate ? '' : 'Start date is required'
-  errors.endDate = form.endDate ? '' : 'End date is required'
+  if (!form.name.trim()) {
+    errors.name = t('budgetStructure.periods.validation.nameRequired')
+  } else if (form.name.trim().length > 200) {
+    errors.name = t('budgetStructure.periods.validation.nameTooLong')
+  } else {
+    errors.name = ''
+  }
+  errors.startDate = form.startDate ? '' : t('budgetStructure.periods.validation.startDateRequired')
+  errors.endDate = form.endDate ? '' : t('budgetStructure.periods.validation.endDateRequired')
 
   if (!errors.endDate && !errors.startDate && form.endDate <= form.startDate) {
-    errors.endDate = 'End date must be after start date'
+    errors.endDate = t('budgetStructure.periods.validation.dateOrder')
   }
 
   return !errors.name && !errors.startDate && !errors.endDate
