@@ -3,7 +3,6 @@ using MyBudget.Features.SharedKernel.Entities;
 
 namespace MyBudget.Features.Features.BudgetStructure.UpdateBudgetLine;
 
-// TODO PR2a: add ValidFrom >= today, ValidFrom within BudgetLine date range, BudgetedAmount > 0 when provided
 public sealed class UpdateBudgetLineValidator : AbstractValidator<UpdateBudgetLineCommand>
 {
     public UpdateBudgetLineValidator()
@@ -25,8 +24,21 @@ public sealed class UpdateBudgetLineValidator : AbstractValidator<UpdateBudgetLi
             .Must(lt => Enum.IsDefined(typeof(LineType), lt))
             .WithErrorCode("FIELD_INVALID");
 
+        // REQ-BL-03: Amount revision — only validated when present
         RuleFor(x => x.BudgetedAmount)
             .GreaterThan(0).WithErrorCode("FIELD_INVALID")
             .When(x => x.BudgetedAmount.HasValue);
+
+        // REQ-BL-03: ValidFrom must not be in the past (no retroactive revision splits)
+        RuleFor(x => x.ValidFrom)
+            .Must(vf => vf!.Value >= DateOnly.FromDateTime(DateTime.UtcNow))
+            .WithErrorCode("VALIDFROM_IN_PAST")
+            .When(x => x.ValidFrom.HasValue);
+
+        // REQ-BL-03: ValidTo when provided must be >= ValidFrom
+        RuleFor(x => x.ValidTo)
+            .Must((cmd, validTo) => validTo!.Value >= cmd.ValidFrom!.Value)
+            .WithErrorCode("FIELD_INVALID")
+            .When(x => x.ValidFrom.HasValue && x.ValidTo.HasValue);
     }
 }

@@ -7,7 +7,6 @@ using Shouldly;
 
 namespace MyBudget.Features.Tests.Features.BudgetStructure.UpdateBudgetLine;
 
-// TODO PR4: full rewrite — tests for new metadata-only update + SplitRevision flow
 public sealed class UpdateBudgetLineHandlerTests : IDisposable
 {
     private readonly string _connectionString;
@@ -70,7 +69,6 @@ public sealed class UpdateBudgetLineHandlerTests : IDisposable
     [Fact]
     public async Task MetadataUpdate_Succeeds()
     {
-        // TODO PR4: full handler test rewrite — stub to compile only
         var (budgetId, lineId, groupId) = await SeedLineAsync(isClosed: false);
 
         await using var handlerDb = CreateContext();
@@ -103,5 +101,46 @@ public sealed class UpdateBudgetLineHandlerTests : IDisposable
 
         result.IsSuccess.ShouldBeFalse();
         result.Error.ShouldBe("BUDGET_LINE_NOT_FOUND");
+    }
+
+    [Fact]
+    public async Task RevisionSplit_WithClosedPeriodCoveringValidFrom_Returns_PERIOD_CLOSED()
+    {
+        // isClosed=true seeds the period as closed, covering UtcNow..UtcNow+30 days
+        var (budgetId, lineId, groupId) = await SeedLineAsync(isClosed: true);
+
+        await using var handlerDb = CreateContext();
+        var sut = new UpdateBudgetLineHandler(handlerDb);
+
+        // ValidFrom = today falls inside the closed period
+        var validFrom = DateOnly.FromDateTime(DateTime.UtcNow);
+        var cmd = new UpdateBudgetLineCommand(
+            budgetId, lineId, groupId, null,
+            "Rent", LineType.Expense,
+            validFrom, null, 2000m, CurrencySeeds.GtqId);
+
+        var result = await sut.Handle(cmd, CancellationToken.None);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.Error.ShouldBe("PERIOD_CLOSED");
+    }
+
+    [Fact]
+    public async Task RevisionSplit_WithOpenPeriod_Succeeds()
+    {
+        var (budgetId, lineId, groupId) = await SeedLineAsync(isClosed: false);
+
+        await using var handlerDb = CreateContext();
+        var sut = new UpdateBudgetLineHandler(handlerDb);
+
+        var validFrom = DateOnly.FromDateTime(DateTime.UtcNow);
+        var cmd = new UpdateBudgetLineCommand(
+            budgetId, lineId, groupId, null,
+            "Rent", LineType.Expense,
+            validFrom, null, 2000m, CurrencySeeds.GtqId);
+
+        var result = await sut.Handle(cmd, CancellationToken.None);
+
+        result.IsSuccess.ShouldBeTrue();
     }
 }

@@ -6,8 +6,7 @@ using Shouldly;
 
 namespace MyBudget.Features.Tests.Features.BudgetStructure.UpdateBudgetLine;
 
-/// <summary>Tests for REQ-BL-NAME-1 in update path: budget line name uniqueness.</summary>
-// TODO PR4: full rewrite — name uniqueness is now scoped to BudgetId only (not PeriodId)
+/// <summary>Tests for REQ-BL-NAME-1 in update path: budget line name uniqueness scoped to BudgetId.</summary>
 public sealed class UpdateBudgetLineNameDuplicateHandlerTests : IDisposable
 {
     private readonly AppDbContext _db;
@@ -35,10 +34,8 @@ public sealed class UpdateBudgetLineNameDuplicateHandlerTests : IDisposable
     [Fact]
     public async Task SoftDeletedSiblingDuplicate_Returns_BUDGET_LINE_NAME_DUPLICATE()
     {
-        // TODO PR4: full rewrite — stub compile-only version
         var (budgetId, groupId) = await SeedAsync();
 
-        // TODO PR4: update to new BudgetLine.Create signature
         var deleted = BudgetLine.Create(budgetId, groupId, null, "Utilities", LineType.Expense,
             DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId);
         deleted.SoftDelete();
@@ -49,15 +46,14 @@ public sealed class UpdateBudgetLineNameDuplicateHandlerTests : IDisposable
         _db.BudgetLines.Add(target);
         await _db.SaveChangesAsync();
 
-        // TODO PR4: command updated — no PeriodId/IsRecurring
         var cmd = new UpdateBudgetLineCommand(
             budgetId, target.Id,
             groupId, null, "Utilities", LineType.Expense,
             null, null, 500m, null);
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
-        // TODO PR4: handler will enforce name uniqueness — stub passes now, full assertion in PR4
-        _ = result;
+        result.IsSuccess.ShouldBeFalse();
+        result.Error.ShouldBe("BUDGET_LINE_NAME_DUPLICATE");
     }
 
     [Fact]
@@ -65,7 +61,6 @@ public sealed class UpdateBudgetLineNameDuplicateHandlerTests : IDisposable
     {
         var (budgetId, groupId) = await SeedAsync();
 
-        // TODO PR4: update to new BudgetLine.Create signature
         var target = BudgetLine.Create(budgetId, groupId, null, "Rent", LineType.Expense,
             DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId);
         _db.BudgetLines.Add(target);
@@ -78,5 +73,29 @@ public sealed class UpdateBudgetLineNameDuplicateHandlerTests : IDisposable
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ActiveSiblingDuplicate_Returns_BUDGET_LINE_NAME_DUPLICATE()
+    {
+        var (budgetId, groupId) = await SeedAsync();
+
+        var sibling = BudgetLine.Create(budgetId, groupId, null, "Utilities", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId);
+        _db.BudgetLines.Add(sibling);
+
+        var target = BudgetLine.Create(budgetId, groupId, null, "Rent", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId);
+        _db.BudgetLines.Add(target);
+        await _db.SaveChangesAsync();
+
+        var cmd = new UpdateBudgetLineCommand(
+            budgetId, target.Id,
+            groupId, null, "Utilities", LineType.Expense,
+            null, null, 500m, null);
+        var result = await _sut.Handle(cmd, CancellationToken.None);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.Error.ShouldBe("BUDGET_LINE_NAME_DUPLICATE");
     }
 }

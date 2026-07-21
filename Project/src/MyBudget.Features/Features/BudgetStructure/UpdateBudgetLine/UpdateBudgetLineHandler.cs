@@ -5,7 +5,6 @@ using MyBudget.Features.SharedKernel.Results;
 
 namespace MyBudget.Features.Features.BudgetStructure.UpdateBudgetLine;
 
-// TODO PR2a: full handler rewrite — metadata update + SplitRevision for amount change
 public sealed class UpdateBudgetLineHandler : IRequestHandler<UpdateBudgetLineCommand, Result<Guid>>
 {
     private readonly AppDbContext _db;
@@ -14,17 +13,42 @@ public sealed class UpdateBudgetLineHandler : IRequestHandler<UpdateBudgetLineCo
 
     public async ValueTask<Result<Guid>> Handle(UpdateBudgetLineCommand cmd, CancellationToken ct)
     {
-        // Stub: load BudgetLine by BudgetId + LineId (no PeriodId)
         var line = await _db.BudgetLines
+            .Include(bl => bl.Revisions)
             .FirstOrDefaultAsync(l => l.Id == cmd.LineId && l.BudgetId == cmd.BudgetId, ct);
 
         if (line is null)
             return Result<Guid>.Failure("BUDGET_LINE_NOT_FOUND");
 
-        // Metadata update (stub — full logic in PR2a)
+        // REQ-BL-NAME-1: name uniqueness — self-exclusion applies
+        var nameConflict = await _db.BudgetLines
+            .IgnoreQueryFilters()
+            .AnyAsync(bl => bl.Id != cmd.LineId
+                         && bl.BudgetId == cmd.BudgetId
+                         && bl.Name == cmd.Name.Trim(), ct);
+
+        if (nameConflict)
+            return Result<Guid>.Failure("BUDGET_LINE_NAME_DUPLICATE");
+
+        // Metadata update (name, category, lineType) — always applied
         line.Update(cmd.CategoryGroupId, cmd.CategoryId, cmd.Name, cmd.LineType);
 
-        // TODO PR2a: if cmd.ValidFrom.HasValue && cmd.BudgetedAmount.HasValue -> call line.SplitRevision(...)
+        // REQ-BL-03: Revision split — only when ValidFrom + BudgetedAmount are provided
+        if (cmd.ValidFrom.HasValue && cmd.BudgetedAmount.HasValue)
+        {
+            // Edge Case A — IsClosed guard: if any period covers ValidFrom and is closed → reject
+            var isClosed = await _db.Periods
+                .AnyAsync(p => p.BudgetId == cmd.BudgetId
+                            && p.StartDate <= cmd.ValidFrom.Value
+                            && (p.EndDate >= cmd.ValidFrom.Value)
+                            && p.IsClosed, ct);
+
+            if (isClosed)
+                return Result<Guid>.Failure("PERIOD_CLOSED");
+
+            var currencyId = cmd.CurrencyId ?? Guid.Empty;
+            line.SplitRevision(cmd.ValidFrom.Value, cmd.ValidTo, cmd.BudgetedAmount.Value, currencyId);
+        }
 
         await _db.SaveChangesAsync(ct);
         return Result<Guid>.Success(line.Id);
