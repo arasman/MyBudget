@@ -23,7 +23,7 @@
 | REQ-EXEC-1 | `budget-execution` | An `ExecutionRecord` entity MUST exist with: `Id` (Guid PK), `BudgetLineId` (Guid FK, NOT NULL), `PeriodId` (Guid, NOT NULL, denormalized), `EntryType` (int, NOT NULL), `Amount` (decimal(18,2), NOT NULL, positive), `CurrencyId` (Guid FK, NOT NULL), `ExchangeRate` (decimal(18,6), nullable), `ExchangeRateTo` (decimal(18,6), nullable), `AccountId` (Guid?, nullable, no FK), `PaymentMethodId` (Guid?, nullable, no FK), `Note` (varchar(500), nullable), `OperationDate` (DateOnly, nullable), `CreatedAt`, `UpdatedAt`, `DeletedAt` (soft-delete). |
 | REQ-EXEC-2 | `budget-execution` | `EntryType` MUST be an enum with exactly three values: `Expense = 1`, `CreditNote = 2`, `DebitNote = 3`. No other values are valid. |
 | REQ-EXEC-3 | `budget-execution` | `Amount` MUST be greater than zero. Zero and negative values MUST be rejected with error code `AMOUNT_MUST_BE_POSITIVE` (400). |
-| REQ-EXEC-4 | `budget-execution` | `Note` MUST be provided (non-null, non-empty) when `EntryType` is `CreditNote` or `DebitNote`. It MUST be rejected with error code `NOTE_REQUIRED_FOR_ENTRY_TYPE` (400) when absent. For `EntryType = Expense`, `Note` is optional. |
+| REQ-EXEC-4 | `budget-execution` | `Note` MUST be provided (non-null, non-empty) for ALL `EntryType` values: `Expense`, `CreditNote`, and `DebitNote`. Absence of `Note` MUST be rejected with error code `NOTE_REQUIRED` (400) regardless of entry type. |
 | REQ-EXEC-5 | `budget-execution` | When `CurrencyId` equals the Cycle's `DefaultCurrencyId`, `ExchangeRate` and `ExchangeRateTo` MUST both be null. Providing either when currencies match MUST be rejected with error code `EXCHANGE_RATE_NOT_ALLOWED` (400). |
 | REQ-EXEC-6 | `budget-execution` | When `CurrencyId` differs from the Cycle's `DefaultCurrencyId`, `ExchangeRate` and `ExchangeRateTo` MUST both be provided. Providing one without the other MUST be rejected with error code `EXCHANGE_RATE_PAIR_INCOMPLETE` (400). |
 | REQ-EXEC-7 | `budget-execution` | `PeriodId` on the ExecutionRecord MUST equal the `BudgetLine.PeriodId`. A mismatch between the route `periodId` and `BudgetLine.PeriodId` MUST be rejected with error code `PERIOD_MISMATCH` (400). |
@@ -44,6 +44,10 @@
 | REQ-EXEC-TOTALS-4 | `budget-execution` | Totals MUST be computed in the Cycle's `DefaultCurrencyId`. When an ExecutionRecord has a different `CurrencyId`, the amount MUST be converted using `Amount / ExchangeRate` before summing. |
 | REQ-EXEC-CASCADE-1 | `budget-execution` | Soft-deleting a BudgetLine MUST cascade to soft-delete all its non-deleted child ExecutionRecords in the same DB operation (same `SaveChangesAsync`). |
 | REQ-EXEC-CASCADE-2 | `budget-execution` | Restoring a BudgetLine with `includeExecutionRecords=true` MUST restore all soft-deleted child ExecutionRecords. With `includeExecutionRecords=false` (default), child ExecutionRecords remain soft-deleted. The same flag and behavior apply when BudgetLines are restored via Cycle, CategoryGroup, or Category cascade. |
+| REQ-EXEC-DATE-RANGE-1 | `budget-execution` | When `OperationDate` is provided, the backend MUST validate that it falls within the parent Period's `StartDate` and `EndDate` (inclusive). Dates outside the range MUST be rejected with error code `OPERATION_DATE_OUT_OF_RANGE` (422). |
+| REQ-EXEC-DECIMAL-VAL-1 | `budget-execution` | `ExecutionRecordForm.vue` MUST enforce client-side validation on decimal precision: `amount` MUST have at most 2 decimal places, `exchangeRate` MUST have at most 6 decimal places. Violations MUST block form submission and show inline messages using `budgetExecution.form.validation.amountDecimals` and `budgetExecution.form.validation.exchangeRateDecimals`. |
+| REQ-EXEC-DATE-VAL-1 | `budget-execution` | `ExecutionRecordForm.vue` MUST validate that the selected `operationDate` falls within the parent period's date range. The period's StartDate and EndDate MUST be passed to the form as props or retrieved from context. Violations MUST show using key `budgetExecution.form.validation.operationDateOutOfRange`. API errors with code `OPERATION_DATE_OUT_OF_RANGE` MUST also produce an error toast using key `budgetExecution.form.errors.operationDateOutOfRange`. |
+| REQ-EXEC-TOAST-MIGRATE-1 | `budget-execution` | `ExecutionRecordForm.vue` MUST remove its inline `submitError` alert banner. API errors MUST be surfaced exclusively via `toastStore.push({ type: 'error', title: t(key) })`. |
 | REQ-EXEC-FORM-1 | `budget-execution` | `ExecutionRecordForm.vue` MUST expose an `OperationDate` date picker field. The field MUST default to today's date when the form is opened for creation. The field MUST be editable. The field MUST be nullable (clearing it sends null to the backend). |
 | REQ-EXEC-FORM-2 | `budget-execution` | `ExecutionRecordForm.vue` MUST expose `CurrencyId` (currency dropdown) and `ExchangeRate` (numeric input) fields. These fields MUST map to the existing entity properties. Both fields MUST save and reload correctly via the create/update commands and list query. |
 | REQ-EXEC-CURRENCY-READ-1 | `budget-execution` | The `ListBudgetLines` query response MUST include `currencyId` (Guid) per line so the frontend can pre-populate the currency field in the edit form without a separate lookup. |
@@ -62,10 +66,11 @@
 | Code | Trigger | HTTP |
 |---|---|---|
 | `AMOUNT_MUST_BE_POSITIVE` | Amount ≤ 0 on Create or Update | 400 |
-| `NOTE_REQUIRED_FOR_ENTRY_TYPE` | Note absent for CreditNote or DebitNote | 400 |
+| `NOTE_REQUIRED` | Note absent for any EntryType | 400 |
 | `EXCHANGE_RATE_NOT_ALLOWED` | ExchangeRate or ExchangeRateTo provided when CurrencyId = DefaultCurrencyId | 400 |
 | `EXCHANGE_RATE_PAIR_INCOMPLETE` | Exactly one of ExchangeRate / ExchangeRateTo provided when CurrencyId ≠ DefaultCurrencyId | 400 |
 | `PERIOD_MISMATCH` | Route periodId ≠ BudgetLine.PeriodId | 400 |
+| `OPERATION_DATE_OUT_OF_RANGE` | OperationDate outside Period.StartDate..Period.EndDate (inclusive) | 422 |
 | `PERIOD_CLOSED` | Period.IsClosed = true on any write | 409 |
 | `PARENT_IS_DELETED` | BudgetLine is soft-deleted on Create | 409 |
 
@@ -106,21 +111,27 @@
 
 ### REQ-EXEC-4 — Note Requirement
 
+#### Scenario: Note absent for Expense rejected
+
+- GIVEN a CreateExecution or UpdateExecution request with EntryType = Expense and Note = null or ""
+- WHEN the validator runs
+- THEN HTTP 400 with error code `NOTE_REQUIRED`
+
 #### Scenario: Note absent for CreditNote rejected
 
 - GIVEN a CreateExecution request with EntryType = CreditNote and Note = null
 - WHEN the validator runs
-- THEN 400 Bad Request, error code NOTE_REQUIRED_FOR_ENTRY_TYPE
+- THEN HTTP 400 with error code `NOTE_REQUIRED`
 
 #### Scenario: Note absent for DebitNote rejected
 
 - GIVEN a CreateExecution request with EntryType = DebitNote and Note = ""
 - WHEN the validator runs
-- THEN 400 Bad Request, error code NOTE_REQUIRED_FOR_ENTRY_TYPE
+- THEN HTTP 400 with error code `NOTE_REQUIRED`
 
-#### Scenario: Note absent for Expense accepted
+#### Scenario: Note present for any entry type accepted
 
-- GIVEN a CreateExecution request with EntryType = Expense and Note = null
+- GIVEN any EntryType and Note = "valid text"
 - WHEN the validator runs
 - THEN no validation error for Note
 
@@ -344,6 +355,88 @@
 - GIVEN a soft-deleted Cycle → Period → BudgetLine → 2 soft-deleted ExecutionRecords
 - WHEN POST .../cycles/{cycleId}/restore?includeExecutionRecords=true
 - THEN Cycle, Period, BudgetLine, and both ExecutionRecords are all restored
+
+---
+
+### REQ-EXEC-DATE-RANGE-1 — OperationDate Within Period Range
+
+#### Scenario: OperationDate within period accepted
+
+- GIVEN Period StartDate=2025-01-01, EndDate=2025-01-31
+- WHEN CreateExecution with OperationDate=2025-01-15
+- THEN HTTP 201 Created
+
+#### Scenario: OperationDate before period start rejected
+
+- GIVEN Period StartDate=2025-01-01
+- WHEN CreateExecution with OperationDate=2024-12-31
+- THEN HTTP 422 with error code `OPERATION_DATE_OUT_OF_RANGE`
+
+#### Scenario: OperationDate after period end rejected
+
+- GIVEN Period EndDate=2025-01-31
+- WHEN CreateExecution with OperationDate=2025-02-01
+- THEN HTTP 422 with error code `OPERATION_DATE_OUT_OF_RANGE`
+
+#### Scenario: OperationDate null — no range check
+
+- GIVEN OperationDate = null
+- WHEN the validator runs
+- THEN no date-range error (null is permitted)
+
+---
+
+### REQ-EXEC-DECIMAL-VAL-1 — Decimal Precision Validation (Frontend)
+
+#### Scenario: Amount with 3 decimal places blocked
+
+- GIVEN amount = 10.123 in ExecutionRecordForm
+- WHEN the user attempts to submit
+- THEN submission is blocked and `budgetExecution.form.validation.amountDecimals` is shown
+
+#### Scenario: ExchangeRate with 7 decimal places blocked
+
+- GIVEN exchangeRate = 7.1234567 in ExecutionRecordForm
+- WHEN the user attempts to submit
+- THEN submission is blocked and `budgetExecution.form.validation.exchangeRateDecimals` is shown
+
+#### Scenario: Valid decimal precision accepted
+
+- GIVEN amount = 10.12 and exchangeRate = 7.123456
+- WHEN the user submits
+- THEN no decimal-precision error is raised
+
+---
+
+### REQ-EXEC-DATE-VAL-1 — OperationDate Out-of-Range (Frontend)
+
+#### Scenario: OperationDate outside period range blocked client-side
+
+- GIVEN period bounds Jan 1–31 2025 and the user selects Feb 1 2025
+- WHEN the user attempts to submit
+- THEN submission is blocked and `budgetExecution.form.validation.operationDateOutOfRange` is shown
+
+#### Scenario: OperationDate out-of-range API error produces toast
+
+- GIVEN operationDate passes client-side validation but the API returns `OPERATION_DATE_OUT_OF_RANGE`
+- WHEN the error is handled
+- THEN `toastStore.push({ type: 'error', title: t('budgetExecution.form.errors.operationDateOutOfRange') })` is called
+
+---
+
+### REQ-EXEC-TOAST-MIGRATE-1 — ExecutionRecordForm Error Surfacing via Toast
+
+#### Scenario: API error shows toast, not inline banner
+
+- GIVEN the ExecutionRecordForm submission returns an API error
+- WHEN the error is handled
+- THEN an error toast is pushed and no inline `submitError` div is rendered
+
+#### Scenario: i18n keys for execution errors present in both locales
+
+- GIVEN `en.json` and `es.json` are loaded
+- WHEN `budgetExecution.form.errors.operationDateOutOfRange` is looked up
+- THEN a non-empty translated string is returned in each locale
 
 ---
 
