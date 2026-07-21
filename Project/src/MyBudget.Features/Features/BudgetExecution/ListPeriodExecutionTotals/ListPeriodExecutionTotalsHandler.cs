@@ -81,14 +81,14 @@ public sealed class ListPeriodExecutionTotalsHandler
                 SELECT r."BudgetedAmount", r."CurrencyId"
                 FROM "BudgetLineRevisions" r
                 WHERE r."BudgetLineId" = bl."Id"
-                  AND r."ValidFrom"    <= pd."PeriodStart"
-                  AND (r."ValidTo" IS NULL OR r."ValidTo" >= pd."PeriodStart")
+                  AND r."ValidFrom"::date    <= pd."PeriodStart"
+                  AND (r."ValidTo" IS NULL OR r."ValidTo"::date >= pd."PeriodStart")
                 LIMIT 1
             ) rev ON true
             LEFT JOIN converted c ON c."BudgetLineId" = bl."Id"
             WHERE bl."BudgetId"   = @BudgetId
-              AND bl."StartDate"  <= pd."PeriodEnd"
-              AND (bl."EndDate" IS NULL OR bl."EndDate" >= pd."PeriodStart")
+              AND bl."StartDate"::date  <= pd."PeriodEnd"
+              AND (bl."EndDate" IS NULL OR bl."EndDate"::date >= pd."PeriodStart")
               AND bl."DeletedAt"  IS NULL
             GROUP BY bl."Id", bl."Name", rev."BudgetedAmount", rev."CurrencyId"
 
@@ -114,8 +114,8 @@ public sealed class ListPeriodExecutionTotalsHandler
             LEFT JOIN "Categories" cat ON cat."Id" = bl."CategoryId"
             LEFT JOIN converted c ON c."BudgetLineId" = bl."Id"
             WHERE bl."BudgetId"   = @BudgetId
-              AND bl."StartDate"  <= pd."PeriodEnd"
-              AND (bl."EndDate" IS NULL OR bl."EndDate" >= pd."PeriodStart")
+              AND bl."StartDate"::date  <= pd."PeriodEnd"
+              AND (bl."EndDate" IS NULL OR bl."EndDate"::date >= pd."PeriodStart")
               AND bl."DeletedAt"  IS NULL
             GROUP BY cg."Id", cg."Name", cat."Id", cat."Name"
             """;

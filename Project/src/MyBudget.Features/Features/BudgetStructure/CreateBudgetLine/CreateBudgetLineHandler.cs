@@ -4,6 +4,7 @@ using MyBudget.Features.SharedKernel.Entities;
 using MyBudget.Features.SharedKernel.Persistence;
 using MyBudget.Features.SharedKernel.Results;
 
+
 namespace MyBudget.Features.Features.BudgetStructure.CreateBudgetLine;
 
 public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCommand, Result<Guid>>
@@ -28,7 +29,19 @@ public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCo
         if (nameExists)
             return Result<Guid>.Failure("BUDGET_LINE_NAME_DUPLICATE");
 
-        var currencyId = cmd.CurrencyId ?? Guid.Empty;
+        // If currencyId not supplied, fall back to the default currency of the most recent cycle
+        var currencyId = cmd.CurrencyId;
+        if (currencyId is null)
+        {
+            var cycleDefault = await _db.Cycles
+                .IgnoreQueryFilters()
+                .Where(c => c.BudgetId == cmd.BudgetId && c.DeletedAt == null)
+                .OrderByDescending(c => c.StartDate)
+                .Select(c => (Guid?)c.DefaultCurrencyId)
+                .FirstOrDefaultAsync(ct);
+
+            currencyId = cycleDefault ?? CurrencySeeds.GtqId;
+        }
 
         var line = BudgetLine.Create(
             cmd.BudgetId,
@@ -39,7 +52,7 @@ public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCo
             cmd.StartDate,
             cmd.EndDate,
             cmd.InitialAmount,
-            currencyId);
+            currencyId.Value);
 
         _db.BudgetLines.Add(line);
         await _db.SaveChangesAsync(ct);

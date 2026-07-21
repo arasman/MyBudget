@@ -21,18 +21,25 @@ public sealed class ListExecutionRecordsHandler
     {
         using var conn = _factory.CreateConnection();
 
-        // Verify BudgetLine exists, belongs to Period and Budget, and is not deleted
+        // Verify BudgetLine exists, belongs to the Budget, and is not deleted.
+        // Also verify the Period belongs to the same Budget (via Cycle).
+        // BudgetLine is no longer FK-linked to Period — relationship is via date-range intersection.
         var lineExists = await conn.ExecuteScalarAsync<bool>(
             """
             SELECT EXISTS (
                 SELECT 1
                 FROM "BudgetLines" bl
-                JOIN "Periods" p   ON p."Id" = bl."PeriodId"
-                JOIN "Cycles"  c   ON c."Id" = p."CycleId"
                 WHERE bl."Id"       = @BudgetLineId
-                  AND bl."PeriodId" = @PeriodId
-                  AND c."BudgetId"  = @BudgetId
+                  AND bl."BudgetId" = @BudgetId
                   AND bl."DeletedAt" IS NULL
+            )
+            AND EXISTS (
+                SELECT 1
+                FROM "Periods" p
+                JOIN "Cycles" c ON c."Id" = p."CycleId"
+                WHERE p."Id"       = @PeriodId
+                  AND c."BudgetId" = @BudgetId
+                  AND p."DeletedAt" IS NULL
             )
             """,
             new { query.BudgetLineId, query.PeriodId, query.BudgetId });
@@ -92,28 +99,30 @@ public sealed class ListExecutionRecordsHandler
                 r.AccountId,
                 r.PaymentMethodId,
                 r.Note,
-                new DateTimeOffset(r.CreatedAt, TimeSpan.Zero),
-                r.UpdatedAt.HasValue ? new DateTimeOffset(r.UpdatedAt.Value, TimeSpan.Zero) : null,
-                r.DeletedAt.HasValue ? new DateTimeOffset(r.DeletedAt.Value, TimeSpan.Zero) : null,
+                r.CreatedAt,
+                r.UpdatedAt,
+                r.DeletedAt,
                 r.OperationDate))
             .ToList();
 
         return Result<IReadOnlyList<ExecutionRecordDto>>.Success(items);
     }
 
-    // Dapper uses DateTime (not DateTimeOffset) with Npgsql
-    private sealed record ExecutionRecordRow(
-        Guid      Id,
-        int       EntryType,
-        decimal   Amount,
-        Guid      CurrencyId,
-        decimal?  ExchangeRate,
-        decimal?  ExchangeRateTo,
-        Guid?     AccountId,
-        Guid?     PaymentMethodId,
-        string?   Note,
-        DateTime  CreatedAt,
-        DateTime? UpdatedAt,
-        DateTime? DeletedAt,
-        DateOnly? OperationDate);
+    // Npgsql 10: 'timestamp with time zone' columns → DateTimeOffset; 'date' columns → DateOnly
+    private sealed class ExecutionRecordRow
+    {
+        public Guid             Id              { get; init; }
+        public int              EntryType       { get; init; }
+        public decimal          Amount          { get; init; }
+        public Guid             CurrencyId      { get; init; }
+        public decimal?         ExchangeRate    { get; init; }
+        public decimal?         ExchangeRateTo  { get; init; }
+        public Guid?            AccountId       { get; init; }
+        public Guid?            PaymentMethodId { get; init; }
+        public string?          Note            { get; init; }
+        public DateTimeOffset   CreatedAt       { get; init; }
+        public DateTimeOffset?  UpdatedAt       { get; init; }
+        public DateTimeOffset?  DeletedAt       { get; init; }
+        public DateOnly?        OperationDate   { get; init; }
+    }
 }

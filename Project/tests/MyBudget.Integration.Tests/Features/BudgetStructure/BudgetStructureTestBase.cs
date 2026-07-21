@@ -124,26 +124,38 @@ public abstract class BudgetStructureTestBase : IntegrationTestBase
 
     // ── BudgetLine helpers ────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Creates a BudgetLine using the new budget-scoped route (REQ-BL-02).
+    /// The periodId parameter is accepted but ignored — kept for call-site compatibility
+    /// during the transition; callers should stop passing it once all tests are updated.
+    /// </summary>
     protected async Task<Guid> CreateBudgetLineAsync(
-        Guid    budgetId,
-        Guid    periodId,
-        Guid    categoryGroupId,
-        string  name       = "Rent",
-        string  lineType   = "Expense",
-        decimal amount     = 1500m,
-        Guid?   currencyId = null,
-        Guid?   categoryId = null)
+        Guid      budgetId,
+        Guid      periodId,            // kept for compat — ignored; route is /budgets/{id}/lines
+        Guid      categoryGroupId,
+        string    name          = "Rent",
+        string    lineType      = "Expense",
+        decimal   amount        = 1500m,
+        Guid?     currencyId    = null,
+        Guid?     categoryId    = null,
+        DateOnly? startDate     = null,
+        DateOnly? endDate       = null)
     {
+        // Default: line starts well before any test period (2020-01-01) and has no end date (perpetual).
+        // This ensures the line covers any period created in integration tests (which use 2025 dates).
+        var sd = startDate ?? new DateOnly(2020, 1, 1);
+
         var response = await Client.PostAsJsonAsync(
-            $"/api/budgets/{budgetId}/periods/{periodId}/lines",
+            $"/api/budgets/{budgetId}/lines",
             new
             {
                 name,
                 lineType,
-                isRecurring     = false,
                 categoryGroupId,
                 categoryId,
-                budgetedAmount  = amount,
+                startDate     = sd,
+                endDate,
+                initialAmount = amount,
                 currencyId,
             });
 

@@ -58,35 +58,39 @@ public sealed class ListBudgetLinesHandler
                 r.Name,
                 ((LineType)r.LineType).ToString(),
                 r.DisplayOrder,
-                DateOnly.FromDateTime(r.StartDate),
-                r.EndDate.HasValue ? DateOnly.FromDateTime(r.EndDate.Value) : null,
+                // StartDate / EndDate stored as TEXT in PostgreSQL (EF DateOnly → TEXT)
+                DateOnly.Parse(r.StartDate),
+                r.EndDate is not null ? DateOnly.Parse(r.EndDate) : null,
                 r.BudgetedAmount,
                 r.CurrencyId,
                 r.CurrencyCode,
                 r.CurrencySymbol,
                 r.Note,
-                r.DeletedAt.HasValue
-                    ? new DateTimeOffset(r.DeletedAt.Value, TimeSpan.Zero)
-                    : null))
+                // DeletedAt is DateTimeOffset? — pass through directly
+                r.DeletedAt))
             .ToList();
 
         return Result<IReadOnlyList<BudgetLineResponse>>.Success(items);
     }
 
-    private sealed record BudgetLineRow(
-        Guid      Id,
-        Guid      BudgetId,
-        Guid      CategoryGroupId,
-        Guid?     CategoryId,
-        string    Name,
-        int       LineType,
-        int       DisplayOrder,
-        DateTime  StartDate,
-        DateTime? EndDate,
-        DateTime? DeletedAt,
-        decimal?  BudgetedAmount,
-        Guid?     CurrencyId,
-        string?   CurrencyCode,
-        string?   CurrencySymbol,
-        string?   Note);
+    private sealed class BudgetLineRow
+    {
+        public Guid             Id              { get; init; }
+        public Guid             BudgetId        { get; init; }
+        public Guid             CategoryGroupId { get; init; }
+        public Guid?            CategoryId      { get; init; }
+        public string           Name            { get; init; } = "";
+        public int              LineType        { get; init; }
+        public int              DisplayOrder    { get; init; }
+        // StartDate / EndDate are stored as TEXT in PostgreSQL — Dapper reads them as string
+        public string           StartDate       { get; init; } = "";
+        public string?          EndDate         { get; init; }
+        // DeletedAt is 'timestamp with time zone'; Npgsql returns DateTimeOffset for this type
+        public DateTimeOffset?  DeletedAt       { get; init; }
+        public decimal?         BudgetedAmount  { get; init; }
+        public Guid?            CurrencyId      { get; init; }
+        public string?          Note            { get; init; }
+        public string?          CurrencyCode    { get; init; }
+        public string?          CurrencySymbol  { get; init; }
+    }
 }

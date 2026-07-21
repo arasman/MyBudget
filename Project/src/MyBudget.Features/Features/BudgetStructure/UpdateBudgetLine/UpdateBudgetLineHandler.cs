@@ -1,5 +1,6 @@
 using Mediator;
 using Microsoft.EntityFrameworkCore;
+using MyBudget.Features.SharedKernel.Entities;
 using MyBudget.Features.SharedKernel.Persistence;
 using MyBudget.Features.SharedKernel.Results;
 
@@ -46,8 +47,26 @@ public sealed class UpdateBudgetLineHandler : IRequestHandler<UpdateBudgetLineCo
             if (isClosed)
                 return Result<Guid>.Failure("PERIOD_CLOSED");
 
-            var currencyId = cmd.CurrencyId ?? Guid.Empty;
+            // Prefer explicit currencyId; fall back to the line's existing revision currency
+            var currencyId = cmd.CurrencyId
+                ?? line.Revisions.MaxBy(r => r.ValidFrom)?.CurrencyId
+                ?? CurrencySeeds.GtqId;
+
+            // Track existing revision IDs before the split so we can identify new ones after.
+            var existingRevisionIds = line.Revisions.Select(r => r.Id).ToHashSet();
+
             line.SplitRevision(cmd.ValidFrom.Value, cmd.ValidTo, cmd.BudgetedAmount.Value, currencyId);
+
+            // EF Core incorrectly tracks new entities added to a tracked collection navigation
+            // as Modified (not Added) when they have a client-set GUID as PK. Fix by explicitly
+            // detaching new revisions and re-adding them via the DbSet.
+            var newRevisions = line.Revisions
+                .Where(r => !existingRevisionIds.Contains(r.Id))
+                .ToList();
+            foreach (var newRev in newRevisions)
+            {
+                _db.Entry(newRev).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+            }
         }
 
         await _db.SaveChangesAsync(ct);

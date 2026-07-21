@@ -144,8 +144,10 @@ public sealed class PeriodTests : BudgetStructureTestBase
     // ── REQ-PER-04: Delete Period ─────────────────────────────────────────────
 
     [Fact]
-    public async Task DeletePeriod_CascadesToBudgetLines_Returns204()
+    public async Task DeletePeriod_Returns204_BudgetLinesUnaffected()
     {
+        // REQ-CYC-03: BudgetLines MUST NOT be cascade-deleted when Period is deleted.
+        // BudgetLines are Budget-scoped, not Period-scoped.
         var (_, budgetId) = await SetupOwnerAsync("period-delete1@example.com");
         var cycleId       = await CreateCycleAsync(budgetId);
         var periodId      = await CreatePeriodAsync(budgetId, cycleId);
@@ -157,10 +159,14 @@ public sealed class PeriodTests : BudgetStructureTestBase
 
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
-        // Verify lines are gone via read endpoint (period deleted, so 404 or empty)
-        var linesResponse = await Client.GetAsync($"/api/budgets/{budgetId}/periods/{periodId}/lines");
-        linesResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        // BudgetLine is still present at the budget-scoped list endpoint
+        var linesResponse = await Client.GetAsync($"/api/budgets/{budgetId}/lines");
+        linesResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var lines = await linesResponse.Content.ReadFromJsonAsync<BudgetLineItem[]>(JsonOpts);
+        lines!.Length.ShouldBe(1);
     }
+
+    private sealed record BudgetLineItem(Guid Id, string Name);
 
     // ── Response helpers ──────────────────────────────────────────────────────
 
