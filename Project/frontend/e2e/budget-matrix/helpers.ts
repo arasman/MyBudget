@@ -55,8 +55,8 @@ export async function seedBudgetMatrixFixture(
     headers,
     data: {
       name: 'E2E Matrix Cycle',
-      startDate: '2025-01-01',
-      endDate: '2025-12-31',
+      startDate: '2020-01-01',
+      endDate: '2099-12-31',
       defaultCurrencyId: GTQ_CURRENCY_ID,
       alternateCurrencyId: USD_CURRENCY_ID,
       exchangeRate: EXCHANGE_RATE,
@@ -67,10 +67,10 @@ export async function seedBudgetMatrixFixture(
 
   // ── 3. Create 4 periods (Jan–Apr) ─────────────────────────────────────────
   const periodDefs = [
-    { name: 'January',  periodNumber: 1, startDate: '2025-01-01', endDate: '2025-01-31' },
-    { name: 'February', periodNumber: 2, startDate: '2025-02-01', endDate: '2025-02-28' },
-    { name: 'March',    periodNumber: 3, startDate: '2025-03-01', endDate: '2025-03-31' },
-    { name: 'April',    periodNumber: 4, startDate: '2025-04-01', endDate: '2025-04-30' },
+    { name: 'January',  periodNumber: 1, startDate: '2020-01-01', endDate: '2040-12-31' },
+    { name: 'February', periodNumber: 2, startDate: '2041-01-01', endDate: '2060-12-31' },
+    { name: 'March',    periodNumber: 3, startDate: '2061-01-01', endDate: '2080-12-31' },
+    { name: 'April',    periodNumber: 4, startDate: '2081-01-01', endDate: '2099-12-31' },
   ]
 
   const periodIds: string[] = []

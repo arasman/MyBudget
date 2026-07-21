@@ -15,7 +15,6 @@ test.describe('Budget Execution — Create Expense', () => {
     const execId = await createExecution(request, ctx, {
       entryType: 1,
       amount: 250,
-      note: null,
       currencyId: GTQ_CURRENCY_ID,
     })
     expect(execId).toBeTruthy()
