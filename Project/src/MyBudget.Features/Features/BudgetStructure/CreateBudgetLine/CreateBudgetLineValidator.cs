@@ -3,7 +3,6 @@ using MyBudget.Features.SharedKernel.Entities;
 
 namespace MyBudget.Features.Features.BudgetStructure.CreateBudgetLine;
 
-// TODO PR2a: add StartDate required + EndDate > StartDate + InitialAmount > 0 rules
 public sealed class CreateBudgetLineValidator : AbstractValidator<CreateBudgetLineCommand>
 {
     public CreateBudgetLineValidator()
@@ -22,6 +21,17 @@ public sealed class CreateBudgetLineValidator : AbstractValidator<CreateBudgetLi
             .Must(lt => Enum.IsDefined(typeof(LineType), lt))
             .WithErrorCode("FIELD_INVALID");
 
+        // REQ-BL-02: StartDate required
+        RuleFor(x => x.StartDate)
+            .NotEmpty().WithErrorCode("FIELD_REQUIRED");
+
+        // REQ-BL-02: EndDate, when provided, must be strictly after StartDate
+        RuleFor(x => x.EndDate)
+            .Must((cmd, endDate) => endDate!.Value > cmd.StartDate)
+            .WithErrorCode("FIELD_INVALID")
+            .When(x => x.EndDate.HasValue);
+
+        // REQ-BL-02: InitialAmount must be > 0
         RuleFor(x => x.InitialAmount)
             .GreaterThan(0).WithErrorCode("FIELD_INVALID");
     }

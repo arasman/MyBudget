@@ -4,7 +4,6 @@ using Shouldly;
 
 namespace MyBudget.Features.Tests.Features.BudgetStructure.CreateBudgetLine;
 
-// TODO PR2a: full rewrite — validator tests for new command shape (StartDate, EndDate, InitialAmount)
 public sealed class CreateBudgetLineValidatorTests
 {
     private readonly CreateBudgetLineValidator _sut = new();
@@ -102,6 +101,68 @@ public sealed class CreateBudgetLineValidatorTests
     public void InitialAmount_Positive_Passes()
     {
         var result = _sut.Validate(ValidCommand() with { InitialAmount = 0.01m });
+        result.IsValid.ShouldBeTrue();
+    }
+
+    // REQ-BL-02: StartDate required
+    [Fact]
+    public void StartDate_Default_Fails()
+    {
+        var result = _sut.Validate(ValidCommand() with { StartDate = default });
+        result.IsValid.ShouldBeFalse();
+        result.Errors.ShouldContain(e => e.PropertyName == nameof(CreateBudgetLineCommand.StartDate));
+    }
+
+    [Fact]
+    public void StartDate_Set_Passes()
+    {
+        var result = _sut.Validate(ValidCommand() with { StartDate = new DateOnly(2025, 1, 1) });
+        result.IsValid.ShouldBeTrue();
+    }
+
+    // REQ-BL-02: EndDate > StartDate when provided
+    [Fact]
+    public void EndDate_BeforeStartDate_Fails()
+    {
+        var cmd = ValidCommand() with
+        {
+            StartDate = new DateOnly(2025, 6, 1),
+            EndDate   = new DateOnly(2025, 5, 31)
+        };
+        var result = _sut.Validate(cmd);
+        result.IsValid.ShouldBeFalse();
+        result.Errors.ShouldContain(e => e.PropertyName == nameof(CreateBudgetLineCommand.EndDate)
+                                      && e.ErrorCode == "FIELD_INVALID");
+    }
+
+    [Fact]
+    public void EndDate_EqualStartDate_Fails()
+    {
+        var cmd = ValidCommand() with
+        {
+            StartDate = new DateOnly(2025, 6, 1),
+            EndDate   = new DateOnly(2025, 6, 1)
+        };
+        var result = _sut.Validate(cmd);
+        result.IsValid.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void EndDate_AfterStartDate_Passes()
+    {
+        var cmd = ValidCommand() with
+        {
+            StartDate = new DateOnly(2025, 1, 1),
+            EndDate   = new DateOnly(2025, 12, 31)
+        };
+        var result = _sut.Validate(cmd);
+        result.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void EndDate_Null_Passes()
+    {
+        var result = _sut.Validate(ValidCommand() with { EndDate = null });
         result.IsValid.ShouldBeTrue();
     }
 

@@ -7,7 +7,6 @@ using Shouldly;
 
 namespace MyBudget.Features.Tests.Features.BudgetStructure.CreateBudgetLine;
 
-// TODO PR4: full rewrite — tests for budget-scoped create with StartDate/EndDate/InitialRevision
 public sealed class CreateBudgetLineHandlerTests : IDisposable
 {
     private readonly AppDbContext _db;

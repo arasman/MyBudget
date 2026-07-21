@@ -6,8 +6,7 @@ using Shouldly;
 
 namespace MyBudget.Features.Tests.Features.BudgetStructure.CreateBudgetLine;
 
-/// <summary>Tests for REQ-BL-NAME-1: budget line name uniqueness per Budget.</summary>
-// TODO PR4: full rewrite — name uniqueness is now scoped to BudgetId only (not PeriodId)
+/// <summary>Tests for REQ-BL-NAME-1: budget line name uniqueness per Budget (scoped to BudgetId only).</summary>
 public sealed class CreateBudgetLineNameDuplicateHandlerTests : IDisposable
 {
     private readonly AppDbContext _db;
@@ -35,10 +34,8 @@ public sealed class CreateBudgetLineNameDuplicateHandlerTests : IDisposable
     [Fact]
     public async Task ActiveDuplicate_Returns_BUDGET_LINE_NAME_DUPLICATE()
     {
-        // TODO PR4: full rewrite — stub compile-only version
         var (budgetId, groupId) = await SeedAsync();
 
-        // TODO PR4: update to new BudgetLine.Create signature
         _db.BudgetLines.Add(BudgetLine.Create(budgetId, groupId, null, "Rent", LineType.Expense,
             DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId));
         await _db.SaveChangesAsync();
@@ -54,10 +51,8 @@ public sealed class CreateBudgetLineNameDuplicateHandlerTests : IDisposable
     [Fact]
     public async Task SoftDeletedDuplicate_Returns_BUDGET_LINE_NAME_DUPLICATE()
     {
-        // TODO PR4: full rewrite — stub compile-only version
         var (budgetId, groupId) = await SeedAsync();
 
-        // TODO PR4: update to new BudgetLine.Create signature
         var deleted = BudgetLine.Create(budgetId, groupId, null, "Rent", LineType.Expense,
             DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId);
         deleted.SoftDelete();
@@ -75,7 +70,6 @@ public sealed class CreateBudgetLineNameDuplicateHandlerTests : IDisposable
     [Fact]
     public async Task UniqueName_Succeeds()
     {
-        // TODO PR4: full rewrite — stub compile-only version
         var (budgetId, groupId) = await SeedAsync();
 
         var cmd    = new CreateBudgetLineCommand(budgetId, groupId, null,

@@ -6,7 +6,6 @@ using MyBudget.Features.SharedKernel.Entities;
 
 namespace MyBudget.Features.Features.BudgetStructure.CreateBudgetLine;
 
-// TODO PR2a: update route to /api/budgets/{id}/lines (remove periodId)
 public static class CreateBudgetLineEndpoint
 {
     public static IEndpointRouteBuilder Map(IEndpointRouteBuilder app)

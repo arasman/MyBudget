@@ -6,7 +6,6 @@ using MyBudget.Features.SharedKernel.Results;
 
 namespace MyBudget.Features.Features.BudgetStructure.CreateBudgetLine;
 
-// TODO PR2a: full handler rewrite — budget-scoped, StartDate/EndDate, initial revision via BudgetLine.Create()
 public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCommand, Result<Guid>>
 {
     private readonly AppDbContext _db;
@@ -15,18 +14,21 @@ public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCo
 
     public async ValueTask<Result<Guid>> Handle(CreateBudgetLineCommand cmd, CancellationToken ct)
     {
-        // Stub: verify budget exists
         var budgetExists = await _db.Budgets
             .AnyAsync(b => b.Id == cmd.BudgetId, ct);
 
         if (!budgetExists)
             return Result<Guid>.Failure("BUDGET_NOT_FOUND");
 
-        // Stub placeholders — full logic in PR2a
-        var startDate     = cmd.StartDate;
-        var endDate       = cmd.EndDate;
-        var initialAmount = cmd.InitialAmount;
-        var currencyId    = cmd.CurrencyId ?? Guid.Empty;
+        // REQ-BL-NAME-1: name must be unique within the budget, including soft-deleted lines
+        var nameExists = await _db.BudgetLines
+            .IgnoreQueryFilters()
+            .AnyAsync(bl => bl.BudgetId == cmd.BudgetId && bl.Name == cmd.Name.Trim(), ct);
+
+        if (nameExists)
+            return Result<Guid>.Failure("BUDGET_LINE_NAME_DUPLICATE");
+
+        var currencyId = cmd.CurrencyId ?? Guid.Empty;
 
         var line = BudgetLine.Create(
             cmd.BudgetId,
@@ -34,9 +36,9 @@ public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCo
             cmd.CategoryId,
             cmd.Name,
             cmd.LineType,
-            startDate,
-            endDate,
-            initialAmount,
+            cmd.StartDate,
+            cmd.EndDate,
+            cmd.InitialAmount,
             currencyId);
 
         _db.BudgetLines.Add(line);
