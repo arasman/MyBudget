@@ -36,8 +36,7 @@ public sealed class RestorePeriodHandler : IRequestHandler<RestorePeriodCommand,
 
         period.Restore();
 
-        // TODO PR2a: BudgetLines are now Budget-scoped — no cascade restore via PeriodId.
-        // REQ-RESTORE-PERIOD-1: Period restore MUST NOT cascade-restore BudgetLines.
+        // REQ-RESTORE-PERIOD-1: BudgetLines are Budget-scoped (no PeriodId FK); they are NOT cascade-restored here.
 
         await _db.SaveChangesAsync(ct);
 

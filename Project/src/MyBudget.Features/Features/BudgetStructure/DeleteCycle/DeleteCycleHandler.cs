@@ -28,8 +28,7 @@ public sealed class DeleteCycleHandler : IRequestHandler<DeleteCycleCommand, Res
         foreach (var period in periods)
             period.SoftDelete();
 
-        // TODO PR2a: BudgetLines are now Budget-scoped — no cascade soft-delete from Cycle via PeriodId.
-        // REQ-CYC-03: BudgetLines MUST NOT be cascade-deleted when Cycle is deleted.
+        // REQ-CYC-03: BudgetLines are Budget-scoped (no PeriodId FK); they are NOT cascade-deleted here.
 
         cycle.SoftDelete();
         await _db.SaveChangesAsync(ct);

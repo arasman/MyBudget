@@ -33,8 +33,7 @@ public sealed class RestoreCycleHandler : IRequestHandler<RestoreCycleCommand, R
         foreach (var period in periods)
             period.Restore();
 
-        // TODO PR2a: BudgetLines are now Budget-scoped — no cascade restore via PeriodId.
-        // REQ-RST-02: BudgetLines MUST NOT be cascade-restored when Cycle is restored.
+        // REQ-RST-02: BudgetLines are Budget-scoped (no PeriodId FK); they are NOT cascade-restored here.
 
         // REQ-EXEC-CASCADE-2: ExecutionRecord restore is handled separately via RestoreBudgetLine
         if (cmd.IncludeExecutionRecords)
