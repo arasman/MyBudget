@@ -148,9 +148,6 @@ const confirmingDelete = ref(false)
 const confirmingRestore = ref(false)
 const acting = ref(false)
 
-// Derive periodId from loaded period (lines are loaded from first period)
-const loadedPeriodId = computed(() => matrixStore.allPeriods[0]?.id ?? '')
-
 function openEditModal(): void {
   window.getSelection()?.removeAllRanges()
   showEditModal.value = true
@@ -158,15 +155,11 @@ function openEditModal(): void {
 
 async function handleEditSubmit(payload: CreateBudgetLinePayload): Promise<void> {
   showEditModal.value = false
-  const periodId = loadedPeriodId.value
-  if (!periodId) return
-  await structureStore.updateLine(props.budgetId, periodId, props.line.id, {
+  await structureStore.updateLine(props.budgetId, props.line.id, {
     name: payload.name,
     lineType: payload.lineType ?? props.line.lineType,
-    isRecurring: payload.isRecurring ?? props.line.isRecurring,
     categoryGroupId: payload.categoryGroupId ?? props.line.categoryGroupId,
     categoryId: payload.categoryId ?? props.line.categoryId,
-    budgetedAmount: payload.budgetedAmount,
   })
   await matrixStore.invalidateAllPeriods()
   toast.push({ type: 'success', title: t('budgetMatrix.rows.updateLineSuccess') })
@@ -175,7 +168,7 @@ async function handleEditSubmit(payload: CreateBudgetLinePayload): Promise<void>
 async function doDelete(): Promise<void> {
   acting.value = true
   try {
-    await structureStore.deleteLine(props.budgetId, loadedPeriodId.value, props.line.id)
+    await structureStore.deleteLine(props.budgetId, props.line.id)
     confirmingDelete.value = false
     await matrixStore.invalidateAllPeriods()
     toast.push({ type: 'success', title: t('budgetMatrix.rows.deleteSuccess') })
@@ -187,7 +180,7 @@ async function doDelete(): Promise<void> {
 async function doRestore(includeExecutionRecords: boolean): Promise<void> {
   acting.value = true
   try {
-    await structureStore.restoreLine(props.budgetId, loadedPeriodId.value, props.line.id, includeExecutionRecords)
+    await structureStore.restoreLine(props.budgetId, props.line.id, includeExecutionRecords)
     confirmingRestore.value = false
     await matrixStore.invalidateAllPeriods()
     toast.push({ type: 'success', title: t('budgetMatrix.rows.restoreSuccess') })

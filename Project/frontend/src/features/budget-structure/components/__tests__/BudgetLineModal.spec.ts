@@ -25,8 +25,10 @@ function makeI18n() {
             edit: 'Edit Line',
             name: 'Name',
             lineType: 'Type',
-            isRecurring: 'Recurring',
+            startDate: 'Start Date',
+            endDate: 'End Date',
             budgetedAmount: 'Budgeted Amount',
+            initialAmount: 'Initial Amount',
             currency: 'Currency',
             note: 'Note',
             types: {
@@ -39,6 +41,11 @@ function makeI18n() {
               nameTooLong: 'Name must be 200 characters or fewer',
               amountRequired: 'Amount is required',
               amountPositive: 'Amount must be greater than 0',
+              startDateRequired: 'Start date is required',
+              endDateAfterStartDate: 'End date must be after start date',
+              validFromRequired: 'Valid from date is required',
+              validFromNotInPast: 'Valid from date cannot be in the past',
+              validFromOutOfRange: 'Valid from date is out of range',
             },
           },
           categoryGroups: { title: 'Category Groups' },
@@ -65,8 +72,7 @@ function getErrorText(): string {
     .join(' ')
 }
 
-// jsdom marks <dialog> content as inaccessible; query via document.querySelector
-describe('BudgetLineModal — validation (REQ-FORM-INLINE-VAL-1)', () => {
+describe('BudgetLineModal — validation (REQ-BL-2, REQ-BL-3)', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
@@ -92,60 +98,89 @@ describe('BudgetLineModal — validation (REQ-FORM-INLINE-VAL-1)', () => {
     })
   })
 
-  it('shows amountPositive error when budgetedAmount is 0', async () => {
+  it('shows startDateRequired error when startDate is empty (create mode)', async () => {
     renderModal()
     const nameInput = document.querySelector('#line-name') as HTMLInputElement
     await fireEvent.update(nameInput, 'Test Line')
+    // leave startDate empty
+    const submitBtn = document.querySelector('button[type="submit"]')!
+    await fireEvent.click(submitBtn)
+    await waitFor(() => {
+      expect(getErrorText()).toContain('Start date is required')
+    })
+  })
 
-    const amountInput = document.querySelector('#line-amount') as HTMLInputElement
+  it('does NOT show isRecurring checkbox in create mode', () => {
+    renderModal()
+    const recurringCheckbox = document.querySelector('#line-recurring')
+    expect(recurringCheckbox).toBeNull()
+  })
+
+  it('shows startDate input in create mode', () => {
+    renderModal()
+    const startDateInput = document.querySelector('#line-startDate')
+    expect(startDateInput).toBeTruthy()
+  })
+
+  it('shows endDate input in create mode', () => {
+    renderModal()
+    const endDateInput = document.querySelector('#line-endDate')
+    expect(endDateInput).toBeTruthy()
+  })
+
+  it('emits submit with startDate and initialAmount when name and startDate are valid', async () => {
+    const { emitted } = renderModal()
+    const nameInput = document.querySelector('#line-name') as HTMLInputElement
+    await fireEvent.update(nameInput, 'My Line')
+
+    const startDateInput = document.querySelector('#line-startDate') as HTMLInputElement
+    await fireEvent.update(startDateInput, '2025-01-01')
+
+    const amountInput = document.querySelector('#line-initialAmount') as HTMLInputElement
+    await fireEvent.update(amountInput, '1000')
+
+    const submitBtn = document.querySelector('button[type="submit"]')!
+    await fireEvent.click(submitBtn)
+    await waitFor(() => {
+      const submitted = emitted()['submit']
+      expect(submitted).toBeTruthy()
+      const payload = (submitted as unknown[][])[0]![0] as Record<string, unknown>
+      expect(payload).toHaveProperty('startDate', '2025-01-01')
+      expect(payload).toHaveProperty('initialAmount', 1000)
+      expect(payload).not.toHaveProperty('isRecurring')
+      expect(payload).not.toHaveProperty('periodId')
+    })
+  })
+
+  it('does not block submit when endDate is not set', async () => {
+    const { emitted } = renderModal()
+    const nameInput = document.querySelector('#line-name') as HTMLInputElement
+    await fireEvent.update(nameInput, 'My Line')
+    const startDateInput = document.querySelector('#line-startDate') as HTMLInputElement
+    await fireEvent.update(startDateInput, '2025-01-01')
+    const amountInput = document.querySelector('#line-initialAmount') as HTMLInputElement
+    await fireEvent.update(amountInput, '500')
+    const submitBtn = document.querySelector('button[type="submit"]')!
+    await fireEvent.click(submitBtn)
+    await waitFor(() => {
+      expect(emitted()['submit']).toBeTruthy()
+    })
+  })
+
+  it('shows amountPositive error when initialAmount is 0', async () => {
+    renderModal()
+    const nameInput = document.querySelector('#line-name') as HTMLInputElement
+    await fireEvent.update(nameInput, 'Test Line')
+    const startDateInput = document.querySelector('#line-startDate') as HTMLInputElement
+    await fireEvent.update(startDateInput, '2025-01-01')
+
+    const amountInput = document.querySelector('#line-initialAmount') as HTMLInputElement
     await fireEvent.update(amountInput, '0')
 
     const submitBtn = document.querySelector('button[type="submit"]')!
     await fireEvent.click(submitBtn)
     await waitFor(() => {
       expect(getErrorText()).toContain('Amount must be greater than 0')
-    })
-  })
-
-  it('shows amountPositive error when budgetedAmount is negative', async () => {
-    renderModal()
-    const nameInput = document.querySelector('#line-name') as HTMLInputElement
-    await fireEvent.update(nameInput, 'Test Line')
-
-    const amountInput = document.querySelector('#line-amount') as HTMLInputElement
-    await fireEvent.update(amountInput, '-5')
-
-    const submitBtn = document.querySelector('button[type="submit"]')!
-    await fireEvent.click(submitBtn)
-    await waitFor(() => {
-      expect(getErrorText()).toContain('Amount must be greater than 0')
-    })
-  })
-
-  it('emits submit when name is valid and amount is positive', async () => {
-    const { emitted } = renderModal()
-    const nameInput = document.querySelector('#line-name') as HTMLInputElement
-    await fireEvent.update(nameInput, 'My Line')
-
-    const amountInput = document.querySelector('#line-amount') as HTMLInputElement
-    await fireEvent.update(amountInput, '100')
-
-    const submitBtn = document.querySelector('button[type="submit"]')!
-    await fireEvent.click(submitBtn)
-    await waitFor(() => {
-      expect(emitted()['submit']).toBeTruthy()
-    })
-  })
-
-  it('does not block submit when budgetedAmount is not set', async () => {
-    const { emitted } = renderModal()
-    const nameInput = document.querySelector('#line-name') as HTMLInputElement
-    await fireEvent.update(nameInput, 'My Line')
-    // leave amount empty — should not block
-    const submitBtn = document.querySelector('button[type="submit"]')!
-    await fireEvent.click(submitBtn)
-    await waitFor(() => {
-      expect(emitted()['submit']).toBeTruthy()
     })
   })
 })
