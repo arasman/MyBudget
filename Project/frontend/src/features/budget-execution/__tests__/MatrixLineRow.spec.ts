@@ -82,17 +82,19 @@ vi.mock('@/features/budget-structure/components/BudgetLineModal.vue', () => ({
 
 import MatrixLineRow from '../components/MatrixLineRow.vue'
 
-const baseLine = {
+import type { BudgetLineResponse } from '@/features/budget-structure/types'
+
+const baseLine: BudgetLineResponse = {
   id: 'line-1',
   name: 'Internet',
   lineType: 'Expense' as const,
-  startDate: '2025-01-01' as never,
-  endDate: null as string | null,
+  startDate: '2025-01-01' as unknown as BudgetLineResponse['startDate'],
+  endDate: null,
   budgetedAmount: 100,
   currencyId: 'currency-gtq',
   categoryId: 'cat-1',
   categoryGroupId: 'group-1',
-  deletedAt: null as string | null,
+  deletedAt: null,
 }
 
 const basePeriod = {

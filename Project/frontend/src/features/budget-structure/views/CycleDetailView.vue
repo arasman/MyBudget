@@ -402,7 +402,7 @@ async function startRestore(periodId: string): Promise<void> {
   restoringPeriodId.value = periodId
   restoreLoading.value = true
   try {
-    const lines = await budgetLinesApi.list(budgetId, periodId, true)
+    const lines = await budgetLinesApi.list(budgetId, true)
     restoreDeletedLineCount.value = lines.filter((l) => !!l.deletedAt).length
     restoreConfirmStep.value = 'disclosure'
   } finally {

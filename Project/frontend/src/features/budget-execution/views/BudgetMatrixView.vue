@@ -286,7 +286,7 @@ import MatrixSummaryRow from '../components/MatrixSummaryRow.vue'
 import MatrixTotalRow from '../components/MatrixTotalRow.vue'
 import ExecutionListModal from '../components/ExecutionListModal.vue'
 import * as budgetLinesApi from '@/features/budget-structure/api/budgetLines.api'
-import { isLineActiveForPeriod } from '../utils/isLineActiveForPeriod'
+
 import type { CategoryGroupResponse, CategoryItem, BudgetLineResponse } from '@/features/budget-structure/types'
 
 const route = useRoute()

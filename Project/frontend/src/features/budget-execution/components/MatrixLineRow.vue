@@ -109,7 +109,7 @@ import { useToastStore } from '@/stores/toast.store'
 import { useCurrencyDisplay } from '../composables/useCurrencyDisplay'
 import MatrixCell from './MatrixCell.vue'
 import BudgetLineModal from '@/features/budget-structure/components/BudgetLineModal.vue'
-import type { BudgetLineResponse, PeriodSummary, CreateBudgetLinePayload } from '@/features/budget-structure/types'
+import type { BudgetLineResponse, PeriodSummary, UpdateBudgetLinePayload } from '@/features/budget-structure/types'
 import type { LineTotalDto } from '../types'
 
 const props = defineProps<{
@@ -153,7 +153,7 @@ function openEditModal(): void {
   showEditModal.value = true
 }
 
-async function handleEditSubmit(payload: CreateBudgetLinePayload): Promise<void> {
+async function handleEditSubmit(payload: UpdateBudgetLinePayload): Promise<void> {
   showEditModal.value = false
   await structureStore.updateLine(props.budgetId, props.line.id, {
     name: payload.name,
