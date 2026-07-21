@@ -18,6 +18,13 @@ public sealed class BudgetLineRevisionConfiguration : IEntityTypeConfiguration<B
         builder.Property(r => r.CurrencyId)
             .IsRequired();
 
+        builder.Property(r => r.ValidFrom)
+            .IsRequired()
+            .HasColumnType("TEXT"); // DateOnly stored as ISO text in SQLite
+
+        builder.Property(r => r.ValidTo)
+            .HasColumnType("TEXT"); // DateOnly? — nullable
+
         builder.HasOne<Budget>()
             .WithMany()
             .HasForeignKey(r => r.BudgetId)
@@ -32,18 +39,16 @@ public sealed class BudgetLineRevisionConfiguration : IEntityTypeConfiguration<B
             .HasPrecision(18, 2);
 
         // REQ-BL-NOTE-MAX-1: Note max 200 chars.
-        // IMPORTANT: verify existing data has no rows with Note length > 200 before running migration in production.
         builder.Property(r => r.Note)
             .HasMaxLength(200);
 
-        // No query filter — BudgetLineRevision is immutable/append-only; no soft delete
+        // No query filter — BudgetLineRevision is append-only; no soft delete
 
         builder.HasIndex(r => r.BudgetId)
             .HasDatabaseName("IX_BudgetLineRevisions_BudgetId");
 
-        builder.HasIndex(r => new { r.BudgetLineId, r.RevisedAt })
-            .HasDatabaseName("IX_BudgetLineRevisions_BudgetLineId_RevisedAt")
-            .IsDescending(false, true);
+        builder.HasIndex(r => new { r.BudgetLineId, r.ValidFrom })
+            .HasDatabaseName("IX_BudgetLineRevisions_BudgetLineId_ValidFrom");
 
         builder.HasOne(r => r.BudgetLine)
             .WithMany(l => l.Revisions)
