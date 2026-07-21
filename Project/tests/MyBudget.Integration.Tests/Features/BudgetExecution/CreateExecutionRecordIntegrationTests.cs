@@ -138,6 +138,88 @@ public sealed class CreateExecutionRecordIntegrationTests : BudgetExecutionTestB
         response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
     }
 
+    // ── REQ-EXEC-DATE-RANGE-1: OperationDate must be within BudgetLine date range ──
+
+    [Fact]
+    public async Task CreateExecution_DateBeforeLineStart_Rejected()
+    {
+        // REQ-EXEC-DATE-RANGE-1: operationDate < MAX(Period.StartDate, BudgetLine.StartDate) → 422
+        var (_, budgetId) = await SetupOwnerAsync("exec-daterange1@example.com");
+        var cycleId       = await CreateCycleAsync(budgetId);
+        var periodId      = await CreatePeriodAsync(budgetId, cycleId,
+            start: new DateOnly(2025, 1, 1), end: new DateOnly(2025, 1, 31));
+        var groupId       = await CreateCategoryGroupAsync(budgetId);
+        // Line starts Jan 10 — before Jan 10 is out of range
+        var lineId = await CreateBudgetLineAsync(budgetId, periodId, groupId,
+            name: "RangeLine", startDate: new DateOnly(2025, 1, 10));
+
+        var response = await Client.PostAsJsonAsync(
+            $"/api/budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/executions",
+            new { entryType = 1, amount = 100m, note = "date range test",
+                  operationDate = new DateOnly(2025, 1, 5), // before line starts (Jan 10)
+                  currencyId = GtqId, exchangeRate = (decimal?)null,
+                  exchangeRateTo = (decimal?)null, accountId = (Guid?)null,
+                  paymentMethodId = (Guid?)null });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>(JsonOpts);
+        body!.Error.ShouldBe("BUDGET_LINE_NOT_IN_PERIOD");
+    }
+
+    [Fact]
+    public async Task CreateExecution_DateAfterLineEnd_Rejected()
+    {
+        // REQ-EXEC-DATE-RANGE-1: operationDate > MIN(Period.EndDate, BudgetLine.EndDate) → 422
+        var (_, budgetId) = await SetupOwnerAsync("exec-daterange2@example.com");
+        var cycleId       = await CreateCycleAsync(budgetId);
+        var periodId      = await CreatePeriodAsync(budgetId, cycleId,
+            start: new DateOnly(2025, 1, 1), end: new DateOnly(2025, 1, 31));
+        var groupId       = await CreateCategoryGroupAsync(budgetId);
+        // Line ends Jan 20 — after Jan 20 is out of range
+        var lineId = await CreateBudgetLineAsync(budgetId, periodId, groupId,
+            name: "ExpiredLine", startDate: new DateOnly(2025, 1, 1),
+            endDate: new DateOnly(2025, 1, 20));
+
+        var response = await Client.PostAsJsonAsync(
+            $"/api/budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/executions",
+            new { entryType = 1, amount = 100m, note = "date range test",
+                  operationDate = new DateOnly(2025, 1, 25), // after line ends (Jan 20)
+                  currencyId = GtqId, exchangeRate = (decimal?)null,
+                  exchangeRateTo = (decimal?)null, accountId = (Guid?)null,
+                  paymentMethodId = (Guid?)null });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>(JsonOpts);
+        body!.Error.ShouldBe("BUDGET_LINE_NOT_IN_PERIOD");
+    }
+
+    [Fact]
+    public async Task CreateExecution_DateWithinBothPeriodAndLine_Accepted()
+    {
+        // REQ-EXEC-DATE-RANGE-1: operationDate within the intersection of Period and BudgetLine ranges → 201
+        var (_, budgetId) = await SetupOwnerAsync("exec-daterange3@example.com");
+        var cycleId       = await CreateCycleAsync(budgetId);
+        var periodId      = await CreatePeriodAsync(budgetId, cycleId,
+            start: new DateOnly(2025, 1, 1), end: new DateOnly(2025, 1, 31));
+        var groupId       = await CreateCategoryGroupAsync(budgetId);
+        // Line: Jan 10–Jan 25; Period: Jan 1–Jan 31; intersection: Jan 10–Jan 25
+        var lineId = await CreateBudgetLineAsync(budgetId, periodId, groupId,
+            name: "IntersectLine", startDate: new DateOnly(2025, 1, 10),
+            endDate: new DateOnly(2025, 1, 25));
+
+        var response = await Client.PostAsJsonAsync(
+            $"/api/budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/executions",
+            new { entryType = 1, amount = 200m, note = "date range test",
+                  operationDate = new DateOnly(2025, 1, 15), // within Jan 10–25
+                  currencyId = GtqId, exchangeRate = (decimal?)null,
+                  exchangeRateTo = (decimal?)null, accountId = (Guid?)null,
+                  paymentMethodId = (Guid?)null });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+        var body = await response.Content.ReadFromJsonAsync<IdResponse>(JsonOpts);
+        body!.Id.ShouldNotBe(Guid.Empty);
+    }
+
     // ── RBAC: budget:read cannot write ───────────────────────────────────────
 
     [Fact]

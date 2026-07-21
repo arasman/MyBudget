@@ -37,9 +37,12 @@ public static class CreateBudgetLineEndpoint
 
         if (!result.IsSuccess)
         {
-            if (result.Error == "BUDGET_NOT_FOUND")
-                return Results.NotFound(new { error = result.Error });
-            return Results.Problem(result.Error, statusCode: StatusCodes.Status422UnprocessableEntity);
+            return result.Error switch
+            {
+                "BUDGET_NOT_FOUND"           => Results.NotFound(new { error = result.Error }),
+                "BUDGET_LINE_NAME_DUPLICATE" => Results.UnprocessableEntity(new { error = result.Error }),
+                _ => Results.Problem(result.Error, statusCode: StatusCodes.Status422UnprocessableEntity),
+            };
         }
 
         return Results.Created(

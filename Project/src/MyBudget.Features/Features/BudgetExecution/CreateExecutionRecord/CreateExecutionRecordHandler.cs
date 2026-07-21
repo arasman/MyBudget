@@ -59,7 +59,7 @@ public sealed class CreateExecutionRecordHandler : IRequestHandler<CreateExecuti
                 : period.EndDate;
 
             if (cmd.OperationDate.Value < effectiveStart || cmd.OperationDate.Value > effectiveEnd)
-                return Result<Guid>.Failure("OPERATION_DATE_OUT_OF_RANGE");
+                return Result<Guid>.Failure("BUDGET_LINE_NOT_IN_PERIOD");
         }
 
         // REQ-EXEC-5/REQ-EXEC-6: ExchangeRate pair rule

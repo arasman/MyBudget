@@ -118,7 +118,7 @@ public sealed class CreateExecutionRecordBudgetLineDateRangeHandlerTests : IDisp
     // ── REQ-EXEC-DATE-RANGE-1: combined OperationDate range ──────────────────────
 
     [Fact]
-    public async Task OperationDate_BeforeBudgetLineStart_Returns_OPERATION_DATE_OUT_OF_RANGE()
+    public async Task OperationDate_BeforeBudgetLineStart_Returns_BUDGET_LINE_NOT_IN_PERIOD()
     {
         // Period: Jan 1–31; BudgetLine starts Jan 15 → effective start = Jan 15
         // OperationDate = Jan 10 < Jan 15 → out of combined range
@@ -127,7 +127,7 @@ public sealed class CreateExecutionRecordBudgetLineDateRangeHandlerTests : IDisp
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeFalse();
-        result.Error.ShouldBe("OPERATION_DATE_OUT_OF_RANGE");
+        result.Error.ShouldBe("BUDGET_LINE_NOT_IN_PERIOD");
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public sealed class CreateExecutionRecordBudgetLineDateRangeHandlerTests : IDisp
     }
 
     [Fact]
-    public async Task OperationDate_AfterBudgetLineEnd_Returns_OPERATION_DATE_OUT_OF_RANGE()
+    public async Task OperationDate_AfterBudgetLineEnd_Returns_BUDGET_LINE_NOT_IN_PERIOD()
     {
         // Period: Jan 1–31; BudgetLine ends Jan 20 → effective end = Jan 20
         // OperationDate = Jan 25 > Jan 20 → out of combined range
@@ -152,7 +152,7 @@ public sealed class CreateExecutionRecordBudgetLineDateRangeHandlerTests : IDisp
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeFalse();
-        result.Error.ShouldBe("OPERATION_DATE_OUT_OF_RANGE");
+        result.Error.ShouldBe("BUDGET_LINE_NOT_IN_PERIOD");
     }
 
     [Fact]

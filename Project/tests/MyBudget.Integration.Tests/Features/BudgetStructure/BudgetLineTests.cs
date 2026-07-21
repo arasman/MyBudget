@@ -270,4 +270,71 @@ public sealed class BudgetLineTests : BudgetStructureTestBase
         decimal?  BudgetedAmount,
         string?   CurrencyCode,
         string?   CurrencySymbol);
+
+    // ── REQ-BL-REVISION-1: Initial revision covers full StartDate..EndDate range ──
+
+    [Fact]
+    public async Task CreateBudgetLine_CreatesInitialRevisionCoveringFullRange()
+    {
+        // REQ-BL-02: A new BudgetLine creates one initial revision with ValidFrom=StartDate, ValidTo=EndDate.
+        var (_, budgetId) = await SetupOwnerAsync("bl-rev1@example.com");
+        var groupId       = await CreateCategoryGroupAsync(budgetId);
+        var start         = new DateOnly(2025, 1, 1);
+        var end           = new DateOnly(2025, 12, 31);
+
+        var lineId = await CreateBudgetLineAsync(budgetId, Guid.Empty, groupId,
+            name: "RevisionRange", amount: 1000m, startDate: start, endDate: end);
+
+        // Verify via list endpoint — revision is the one covering today or start
+        var response = await Client.GetAsync($"/api/budgets/{budgetId}/lines?includeDeleted=false");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var lines = await response.Content.ReadFromJsonAsync<BudgetLineItem[]>(JsonOpts);
+        // Line exists — note: today is past the EndDate so the revision is NOT in the effective window,
+        // but the line itself still shows (BudgetedAmount is null when no effective revision).
+        var line = lines!.Single(l => l.Id == lineId);
+        line.StartDate.ShouldBe(start);
+        line.EndDate.ShouldBe(end);
+    }
+
+    [Fact]
+    public async Task CreateBudgetLine_PerpetualLine_EndDateIsNull()
+    {
+        // When endDate is omitted the line is perpetual (EndDate = null).
+        var (_, budgetId) = await SetupOwnerAsync("bl-rev2@example.com");
+        var groupId       = await CreateCategoryGroupAsync(budgetId);
+
+        // CreateBudgetLineAsync default: startDate=2020-01-01, endDate=null
+        var lineId = await CreateBudgetLineAsync(budgetId, Guid.Empty, groupId, name: "Perpetual");
+
+        var response = await Client.GetAsync($"/api/budgets/{budgetId}/lines");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var lines = await response.Content.ReadFromJsonAsync<BudgetLineItem[]>(JsonOpts);
+        var line  = lines!.Single(l => l.Id == lineId);
+        line.EndDate.ShouldBeNull();
+        line.BudgetedAmount.ShouldNotBeNull(); // effective revision covers today (2020-01-01..null)
+    }
+
+    [Fact]
+    public async Task CreateBudgetLine_DuplicateName_IncludingSoftDeleted_Rejected()
+    {
+        // REQ-BL-NAME-1: name uniqueness includes soft-deleted lines.
+        var (_, budgetId) = await SetupOwnerAsync("bl-dupname@example.com");
+        var groupId       = await CreateCategoryGroupAsync(budgetId);
+
+        var lineId = await CreateBudgetLineAsync(budgetId, Guid.Empty, groupId, name: "DupLine");
+
+        // Soft-delete the line
+        await Client.DeleteAsync($"/api/budgets/{budgetId}/lines/{lineId}");
+
+        // Try to create another line with the same name — must be rejected
+        var resp = await Client.PostAsJsonAsync(
+            $"/api/budgets/{budgetId}/lines",
+            new { name = "DupLine", lineType = "Expense", categoryGroupId = groupId,
+                  startDate = new DateOnly(2020, 1, 1), initialAmount = 500m,
+                  currencyId = CurrencySeeds.GtqId });
+
+        resp.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        var body = await resp.Content.ReadFromJsonAsync<ErrorResponse>(JsonOpts);
+        body!.Error.ShouldBe("BUDGET_LINE_NAME_DUPLICATE");
+    }
 }

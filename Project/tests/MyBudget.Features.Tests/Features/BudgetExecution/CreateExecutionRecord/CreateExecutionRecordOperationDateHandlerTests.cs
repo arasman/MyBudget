@@ -93,25 +93,25 @@ public sealed class CreateExecutionRecordOperationDateHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task OperationDate_BeforeStart_Returns_OPERATION_DATE_OUT_OF_RANGE()
+    public async Task OperationDate_BeforeStart_Returns_BUDGET_LINE_NOT_IN_PERIOD()
     {
         var (budgetId, periodId, lineId) = await SeedAsync();
         var cmd    = BuildCmd(budgetId, periodId, lineId, new DateOnly(2025, 12, 31));
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeFalse();
-        result.Error.ShouldBe("OPERATION_DATE_OUT_OF_RANGE");
+        result.Error.ShouldBe("BUDGET_LINE_NOT_IN_PERIOD");
     }
 
     [Fact]
-    public async Task OperationDate_AfterEnd_Returns_OPERATION_DATE_OUT_OF_RANGE()
+    public async Task OperationDate_AfterEnd_Returns_BUDGET_LINE_NOT_IN_PERIOD()
     {
         var (budgetId, periodId, lineId) = await SeedAsync();
         var cmd    = BuildCmd(budgetId, periodId, lineId, new DateOnly(2026, 2, 1));
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeFalse();
-        result.Error.ShouldBe("OPERATION_DATE_OUT_OF_RANGE");
+        result.Error.ShouldBe("BUDGET_LINE_NOT_IN_PERIOD");
     }
 
     [Fact]
