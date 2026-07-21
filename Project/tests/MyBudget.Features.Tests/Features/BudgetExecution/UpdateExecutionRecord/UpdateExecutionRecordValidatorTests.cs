@@ -16,7 +16,7 @@ public sealed class UpdateExecutionRecordValidatorTests
             ExecutionId:     Guid.NewGuid(),
             EntryType:       EntryType.Expense,
             Amount:          100m,
-            Note:            null,
+            Note:            "required note", // REQ-EXEC-4: Note is now always required
             CurrencyId:      CurrencySeeds.GtqId,
             ExchangeRate:    null,
             ExchangeRateTo:  null,
@@ -46,12 +46,14 @@ public sealed class UpdateExecutionRecordValidatorTests
         result.IsValid.ShouldBeTrue();
     }
 
+    // REQ-EXEC-4: Note required for ALL entry types; error code is NOTE_REQUIRED
+
     [Fact]
     public void Note_Absent_For_CreditNote_Rejected()
     {
         var result = _sut.Validate(ValidCommand() with { EntryType = EntryType.CreditNote, Note = null });
         result.IsValid.ShouldBeFalse();
-        result.Errors.ShouldContain(e => e.ErrorCode == "NOTE_REQUIRED_FOR_ENTRY_TYPE");
+        result.Errors.ShouldContain(e => e.ErrorCode == "NOTE_REQUIRED");
     }
 
     [Fact]
@@ -59,13 +61,22 @@ public sealed class UpdateExecutionRecordValidatorTests
     {
         var result = _sut.Validate(ValidCommand() with { EntryType = EntryType.DebitNote, Note = "" });
         result.IsValid.ShouldBeFalse();
-        result.Errors.ShouldContain(e => e.ErrorCode == "NOTE_REQUIRED_FOR_ENTRY_TYPE");
+        result.Errors.ShouldContain(e => e.ErrorCode == "NOTE_REQUIRED");
     }
 
     [Fact]
-    public void Note_Absent_For_Expense_Passes()
+    public void Note_Absent_For_Expense_Rejected()
     {
+        // REQ-EXEC-4: Note is now required for Expense too (changed from optional)
         var result = _sut.Validate(ValidCommand() with { EntryType = EntryType.Expense, Note = null });
+        result.IsValid.ShouldBeFalse();
+        result.Errors.ShouldContain(e => e.ErrorCode == "NOTE_REQUIRED");
+    }
+
+    [Fact]
+    public void Note_Present_For_Expense_Passes()
+    {
+        var result = _sut.Validate(ValidCommand() with { EntryType = EntryType.Expense, Note = "grocery run" });
         result.IsValid.ShouldBeTrue();
     }
 

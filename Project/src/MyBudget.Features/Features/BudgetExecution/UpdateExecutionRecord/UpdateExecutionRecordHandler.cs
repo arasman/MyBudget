@@ -38,6 +38,11 @@ public sealed class UpdateExecutionRecordHandler : IRequestHandler<UpdateExecuti
         if (period.IsClosed)
             return Result<Guid>.Failure("PERIOD_CLOSED");
 
+        // REQ-EXEC-DATE-RANGE-1: OperationDate must fall within Period range (null = skip check)
+        if (cmd.OperationDate.HasValue &&
+            (cmd.OperationDate.Value < period.StartDate || cmd.OperationDate.Value > period.EndDate))
+            return Result<Guid>.Failure("OPERATION_DATE_OUT_OF_RANGE");
+
         // REQ-EXEC-5/REQ-EXEC-6: ExchangeRate pair rule
         var defaultCurrencyId = cycle.DefaultCurrencyId;
         var isSameCurrency = cmd.CurrencyId == defaultCurrencyId;

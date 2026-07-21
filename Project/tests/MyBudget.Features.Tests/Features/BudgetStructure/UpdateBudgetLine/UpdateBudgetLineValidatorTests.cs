@@ -97,4 +97,21 @@ public sealed class UpdateBudgetLineValidatorTests
         result.IsValid.ShouldBeFalse();
         result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateBudgetLineCommand.BudgetedAmount));
     }
+
+    // REQ-BL-AMOUNT-1: amount must be > 0 (changed from >= 0)
+    [Fact]
+    public void BudgetedAmount_Zero_Rejected()
+    {
+        var result = _sut.Validate(ValidCommand() with { BudgetedAmount = 0m });
+        result.IsValid.ShouldBeFalse();
+        result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateBudgetLineCommand.BudgetedAmount)
+                                      && e.ErrorCode == "FIELD_INVALID");
+    }
+
+    [Fact]
+    public void BudgetedAmount_Positive_Passes()
+    {
+        var result = _sut.Validate(ValidCommand() with { BudgetedAmount = 0.01m });
+        result.IsValid.ShouldBeTrue();
+    }
 }

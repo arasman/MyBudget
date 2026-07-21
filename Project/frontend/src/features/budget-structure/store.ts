@@ -50,9 +50,15 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   function _wrap<T>(fn: () => Promise<T>): Promise<T> {
     loading.value = true
     error.value = null
-    return fn().finally(() => {
-      loading.value = false
-    })
+    return fn()
+      .catch((e: unknown) => {
+        const msg = e instanceof Error ? e.message : String(e)
+        error.value = msg
+        throw e
+      })
+      .finally(() => {
+        loading.value = false
+      })
   }
 
   // ---------------------------------------------------------------------------

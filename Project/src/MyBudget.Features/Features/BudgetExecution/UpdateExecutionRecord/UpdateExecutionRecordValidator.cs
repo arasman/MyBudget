@@ -29,9 +29,9 @@ public sealed class UpdateExecutionRecordValidator : AbstractValidator<UpdateExe
         RuleFor(x => x.Amount)
             .GreaterThan(0).WithErrorCode("AMOUNT_MUST_BE_POSITIVE");
 
+        // REQ-EXEC-4: Note is required for ALL entry types
         RuleFor(x => x.Note)
             .NotEmpty()
-            .WithErrorCode("NOTE_REQUIRED_FOR_ENTRY_TYPE")
-            .When(x => x.EntryType == EntryType.CreditNote || x.EntryType == EntryType.DebitNote);
+            .WithErrorCode("NOTE_REQUIRED");
     }
 }

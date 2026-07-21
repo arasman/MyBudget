@@ -57,7 +57,8 @@ test.describe('Budget Execution — RBAC', () => {
       data: {
         entryType: 1,
         amount: 100,
-        note: null,
+        note: 'Test execution note',
+        operationDate: '2025-01-15',
         currencyId: GTQ_CURRENCY_ID,
         exchangeRate: null,
         exchangeRateTo: null,

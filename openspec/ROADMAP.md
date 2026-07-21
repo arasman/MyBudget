@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-18 (global-toast-audit archived)
+**Last updated**: 2026-07-20 (input-validation-audit archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -382,6 +382,21 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 **Tests**: 277 Vitest — all green; TypeScript build clean
 **SDD artifacts**: `openspec/changes/archive/2026-07-18-global-toast-audit/`
+
+---
+
+### 9e. `input-validation-audit` ✅ archived 2026-07-20
+
+**What**: Full-stack validation hardening — close all missing/incomplete input validations across 7 entities and wire error-toast surfacing for business rule violations.
+
+**Scope in**:
+- Backend: name uniqueness checks (including soft-deleted) for Budget (per user), Cycle (per budget), Period (per cycle), BudgetLine (per category-group + category); fixed CategoryGroup/Category uniqueness to use `IgnoreQueryFilters()`; `operationDate` must fall within period date range; note always required (all entry types); BudgetLine amount `> 0`; `BudgetLineRevision.Note HasMaxLength(200)` + EF migration
+- Frontend: `store._wrap()` re-throw; `extractApiErrorCode` utility (handles `{ detail }` and `{ error }` shapes); error toasts on all 6 forms for business rule violations; inline validation on all forms (nameRequired, nameTooLong max 200, amountRequired, amountPositive, dateOrder); `operationDate` required + period-range best-effort check; decimal precision (amount max 2dp, exchangeRate max 6dp); CycleListView inline edit validation; 28 new i18n keys (EN + ES)
+- E2E/integration test helpers updated: `note` defaults + `operationDate` defaults; `seedBudgetMatrixFixture` period dates widened to 2020–2099
+- Delivery: feature-branch-chain (backend PR + frontend PR → tracker → main)
+
+**Tests**: 523 backend unit + integration | 304 frontend unit | 89 E2E — all green
+**SDD artifacts**: `openspec/changes/archive/2026-07-20-input-validation-audit/`
 
 ---
 

@@ -1,5 +1,5 @@
 <template>
-  <form data-testid="execution-record-form" class="space-y-3" @submit.prevent="handleSubmit">
+  <form data-testid="execution-record-form" class="space-y-3" novalidate @submit.prevent="handleSubmit">
     <!-- Operation date -->
     <div class="form-control">
       <label class="label" for="exec-operation-date">
@@ -10,7 +10,9 @@
         v-model="form.operationDate"
         type="date"
         class="input input-bordered input-sm w-full"
+        :class="{ 'input-error': errors.operationDate }"
       />
+      <span v-if="errors.operationDate" class="label-text-alt text-error mt-1">{{ errors.operationDate }}</span>
     </div>
 
     <!-- Entry type -->
@@ -111,11 +113,6 @@
       <span v-if="errors.note" data-testid="note-error" class="label-text-alt text-error mt-1">{{ errors.note }}</span>
     </div>
 
-    <!-- Error banner -->
-    <div v-if="submitError" class="alert alert-error py-2 text-sm">
-      <span>{{ submitError }}</span>
-    </div>
-
     <!-- Actions -->
     <div class="flex gap-2 justify-end pt-1">
       <button
@@ -143,6 +140,7 @@ import type { ExecutionRecordDto } from '../types'
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useToastStore } from '@/stores/toast.store'
+import { extractApiErrorCode } from '@/features/budget-structure/utils/apiError'
 
 const props = defineProps<{
   budgetId: string
@@ -162,7 +160,6 @@ const structureStore = useBudgetStructureStore()
 const toastStore = useToastStore()
 
 const submitting = ref(false)
-const submitError = ref<string | null>(null)
 
 /** Returns today as YYYY-MM-DD without timezone distortion. */
 function todayString(): string {
@@ -213,29 +210,55 @@ const errors = reactive({
   amount: '' as string,
   note: '' as string,
   exchangeRate: '' as string,
+  operationDate: '' as string,
 })
+
+/** Checks that a number has at most maxDecimals decimal places. */
+function hasMaxDecimals(value: number, maxDecimals: number): boolean {
+  const str = value.toString()
+  const dotIndex = str.indexOf('.')
+  if (dotIndex === -1) return true
+  return str.length - dotIndex - 1 <= maxDecimals
+}
 
 function validate(): boolean {
   errors.amount = ''
   errors.note = ''
   errors.exchangeRate = ''
+  errors.operationDate = ''
 
   let valid = true
 
   if (!form.amount || form.amount <= 0) {
     errors.amount = t('budgetExecution.form.validation.amountRequired')
     valid = false
+  } else if (!hasMaxDecimals(form.amount, 2)) {
+    errors.amount = t('budgetExecution.form.validation.amountDecimals')
+    valid = false
   }
 
-  if (showExchangeRate.value && (!form.exchangeRate || form.exchangeRate <= 0)) {
-    errors.exchangeRate = t('budgetExecution.form.validation.exchangeRateRequired')
-    valid = false
+  if (showExchangeRate.value) {
+    if (!form.exchangeRate || form.exchangeRate <= 0) {
+      errors.exchangeRate = t('budgetExecution.form.validation.exchangeRateRequired')
+      valid = false
+    } else if (!hasMaxDecimals(form.exchangeRate, 6)) {
+      errors.exchangeRate = t('budgetExecution.form.validation.exchangeRateDecimals')
+      valid = false
+    }
   }
 
   if (!form.note?.trim()) {
     errors.note = t('budgetExecution.form.validation.noteRequiredAlways')
     valid = false
   }
+
+  if (!form.operationDate) {
+    errors.operationDate = t('budgetExecution.form.validation.operationDateRequired')
+    valid = false
+  }
+
+  // Best-effort period-range check (requires currentCycle + period context not available here;
+  // server is authoritative — client sends a toast on OPERATION_DATE_OUT_OF_RANGE API error)
 
   return valid
 }
@@ -244,7 +267,6 @@ async function handleSubmit(): Promise<void> {
   if (!validate()) return
 
   submitting.value = true
-  submitError.value = null
 
   const currencyId = form.currencyId || defaultCurrencyId.value
   const isSameCurrency = currencyId === defaultCurrencyId.value
@@ -294,7 +316,12 @@ async function handleSubmit(): Promise<void> {
       form.exchangeRateTo = null
     }
   } catch (e) {
-    submitError.value = e instanceof Error ? e.message : t('budgetExecution.form.error')
+    const code = extractApiErrorCode(e)
+    if (code === 'OPERATION_DATE_OUT_OF_RANGE') {
+      toastStore.push({ type: 'error', title: t('budgetExecution.form.errors.operationDateOutOfRange') })
+    } else {
+      toastStore.push({ type: 'error', title: t('common.errors.serverError') })
+    }
   } finally {
     submitting.value = false
   }

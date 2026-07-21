@@ -31,13 +31,14 @@ public sealed class CreateExecutionRecordIntegrationTests : BudgetExecutionTestB
             $"/api/budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/executions",
             new
             {
-                entryType      = 1,      // Expense
-                amount         = 250m,
-                note           = (string?)null,
-                currencyId     = GtqId,
-                exchangeRate   = (decimal?)null,
-                exchangeRateTo = (decimal?)null,
-                accountId      = (Guid?)null,
+                entryType       = 1,      // Expense
+                amount          = 250m,
+                note            = "Test execution note",
+                operationDate   = new DateOnly(2025, 1, 15),
+                currencyId      = GtqId,
+                exchangeRate    = (decimal?)null,
+                exchangeRateTo  = (decimal?)null,
+                accountId       = (Guid?)null,
                 paymentMethodId = (Guid?)null,
             });
 
@@ -63,13 +64,14 @@ public sealed class CreateExecutionRecordIntegrationTests : BudgetExecutionTestB
             $"/api/budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/executions",
             new
             {
-                entryType      = 1,
-                amount         = 100m,
-                note           = (string?)null,
-                currencyId     = GtqId,
-                exchangeRate   = (decimal?)null,
-                exchangeRateTo = (decimal?)null,
-                accountId      = (Guid?)null,
+                entryType       = 1,
+                amount          = 100m,
+                note            = "Test execution note",
+                operationDate   = new DateOnly(2025, 1, 15),
+                currencyId      = GtqId,
+                exchangeRate    = (decimal?)null,
+                exchangeRateTo  = (decimal?)null,
+                accountId       = (Guid?)null,
                 paymentMethodId = (Guid?)null,
             });
 

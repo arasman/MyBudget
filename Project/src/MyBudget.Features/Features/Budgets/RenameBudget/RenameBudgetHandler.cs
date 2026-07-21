@@ -37,6 +37,16 @@ public sealed class RenameBudgetHandler
         if (budget is null)
             return Result<RenameBudgetResponse>.Failure("BUDGET_NOT_FOUND");
 
+        // Name uniqueness per owner, self-excluded — includes soft-deleted budgets (REQ-BUDGET-UNIQUE-1)
+        var normalizedName = cmd.NewName.Trim().ToLowerInvariant();
+        var isDuplicate = await _db.Budgets.IgnoreQueryFilters().AnyAsync(b =>
+            b.OwnerId == budget.OwnerId &&
+            b.Id      != cmd.BudgetId  &&
+            b.Name.ToLower() == normalizedName, ct);
+
+        if (isDuplicate)
+            return Result<RenameBudgetResponse>.Failure("BUDGET_NAME_DUPLICATE");
+
         budget.Rename(cmd.NewName);
         await _db.SaveChangesAsync(ct);
 

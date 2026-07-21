@@ -243,6 +243,7 @@ import { useBudgetStructureStore } from '../store'
 import { useLayoutStore } from '@/stores/layout.store'
 import { useToastStore } from '@/stores/toast.store'
 import { useRoleGate } from '../composables/useRoleGate'
+import { extractApiErrorCode } from '../utils/apiError'
 import BudgetTabs from '../components/BudgetTabs.vue'
 import BudgetLineRow from '../components/BudgetLineRow.vue'
 import BudgetLineModal from '../components/BudgetLineModal.vue'
@@ -382,15 +383,28 @@ async function handleRestore(lineId: string): Promise<void> {
   toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.restoreSuccess') })
 }
 
-async function handleModalSubmit(payload: CreateBudgetLinePayload): Promise<void> {
-  if (editingLine.value) {
-    await store.updateLine(budgetId, periodId, editingLine.value.id, payload)
-    toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.updateSuccess') })
+function _lineErrorToast(err: unknown): void {
+  const code = extractApiErrorCode(err)
+  if (code === 'BUDGET_LINE_NAME_DUPLICATE') {
+    toastStore.push({ type: 'error', title: t('budgetStructure.budgetLines.errors.nameDuplicate') })
   } else {
-    await store.createLine(budgetId, periodId, payload)
-    toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.createSuccess') })
+    toastStore.push({ type: 'error', title: t('common.errors.serverError') })
   }
-  closeModal()
+}
+
+async function handleModalSubmit(payload: CreateBudgetLinePayload): Promise<void> {
+  try {
+    if (editingLine.value) {
+      await store.updateLine(budgetId, periodId, editingLine.value.id, payload)
+      toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.updateSuccess') })
+    } else {
+      await store.createLine(budgetId, periodId, payload)
+      toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.createSuccess') })
+    }
+    closeModal()
+  } catch (err) {
+    _lineErrorToast(err)
+  }
 }
 
 // Inline edit handlers
@@ -401,9 +415,13 @@ function handleStartEdit(line: BudgetLineResponse): void {
 }
 
 async function handleInlineSave(lineId: string, payload: UpdateBudgetLinePayload): Promise<void> {
-  await store.updateLine(budgetId, periodId, lineId, payload)
-  inlineEditingLineId.value = null
-  toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.updateSuccess') })
+  try {
+    await store.updateLine(budgetId, periodId, lineId, payload)
+    inlineEditingLineId.value = null
+    toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.updateSuccess') })
+  } catch (err) {
+    _lineErrorToast(err)
+  }
 }
 
 function handleInlineCancel(_lineId: string): void {
@@ -427,18 +445,22 @@ function openInlineAdd(): void {
 
 async function handleInlineAddSave(): Promise<void> {
   if (!inlineAddForm.name.trim()) return
-  await store.createLine(budgetId, periodId, {
-    name: inlineAddForm.name,
-    lineType: inlineAddForm.lineType,
-    isRecurring: inlineAddForm.isRecurring,
-    budgetedAmount: inlineAddForm.budgetedAmount ?? undefined,
-    currencyId: inlineAddForm.currencyId || undefined,
-    note: inlineAddForm.note || undefined,
-    categoryGroupId: inlineAddForm.categoryGroupId || undefined,
-    categoryId: inlineAddForm.categoryId || undefined,
-  })
-  toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.createSuccess') })
-  showInlineAdd.value = false
+  try {
+    await store.createLine(budgetId, periodId, {
+      name: inlineAddForm.name,
+      lineType: inlineAddForm.lineType,
+      isRecurring: inlineAddForm.isRecurring,
+      budgetedAmount: inlineAddForm.budgetedAmount ?? undefined,
+      currencyId: inlineAddForm.currencyId || undefined,
+      note: inlineAddForm.note || undefined,
+      categoryGroupId: inlineAddForm.categoryGroupId || undefined,
+      categoryId: inlineAddForm.categoryId || undefined,
+    })
+    toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.createSuccess') })
+    showInlineAdd.value = false
+  } catch (err) {
+    _lineErrorToast(err)
+  }
 }
 
 watch(() => store.showDeletedBudgetLines, async () => {

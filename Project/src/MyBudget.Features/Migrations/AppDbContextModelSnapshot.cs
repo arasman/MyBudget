@@ -186,7 +186,8 @@ namespace MyBudget.Features.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Note")
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<DateTimeOffset>("RevisedAt")
                         .HasColumnType("timestamp with time zone");
