@@ -36,7 +36,19 @@ public sealed class RestorePeriodHandler : IRequestHandler<RestorePeriodCommand,
 
         period.Restore();
 
-        // REQ-RESTORE-PERIOD-1: BudgetLines are Budget-scoped (no PeriodId FK); they are NOT cascade-restored here.
+        // REQ-RESTORE-PERIOD-1: BudgetLines are Budget-scoped (no PeriodId FK).
+        // BudgetLines are NOT cascade-restored when a Period is restored (REQ-CYC-03 / REQ-RST-02).
+        // Execution records scoped to this period CAN be restored when requested.
+        if (cmd.IncludeExecutionRecords)
+        {
+            var softDeletedRecords = await _db.ExecutionRecords
+                .IgnoreQueryFilters()
+                .Where(e => e.PeriodId == cmd.PeriodId && e.DeletedAt != null)
+                .ToListAsync(ct);
+
+            foreach (var record in softDeletedRecords)
+                record.Restore();
+        }
 
         await _db.SaveChangesAsync(ct);
 
