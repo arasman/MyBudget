@@ -6,7 +6,6 @@ using MyBudget.Features.SharedKernel.Results;
 
 namespace MyBudget.Features.Features.BudgetExecution.CreateExecutionRecord;
 
-// TODO PR2b: full handler rewrite — date-range intersection check for BudgetLine coverage (REQ-EXEC-7)
 public sealed class CreateExecutionRecordHandler : IRequestHandler<CreateExecutionRecordCommand, Result<Guid>>
 {
     private readonly AppDbContext _db;
@@ -37,16 +36,31 @@ public sealed class CreateExecutionRecordHandler : IRequestHandler<CreateExecuti
         if (period?.Cycle is null)
             return Result<Guid>.Failure("BUDGET_LINE_NOT_FOUND");
 
-        // TODO PR2b: replace PeriodId match with date-range intersection (REQ-EXEC-7)
-        // Stub: accept if PeriodId supplied matches a real period
+        // REQ-EXEC-7: BudgetLine must overlap the period (date-range intersection check).
+        // Overlap rule: BudgetLine has no EndDate OR EndDate >= Period.StartDate
+        //   AND BudgetLine.StartDate <= Period.EndDate.
+        // A line that ends before the period starts has no overlap → BUDGET_LINE_NOT_IN_PERIOD.
+        var lineOverlapsPeriod = line.StartDate <= period.EndDate &&
+            (line.EndDate is null || line.EndDate >= period.StartDate);
+        if (!lineOverlapsPeriod)
+            return Result<Guid>.Failure("BUDGET_LINE_NOT_IN_PERIOD");
+
         // REQ-EXEC-CLOSED-1: period closed guard
         if (period.IsClosed)
             return Result<Guid>.Failure("PERIOD_CLOSED");
 
-        // REQ-EXEC-DATE-RANGE-1: OperationDate must fall within Period range (null = skip check)
-        if (cmd.OperationDate.HasValue &&
-            (cmd.OperationDate.Value < period.StartDate || cmd.OperationDate.Value > period.EndDate))
-            return Result<Guid>.Failure("OPERATION_DATE_OUT_OF_RANGE");
+        // REQ-EXEC-DATE-RANGE-1: OperationDate must fall within combined range:
+        //   MAX(Period.StartDate, BudgetLine.StartDate) .. MIN(Period.EndDate, BudgetLine.EndDate ?? Period.EndDate)
+        if (cmd.OperationDate.HasValue)
+        {
+            var effectiveStart = period.StartDate > line.StartDate ? period.StartDate : line.StartDate;
+            var effectiveEnd   = line.EndDate.HasValue
+                ? (period.EndDate < line.EndDate.Value ? period.EndDate : line.EndDate.Value)
+                : period.EndDate;
+
+            if (cmd.OperationDate.Value < effectiveStart || cmd.OperationDate.Value > effectiveEnd)
+                return Result<Guid>.Failure("OPERATION_DATE_OUT_OF_RANGE");
+        }
 
         // REQ-EXEC-5/REQ-EXEC-6: ExchangeRate pair rule
         var defaultCurrencyId = period.Cycle.DefaultCurrencyId;
