@@ -9,7 +9,7 @@
         }}
       </h3>
 
-      <form @submit.prevent="handleSubmit">
+      <form novalidate @submit.prevent="handleSubmit">
         <!-- Name -->
         <div class="form-control mb-6">
           <label class="label" for="category-name">
@@ -22,7 +22,6 @@
             class="input input-bordered w-full"
             :class="{ 'input-error': errors.name }"
             maxlength="200"
-            required
           />
           <div v-if="errors.name" class="label">
             <span class="label-text-alt text-error">{{ errors.name }}</span>

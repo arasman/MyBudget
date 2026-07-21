@@ -252,6 +252,11 @@ function validate(): boolean {
     valid = false
   }
 
+  if (!form.operationDate) {
+    errors.operationDate = t('budgetExecution.form.validation.operationDateRequired')
+    valid = false
+  }
+
   // Best-effort period-range check (requires currentCycle + period context not available here;
   // server is authoritative — client sends a toast on OPERATION_DATE_OUT_OF_RANGE API error)
 

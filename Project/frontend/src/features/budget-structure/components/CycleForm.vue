@@ -5,7 +5,7 @@
         {{ modelValue ? t('budgetStructure.cycles.edit') : t('budgetStructure.cycles.create') }}
       </h3>
 
-      <form @submit.prevent="handleSubmit">
+      <form novalidate @submit.prevent="handleSubmit">
         <!-- Name -->
         <div class="form-control mb-4">
           <label class="label" for="cycle-name">
