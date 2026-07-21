@@ -50,11 +50,8 @@ test.describe('Budget Structure — Budget Lines', () => {
       const { budgetId, cycleId, periodId, token } = await setupPeriod(page)
       const deletedLineId = await seedDeletedBudgetLine(page, budgetId, periodId, token)
 
-      await page.goto(`/budgets/${budgetId}/cycles/${cycleId}/periods/${periodId}/lines`)
-      await expect(page).toHaveURL(
-        `/budgets/${budgetId}/cycles/${cycleId}/periods/${periodId}/lines`,
-        { timeout: 10_000 },
-      )
+      await page.goto(`/budgets/${budgetId}/lines`)
+      await expect(page).toHaveURL(`/budgets/${budgetId}/lines`, { timeout: 10_000 })
 
       // Wait for the view to mount before asserting absence
       await expect(page.getByLabel('Show deleted')).toBeVisible({ timeout: 10_000 })
@@ -72,11 +69,8 @@ test.describe('Budget Structure — Budget Lines', () => {
       const { budgetId, cycleId, periodId, token } = await setupPeriod(page)
       await seedDeletedBudgetLine(page, budgetId, periodId, token)
 
-      await page.goto(`/budgets/${budgetId}/cycles/${cycleId}/periods/${periodId}/lines`)
-      await expect(page).toHaveURL(
-        `/budgets/${budgetId}/cycles/${cycleId}/periods/${periodId}/lines`,
-        { timeout: 10_000 },
-      )
+      await page.goto(`/budgets/${budgetId}/lines`)
+      await expect(page).toHaveURL(`/budgets/${budgetId}/lines`, { timeout: 10_000 })
 
       // Toggle ON first
       await page.getByLabel('Show deleted').check()
@@ -91,11 +85,8 @@ test.describe('Budget Structure — Budget Lines', () => {
       const { budgetId, cycleId, periodId, token } = await setupPeriod(page)
       await seedDeletedBudgetLine(page, budgetId, periodId, token)
 
-      await page.goto(`/budgets/${budgetId}/cycles/${cycleId}/periods/${periodId}/lines`)
-      await expect(page).toHaveURL(
-        `/budgets/${budgetId}/cycles/${cycleId}/periods/${periodId}/lines`,
-        { timeout: 10_000 },
-      )
+      await page.goto(`/budgets/${budgetId}/lines`)
+      await expect(page).toHaveURL(`/budgets/${budgetId}/lines`, { timeout: 10_000 })
 
       // Toggle ON to reveal deleted line
       await page.getByLabel('Show deleted').check()
@@ -150,11 +141,8 @@ test.describe('Budget Structure — Budget Lines', () => {
     expect(groupResp.status()).toBe(201)
 
     // Navigate to budget lines
-    await page.goto(`/budgets/${budgetId}/cycles/${cycleId}/periods/${periodId}/lines`)
-    await expect(page).toHaveURL(
-      `/budgets/${budgetId}/cycles/${cycleId}/periods/${periodId}/lines`,
-      { timeout: 10_000 },
-    )
+    await page.goto(`/budgets/${budgetId}/lines`)
+    await expect(page).toHaveURL(`/budgets/${budgetId}/lines`, { timeout: 10_000 })
 
     // --- Create budget line ---
     await page.getByRole('navigation').getByRole('button', { name: 'New Line' }).click()
@@ -169,6 +157,8 @@ test.describe('Budget Structure — Budget Lines', () => {
     // Set budgeted amount
     const amountInput = page.getByLabel('Budgeted Amount')
     await amountInput.fill('5000')
+    // Set start date (required by BudgetLine redesign)
+    await page.getByLabel('Start Date').fill('2024-01-01')
 
     const [lineResp] = await Promise.all([
       page.waitForResponse(

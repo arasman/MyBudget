@@ -367,7 +367,7 @@ function handleSubmit(): void {
       startDate: form.startDate,
       endDate: form.endDate || undefined,
       initialAmount: form.initialAmount ?? 0,
-      currencyId: form.currencyId ?? '',
+      currencyId: form.currencyId || undefined,
       categoryGroupId: form.categoryGroupId || undefined,
       categoryId: form.categoryId || undefined,
       note: form.note?.trim() || undefined,

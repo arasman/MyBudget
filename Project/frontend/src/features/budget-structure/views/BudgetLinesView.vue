@@ -8,11 +8,6 @@
             {{ t('budgetStructure.cycles.title') }}
           </RouterLink>
         </li>
-        <li>
-          <RouterLink :to="{ name: 'CycleDetail', params: { budgetId, cycleId } }">
-            {{ store.currentCycle?.name ?? '...' }}
-          </RouterLink>
-        </li>
         <li>{{ t('budgetStructure.budgetLines.title') }}</li>
       </ul>
     </div>
@@ -256,7 +251,6 @@ const route = useRoute()
 const { t } = useI18n()
 
 const budgetId = route.params.budgetId as string
-const cycleId = route.params.cycleId as string
 
 const store = useBudgetStructureStore()
 const layoutStore = useLayoutStore()

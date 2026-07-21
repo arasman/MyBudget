@@ -87,21 +87,9 @@
       <template v-else>{{ line.currencyCode ?? '—' }}</template>
     </td>
 
-    <!-- Budgeted amount cell -->
+    <!-- Budgeted amount cell — always read-only; amount changes require a revision (use modal) -->
     <td>
-      <template v-if="editing">
-        <input
-          v-model.number="form.newAmount"
-          type="number"
-          step="0.01"
-          class="input input-xs input-bordered w-24"
-        />
-      </template>
-      <template v-else>
-        <span>
-          {{ formatAmount(line.budgetedAmount) }}
-        </span>
-      </template>
+      <span>{{ formatAmount(line.budgetedAmount) }}</span>
     </td>
 
     <!-- Note cell -->
@@ -226,7 +214,6 @@ const categoryName = computed(() => {
 const form = reactive({
   name: '',
   lineType: 'Expense' as LineType,
-  newAmount: null as number | null,
   currencyId: undefined as string | undefined,
   note: '',
   categoryGroupId: undefined as string | undefined,
@@ -236,7 +223,6 @@ const form = reactive({
 function resetForm(): void {
   form.name = props.line.name
   form.lineType = props.line.lineType
-  form.newAmount = props.line.budgetedAmount ?? null
   form.currencyId = props.line.currencyId
   form.note = props.line.note ?? ''
   form.categoryGroupId = props.line.categoryGroupId

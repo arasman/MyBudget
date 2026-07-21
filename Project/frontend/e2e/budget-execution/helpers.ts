@@ -78,15 +78,16 @@ export async function seedBudgetContext(
   expect(groupResp.status()).toBe(201)
   const { id: groupId } = await groupResp.json()
 
-  // Create budget line
-  const lineResp = await request.post(`/api/budgets/${budgetId}/periods/${periodId}/lines`, {
+  // Create budget line (budget-level, no periodId)
+  const lineResp = await request.post(`/api/budgets/${budgetId}/lines`, {
     headers,
     data: {
       name: 'Rent',
       lineType: 'Expense',
-      isRecurring: false,
       categoryGroupId: groupId,
-      budgetedAmount: 5000,
+      startDate: '2024-01-01',
+      endDate: null,
+      initialAmount: 5000,
       currencyId: GTQ_CURRENCY_ID,
     },
   })

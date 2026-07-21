@@ -58,7 +58,6 @@ import { useRoleGate } from '../../composables/useRoleGate'
 import { useLayoutStore } from '@/stores/layout.store'
 
 const BUDGET_ID = 'budget-1'
-const CYCLE_ID = 'cycle-1'
 
 const mockLines: BudgetLineResponse[] = [
   { id: 'l1', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01' as any, endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
@@ -71,7 +70,7 @@ function makeRouter() {
     history: createMemoryHistory(),
     routes: [
       {
-        path: '/budgets/:budgetId/cycles/:cycleId/lines',
+        path: '/budgets/:budgetId/lines',
         name: 'BudgetLines',
         component: BudgetLinesView,
       },
@@ -166,7 +165,7 @@ describe('BudgetLinesView', () => {
 
   async function renderView() {
     const router = makeRouter()
-    await router.push(`/budgets/${BUDGET_ID}/cycles/${CYCLE_ID}/lines`)
+    await router.push(`/budgets/${BUDGET_ID}/lines`)
     await router.isReady()
 
     const result = render(BudgetLinesView, {

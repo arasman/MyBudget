@@ -45,7 +45,7 @@ const routes: RouteRecordRaw[] = [
               import('@/features/budget-structure/views/CategoryTreeView.vue'),
           },
           {
-            path: 'cycles/:cycleId/periods/:periodId/lines',
+            path: 'lines',
             name: 'BudgetLines',
             component: () =>
               import('@/features/budget-structure/views/BudgetLinesView.vue'),

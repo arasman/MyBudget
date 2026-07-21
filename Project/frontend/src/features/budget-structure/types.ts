@@ -173,7 +173,7 @@ export interface CreateBudgetLinePayload {
   startDate: string
   endDate?: string
   initialAmount: number
-  currencyId: string
+  currencyId?: string
   categoryGroupId?: string
   categoryId?: string
   note?: string
