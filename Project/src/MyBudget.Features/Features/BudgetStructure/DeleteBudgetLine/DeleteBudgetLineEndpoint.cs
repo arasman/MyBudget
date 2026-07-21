@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Routing;
 
 namespace MyBudget.Features.Features.BudgetStructure.DeleteBudgetLine;
 
-// TODO PR2a: route updated — periodId removed (REQ-BL-04)
 public static class DeleteBudgetLineEndpoint
 {
     public static IEndpointRouteBuilder Map(IEndpointRouteBuilder app)

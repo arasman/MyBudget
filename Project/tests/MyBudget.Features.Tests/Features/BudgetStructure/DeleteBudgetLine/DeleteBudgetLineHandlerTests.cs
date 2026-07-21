@@ -7,7 +7,6 @@ using Shouldly;
 
 namespace MyBudget.Features.Tests.Features.BudgetStructure.DeleteBudgetLine;
 
-// TODO PR4: full rewrite — remove period-closed guard, adapt to budget-scoped delete
 public sealed class DeleteBudgetLineHandlerTests : IDisposable
 {
     private readonly AppDbContext _db;
@@ -29,7 +28,6 @@ public sealed class DeleteBudgetLineHandlerTests : IDisposable
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        // TODO PR4: update to new BudgetLine.Create signature
         var line = BudgetLine.Create(budgetId, group.Id, null, "Rent", LineType.Expense,
             DateOnly.FromDateTime(DateTime.UtcNow), null, 1000m, CurrencySeeds.GtqId);
         _db.BudgetLines.Add(line);
@@ -41,7 +39,6 @@ public sealed class DeleteBudgetLineHandlerTests : IDisposable
     [Fact]
     public async Task HappyPath_SoftDeletesLine()
     {
-        // TODO PR4: full test rewrite — stub to compile only
         var (budgetId, lineId) = await SeedLineAsync();
         var cmd = new DeleteBudgetLineCommand(budgetId, lineId);
 

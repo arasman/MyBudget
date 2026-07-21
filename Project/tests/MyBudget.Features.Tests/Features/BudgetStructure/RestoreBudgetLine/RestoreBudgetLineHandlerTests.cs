@@ -20,47 +20,28 @@ public sealed class RestoreBudgetLineHandlerTests : IDisposable
 
     public void Dispose() => _db.Dispose();
 
-    private async Task<(Guid budgetId, Guid periodId, Guid lineId)> SeedLineAsync(bool periodSoftDeleted = false)
+    private async Task<(Guid budgetId, Guid lineId)> SeedSoftDeletedLineAsync(string name = "Rent")
     {
         var budgetId = await DbTestHelpers.SeedBudgetAsync(_db);
-
-        var cycle = Cycle.Create(budgetId, "Test Cycle",
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(365)),
-            CurrencySeeds.GtqId);
-        _db.Cycles.Add(cycle);
-        await _db.SaveChangesAsync();
-
-        var period = Period.Create(budgetId, cycle.Id, "January", 1,
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
-
-        if (periodSoftDeleted)
-            period.SoftDelete();
-
-        _db.Periods.Add(period);
-        await _db.SaveChangesAsync();
 
         var group = CategoryGroup.Create(budgetId, "Housing", 1);
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        // TODO PR4: update to new BudgetLine.Create signature (StartDate/EndDate/InitialAmount/CurrencyId)
-        var line = BudgetLine.Create(budgetId, group.Id, null, "Rent", LineType.Expense,
+        var line = BudgetLine.Create(budgetId, group.Id, null, name, LineType.Expense,
             DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 1);
         line.SoftDelete();
         _db.BudgetLines.Add(line);
         await _db.SaveChangesAsync();
 
-        return (budgetId, period.Id, line.Id);
+        return (budgetId, line.Id);
     }
 
     [Fact]
     public async Task SingleRestore_RestoresBudgetLine()
     {
-        var (budgetId, _, lineId) = await SeedLineAsync(periodSoftDeleted: false);
+        var (budgetId, lineId) = await SeedSoftDeletedLineAsync();
 
-        // TODO PR4: command updated — no periodId
         var cmd    = new RestoreBudgetLineCommand(budgetId, lineId, false);
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
@@ -71,22 +52,9 @@ public sealed class RestoreBudgetLineHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task ParentPeriodSoftDeleted_Returns_PARENT_IS_DELETED()
-    {
-        // TODO PR4: this test verifies parent-period soft-delete guard, which is removed in PR2a
-        var (budgetId, _, lineId) = await SeedLineAsync(periodSoftDeleted: true);
-
-        var cmd    = new RestoreBudgetLineCommand(budgetId, lineId, false);
-        var result = await _sut.Handle(cmd, CancellationToken.None);
-
-        // Stub assertion — test will be fully rewritten in PR4
-        _ = result;
-    }
-
-    [Fact]
     public async Task LineNotFound_Returns_BUDGET_LINE_NOT_FOUND()
     {
-        var (budgetId, _, _) = await SeedLineAsync(periodSoftDeleted: false);
+        var (budgetId, _) = await SeedSoftDeletedLineAsync();
 
         var cmd    = new RestoreBudgetLineCommand(budgetId, Guid.NewGuid(), false);
         var result = await _sut.Handle(cmd, CancellationToken.None);

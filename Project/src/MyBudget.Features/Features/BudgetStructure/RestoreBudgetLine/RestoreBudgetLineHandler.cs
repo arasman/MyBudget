@@ -5,7 +5,6 @@ using MyBudget.Features.SharedKernel.Results;
 
 namespace MyBudget.Features.Features.BudgetStructure.RestoreBudgetLine;
 
-// TODO PR2a: full handler rewrite — budget-scoped (no PeriodId guard)
 public sealed class RestoreBudgetLineHandler : IRequestHandler<RestoreBudgetLineCommand, Result<Guid>>
 {
     private readonly AppDbContext _db;
@@ -14,7 +13,7 @@ public sealed class RestoreBudgetLineHandler : IRequestHandler<RestoreBudgetLine
 
     public async ValueTask<Result<Guid>> Handle(RestoreBudgetLineCommand cmd, CancellationToken ct)
     {
-        // Stub: load soft-deleted BudgetLine by BudgetId (no PeriodId)
+        // Load soft-deleted BudgetLine by BudgetId (no PeriodId — REQ-RST-05)
         var line = await _db.BudgetLines
             .IgnoreQueryFilters()
             .Include(bl => bl.Category)
