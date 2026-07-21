@@ -226,9 +226,10 @@ export async function createExecutionApi(
     entryType?: number
     amount?: number
     note?: string | null
+    operationDate?: string
   } = {},
 ): Promise<string> {
-  const { entryType = 1, amount = 100, note = null } = options
+  const { entryType = 1, amount = 100, note = 'Test execution note', operationDate = '2025-01-15' } = options
   const url = `/api/budgets/${budgetId}/periods/${periodId}/budget-lines/${lineId}/executions`
   const resp = await request.post(url, {
     headers: { Authorization: `Bearer ${token}` },
@@ -236,6 +237,7 @@ export async function createExecutionApi(
       entryType,
       amount,
       note,
+      operationDate,
       currencyId: GTQ_CURRENCY_ID,
       exchangeRate: null,
       exchangeRateTo: null,

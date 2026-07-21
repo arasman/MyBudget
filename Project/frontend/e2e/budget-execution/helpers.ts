@@ -105,13 +105,15 @@ export async function createExecution(
     amount?: number
     note?: string | null
     currencyId?: string
+    operationDate?: string
   } = {},
 ): Promise<string> {
   const {
     entryType = 1,
     amount = 100,
-    note = null,
+    note = 'Test execution note',
     currencyId = GTQ_CURRENCY_ID,
+    operationDate = '2025-01-15',
   } = options
 
   const url = `/api/budgets/${ctx.budgetId}/periods/${ctx.periodId}/budget-lines/${ctx.lineId}/executions`
@@ -121,6 +123,7 @@ export async function createExecution(
       entryType,
       amount,
       note,
+      operationDate,
       currencyId,
       exchangeRate: null,
       exchangeRateTo: null,

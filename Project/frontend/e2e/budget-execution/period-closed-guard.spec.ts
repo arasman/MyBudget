@@ -20,7 +20,8 @@ test.describe('Budget Execution — Period Closed Guard', () => {
         data: {
           entryType: 1,
           amount: 100,
-          note: null,
+          note: 'Test execution note',
+          operationDate: '2025-01-15',
           currencyId: GTQ_CURRENCY_ID,
           exchangeRate: null,
           exchangeRateTo: null,
@@ -52,7 +53,8 @@ test.describe('Budget Execution — Period Closed Guard', () => {
         data: {
           entryType: 1,
           amount: 200,
-          note: null,
+          note: 'Test execution note',
+          operationDate: '2025-01-15',
           currencyId: GTQ_CURRENCY_ID,
           exchangeRate: null,
           exchangeRateTo: null,
