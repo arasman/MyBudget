@@ -52,4 +52,17 @@ public sealed class BudgetLineRevision : BaseEntity, IAuditableEntity
         BudgetedAmount = amount;
         CurrencyId     = currencyId;
     }
+
+    /// <summary>Updates the amount and note on this revision. Pass null to clear the note.</summary>
+    public void UpdateRevision(decimal amount, string? note)
+    {
+        BudgetedAmount = amount;
+        Note           = note;
+    }
+
+    /// <summary>
+    /// Syncs ValidFrom when the parent BudgetLine's StartDate is moved and this is the original revision.
+    /// Only called by UpdateBudgetLineDateRangeHandler for the single-revision case.
+    /// </summary>
+    internal void SyncValidFrom(DateOnly validFrom) => ValidFrom = validFrom;
 }

@@ -101,3 +101,18 @@ export async function deleteRevision(
 ): Promise<void> {
   await http.delete(`${base(budgetId)}/${lineId}/revisions/${revisionId}`)
 }
+
+export interface UpdateRevisionPayload {
+  amount: number
+  note?: string
+}
+
+/** PATCH /api/budgets/:budgetId/lines/:lineId/revisions/:revisionId — update amount and note */
+export async function updateRevision(
+  budgetId: string,
+  lineId: string,
+  revisionId: string,
+  payload: UpdateRevisionPayload,
+): Promise<void> {
+  await http.patch(`${base(budgetId)}/${lineId}/revisions/${revisionId}`, payload)
+}

@@ -228,16 +228,27 @@
       "customizations": {
         "title": "Personalizaciones",
         "backToLines": "Volver a líneas de presupuesto",
-        "revisions": "Revisiones",
-        "noRevisions": "Aún no hay revisiones.",
+        "revisions": "Personalizaciones",
+        "noRevisions": "Sin personalizaciones aún.",
         "validFrom": "Válido desde",
         "validTo": "Válido hasta",
         "amount": "Monto",
         "currency": "Moneda",
         "note": "Nota",
         "deleteRevision": "Eliminar",
-        "confirmDeleteRevision": "¿Estás seguro de que deseas eliminar esta revisión?",
-        "createRevision": "Nueva revisión"
+        "confirmDeleteRevision": "¿Estás seguro de que deseas eliminar esta personalización?",
+        "createRevision": "Nueva personalización",
+        "editNote": "Editar nota",
+        "saveNote": "Guardar nota",
+        "editRevision": "Editar personalización",
+        "createSuccess": "Personalización creada exitosamente",
+        "updateSuccess": "Personalización actualizada exitosamente",
+        "deleteSuccess": "Personalización eliminada exitosamente",
+        "managedViaCustomizations": "Gestionado desde Personalizaciones",
+        "errors": {
+          "cannotDeleteOriginal": "No se puede eliminar la personalización original",
+          "hasActiveExecutions": "No se puede eliminar: esta personalización tiene registros activos"
+        }
       },
       "create": "Nueva línea",
       "edit": "Editar línea",

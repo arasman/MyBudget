@@ -62,7 +62,7 @@ const { t } = useI18n()
 // CycleList tab covers CycleList and CycleDetail routes.
 const CYCLE_ROUTE_NAMES = new Set(['CycleList', 'CycleDetail'])
 const CATEGORY_ROUTE_NAMES = new Set(['CategoryTree'])
-const BUDGET_LINES_ROUTE_NAMES = new Set(['BudgetLines'])
+const BUDGET_LINES_ROUTE_NAMES = new Set(['BudgetLines', 'BudgetLineCustomizations'])
 const MATRIX_ROUTE_NAMES = new Set(['BudgetMatrix'])
 
 function isActive(tab: 'CycleList' | 'CategoryTree' | 'BudgetLines' | 'BudgetMatrix'): boolean {

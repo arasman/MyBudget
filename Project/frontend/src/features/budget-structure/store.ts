@@ -19,7 +19,7 @@ import type {
   CreateBudgetLinePayload,
   UpdateBudgetLinePayload,
 } from './types'
-import type { CreateRevisionPayload } from './api/budgetLines.api'
+import type { CreateRevisionPayload, UpdateRevisionPayload } from './api/budgetLines.api'
 import * as cyclesApi from './api/cycles.api'
 import * as periodsApi from './api/periods.api'
 import * as groupsApi from './api/categoryGroups.api'
@@ -527,6 +527,18 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
     })
   }
 
+  async function updateRevision(
+    budgetId: string,
+    lineId: string,
+    revisionId: string,
+    payload: UpdateRevisionPayload,
+  ): Promise<void> {
+    await _wrap(async () => {
+      await budgetLinesApi.updateRevision(budgetId, lineId, revisionId, payload)
+      revisions.value = await budgetLinesApi.listRevisions(budgetId, lineId)
+    })
+  }
+
   // ---------------------------------------------------------------------------
   // Expose
   // ---------------------------------------------------------------------------
@@ -584,5 +596,6 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
     fetchRevisions,
     createRevision,
     deleteRevision,
+    updateRevision,
   }
 })

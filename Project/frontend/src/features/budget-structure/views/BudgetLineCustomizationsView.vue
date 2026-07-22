@@ -1,30 +1,16 @@
 <template>
   <div class="container mx-auto px-4 py-6">
-    <!-- Breadcrumb -->
-    <div class="breadcrumbs text-sm mb-4">
-      <ul>
-        <li>
-          <RouterLink :to="{ name: 'BudgetLines', params: { budgetId } }">
-            {{ t('budgetStructure.budgetLines.title') }}
-          </RouterLink>
-        </li>
-        <li>{{ t('budgetStructure.budgetLines.customizations.title') }}</li>
-      </ul>
-    </div>
+    <BudgetTabs :budget-id="budgetId" class="mb-6" />
 
     <!-- Loading -->
     <div v-if="store.loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-md" />
     </div>
 
-    <!-- Error -->
-    <div v-else-if="store.error" class="alert alert-error mb-4">
-      {{ store.error }}
-    </div>
 
-    <template v-else>
+    <template v-if="!store.loading">
       <h2 class="text-xl font-bold mb-4">
-        {{ t('budgetStructure.budgetLines.customizations.revisions') }}
+        {{ t('budgetStructure.budgetLines.customizations.title') }}
       </h2>
 
       <!-- Empty state -->
@@ -48,19 +34,61 @@
           <tbody>
             <tr v-for="revision in store.revisions" :key="revision.id">
               <td>{{ revision.validFrom }}</td>
-              <td>{{ revision.validTo ?? '—' }}</td>
-              <td>{{ revision.budgetedAmount }}</td>
-              <td>{{ revision.currencyCode ?? revision.currencyId }}</td>
-              <td class="text-sm text-base-content/60">{{ revision.note ?? '—' }}</td>
+              <td>{{ revision.validTo ?? (currentLine?.endDate ?? '—') }}</td>
               <td>
-                <button
-                  v-if="isAdmin"
-                  type="button"
-                  class="btn btn-xs btn-error btn-ghost"
-                  @click="confirmDelete(revision.id)"
-                >
-                  {{ t('budgetStructure.budgetLines.customizations.deleteRevision') }}
-                </button>
+                <template v-if="editingRevisionId === revision.id">
+                  <input
+                    v-model.number="editingAmount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    class="input input-xs input-bordered w-24"
+                  />
+                </template>
+                <template v-else>{{ revision.budgetedAmount }}</template>
+              </td>
+              <td>{{ revision.currencyCode ?? revision.currencyId }}</td>
+              <td class="text-sm text-base-content/60">
+                <template v-if="editingRevisionId === revision.id">
+                  <input
+                    v-model="editingNote"
+                    type="text"
+                    class="input input-xs input-bordered w-full"
+                  />
+                </template>
+                <template v-else>{{ revision.note ?? '—' }}</template>
+              </td>
+              <td>
+                <template v-if="editingRevisionId === revision.id">
+                  <div class="flex gap-1">
+                    <button type="button" class="btn btn-xs btn-ghost btn-square text-success"
+                      :title="t('budgetStructure.common.save')"
+                      @click="handleSaveRevision(revision.id)">
+                      <Check :size="14" />
+                    </button>
+                    <button type="button" class="btn btn-xs btn-ghost btn-square"
+                      :title="t('budgetStructure.common.cancel')"
+                      @click="editingRevisionId = null">
+                      <X :size="14" />
+                    </button>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="flex gap-1">
+                    <button v-if="isAdmin" type="button"
+                      class="btn btn-xs btn-ghost btn-square"
+                      :title="t('budgetStructure.budgetLines.customizations.editRevision')"
+                      @click="startEditRevision(revision.id, revision.budgetedAmount, revision.note)">
+                      <Pencil :size="14" />
+                    </button>
+                    <button v-if="isAdmin" type="button"
+                      class="btn btn-xs btn-ghost btn-square text-error"
+                      :title="t('budgetStructure.budgetLines.customizations.deleteRevision')"
+                      @click="confirmDelete(revision.id)">
+                      <Trash2 :size="14" />
+                    </button>
+                  </div>
+                </template>
               </td>
             </tr>
 
@@ -73,12 +101,19 @@
                   class="input input-xs input-bordered w-full"
                 />
               </td>
-              <td>—</td>
+              <td>
+                <input
+                  v-model="inlineAddForm.validTo"
+                  type="date"
+                  class="input input-xs input-bordered w-full"
+                />
+              </td>
               <td>
                 <input
                   v-model.number="inlineAddForm.amount"
                   type="number"
                   step="0.01"
+                  min="0"
                   class="input input-xs input-bordered w-24"
                 />
               </td>
@@ -138,13 +173,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Check, X } from 'lucide-vue-next'
+import { Check, X, Pencil, Trash2 } from 'lucide-vue-next'
 import { useBudgetStructureStore } from '../store'
 import { useLayoutStore } from '@/stores/layout.store'
+import { useToastStore } from '@/stores/toast.store'
 import { useRoleGate } from '../composables/useRoleGate'
+import { extractApiErrorCode } from '../utils/apiError'
+import BudgetTabs from '../components/BudgetTabs.vue'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -154,7 +192,10 @@ const lineId = route.params.lineId as string
 
 const store = useBudgetStructureStore()
 const layoutStore = useLayoutStore()
+const toastStore = useToastStore()
 const { isAdmin } = useRoleGate(budgetId)
+
+const currentLine = computed(() => store.budgetLines.find(l => l.id === lineId))
 
 // Delete confirmation state
 const showDeleteConfirm = ref(false)
@@ -164,25 +205,61 @@ const deletingRevisionId = ref<string | null>(null)
 const showInlineAdd = ref(false)
 const inlineAddForm = reactive({
   validFrom: '',
+  validTo: '',
   amount: null as number | null,
 })
 
+// Inline revision edit state
+const editingRevisionId = ref<string | null>(null)
+const editingAmount = ref<number>(0)
+const editingNote = ref<string>('')
+
+function startEditRevision(revisionId: string, currentAmount: number, currentNote: string | null | undefined): void {
+  editingRevisionId.value = revisionId
+  editingAmount.value = currentAmount
+  editingNote.value = currentNote ?? ''
+}
+
+async function handleSaveRevision(revisionId: string): Promise<void> {
+  try {
+    await store.updateRevision(budgetId, lineId, revisionId, {
+      amount: editingAmount.value,
+      note: editingNote.value || undefined,
+    })
+    editingRevisionId.value = null
+    toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.customizations.updateSuccess') })
+  } catch (err) {
+    const code = extractApiErrorCode(err)
+    const msg = code
+      ? t(`budgetStructure.budgetLines.customizations.errors.${_camelCase(code)}`, t('common.errors.serverError'))
+      : t('common.errors.serverError')
+    toastStore.push({ type: 'error', title: msg })
+  }
+}
+
 function openInlineAdd(): void {
   inlineAddForm.validFrom = new Date().toISOString().slice(0, 10)
+  inlineAddForm.validTo = ''
   inlineAddForm.amount = null
   showInlineAdd.value = true
 }
 
 async function handleInlineAddSave(): Promise<void> {
-  if (!inlineAddForm.validFrom || !inlineAddForm.amount || inlineAddForm.amount <= 0) return
+  if (!inlineAddForm.validFrom || inlineAddForm.amount === null || inlineAddForm.amount < 0) return
   try {
     await store.createRevision(budgetId, lineId, {
       validFrom: inlineAddForm.validFrom,
+      validTo: inlineAddForm.validTo || undefined,
       amount: inlineAddForm.amount,
     })
     showInlineAdd.value = false
-  } catch {
-    // error handled by store
+    toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.customizations.createSuccess') })
+  } catch (err) {
+    const code = extractApiErrorCode(err)
+    const msg = code
+      ? t(`budgetStructure.budgetLines.customizations.errors.${_camelCase(code)}`, t('common.errors.serverError'))
+      : t('common.errors.serverError')
+    toastStore.push({ type: 'error', title: msg })
   }
 }
 
@@ -193,17 +270,38 @@ function confirmDelete(revisionId: string): void {
 
 async function handleDelete(): Promise<void> {
   if (!deletingRevisionId.value) return
+  const id = deletingRevisionId.value
+  showDeleteConfirm.value = false
+  deletingRevisionId.value = null
   try {
-    await store.deleteRevision(budgetId, lineId, deletingRevisionId.value)
-    showDeleteConfirm.value = false
-    deletingRevisionId.value = null
-  } catch {
-    // error handled by store
+    await store.deleteRevision(budgetId, lineId, id)
+    toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.customizations.deleteSuccess') })
+  } catch (err) {
+    const code = extractApiErrorCode(err)
+    let msg: string
+    if (code === 'CANNOT_DELETE_ORIGINAL_REVISION') {
+      msg = t('budgetStructure.budgetLines.customizations.errors.cannotDeleteOriginal')
+    } else if (code === 'REVISION_HAS_ACTIVE_EXECUTIONS') {
+      msg = t('budgetStructure.budgetLines.customizations.errors.hasActiveExecutions')
+    } else {
+      msg = t('common.errors.serverError')
+    }
+    toastStore.push({ type: 'error', title: msg })
   }
 }
 
+/** Converts SCREAMING_SNAKE_CASE to camelCase for i18n key lookup. */
+function _camelCase(code: string): string {
+  return code
+    .toLowerCase()
+    .replace(/_([a-z])/g, (_, c: string) => c.toUpperCase())
+}
+
 onMounted(async () => {
-  await store.fetchRevisions(budgetId, lineId)
+  await Promise.all([
+    store.fetchRevisions(budgetId, lineId),
+    store.loadLines(budgetId),
+  ])
 
   if (isAdmin.value) {
     layoutStore.setPageActions([

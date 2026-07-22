@@ -15,8 +15,17 @@ vi.mock('@/stores/toast.store', () => ({
   useToastStore: vi.fn(),
 }))
 
+vi.mock('@/stores/layout.store', () => ({
+  useLayoutStore: vi.fn(),
+}))
+
+vi.mock('../../components/BudgetTabs.vue', () => ({
+  default: { template: '<div data-testid="budget-tabs" />' },
+}))
+
 import { useBudgetStructureStore } from '../../store'
 import { useToastStore } from '@/stores/toast.store'
+import { useLayoutStore } from '@/stores/layout.store'
 import type { BudgetLineRevisionResponse } from '../../types'
 
 const BUDGET_ID = 'budget-1'
@@ -34,18 +43,21 @@ function makeI18n() {
             customizations: {
               title: 'Customizations',
               backToLines: 'Back to Budget Lines',
-              revisions: 'Revisions',
-              noRevisions: 'No revisions yet.',
+              revisions: 'Customizations',
+              noRevisions: 'No customizations yet.',
               validFrom: 'Valid From',
               validTo: 'Valid To',
               amount: 'Amount',
               currency: 'Currency',
+              note: 'Note',
               deleteRevision: 'Delete',
-              confirmDeleteRevision: 'Delete this revision?',
+              confirmDeleteRevision: 'Delete this customization?',
+              createRevision: 'New Customization',
+              editRevision: 'Edit revision',
             },
           },
           cycles: { title: 'Cycles' },
-          common: { actions: 'Actions', cancel: 'Cancel', confirm: 'Confirm' },
+          common: { actions: 'Actions', cancel: 'Cancel', confirm: 'Confirm', save: 'Save' },
         },
       },
     },
@@ -77,13 +89,21 @@ function setupMocks(revisions: BudgetLineRevisionResponse[] = []) {
     loading: false,
     error: null,
     fetchRevisions: vi.fn().mockResolvedValue(undefined),
+    loadLines: vi.fn().mockResolvedValue(undefined),
     createRevision: vi.fn().mockResolvedValue(undefined),
     deleteRevision: vi.fn().mockResolvedValue(undefined),
+    updateRevision: vi.fn().mockResolvedValue(undefined),
   } as unknown as ReturnType<typeof useBudgetStructureStore>)
 
   vi.mocked(useToastStore).mockReturnValue({
     push: vi.fn(),
   } as unknown as ReturnType<typeof useToastStore>)
+
+  vi.mocked(useLayoutStore).mockReturnValue({
+    setPageActions: vi.fn(),
+    clearPageActions: vi.fn(),
+    pageActions: [],
+  } as unknown as ReturnType<typeof useLayoutStore>)
 }
 
 async function renderView(revisions: BudgetLineRevisionResponse[] = []) {
@@ -143,9 +163,9 @@ describe('BudgetLineCustomizationsView (REQ-BLR-05)', () => {
     expect(store.fetchRevisions).toHaveBeenCalledWith(BUDGET_ID, LINE_ID)
   })
 
-  it('shows empty state when no revisions', async () => {
+  it('shows empty state when no customizations', async () => {
     await renderView([])
-    expect(screen.getByText('No revisions yet.')).toBeTruthy()
+    expect(screen.getByText('No customizations yet.')).toBeTruthy()
   })
 
   it('renders revision rows when revisions exist', async () => {
@@ -164,14 +184,13 @@ describe('BudgetLineCustomizationsView (REQ-BLR-05)', () => {
     expect(screen.getByText('2025-01-01')).toBeTruthy()
   })
 
-  it('shows a back link to BudgetLines', async () => {
+  it('renders BudgetTabs for navigation', async () => {
     await renderView([])
-    // Back navigation is via breadcrumb — displays the budget lines title as a link
-    expect(screen.getByText('Budget Lines')).toBeTruthy()
+    expect(screen.getByTestId('budget-tabs')).toBeTruthy()
   })
 
-  it('shows the Revisions section heading', async () => {
+  it('shows the Customizations section heading', async () => {
     await renderView([])
-    expect(screen.getByText('Revisions')).toBeTruthy()
+    expect(screen.getByText('Customizations')).toBeTruthy()
   })
 })

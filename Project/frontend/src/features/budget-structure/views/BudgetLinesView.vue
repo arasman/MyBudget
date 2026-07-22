@@ -1,17 +1,5 @@
 <template>
   <div class="container mx-auto px-4 py-6">
-    <!-- Breadcrumb -->
-    <div class="breadcrumbs text-sm mb-4">
-      <ul>
-        <li>
-          <RouterLink :to="{ name: 'CycleList', params: { budgetId } }">
-            {{ t('budgetStructure.cycles.title') }}
-          </RouterLink>
-        </li>
-        <li>{{ t('budgetStructure.budgetLines.title') }}</li>
-      </ul>
-    </div>
-
     <BudgetTabs :budget-id="budgetId" class="mb-6" />
 
     <!-- Show-deleted toggle -->
@@ -63,6 +51,7 @@
               <span v-if="sortColumn === 'name'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
             </th>
             <th>{{ t('budgetStructure.budgetLines.startDate') }}</th>
+            <th>{{ t('budgetStructure.budgetLines.endDate') }}</th>
             <th class="cursor-pointer select-none" @click="toggleSort('currency')">
               {{ t('budgetStructure.budgetLines.currency') }}
               <span v-if="sortColumn === 'currency'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
@@ -145,10 +134,18 @@
               />
             </td>
             <td>
+              <input
+                v-model="inlineAddForm.endDate"
+                type="date"
+                class="input input-xs input-bordered w-full"
+                :placeholder="t('budgetStructure.budgetLines.endDatePlaceholder')"
+              />
+            </td>
+            <td>
               <select v-model="inlineAddForm.currencyId" class="select select-xs select-bordered">
                 <option :value="undefined">—</option>
                 <option
-                  v-for="currency in store.currentCycle?.defaultCurrency ? [store.currentCycle.defaultCurrency, ...(store.currentCycle.alternateCurrency ? [store.currentCycle.alternateCurrency] : [])] : []"
+                  v-for="currency in availableCurrencies"
                   :key="currency.id"
                   :value="currency.id"
                 >
@@ -258,6 +255,18 @@ const layoutStore = useLayoutStore()
 const toastStore = useToastStore()
 const { canWriteLines } = useRoleGate(budgetId)
 
+const availableCurrencies = computed(() => {
+  const cycle =
+    store.currentCycle ??
+    store.cycles.find(c => c.isActive) ??
+    store.cycles[0]
+  if (!cycle) return []
+  const list = []
+  if (cycle.defaultCurrency) list.push(cycle.defaultCurrency)
+  if (cycle.alternateCurrency) list.push(cycle.alternateCurrency)
+  return list
+})
+
 // Modal state
 const showModal = ref(false)
 const editingLine = ref<BudgetLineResponse | null>(null)
@@ -336,6 +345,7 @@ const inlineAddForm = reactive({
   name: '',
   lineType: 'Expense' as LineType,
   startDate: '',
+  endDate: '',
   initialAmount: null as number | null,
   currencyId: undefined as string | undefined,
   note: '',
@@ -428,6 +438,7 @@ function openInlineAdd(): void {
   inlineAddForm.name = ''
   inlineAddForm.lineType = 'Expense'
   inlineAddForm.startDate = ''
+  inlineAddForm.endDate = ''
   inlineAddForm.initialAmount = null
   inlineAddForm.currencyId = undefined
   inlineAddForm.note = ''
@@ -443,6 +454,7 @@ async function handleInlineAddSave(): Promise<void> {
       name: inlineAddForm.name,
       lineType: inlineAddForm.lineType,
       startDate: inlineAddForm.startDate,
+      endDate: inlineAddForm.endDate || undefined,
       initialAmount: inlineAddForm.initialAmount ?? 0,
       currencyId: inlineAddForm.currencyId ?? '',
       note: inlineAddForm.note || undefined,
@@ -464,6 +476,7 @@ onMounted(async () => {
   await Promise.all([
     store.loadLines(budgetId),
     store.loadGroups(budgetId),
+    store.loadCycles(budgetId),
   ])
 
   if (canWriteLines.value) {

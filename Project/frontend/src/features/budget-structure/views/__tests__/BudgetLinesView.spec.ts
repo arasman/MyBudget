@@ -136,10 +136,12 @@ function setupMocks({
   vi.mocked(useBudgetStructureStore).mockReturnValue({
     budgetLines: lines,
     categoryGroups: [],
+    cycles: [],
     loading,
     currentCycle,
     loadLines: vi.fn().mockResolvedValue(undefined),
     loadGroups: vi.fn().mockResolvedValue(undefined),
+    loadCycles: vi.fn().mockResolvedValue(undefined),
     createLine: vi.fn().mockResolvedValue(undefined),
     updateLine: vi.fn().mockResolvedValue(undefined),
     deleteLine: vi.fn().mockResolvedValue(undefined),
