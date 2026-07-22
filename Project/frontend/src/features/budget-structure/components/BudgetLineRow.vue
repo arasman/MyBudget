@@ -65,9 +65,14 @@
       </template>
     </td>
 
-    <!-- Date range cell (startDate – endDate) -->
+    <!-- Start date cell -->
     <td class="text-sm text-base-content/70 whitespace-nowrap">
-      {{ formatDateRange(line.startDate, line.endDate) }}
+      {{ line.startDate ?? '—' }}
+    </td>
+
+    <!-- End date cell -->
+    <td class="text-sm text-base-content/70 whitespace-nowrap">
+      {{ line.endDate ?? '—' }}
     </td>
 
     <!-- Currency cell -->
@@ -174,7 +179,7 @@
 import { reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Pencil, RotateCcw, Trash2, Check, X, Settings2 } from 'lucide-vue-next'
-import type { BudgetLineResponse, CategoryGroupResponse, CurrencyItem, LineType, UpdateBudgetLinePayload, DateString } from '../types'
+import type { BudgetLineResponse, CategoryGroupResponse, CurrencyItem, LineType, UpdateBudgetLinePayload } from '../types'
 import { useBudgetStructureStore } from '../store'
 
 const props = defineProps<{
@@ -198,7 +203,10 @@ const { t } = useI18n()
 const structureStore = useBudgetStructureStore()
 
 const availableCurrencies = computed((): CurrencyItem[] => {
-  const cycle = structureStore.currentCycle
+  const cycle =
+    structureStore.currentCycle ??
+    structureStore.cycles.find(c => c.isActive) ??
+    structureStore.cycles[0]
   if (!cycle) return []
   const currencies: CurrencyItem[] = []
   if (cycle.defaultCurrency) currencies.push(cycle.defaultCurrency)
@@ -263,19 +271,6 @@ function onInlineSave(): void {
   emit('inlineSave', props.line.id, payload)
 }
 
-/**
- * Formats a date range as "DD/MM/YYYY – Perpetuo" or "DD/MM/YYYY – DD/MM/YYYY".
- * Parses YYYY-MM-DD directly to avoid timezone offset issues.
- */
-function formatDateRange(startDate: DateString, endDate: DateString | null): string {
-  const fmt = (d: DateString): string => {
-    const [y, m, day] = d.split('-')
-    return `${day}/${m}/${y}`
-  }
-  const start = fmt(startDate)
-  const end = endDate ? fmt(endDate) : t('budgetStructure.budgetLines.perpetual', 'Perpetual')
-  return `${start} – ${end}`
-}
 
 function formatAmount(amount: number): string {
   return new Intl.NumberFormat(undefined, {

@@ -44,6 +44,17 @@ public sealed class UpdateBudgetLineDateRangeHandler
         if (hasOrphanedExecutions)
             return Result<Guid>.Failure("RANGE_WOULD_ORPHAN_EXECUTION");
 
+        // When there is exactly one revision and its ValidFrom matches the line's current StartDate,
+        // sync it with the new StartDate so UpdateDateRange does not reject it as orphaned.
+        if (line.Revisions.Count == 1)
+        {
+            var original = line.Revisions.First();
+            if (original.ValidFrom == line.StartDate && original.ValidFrom != cmd.StartDate)
+            {
+                original.SyncValidFrom(cmd.StartDate);
+            }
+        }
+
         // Domain method — may throw RANGE_WOULD_ORPHAN_REVISION
         try
         {

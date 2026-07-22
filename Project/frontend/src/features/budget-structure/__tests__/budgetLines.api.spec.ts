@@ -1,15 +1,16 @@
 // REQ-BL-STORE-1, REQ-BL-1: API layer uses budget-scoped routes (no periodId)
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockGet, mockPost, mockPut, mockDelete } = vi.hoisted(() => ({
+const { mockGet, mockPost, mockPut, mockDelete, mockPatch } = vi.hoisted(() => ({
   mockGet: vi.fn(),
   mockPost: vi.fn(),
   mockPut: vi.fn(),
   mockDelete: vi.fn(),
+  mockPatch: vi.fn(),
 }))
 
 vi.mock('@/api/axios', () => ({
-  default: { get: mockGet, post: mockPost, put: mockPut, delete: mockDelete },
+  default: { get: mockGet, post: mockPost, put: mockPut, delete: mockDelete, patch: mockPatch },
 }))
 
 import * as budgetLinesApi from '../api/budgetLines.api'
@@ -119,6 +120,28 @@ describe('budgetLines.api — revision functions (REQ-BLR-01, REQ-BLR-02, REQ-BL
     await budgetLinesApi.deleteRevision(BUDGET_ID, LINE_ID, REVISION_ID)
     expect(mockDelete).toHaveBeenCalledWith(
       `/api/budgets/${BUDGET_ID}/lines/${LINE_ID}/revisions/${REVISION_ID}`,
+    )
+  })
+
+  it('updateRevision calls PATCH /api/budgets/:budgetId/lines/:lineId/revisions/:revisionId', async () => {
+    const REVISION_ID = 'rev-1'
+    mockPatch.mockResolvedValueOnce({ data: undefined })
+    const payload = { amount: 1500, note: 'Updated note' }
+    await budgetLinesApi.updateRevision(BUDGET_ID, LINE_ID, REVISION_ID, payload)
+    expect(mockPatch).toHaveBeenCalledWith(
+      `/api/budgets/${BUDGET_ID}/lines/${LINE_ID}/revisions/${REVISION_ID}`,
+      payload,
+    )
+  })
+
+  it('updateRevision sends correct URL without note when note is omitted', async () => {
+    const REVISION_ID = 'rev-1'
+    mockPatch.mockResolvedValueOnce({ data: undefined })
+    const payload = { amount: 0 }
+    await budgetLinesApi.updateRevision(BUDGET_ID, LINE_ID, REVISION_ID, payload)
+    expect(mockPatch).toHaveBeenCalledWith(
+      `/api/budgets/${BUDGET_ID}/lines/${LINE_ID}/revisions/${REVISION_ID}`,
+      payload,
     )
   })
 })

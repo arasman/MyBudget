@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-21 (budget-line-redesign archived)
+**Last updated**: 2026-07-22 (budget-line-customizations archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -421,18 +421,38 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 9g. `budget-line-customizations` ⏳ planned
+### 9g. `budget-line-customizations` ✅ archived 2026-07-22
 
 **What**: Revision management UI + backend range guards for BudgetLine date-range integrity.
 
-**Domain**: BudgetLines now carry date-range validity and a gapless revision history. Users need a dedicated view to manage revision splits (amount changes over time). The backend needs guards to prevent date-range changes that would orphan execution records.
+**Domain**: BudgetLines carry date-range validity and a gapless revision history. Users needed a dedicated view to manage revision splits (amount changes over time), backed by guards to prevent date-range changes that would orphan execution records.
+
+**Scope in**:
+- PR1 — `BudgetLineCustomizationsView`: new route `/budgets/:id/lines/:lineId/customizations`; table of all revisions (ValidFrom, ValidTo, Amount, Currency, Note); inline create via `SplitRevision`; delete with confirm modal; edit (amount + note) in-place; toasts for all CRUD; `BudgetTabs` back nav
+- PR2a — Domain: `BudgetLineRevision.UpdateRevision()`, `SyncValidFrom()` domain methods; xmin shadow property for EF concurrency
+- PR2b — Backend range guards: `UpdateBudgetLineDateRange` rejects changes that would orphan revisions or executions; `DeleteBudgetLineRevision` rejects delete with active executions or original-revision guard
+- PR3 — Restore validation: `RestoreExecutionRecord` rejects restore when period falls outside BudgetLine date range (`EXECUTION_OUT_OF_DATE_RANGE`)
+- Fix branch — Post-merge UI corrections: `UpdateBudgetLineRevision` PATCH slice (amount + note, allow 0); `BudgetLineModal` read-only fields in edit mode; currency fallback from `store.cycles`; `BudgetLinesView` split date columns, removed breadcrumb; last revision ValidTo shows `line.endDate`; test mocks updated
+
+**Tests**: 386 frontend + 434 unit + 195 integration — all green
+**SDD artifacts**: `openspec/archive/budget-line-customizations/` + fix branch `openspec/changes/archive/2026-07-22-budget-line-customizations-fix/`
+
+**Deferred (→ `budget-line-description`)**: `Note` field removed from BudgetLine views (it reflects the active revision's note, not a BudgetLine-level field); replaced with a new optional `Description` field on `BudgetLine` — static per-line descriptor, editable in create/edit modal, visible in the lines table. Requires backend migration + `Description` column on `BudgetLines`.
+
+---
+
+### 9h. `budget-line-description` ⏳ planned
+
+**What**: Add an optional `Description` field to `BudgetLine` and remove the misleading `Note` column from BudgetLine views.
+
+**Domain**: The `Note` currently visible in the BudgetLines table is projected from `BudgetLineRevision.Note` (the active revision) — a revision-level annotation, not a line-level descriptor. Editing it via the BudgetLine modal or inline edit has no effect. This change removes that confusion and replaces it with a proper `Description` field on `BudgetLine` itself — a static, optional label that describes what the line represents.
 
 **Scope in** *(requires SDD exploration)*:
-- PR1 — Customizations view (frontend): new route `/budgets/:id/lines/:lineId/customizations`; table showing all revisions (ValidFrom, ValidTo, Amount, Currency); inline create (triggers SplitRevision) and delete; strip revision fields from BudgetLineModal edit mode
-- PR2 — Backend range guards: reject BudgetLine `startDate`/`endDate` change if any active (non-deleted) revisions or execution records fall outside the new range; reject revision deletion if any period with active executions falls in that revision's range
-- PR3 — Restore validation: block restore of soft-deleted execution record if period falls outside BudgetLine's current date range; surface descriptive error `EXECUTION_OUT_OF_DATE_RANGE`
+- Backend: `Description (varchar(500)?, nullable)` column on `BudgetLines`; EF Core migration; add to `CreateBudgetLine` and `UpdateBudgetLine` commands; include in `ListBudgetLines` response (from `bl."Description"`, not from revision lateral join)
+- Frontend: `Description` field in `BudgetLineModal` (create and edit); column in `BudgetLinesView` table; `BudgetLineRow` inline edit; remove the `note` column from all BudgetLine views
+- i18n: `budgetStructure.budgetLines.description` key in EN and ES
 
-**Scope out**: Guided "fix date range before restore" modal (→ follow-on UX story).
+**Scope out**: Description on `BudgetLineRevision` (already has `Note`), description search/filter.
 
 ---
 

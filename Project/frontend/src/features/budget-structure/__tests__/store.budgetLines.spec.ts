@@ -48,6 +48,7 @@ vi.mock('../api/budgetLines.api', () => ({
   listRevisions: vi.fn(),
   createRevision: vi.fn(),
   deleteRevision: vi.fn(),
+  updateRevision: vi.fn(),
 }))
 
 import * as budgetLinesApi from '../api/budgetLines.api'
@@ -236,6 +237,34 @@ describe('useBudgetStructureStore — revision actions (REQ-BLR-01, REQ-BLR-02, 
       expect(budgetLinesApi.deleteRevision).toHaveBeenCalledWith(BUDGET_ID, LINE_ID, 'rev-1')
       expect(budgetLinesApi.listRevisions).toHaveBeenCalledWith(BUDGET_ID, LINE_ID)
       expect(store.revisions).toHaveLength(0)
+    })
+  })
+
+  describe('updateRevision', () => {
+    it('calls updateRevision API with correct args and reloads revisions', async () => {
+      const updatedRevision: BudgetLineRevisionResponse = {
+        id: 'rev-1',
+        budgetedAmount: 1500,
+        currencyId: 'currency-gtq',
+        validFrom: '2025-01-01' as any,
+        validTo: null,
+      }
+      vi.mocked(budgetLinesApi.updateRevision).mockResolvedValueOnce(undefined)
+      vi.mocked(budgetLinesApi.listRevisions).mockResolvedValueOnce([updatedRevision])
+      const store = useBudgetStructureStore()
+      const payload = { amount: 1500, note: 'Updated note' }
+      await store.updateRevision(BUDGET_ID, LINE_ID, 'rev-1', payload)
+      expect(budgetLinesApi.updateRevision).toHaveBeenCalledWith(BUDGET_ID, LINE_ID, 'rev-1', payload)
+      expect(budgetLinesApi.listRevisions).toHaveBeenCalledWith(BUDGET_ID, LINE_ID)
+      expect(store.revisions).toHaveLength(1)
+      expect(store.revisions[0]!.budgetedAmount).toBe(1500)
+    })
+
+    it('sets error on failure', async () => {
+      vi.mocked(budgetLinesApi.updateRevision).mockRejectedValueOnce(new Error('Server error'))
+      const store = useBudgetStructureStore()
+      await expect(store.updateRevision(BUDGET_ID, LINE_ID, 'rev-1', { amount: 1500 })).rejects.toThrow()
+      expect(store.error).toBeTruthy()
     })
   })
 })

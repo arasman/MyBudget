@@ -508,6 +508,139 @@ public sealed class BudgetLineRevisionTests : BudgetStructureTestBase
     [Fact(Skip = "xmin concurrency requires PostgreSQL")]
     public Task UpdateDateRange_ConcurrencyConflict_Returns409() => Task.CompletedTask;
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // W-001 — UpdateBudgetLineRevision (PATCH /revisions/:revisionId)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    [Fact]
+    public async Task UpdateRevision_HappyPath_Returns200()
+    {
+        var (_, budgetId) = await SetupOwnerAsync("rev-update1@example.com");
+        var groupId       = await CreateCategoryGroupAsync(budgetId);
+        var today         = DateOnly.FromDateTime(DateTime.UtcNow);
+        var lineId        = await CreateBudgetLineAsync(budgetId, Guid.Empty, groupId,
+            startDate: today, amount: 1000m);
+
+        // Get the original revision id
+        var listResp  = await Client.GetAsync($"/api/budgets/{budgetId}/lines/{lineId}/revisions");
+        var revisions = await listResp.Content.ReadFromJsonAsync<RevisionResponse[]>(JsonOpts);
+        var revisionId = revisions![0].Id;
+
+        var response = await Client.PatchAsJsonAsync(
+            $"/api/budgets/{budgetId}/lines/{lineId}/revisions/{revisionId}",
+            new { amount = 1500m, note = "Updated note" });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Verify the amount was persisted
+        var list2 = await Client.GetAsync($"/api/budgets/{budgetId}/lines/{lineId}/revisions");
+        var updated = await list2.Content.ReadFromJsonAsync<RevisionResponse[]>(JsonOpts);
+        updated![0].BudgetedAmount.ShouldBe(1500m);
+    }
+
+    [Fact]
+    public async Task UpdateRevision_WrongLineId_Returns404()
+    {
+        var (_, budgetId) = await SetupOwnerAsync("rev-update2@example.com");
+        var groupId       = await CreateCategoryGroupAsync(budgetId);
+        var today         = DateOnly.FromDateTime(DateTime.UtcNow);
+        var lineId        = await CreateBudgetLineAsync(budgetId, Guid.Empty, groupId,
+            startDate: today, amount: 1000m);
+
+        var listResp   = await Client.GetAsync($"/api/budgets/{budgetId}/lines/{lineId}/revisions");
+        var revisions  = await listResp.Content.ReadFromJsonAsync<RevisionResponse[]>(JsonOpts);
+        var revisionId = revisions![0].Id;
+
+        // Pass a wrong lineId — revision belongs to a different line
+        var response = await Client.PatchAsJsonAsync(
+            $"/api/budgets/{budgetId}/lines/{Guid.NewGuid()}/revisions/{revisionId}",
+            new { amount = 1500m });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>(JsonOpts);
+        body!.Error.ShouldBe("REVISION_NOT_FOUND");
+    }
+
+    [Fact]
+    public async Task UpdateRevision_NegativeAmount_Returns422()
+    {
+        var (_, budgetId) = await SetupOwnerAsync("rev-update3@example.com");
+        var groupId       = await CreateCategoryGroupAsync(budgetId);
+        var today         = DateOnly.FromDateTime(DateTime.UtcNow);
+        var lineId        = await CreateBudgetLineAsync(budgetId, Guid.Empty, groupId,
+            startDate: today, amount: 1000m);
+
+        var listResp   = await Client.GetAsync($"/api/budgets/{budgetId}/lines/{lineId}/revisions");
+        var revisions  = await listResp.Content.ReadFromJsonAsync<RevisionResponse[]>(JsonOpts);
+        var revisionId = revisions![0].Id;
+
+        var response = await Client.PatchAsJsonAsync(
+            $"/api/budgets/{budgetId}/lines/{lineId}/revisions/{revisionId}",
+            new { amount = -1m });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>(JsonOpts);
+        body!.Error.ShouldBe("REVISION_AMOUNT_INVALID");
+    }
+
+    /// <summary>
+    /// Boundary: amount = 0 is valid after the fix (changed from &lt;= 0 to &lt; 0).
+    /// </summary>
+    [Fact]
+    public async Task UpdateRevision_AmountZero_Returns200()
+    {
+        var (_, budgetId) = await SetupOwnerAsync("rev-update4@example.com");
+        var groupId       = await CreateCategoryGroupAsync(budgetId);
+        var today         = DateOnly.FromDateTime(DateTime.UtcNow);
+        var lineId        = await CreateBudgetLineAsync(budgetId, Guid.Empty, groupId,
+            startDate: today, amount: 1000m);
+
+        var listResp   = await Client.GetAsync($"/api/budgets/{budgetId}/lines/{lineId}/revisions");
+        var revisions  = await listResp.Content.ReadFromJsonAsync<RevisionResponse[]>(JsonOpts);
+        var revisionId = revisions![0].Id;
+
+        var response = await Client.PatchAsJsonAsync(
+            $"/api/budgets/{budgetId}/lines/{lineId}/revisions/{revisionId}",
+            new { amount = 0m });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var list2   = await Client.GetAsync($"/api/budgets/{budgetId}/lines/{lineId}/revisions");
+        var updated = await list2.Content.ReadFromJsonAsync<RevisionResponse[]>(JsonOpts);
+        updated![0].BudgetedAmount.ShouldBe(0m);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // W-002 — UpdateBudgetLineDateRange: SyncValidFrom path
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// When a line has exactly one revision and revision.ValidFrom == line.StartDate,
+    /// moving StartDate forward syncs revision.ValidFrom instead of returning 422.
+    /// </summary>
+    [Fact]
+    public async Task UpdateDateRange_MoveStartForward_SingleRevision_SyncsValidFrom_Returns200()
+    {
+        var (_, budgetId) = await SetupOwnerAsync("rev-syncvalidfrom1@example.com");
+        var groupId       = await CreateCategoryGroupAsync(budgetId);
+        var startDate     = DateOnly.FromDateTime(DateTime.UtcNow);
+        var lineId        = await CreateBudgetLineAsync(budgetId, Guid.Empty, groupId,
+            startDate: startDate, amount: 1000m);
+
+        var newStartDate = startDate.AddDays(5);
+        var response = await Client.PatchAsJsonAsync(
+            $"/api/budgets/{budgetId}/lines/{lineId}/date-range",
+            new { startDate = newStartDate, endDate = (DateOnly?)null });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Verify the revision's ValidFrom was synced
+        var listResp  = await Client.GetAsync($"/api/budgets/{budgetId}/lines/{lineId}/revisions");
+        var revisions = await listResp.Content.ReadFromJsonAsync<RevisionResponse[]>(JsonOpts);
+        revisions!.Length.ShouldBe(1);
+        revisions[0].ValidFrom.ShouldBe(newStartDate);
+    }
+
     // ── Response record types ─────────────────────────────────────────────────
 
     private sealed record RevisionResponse(

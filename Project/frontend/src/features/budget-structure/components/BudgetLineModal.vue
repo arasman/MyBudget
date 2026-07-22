@@ -40,39 +40,53 @@
           </select>
         </div>
 
-        <!-- Start date (required) -->
+        <!-- Start date (required in create; read-only in edit) -->
         <div class="form-control mb-3">
           <label class="label" for="line-startDate">
             <span class="label-text">{{ t('budgetStructure.budgetLines.startDate') }} *</span>
           </label>
-          <input
-            id="line-startDate"
-            v-model="form.startDate"
-            type="date"
-            class="input input-bordered w-full"
-            :class="{ 'input-error': errors.startDate }"
-          />
-          <div v-if="errors.startDate" class="label">
-            <span class="label-text-alt text-error">{{ errors.startDate }}</span>
-          </div>
+          <template v-if="isEditMode">
+            <div class="input input-bordered w-full flex items-center text-base-content/60 bg-base-200 cursor-not-allowed">
+              {{ form.startDate || '—' }}
+            </div>
+          </template>
+          <template v-else>
+            <input
+              id="line-startDate"
+              v-model="form.startDate"
+              type="date"
+              class="input input-bordered w-full"
+              :class="{ 'input-error': errors.startDate }"
+            />
+            <div v-if="errors.startDate" class="label">
+              <span class="label-text-alt text-error">{{ errors.startDate }}</span>
+            </div>
+          </template>
         </div>
 
-        <!-- End date (optional — null means perpetual) -->
+        <!-- End date (optional — null means perpetual; read-only in edit) -->
         <div class="form-control mb-3">
           <label class="label" for="line-endDate">
             <span class="label-text">{{ t('budgetStructure.budgetLines.endDate') }}</span>
           </label>
-          <input
-            id="line-endDate"
-            v-model="form.endDate"
-            type="date"
-            class="input input-bordered w-full"
-            :class="{ 'input-error': errors.endDate }"
-            :placeholder="t('budgetStructure.budgetLines.endDatePlaceholder', 'Perpetual / No expiry')"
-          />
-          <div v-if="errors.endDate" class="label">
-            <span class="label-text-alt text-error">{{ errors.endDate }}</span>
-          </div>
+          <template v-if="isEditMode">
+            <div class="input input-bordered w-full flex items-center text-base-content/60 bg-base-200 cursor-not-allowed">
+              {{ form.endDate || t('budgetStructure.budgetLines.endDatePlaceholder', 'Perpetual') }}
+            </div>
+          </template>
+          <template v-else>
+            <input
+              id="line-endDate"
+              v-model="form.endDate"
+              type="date"
+              class="input input-bordered w-full"
+              :class="{ 'input-error': errors.endDate }"
+              :placeholder="t('budgetStructure.budgetLines.endDatePlaceholder', 'Perpetual / No expiry')"
+            />
+            <div v-if="errors.endDate" class="label">
+              <span class="label-text-alt text-error">{{ errors.endDate }}</span>
+            </div>
+          </template>
         </div>
 
         <!-- Category group -->
@@ -110,40 +124,57 @@
           </select>
         </div>
 
-        <!-- Initial / Budgeted amount -->
+        <!-- Initial / Budgeted amount (read-only in edit — changes require a revision) -->
         <div class="form-control mb-3">
           <label class="label" for="line-initialAmount">
             <span class="label-text">{{ t('budgetStructure.budgetLines.budgetedAmount') }}</span>
           </label>
-          <input
-            id="line-initialAmount"
-            v-model.number="form.initialAmount"
-            type="number"
-            step="0.01"
-            min="0.01"
-            class="input input-bordered w-full"
-            :class="{ 'input-error': errors.initialAmount }"
-          />
-          <div v-if="errors.initialAmount" class="label">
-            <span class="label-text-alt text-error">{{ errors.initialAmount }}</span>
-          </div>
+          <template v-if="isEditMode">
+            <div class="input input-bordered w-full flex items-center text-base-content/60 bg-base-200 cursor-not-allowed">
+              {{ form.initialAmount ?? '—' }}
+            </div>
+            <div class="label">
+              <span class="label-text-alt text-base-content/50">{{ t('budgetStructure.budgetLines.customizations.managedViaCustomizations') }}</span>
+            </div>
+          </template>
+          <template v-else>
+            <input
+              id="line-initialAmount"
+              v-model.number="form.initialAmount"
+              type="number"
+              step="0.01"
+              min="0"
+              class="input input-bordered w-full"
+              :class="{ 'input-error': errors.initialAmount }"
+            />
+            <div v-if="errors.initialAmount" class="label">
+              <span class="label-text-alt text-error">{{ errors.initialAmount }}</span>
+            </div>
+          </template>
         </div>
 
-        <!-- Currency -->
+        <!-- Currency (read-only in edit mode) -->
         <div class="form-control mb-3">
           <label class="label" for="line-currency">
             <span class="label-text">{{ t('budgetStructure.budgetLines.currency') }}</span>
           </label>
-          <select id="line-currency" v-model="form.currencyId" class="select select-bordered w-full">
-            <option :value="undefined">— none —</option>
-            <option
-              v-for="currency in availableCurrencies"
-              :key="currency.id"
-              :value="currency.id"
-            >
-              {{ currency.code }} — {{ currency.name ?? currency.symbol }}
-            </option>
-          </select>
+          <template v-if="isEditMode">
+            <div class="input input-bordered w-full flex items-center text-base-content/60 bg-base-200 cursor-not-allowed">
+              {{ props.modelValue?.currencyCode ?? '—' }}
+            </div>
+          </template>
+          <template v-else>
+            <select id="line-currency" v-model="form.currencyId" class="select select-bordered w-full">
+              <option :value="undefined">— none —</option>
+              <option
+                v-for="currency in availableCurrencies"
+                :key="currency.id"
+                :value="currency.id"
+              >
+                {{ currency.code }} — {{ currency.name ?? currency.symbol }}
+              </option>
+            </select>
+          </template>
         </div>
 
         <!-- Note -->
@@ -201,9 +232,13 @@ const structureStore = useBudgetStructureStore()
 
 const isEditMode = computed(() => props.modelValue !== null)
 
-/** Currencies available from the current cycle (default + optional alternate). */
+/** Currencies available from the current cycle (default + optional alternate).
+ *  Falls back to the active cycle in the list when no cycle detail is loaded. */
 const availableCurrencies = computed((): CurrencyItem[] => {
-  const cycle = structureStore.currentCycle
+  const cycle =
+    structureStore.currentCycle ??
+    structureStore.cycles.find(c => c.isActive) ??
+    structureStore.cycles[0]
   if (!cycle) return []
   const currencies: CurrencyItem[] = []
   if (cycle.defaultCurrency) currencies.push(cycle.defaultCurrency)

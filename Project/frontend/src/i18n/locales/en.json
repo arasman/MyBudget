@@ -228,16 +228,27 @@
       "customizations": {
         "title": "Customizations",
         "backToLines": "Back to Budget Lines",
-        "revisions": "Revisions",
-        "noRevisions": "No revisions yet.",
+        "revisions": "Customizations",
+        "noRevisions": "No customizations yet.",
         "validFrom": "Valid From",
         "validTo": "Valid To",
         "amount": "Amount",
         "currency": "Currency",
         "note": "Note",
         "deleteRevision": "Delete",
-        "confirmDeleteRevision": "Are you sure you want to delete this revision?",
-        "createRevision": "New Revision"
+        "confirmDeleteRevision": "Are you sure you want to delete this customization?",
+        "createRevision": "New Customization",
+        "editNote": "Edit note",
+        "saveNote": "Save note",
+        "editRevision": "Edit customization",
+        "createSuccess": "Customization created successfully",
+        "updateSuccess": "Customization updated successfully",
+        "deleteSuccess": "Customization deleted successfully",
+        "managedViaCustomizations": "Managed via Customizations",
+        "errors": {
+          "cannotDeleteOriginal": "Cannot delete the original customization",
+          "hasActiveExecutions": "Cannot delete: this customization has active execution records"
+        }
       },
       "create": "New Line",
       "edit": "Edit Line",
