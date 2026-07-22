@@ -4,7 +4,6 @@ using MyBudget.Features.SharedKernel.Results;
 
 namespace MyBudget.Features.Features.BudgetStructure.UpdateBudgetLine;
 
-// TODO PR2a: full command rewrite — remove PeriodId/IsRecurring/BudgetedAmount, add ValidFrom/ValidTo for revision split
 public sealed record UpdateBudgetLineCommand(
     Guid      BudgetId,
     Guid      LineId,

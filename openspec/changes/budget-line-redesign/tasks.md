@@ -351,7 +351,7 @@ PR1 (entity + EF + migration)
 
 ---
 
-### PR2-T10 — `ListExecutionRecords` handler — remove Period JOIN, use `BudgetId` directly
+### PR2-T10 — `ListExecutionRecords` handler — remove Period JOIN, use `BudgetId` directly — COMPLETE
 
 **Files**:
 - `Features/BudgetExecution/ListExecutionRecords/ListExecutionRecordsHandler.cs`
@@ -579,7 +579,7 @@ PR1 (entity + EF + migration)
 
 ---
 
-## PR4 — Integration Tests
+## PR4 — Integration Tests — COMPLETE (branch: feat/budget-line-redesign-pr4)
 
 **Branch**: `feat/budget-line-redesign-pr4`
 **Target**: `feat/budget-line-redesign-pr2` (PR2 branch)

@@ -4,7 +4,6 @@ using MyBudget.Features.SharedKernel.Results;
 
 namespace MyBudget.Features.Features.BudgetStructure.CreateBudgetLine;
 
-// TODO PR2a: full command rewrite — remove PeriodId/IsRecurring, add StartDate/EndDate/InitialAmount
 public sealed record CreateBudgetLineCommand(
     Guid      BudgetId,
     Guid      CategoryGroupId,
