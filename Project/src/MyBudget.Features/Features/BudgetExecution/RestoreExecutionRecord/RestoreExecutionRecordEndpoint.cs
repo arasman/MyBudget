@@ -38,6 +38,7 @@ public static class RestoreExecutionRecordEndpoint
             {
                 "PERIOD_CLOSED"              => Results.Conflict(new { error = result.Error }),
                 "EXECUTION_RECORD_NOT_FOUND" => Results.NotFound(new { error = result.Error }),
+                "EXECUTION_OUT_OF_DATE_RANGE" => Results.UnprocessableEntity(new { error = result.Error }),
                 _ => Results.Problem(result.Error, statusCode: StatusCodes.Status422UnprocessableEntity),
             };
         }

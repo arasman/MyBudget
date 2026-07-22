@@ -10,8 +10,8 @@ namespace MyBudget.Features.Features.BudgetExecution.RestoreExecutionRecord;
 /// REQ-EXEC-RESTORE-1: load soft-deleted record, check IsClosed, restore.
 /// REQ-EXEC-RESTORE-2: non-deleted record -> 404.
 /// REQ-EXEC-CLOSED-1: IsClosed -> PERIOD_CLOSED 409.
+/// REQ-EXEC-RESTORE-DATERANGE-1: Period date range must fall within BudgetLine [StartDate, EndDate].
 /// </summary>
-// TODO PR2b: full handler rewrite verified — Period loaded directly (BudgetLine no longer has Period nav)
 public sealed class RestoreExecutionRecordHandler : IRequestHandler<RestoreExecutionRecordCommand, Result<Guid>>
 {
     private readonly AppDbContext _db;
@@ -45,6 +45,20 @@ public sealed class RestoreExecutionRecordHandler : IRequestHandler<RestoreExecu
         // REQ-EXEC-CLOSED-1: period closed guard
         if (period.IsClosed)
             return Result<Guid>.Failure("PERIOD_CLOSED");
+
+        // REQ-EXEC-RESTORE-DATERANGE-1: period date range must fall within BudgetLine [StartDate, EndDate]
+        var budgetLine = await _db.BudgetLines
+            .FirstOrDefaultAsync(bl => bl.Id == cmd.BudgetLineId, ct);
+
+        if (budgetLine is null)
+            return Result<Guid>.Failure("EXECUTION_RECORD_NOT_FOUND");
+
+        var outsideRange =
+            period.StartDate < budgetLine.StartDate ||
+            (budgetLine.EndDate.HasValue && period.EndDate > budgetLine.EndDate.Value);
+
+        if (outsideRange)
+            return Result<Guid>.Failure("EXECUTION_OUT_OF_DATE_RANGE");
 
         record.Restore();
         await _db.SaveChangesAsync(ct);
