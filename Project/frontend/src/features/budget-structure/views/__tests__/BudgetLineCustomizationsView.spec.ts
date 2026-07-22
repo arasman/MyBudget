@@ -166,7 +166,8 @@ describe('BudgetLineCustomizationsView (REQ-BLR-05)', () => {
 
   it('shows a back link to BudgetLines', async () => {
     await renderView([])
-    expect(screen.getByText('Back to Budget Lines')).toBeTruthy()
+    // Back navigation is via breadcrumb — displays the budget lines title as a link
+    expect(screen.getByText('Budget Lines')).toBeTruthy()
   })
 
   it('shows the Revisions section heading', async () => {

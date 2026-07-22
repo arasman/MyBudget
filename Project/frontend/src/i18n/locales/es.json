@@ -236,7 +236,8 @@
         "currency": "Moneda",
         "note": "Nota",
         "deleteRevision": "Eliminar",
-        "confirmDeleteRevision": "¿Estás seguro de que deseas eliminar esta revisión?"
+        "confirmDeleteRevision": "¿Estás seguro de que deseas eliminar esta revisión?",
+        "createRevision": "Nueva revisión"
       },
       "create": "Nueva línea",
       "edit": "Editar línea",

@@ -12,18 +12,6 @@
       </ul>
     </div>
 
-    <!-- Back link -->
-    <RouterLink
-      :to="{ name: 'BudgetLines', params: { budgetId } }"
-      class="btn btn-ghost btn-sm mb-4"
-    >
-      {{ t('budgetStructure.budgetLines.customizations.backToLines') }}
-    </RouterLink>
-
-    <h2 class="text-xl font-bold mb-4">
-      {{ t('budgetStructure.budgetLines.customizations.revisions') }}
-    </h2>
-
     <!-- Loading -->
     <div v-if="store.loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-md" />
@@ -34,44 +22,99 @@
       {{ store.error }}
     </div>
 
-    <!-- Empty state -->
-    <div v-else-if="store.revisions.length === 0" class="py-8 text-center text-base-content/60">
-      {{ t('budgetStructure.budgetLines.customizations.noRevisions') }}
-    </div>
+    <template v-else>
+      <h2 class="text-xl font-bold mb-4">
+        {{ t('budgetStructure.budgetLines.customizations.revisions') }}
+      </h2>
 
-    <!-- Revisions table -->
-    <div v-else class="overflow-x-auto">
-      <table class="table table-zebra w-full">
-        <thead>
-          <tr>
-            <th>{{ t('budgetStructure.budgetLines.customizations.validFrom') }}</th>
-            <th>{{ t('budgetStructure.budgetLines.customizations.validTo') }}</th>
-            <th>{{ t('budgetStructure.budgetLines.customizations.amount') }}</th>
-            <th>{{ t('budgetStructure.budgetLines.customizations.currency') }}</th>
-            <th>{{ t('budgetStructure.budgetLines.customizations.note') }}</th>
-            <th>{{ t('budgetStructure.common.actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="revision in store.revisions" :key="revision.id">
-            <td>{{ revision.validFrom }}</td>
-            <td>{{ revision.validTo ?? '—' }}</td>
-            <td>{{ revision.budgetedAmount }}</td>
-            <td>{{ revision.currencyCode ?? revision.currencyId }}</td>
-            <td class="text-sm text-base-content/60">{{ revision.note ?? '—' }}</td>
-            <td>
-              <button
-                type="button"
-                class="btn btn-xs btn-error btn-ghost"
-                @click="confirmDelete(revision.id)"
-              >
-                {{ t('budgetStructure.budgetLines.customizations.deleteRevision') }}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <!-- Empty state -->
+      <div v-if="store.revisions.length === 0 && !showInlineAdd" class="py-8 text-center text-base-content/60">
+        {{ t('budgetStructure.budgetLines.customizations.noRevisions') }}
+      </div>
+
+      <!-- Revisions table -->
+      <div v-if="store.revisions.length > 0 || showInlineAdd" class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>{{ t('budgetStructure.budgetLines.customizations.validFrom') }}</th>
+              <th>{{ t('budgetStructure.budgetLines.customizations.validTo') }}</th>
+              <th>{{ t('budgetStructure.budgetLines.customizations.amount') }}</th>
+              <th>{{ t('budgetStructure.budgetLines.customizations.currency') }}</th>
+              <th>{{ t('budgetStructure.budgetLines.customizations.note') }}</th>
+              <th>{{ t('budgetStructure.common.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="revision in store.revisions" :key="revision.id">
+              <td>{{ revision.validFrom }}</td>
+              <td>{{ revision.validTo ?? '—' }}</td>
+              <td>{{ revision.budgetedAmount }}</td>
+              <td>{{ revision.currencyCode ?? revision.currencyId }}</td>
+              <td class="text-sm text-base-content/60">{{ revision.note ?? '—' }}</td>
+              <td>
+                <button
+                  v-if="isAdmin"
+                  type="button"
+                  class="btn btn-xs btn-error btn-ghost"
+                  @click="confirmDelete(revision.id)"
+                >
+                  {{ t('budgetStructure.budgetLines.customizations.deleteRevision') }}
+                </button>
+              </td>
+            </tr>
+
+            <!-- Inline add row -->
+            <tr v-if="showInlineAdd" class="bg-base-200">
+              <td>
+                <input
+                  v-model="inlineAddForm.validFrom"
+                  type="date"
+                  class="input input-xs input-bordered w-full"
+                />
+              </td>
+              <td>—</td>
+              <td>
+                <input
+                  v-model.number="inlineAddForm.amount"
+                  type="number"
+                  step="0.01"
+                  class="input input-xs input-bordered w-24"
+                />
+              </td>
+              <td colspan="2">—</td>
+              <td>
+                <div class="flex gap-1">
+                  <button
+                    type="button"
+                    class="btn btn-xs btn-ghost btn-square text-success"
+                    :title="t('budgetStructure.common.save')"
+                    @click="handleInlineAddSave"
+                  >
+                    <Check :size="14" />
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-xs btn-ghost btn-square"
+                    :title="t('budgetStructure.common.cancel')"
+                    @click="showInlineAdd = false"
+                  >
+                    <X :size="14" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Inline add trigger -->
+        <div v-if="isAdmin && !showInlineAdd" class="mt-3">
+          <button type="button" class="btn btn-sm btn-ghost" @click="openInlineAdd">
+            + {{ t('budgetStructure.budgetLines.customizations.createRevision') }}
+          </button>
+        </div>
+      </div>
+    </template>
 
     <!-- Delete confirmation dialog -->
     <dialog v-if="showDeleteConfirm" class="modal modal-open">
@@ -95,10 +138,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { Check, X } from 'lucide-vue-next'
 import { useBudgetStructureStore } from '../store'
+import { useLayoutStore } from '@/stores/layout.store'
+import { useRoleGate } from '../composables/useRoleGate'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -107,10 +153,38 @@ const budgetId = route.params.budgetId as string
 const lineId = route.params.lineId as string
 
 const store = useBudgetStructureStore()
+const layoutStore = useLayoutStore()
+const { isAdmin } = useRoleGate(budgetId)
 
 // Delete confirmation state
 const showDeleteConfirm = ref(false)
 const deletingRevisionId = ref<string | null>(null)
+
+// Inline add state
+const showInlineAdd = ref(false)
+const inlineAddForm = reactive({
+  validFrom: '',
+  amount: null as number | null,
+})
+
+function openInlineAdd(): void {
+  inlineAddForm.validFrom = new Date().toISOString().slice(0, 10)
+  inlineAddForm.amount = null
+  showInlineAdd.value = true
+}
+
+async function handleInlineAddSave(): Promise<void> {
+  if (!inlineAddForm.validFrom || !inlineAddForm.amount || inlineAddForm.amount <= 0) return
+  try {
+    await store.createRevision(budgetId, lineId, {
+      validFrom: inlineAddForm.validFrom,
+      amount: inlineAddForm.amount,
+    })
+    showInlineAdd.value = false
+  } catch {
+    // error handled by store
+  }
+}
 
 function confirmDelete(revisionId: string): void {
   deletingRevisionId.value = revisionId
@@ -130,5 +204,20 @@ async function handleDelete(): Promise<void> {
 
 onMounted(async () => {
   await store.fetchRevisions(budgetId, lineId)
+
+  if (isAdmin.value) {
+    layoutStore.setPageActions([
+      {
+        key: 'new-revision',
+        label: t('budgetStructure.budgetLines.customizations.createRevision'),
+        action: openInlineAdd,
+        variant: 'primary',
+      },
+    ])
+  }
+})
+
+onUnmounted(() => {
+  layoutStore.clearPageActions()
 })
 </script>

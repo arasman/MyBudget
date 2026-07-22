@@ -236,7 +236,8 @@
         "currency": "Currency",
         "note": "Note",
         "deleteRevision": "Delete",
-        "confirmDeleteRevision": "Are you sure you want to delete this revision?"
+        "confirmDeleteRevision": "Are you sure you want to delete this revision?",
+        "createRevision": "New Revision"
       },
       "create": "New Line",
       "edit": "Edit Line",
