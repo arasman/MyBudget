@@ -90,3 +90,35 @@ describe('budgetLines.api — budget-scoped routes (no periodId)', () => {
     )
   })
 })
+
+// REQ-BLR-05: revision API functions
+describe('budgetLines.api — revision functions (REQ-BLR-01, REQ-BLR-02, REQ-BLR-03)', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('listRevisions calls GET /api/budgets/:budgetId/lines/:lineId/revisions', async () => {
+    mockGet.mockResolvedValueOnce({ data: [] })
+    await budgetLinesApi.listRevisions(BUDGET_ID, LINE_ID)
+    expect(mockGet).toHaveBeenCalledWith(
+      `/api/budgets/${BUDGET_ID}/lines/${LINE_ID}/revisions`,
+    )
+  })
+
+  it('createRevision calls POST /api/budgets/:budgetId/lines/:lineId/revisions', async () => {
+    mockPost.mockResolvedValueOnce({ data: { id: 'rev-1' } })
+    const payload = { validFrom: '2025-06-01', amount: 1500, currencyId: 'currency-gtq' }
+    await budgetLinesApi.createRevision(BUDGET_ID, LINE_ID, payload)
+    expect(mockPost).toHaveBeenCalledWith(
+      `/api/budgets/${BUDGET_ID}/lines/${LINE_ID}/revisions`,
+      payload,
+    )
+  })
+
+  it('deleteRevision calls DELETE /api/budgets/:budgetId/lines/:lineId/revisions/:revisionId', async () => {
+    const REVISION_ID = 'rev-1'
+    mockDelete.mockResolvedValueOnce({ data: undefined })
+    await budgetLinesApi.deleteRevision(BUDGET_ID, LINE_ID, REVISION_ID)
+    expect(mockDelete).toHaveBeenCalledWith(
+      `/api/budgets/${BUDGET_ID}/lines/${LINE_ID}/revisions/${REVISION_ID}`,
+    )
+  })
+})

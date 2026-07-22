@@ -218,7 +218,25 @@
         "validFromOutOfRange": "La fecha de vigencia está fuera del rango de la línea"
       },
       "errors": {
-        "nameDuplicate": "Ya existe una línea de presupuesto con este nombre en este presupuesto"
+        "nameDuplicate": "Ya existe una línea de presupuesto con este nombre en este presupuesto",
+        "rangeWouldOrphanRevision": "El nuevo rango de fechas excluiría una revisión existente",
+        "rangeWouldOrphanExecution": "El nuevo rango de fechas excluiría ejecuciones vinculadas a esta línea",
+        "revisionHasActiveExecutions": "Esta revisión no puede eliminarse porque tiene registros de ejecución activos",
+        "cannotDeleteOriginalRevision": "La revisión original no puede eliminarse",
+        "executionOutOfDateRange": "El período de ejecución está fuera del rango de fechas de la línea de presupuesto"
+      },
+      "customizations": {
+        "title": "Personalizaciones",
+        "backToLines": "Volver a líneas de presupuesto",
+        "revisions": "Revisiones",
+        "noRevisions": "Aún no hay revisiones.",
+        "validFrom": "Válido desde",
+        "validTo": "Válido hasta",
+        "amount": "Monto",
+        "currency": "Moneda",
+        "note": "Nota",
+        "deleteRevision": "Eliminar",
+        "confirmDeleteRevision": "¿Estás seguro de que deseas eliminar esta revisión?"
       },
       "create": "Nueva línea",
       "edit": "Editar línea",

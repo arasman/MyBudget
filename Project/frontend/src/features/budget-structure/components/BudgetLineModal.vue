@@ -146,61 +146,6 @@
           </select>
         </div>
 
-        <!-- Amount revision section (edit mode only) -->
-        <template v-if="isEditMode">
-          <div class="divider text-sm">{{ t('budgetStructure.budgetLines.amountRevision', 'Amount Revision') }}</div>
-
-          <!-- validFrom (required when changing amount) -->
-          <div class="form-control mb-3">
-            <label class="label" for="line-validFrom">
-              <span class="label-text">{{ t('budgetStructure.budgetLines.validFrom', 'Valid From') }}</span>
-            </label>
-            <input
-              id="line-validFrom"
-              v-model="form.validFrom"
-              type="date"
-              class="input input-bordered w-full"
-              :class="{ 'input-error': errors.validFrom }"
-              :min="todayString"
-            />
-            <div v-if="errors.validFrom" class="label">
-              <span class="label-text-alt text-error">{{ errors.validFrom }}</span>
-            </div>
-          </div>
-
-          <!-- validTo (optional) -->
-          <div class="form-control mb-3">
-            <label class="label" for="line-validTo">
-              <span class="label-text">{{ t('budgetStructure.budgetLines.validTo', 'Valid To') }}</span>
-            </label>
-            <input
-              id="line-validTo"
-              v-model="form.validTo"
-              type="date"
-              class="input input-bordered w-full"
-            />
-          </div>
-
-          <!-- newAmount -->
-          <div class="form-control mb-3">
-            <label class="label" for="line-newAmount">
-              <span class="label-text">{{ t('budgetStructure.budgetLines.newAmount', 'New Amount') }}</span>
-            </label>
-            <input
-              id="line-newAmount"
-              v-model.number="form.newAmount"
-              type="number"
-              step="0.01"
-              min="0.01"
-              class="input input-bordered w-full"
-              :class="{ 'input-error': errors.newAmount }"
-            />
-            <div v-if="errors.newAmount" class="label">
-              <span class="label-text-alt text-error">{{ errors.newAmount }}</span>
-            </div>
-          </div>
-        </template>
-
         <!-- Note -->
         <div class="form-control mb-4">
           <label class="label" for="line-note">
@@ -256,8 +201,6 @@ const structureStore = useBudgetStructureStore()
 
 const isEditMode = computed(() => props.modelValue !== null)
 
-const todayString = computed(() => new Date().toISOString().slice(0, 10))
-
 /** Currencies available from the current cycle (default + optional alternate). */
 const availableCurrencies = computed((): CurrencyItem[] => {
   const cycle = structureStore.currentCycle
@@ -273,8 +216,6 @@ const errors = reactive({
   startDate: '',
   endDate: '',
   initialAmount: '',
-  validFrom: '',
-  newAmount: '',
 })
 
 const form = reactive<{
@@ -287,10 +228,6 @@ const form = reactive<{
   initialAmount: number | undefined
   currencyId: string | undefined
   note: string | undefined
-  // Edit-only: amount revision
-  validFrom: string
-  validTo: string
-  newAmount: number | undefined
 }>({
   name: props.modelValue?.name ?? '',
   lineType: props.modelValue?.lineType ?? 'Expense',
@@ -301,9 +238,6 @@ const form = reactive<{
   initialAmount: props.modelValue?.budgetedAmount,
   currencyId: props.modelValue?.currencyId,
   note: props.modelValue?.note,
-  validFrom: '',
-  validTo: '',
-  newAmount: undefined,
 })
 
 const filteredCategories = computed(() => {
@@ -318,8 +252,6 @@ function validate(): boolean {
   errors.startDate = ''
   errors.endDate = ''
   errors.initialAmount = ''
-  errors.validFrom = ''
-  errors.newAmount = ''
 
   if (!form.name.trim()) {
     errors.name = t('budgetStructure.budgetLines.validation.nameRequired')
@@ -342,19 +274,9 @@ function validate(): boolean {
     if (form.endDate && form.startDate && form.endDate < form.startDate) {
       errors.endDate = t('budgetStructure.budgetLines.validation.endDateAfterStartDate')
     }
-  } else {
-    // Edit mode: if validFrom set, ensure it's not in the past
-    if (form.validFrom && form.validFrom < todayString.value) {
-      errors.validFrom = t('budgetStructure.budgetLines.validation.validFromNotInPast')
-    }
-
-    // Validate newAmount when provided
-    if (form.newAmount != null && form.newAmount <= 0) {
-      errors.newAmount = t('budgetStructure.budgetLines.validation.amountPositive')
-    }
   }
 
-  return !errors.name && !errors.startDate && !errors.endDate && !errors.initialAmount && !errors.validFrom && !errors.newAmount
+  return !errors.name && !errors.startDate && !errors.endDate && !errors.initialAmount
 }
 
 function handleSubmit(): void {
@@ -380,9 +302,6 @@ function handleSubmit(): void {
       categoryGroupId: form.categoryGroupId || undefined,
       categoryId: form.categoryId || undefined,
       note: form.note?.trim() || undefined,
-      validFrom: form.validFrom || undefined,
-      validTo: form.validTo || undefined,
-      newAmount: form.newAmount ?? undefined,
       currencyId: form.currencyId || undefined,
     }
     emit('submit', payload)

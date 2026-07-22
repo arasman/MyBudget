@@ -113,6 +113,21 @@ export interface BudgetLineResponse {
 }
 
 // ---------------------------------------------------------------------------
+// Budget line revision entities (REQ-BLR-05)
+// ---------------------------------------------------------------------------
+
+export interface BudgetLineRevisionResponse {
+  id: string
+  budgetedAmount: number
+  currencyId: string
+  currencyCode?: string
+  currencySymbol?: string
+  validFrom: DateString
+  validTo: DateString | null
+  note?: string
+}
+
+// ---------------------------------------------------------------------------
 // API payload shapes
 // ---------------------------------------------------------------------------
 

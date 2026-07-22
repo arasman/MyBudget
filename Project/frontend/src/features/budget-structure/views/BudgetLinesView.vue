@@ -83,6 +83,7 @@
             :readonly="!canWriteLines"
             :editing="line.id === inlineEditingLineId"
             :category-groups="store.categoryGroups"
+            :budget-id="budgetId"
             @edit="openEditModal"
             @delete="confirmDelete"
             @restore="handleRestore"

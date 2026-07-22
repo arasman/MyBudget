@@ -1,5 +1,40 @@
+// REQ-BLR-05: BudgetLineRevisionResponse type
 import { describe, it, expect } from 'vitest'
-import { toDateString, formatDate, type DateString } from '../types'
+import { toDateString, formatDate, type DateString, type BudgetLineRevisionResponse } from '../types'
+
+describe('BudgetLineRevisionResponse — type shape (REQ-BLR-05)', () => {
+  it('has required fields id, budgetedAmount, currencyId, validFrom', () => {
+    const revision: BudgetLineRevisionResponse = {
+      id: 'rev-1',
+      budgetedAmount: 1500,
+      currencyId: 'currency-gtq',
+      validFrom: '2025-01-01' as DateString,
+      validTo: null,
+    }
+    expect(revision.id).toBe('rev-1')
+    expect(revision.budgetedAmount).toBe(1500)
+    expect(revision.currencyId).toBe('currency-gtq')
+    expect(revision.validFrom).toBe('2025-01-01')
+    expect(revision.validTo).toBeNull()
+  })
+
+  it('allows optional currencyCode, currencySymbol, note', () => {
+    const revision: BudgetLineRevisionResponse = {
+      id: 'rev-2',
+      budgetedAmount: 2000,
+      currencyId: 'currency-gtq',
+      validFrom: '2025-06-01' as DateString,
+      validTo: '2025-12-31' as DateString,
+      currencyCode: 'GTQ',
+      currencySymbol: 'Q',
+      note: 'Salary raise',
+    }
+    expect(revision.currencyCode).toBe('GTQ')
+    expect(revision.currencySymbol).toBe('Q')
+    expect(revision.note).toBe('Salary raise')
+    expect(revision.validTo).toBe('2025-12-31')
+  })
+})
 
 describe('DateString utils', () => {
   describe('toDateString', () => {

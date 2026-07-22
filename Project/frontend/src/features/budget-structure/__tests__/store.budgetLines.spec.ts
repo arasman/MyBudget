@@ -45,10 +45,13 @@ vi.mock('../api/budgetLines.api', () => ({
   remove: vi.fn(),
   restore: vi.fn(),
   reorder: vi.fn(),
+  listRevisions: vi.fn(),
+  createRevision: vi.fn(),
+  deleteRevision: vi.fn(),
 }))
 
 import * as budgetLinesApi from '../api/budgetLines.api'
-import type { BudgetLineResponse } from '../types'
+import type { BudgetLineResponse, BudgetLineRevisionResponse } from '../types'
 
 const BUDGET_ID = 'budget-1'
 
@@ -173,6 +176,66 @@ describe('useBudgetStructureStore — BudgetLine actions (budget-scoped, no peri
       await store.loadLines(BUDGET_ID)
       await store.restoreLine(BUDGET_ID, 'l1', false)
       expect(store.budgetLines[0]!.deletedAt).toBeNull()
+    })
+  })
+})
+
+// REQ-BLR-05: store revision actions
+describe('useBudgetStructureStore — revision actions (REQ-BLR-01, REQ-BLR-02, REQ-BLR-03)', () => {
+  const LINE_ID = 'l1'
+
+  const mockRevision: BudgetLineRevisionResponse = {
+    id: 'rev-1',
+    budgetedAmount: 1000,
+    currencyId: 'currency-gtq',
+    validFrom: '2025-01-01' as any,
+    validTo: null,
+  }
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+  })
+
+  describe('fetchRevisions', () => {
+    it('calls listRevisions(budgetId, lineId) and populates revisions', async () => {
+      vi.mocked(budgetLinesApi.listRevisions).mockResolvedValueOnce([mockRevision])
+      const store = useBudgetStructureStore()
+      await store.fetchRevisions(BUDGET_ID, LINE_ID)
+      expect(budgetLinesApi.listRevisions).toHaveBeenCalledWith(BUDGET_ID, LINE_ID)
+      expect(store.revisions).toHaveLength(1)
+      expect(store.revisions[0]!.id).toBe('rev-1')
+    })
+
+    it('sets error on failure', async () => {
+      vi.mocked(budgetLinesApi.listRevisions).mockRejectedValueOnce(new Error('Network error'))
+      const store = useBudgetStructureStore()
+      await expect(store.fetchRevisions(BUDGET_ID, LINE_ID)).rejects.toThrow()
+      expect(store.error).toBeTruthy()
+    })
+  })
+
+  describe('createRevision', () => {
+    it('calls createRevision API and reloads revisions', async () => {
+      vi.mocked(budgetLinesApi.createRevision).mockResolvedValueOnce({ id: 'rev-new' })
+      vi.mocked(budgetLinesApi.listRevisions).mockResolvedValueOnce([mockRevision])
+      const store = useBudgetStructureStore()
+      const payload = { validFrom: '2025-06-01', amount: 1500 }
+      await store.createRevision(BUDGET_ID, LINE_ID, payload)
+      expect(budgetLinesApi.createRevision).toHaveBeenCalledWith(BUDGET_ID, LINE_ID, payload)
+      expect(budgetLinesApi.listRevisions).toHaveBeenCalledWith(BUDGET_ID, LINE_ID)
+    })
+  })
+
+  describe('deleteRevision', () => {
+    it('calls deleteRevision API and reloads revisions', async () => {
+      vi.mocked(budgetLinesApi.deleteRevision).mockResolvedValueOnce(undefined)
+      vi.mocked(budgetLinesApi.listRevisions).mockResolvedValueOnce([])
+      const store = useBudgetStructureStore()
+      await store.deleteRevision(BUDGET_ID, LINE_ID, 'rev-1')
+      expect(budgetLinesApi.deleteRevision).toHaveBeenCalledWith(BUDGET_ID, LINE_ID, 'rev-1')
+      expect(budgetLinesApi.listRevisions).toHaveBeenCalledWith(BUDGET_ID, LINE_ID)
+      expect(store.revisions).toHaveLength(0)
     })
   })
 })
