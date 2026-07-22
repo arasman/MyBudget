@@ -176,20 +176,27 @@ cycle, including soft-deleted periods.
 
 ---
 
-### Requirement: REQ-BL-NAME-1: BudgetLine Name Uniqueness per (CategoryGroup, Category)
+### Requirement: REQ-BL-NAME-1: BudgetLine Name Uniqueness per Budget
 
 The system MUST reject creating or updating a BudgetLine when the same name already exists within
-the same (CategoryGroupId, CategoryId) pair in the same budget period, including soft-deleted lines.
+the same Budget (scoped by `BudgetId` only), including soft-deleted lines. The uniqueness check MUST
+be enforced via a DB-level `UNIQUE(BudgetId, Name)` index with no filter clause (soft-deleted rows
+are included).
 
-#### Scenario: Create duplicate budget line name rejected `@integration`
-- GIVEN a BudgetLine named "Rent" (active or soft-deleted) under (GroupA, CategoryX) in period P1
-- WHEN POST `.../periods/{P1}/lines` with Name="Rent", same GroupA and CategoryX
+#### Scenario: Create duplicate name rejected across budget `@integration`
+- GIVEN a BudgetLine named "Rent" (active or soft-deleted) in Budget B1
+- WHEN POST `/api/budgets/{budgetId}/lines` with Name="Rent"
 - THEN HTTP 422 with error code `BUDGET_LINE_NAME_DUPLICATE`
 
-#### Scenario: Update allowed — self-rename `@integration`
-- GIVEN a BudgetLine "Rent" being updated (self)
-- WHEN PUT with Name="Rent" on the same lineId
+#### Scenario: Self-rename allowed `@integration`
+- GIVEN a BudgetLine "Rent" being updated (same lineId)
+- WHEN PUT with Name="Rent"
 - THEN HTTP 200 (self-exclusion applies)
+
+#### Scenario: Same name in different budget allowed `@integration`
+- GIVEN a BudgetLine named "Rent" in Budget B1
+- WHEN POST `/api/budgets/{B2}/lines` with Name="Rent"
+- THEN HTTP 201 (different budget scope)
 
 ---
 
@@ -265,15 +272,15 @@ exclude any existing Period's dates.
 - WHEN PUT with EndDate=2025-11-30
 - THEN HTTP 422 with error code `CYCLE_PERIOD_OUT_OF_RANGE`
 
-### REQ-CYC-03: Delete Cycle
+### REQ-CYC-03: Delete Cycle (BudgetLine cascade removed)
 
-The system MUST soft-delete the Cycle and cascade-soft-delete all its Periods and their BudgetLines
-and BudgetLineRevisions. Hard delete MUST follow the child-first order defined in REQ-SC-05.
+The system MUST soft-delete the Cycle and cascade-soft-delete all its Periods.
+BudgetLines MUST NOT be cascade-deleted when Cycle is deleted.
 
-#### Scenario: Soft delete cascades `@integration`
-- GIVEN a Cycle with 2 Periods each having BudgetLines
-- WHEN DELETE `/api/budgets/{id}/cycles/{cycleId}`
-- THEN HTTP 204; Cycle, Periods, BudgetLines, and Revisions all have `DeletedAt` set
+#### Scenario: Soft delete Cycle — BudgetLines unaffected `@integration`
+- GIVEN a Cycle with Periods; Budget-level BudgetLines exist
+- WHEN DELETE cycle
+- THEN Cycle and Periods deleted; BudgetLines remain active
 
 #### Scenario: Non-existent Cycle `@unit`
 - GIVEN no Cycle with the given id in the budget
@@ -353,13 +360,12 @@ on a Period MUST prevent any BudgetLine mutations on that Period.
 
 ### REQ-PER-04: Delete Period
 
-The system MUST soft-delete the Period and cascade-soft-delete all its BudgetLines and their
-Revisions.
+The system MUST soft-delete the Period. BudgetLines MUST NOT be cascade-deleted when Period is deleted.
 
-#### Scenario: Soft delete cascades `@integration`
-- GIVEN a Period with BudgetLines and Revisions
+#### Scenario: Soft delete period `@integration`
+- GIVEN a Period with BudgetLines
 - WHEN DELETE `.../periods/{periodId}`
-- THEN HTTP 204; Period, BudgetLines, Revisions all have `DeletedAt` set
+- THEN HTTP 204; Period has `DeletedAt` set; BudgetLines remain active
 
 ---
 
@@ -492,99 +498,129 @@ DisplayOrder values starting at 1. The list MUST contain all non-deleted categor
 
 ### REQ-BL-01: IsClosed Guard
 
-The system MUST reject CreateBudgetLine, UpdateBudgetLine, and DeleteBudgetLine when the target
-Period has `IsClosed = true`. Response MUST be HTTP 409 with error code `PERIOD_CLOSED`.
+The system MUST reject revision splits with `ValidFrom` in a closed period. Metadata-only edits
+(name, categoryGroupId, categoryId) are not blocked by IsClosed. Route no longer includes `periodId`.
 
-#### Scenario: Create blocked on closed period `@integration`
-- GIVEN Period.IsClosed=true
-- WHEN POST `/api/budgets/{id}/periods/{periodId}/lines` with valid payload
+#### Scenario: Revision split with ValidFrom in closed period blocked `@integration`
+- GIVEN a Period with `IsClosed=true` covering a date range
+- WHEN PUT `.../lines/{lineId}` with `ValidFrom` falling within that closed period
 - THEN HTTP 409 with error code `PERIOD_CLOSED`
 
-#### Scenario: Update blocked on closed period `@integration`
-- GIVEN Period.IsClosed=true and a BudgetLine exists
-- WHEN PUT `.../lines/{lineId}` with updated fields
-- THEN HTTP 409 with error code `PERIOD_CLOSED`
-
-#### Scenario: Delete blocked on closed period `@integration`
-- GIVEN Period.IsClosed=true and a BudgetLine exists
-- WHEN DELETE `.../lines/{lineId}`
-- THEN HTTP 409 with error code `PERIOD_CLOSED`
+#### Scenario: Metadata-only update on budget with closed periods allowed `@integration`
+- GIVEN all Periods in a Budget are closed
+- WHEN PUT `.../lines/{lineId}` updating only Name
+- THEN HTTP 200
 
 ### REQ-BL-02: Create BudgetLine
 
-The system MUST allow creating a BudgetLine under an open Period. CategoryGroupId MUST be provided.
-CategoryId is optional. LineType MUST be one of `Expense`, `LongTermSavings`, `PreventiveSavings`.
-The initial BudgetedAmount and Currency MUST also be provided and stored as the first
-BudgetLineRevision.
+The command MUST provide `StartDate`, `EndDate` (optional), `InitialAmount` (>0), `CurrencyId`.
+Handler creates BudgetLine + initial BudgetLineRevision covering [StartDate, EndDate].
+Route: `POST /api/budgets/{budgetId}/lines`.
 
-#### Scenario: Happy path with category `@integration`
-- GIVEN open Period, valid CategoryGroupId and CategoryId, LineType=Expense
-- WHEN POST `.../lines` with Name="Rent", Amount=1500, Currency="GTQ"
-- THEN HTTP 201; BudgetLine row created; BudgetLineRevision row created with Amount=1500
+#### Scenario: Happy path with finite date range `@integration`
+- GIVEN StartDate=2025-01-01, EndDate=2025-12-31, InitialAmount=1500, CurrencyId=GTQ
+- WHEN POST `/api/budgets/{budgetId}/lines`
+- THEN HTTP 201; BudgetLineRevision with ValidFrom=2025-01-01, ValidTo=2025-12-31
 
-#### Scenario: Happy path without category `@integration`
-- GIVEN open Period and valid CategoryGroupId, no CategoryId
-- WHEN POST `.../lines` with Name="Miscellaneous", LineType=Expense, Amount=500, Currency="USD"
-- THEN HTTP 201; BudgetLine.CategoryId=null; Revision created
+#### Scenario: Happy path with perpetual end date `@integration`
+- GIVEN StartDate=2025-01-01, EndDate=null
+- WHEN POST `/api/budgets/{budgetId}/lines`
+- THEN HTTP 201; BudgetLineRevision.ValidTo = null
 
-#### Scenario: Invalid LineType rejected `@unit`
-- GIVEN open Period
-- WHEN POST with LineType="Income"
-- THEN HTTP 400 (JSON deserialization rejects unknown enum name before FluentValidation; unit validator tests cover enum rejection at domain layer)
+#### Scenario: EndDate before StartDate rejected `@unit`
+- GIVEN StartDate=2025-06-01, EndDate=2025-05-31
+- WHEN validator runs
+- THEN HTTP 422 with validation error on EndDate
 
-#### Scenario: Invalid currency rejected `@unit`
-- GIVEN open Period
-- WHEN POST with Currency="EUR"
-- THEN HTTP 422 with validation error on Currency
+#### Scenario: InitialAmount zero rejected `@unit`
+- GIVEN InitialAmount = 0
+- WHEN validator runs
+- THEN HTTP 422 with validation error on InitialAmount
 
 ### REQ-BL-03: Update BudgetLine
 
-The system MUST allow updating a BudgetLine's Name, LineType, IsRecurring, CategoryGroupId,
-CategoryId, BudgetedAmount, and Currency. The update MUST auto-create a new BudgetLineRevision with
-the new Amount, Currency, and a timestamp. Existing revisions MUST NOT be mutated.
+Metadata updates (Name, CategoryGroupId, CategoryId) do not affect revisions. Amount revision
+requires `ValidFrom`, `NewAmount`, `CurrencyId` — calls `BudgetLine.SplitRevision()`.
+`IsRecurring` removed.
 
-#### Scenario: Happy path — amount change creates revision `@integration`
-- GIVEN open Period, BudgetLine with 1 existing Revision
-- WHEN PUT `.../lines/{lineId}` with new Amount=2000, Currency="GTQ"
-- THEN HTTP 200; BudgetLine updated; a second BudgetLineRevision row exists; first Revision unchanged
+#### Scenario: Metadata-only update `@integration`
+- GIVEN a BudgetLine with existing revisions
+- WHEN PUT with only Name changed
+- THEN HTTP 200; revision count unchanged
 
-#### Scenario: Revision immutability `@unit`
-- GIVEN a BudgetLine with existing Revision rows
-- WHEN the handler processes an UpdateBudgetLine command
-- THEN existing Revision rows remain byte-for-byte unchanged; only a new row is inserted
+#### Scenario: Amount revision split `@integration`
+- GIVEN revision [2025-01-01, null, 1500 GTQ], ValidFrom=2025-06-01, NewAmount=2000
+- WHEN PUT `.../lines/{lineId}`
+- THEN original revision trimmed to ValidTo=2025-05-31; new revision [2025-06-01, null, 2000] inserted
+
+#### Scenario: ValidFrom before today rejected `@unit`
+- GIVEN ValidFrom = yesterday
+- WHEN validator runs
+- THEN HTTP 422 (no retroactive splits)
+
+#### Scenario: ValidFrom outside BudgetLine date range rejected `@unit`
+- GIVEN BudgetLine.EndDate=2025-12-31, ValidFrom=2026-01-01
+- WHEN validator runs
+- THEN HTTP 422 on ValidFrom
 
 ### REQ-BL-04: Delete BudgetLine
 
-The system MUST soft-delete the BudgetLine when the Period is open. BudgetLineRevisions are
-immutable (no `DeletedAt` per ADR-BS-01) and become inaccessible through the ListBudgetLines JOIN
-when the BudgetLine is soft-deleted — this satisfies the business intent without mutating revision
-history. Hard delete is sequential: BudgetLineRevisions first, then BudgetLine.
+Route: `DELETE /api/budgets/{budgetId}/lines/{lineId}` (no periodId). IsClosed guard removed from delete.
 
 #### Scenario: Soft delete `@integration`
-- GIVEN open Period, BudgetLine with 2 Revisions
-- WHEN DELETE `.../lines/{lineId}`
-- THEN HTTP 204; BudgetLine.DeletedAt set; Revisions remain in DB (immutable) but are inaccessible
+- GIVEN an active BudgetLine
+- WHEN DELETE `/api/budgets/{budgetId}/lines/{lineId}`
+- THEN HTTP 204; BudgetLine.DeletedAt set
 
-### REQ-BL-05: Currency and DisplayOrder
+### REQ-BL-05: Currency and DisplayOrder (Reorder scope)
 
-**Currency**: Each `BudgetLineRevision` MUST store a `CurrencyId` (FK to Currency table) instead of a Currency string. When creating or updating a BudgetLine without an explicit `CurrencyId`, the handler MUST default to the parent Cycle's `DefaultCurrencyId`.
+Reorder scope: `(BudgetId, CategoryGroupId, CategoryId)`. Route: `/api/budgets/{budgetId}/lines/order`.
 
-**DisplayOrder**: Each `BudgetLine` MUST have a `DisplayOrder` (int, NOT NULL) for explicit ordering. The `ReorderBudgetLines` endpoint accepts an ordered array of BudgetLine IDs and updates `DisplayOrder` on each.
+#### Scenario: Reorder at budget scope `@integration`
+- GIVEN 3 BudgetLines under same CategoryGroup in a Budget
+- WHEN PUT `/api/budgets/{budgetId}/lines/order` with IDs in new order
+- THEN HTTP 200; DisplayOrder values reassigned
 
-#### Scenario: CurrencyId defaults to Cycle default `@integration`
-- GIVEN open Period → Cycle with DefaultCurrencyId = GTQ
-- WHEN POST `.../lines` without explicit CurrencyId
-- THEN BudgetLineRevision.CurrencyId = GTQ
+### REQ-BL-ENTITY-1: BudgetLine Date Range Fields
 
-#### Scenario: DisplayOrder backfill `@integration`
-- GIVEN existing BudgetLines before migration
-- WHEN migration runs
-- THEN every BudgetLine has DisplayOrder >= 1, ordered by CreatedAt within (PeriodId, CategoryGroupId, CategoryId) partitions
+`BudgetLine` MUST have `StartDate` (DateOnly, required) and `EndDate` (DateOnly?, nullable).
+`PeriodId` and `IsRecurring` MUST NOT exist.
 
-#### Scenario: Reorder BudgetLines `@integration`
-- GIVEN 3 BudgetLines in a Period with DisplayOrder 1, 2, 3
-- WHEN PUT `.../periods/{periodId}/budget-lines/order` with IDs in reversed order
-- THEN BudgetLines have DisplayOrder reassigned to match the new order
+#### Scenario: BudgetLine created with date range `@unit`
+- GIVEN BudgetLine.Create(..., startDate=2025-01-01, endDate=null)
+- WHEN factory runs
+- THEN BudgetLine.StartDate=2025-01-01, EndDate=null
+
+### REQ-BL-REVISION-1: BudgetLineRevision ValidFrom/ValidTo
+
+`BudgetLineRevision` MUST have `ValidFrom` (DateOnly, required) and `ValidTo` (DateOnly?, nullable).
+`RevisedAt` MUST NOT exist.
+
+#### Scenario: BudgetLineRevision created with ValidFrom/ValidTo `@unit`
+- GIVEN BudgetLineRevision.Create(..., validFrom=2025-01-01, validTo=null, amount=1500)
+- WHEN factory runs
+- THEN ValidFrom=2025-01-01, ValidTo=null
+
+### REQ-BL-SPLIT-1: Gapless Revision via SplitRevision
+
+`BudgetLine.SplitRevision(newValidFrom, newValidTo, amount, currencyId)`: (1) trims enclosing
+revision ValidTo = newValidFrom-1, (2) inserts new revision, (3) if newValidTo is not null and
+enclosing had no ValidTo or ValidTo > newValidTo: inserts tail revision.
+
+#### Scenario: Split creates head, new, and tail `@unit`
+- GIVEN revision [2025-01-01, null, 1500, GTQ]
+- WHEN SplitRevision(2025-06-01, 2025-08-31, 2000, GTQ)
+- THEN revisions: [2025-01-01, 2025-05-31, 1500], [2025-06-01, 2025-08-31, 2000], [2025-09-01, null, 1500]
+
+#### Scenario: Open-ended split — no tail `@unit`
+- GIVEN revision [2025-01-01, null, 1500, GTQ]
+- WHEN SplitRevision(2025-06-01, null, 2000, GTQ)
+- THEN revisions: [2025-01-01, 2025-05-31, 1500], [2025-06-01, null, 2000]
+
+#### Scenario: No enclosing revision — error `@unit`
+- GIVEN revision [2025-01-01, 2025-06-30, 1500]
+- WHEN SplitRevision(newValidFrom=2025-08-01, ...)
+- THEN domain exception
 
 ---
 
@@ -673,16 +709,16 @@ Each soft-deletable entity (Cycle, Period, CategoryGroup, Category, BudgetLine) 
 - WHEN Cycle.Restore() called
 - THEN Cycle.DeletedAt = null, UpdatedAt refreshed
 
-### REQ-RST-02: RestoreCycle Cascade
+### REQ-RST-02: RestoreCycle (BudgetLine cascade removed)
 
 Route: `POST /budgets/{budgetId}/cycles/{cycleId}/restore`
 
-Restores Cycle, then all its soft-deleted Periods, then all soft-deleted BudgetLines of those Periods. The `includeExecutionRecords` query parameter is accepted but ignored (no-op, forward-compat for `budget-execution`).
+Restores Cycle and all its soft-deleted Periods. MUST NOT cascade-restore BudgetLines.
 
-#### Scenario: Full cascade restore `@integration`
-- GIVEN soft-deleted Cycle with 2 soft-deleted Periods, each with 2 soft-deleted BudgetLines
+#### Scenario: Restore Cycle and Periods only `@integration`
+- GIVEN soft-deleted Cycle with 2 soft-deleted Periods
 - WHEN POST `.../cycles/{cycleId}/restore`
-- THEN HTTP 200; Cycle, all Periods, all BudgetLines have DeletedAt = null
+- THEN HTTP 200; Cycle and all Periods have DeletedAt = null
 
 #### Scenario: Non-deleted Cycle rejected `@unit`
 - GIVEN an already-active (non-deleted) Cycle
@@ -713,14 +749,14 @@ Restores Category and all soft-deleted BudgetLines whose `CategoryId` matches.
 
 ### REQ-RST-05: RestoreBudgetLine
 
-Route: `POST /budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/restore`
+Route: `POST /budgets/{budgetId}/lines/{lineId}/restore` (no periodId).
 
 Restores only the specified BudgetLine.
 
-#### Scenario: Parent-deleted guard `@integration`
-- GIVEN soft-deleted BudgetLine whose parent Period is soft-deleted
-- WHEN POST `.../budget-lines/{lineId}/restore`
-- THEN HTTP 409 Conflict, error code `PARENT_IS_DELETED`
+#### Scenario: Restore without periodId `@integration`
+- GIVEN soft-deleted BudgetLine
+- WHEN POST `/api/budgets/{budgetId}/lines/{lineId}/restore`
+- THEN HTTP 200; DeletedAt = null
 
 ### REQ-RST-06: includeExecutionRecords Parameter
 
@@ -839,21 +875,10 @@ ascending, with nested non-deleted Categories ordered by their DisplayOrder.
 
 ### REQ-READ-04: List BudgetLines
 
-The system MUST return all non-deleted BudgetLines for a Period, each showing the latest
-BudgetLineRevision's Amount and Currency, ordered by CategoryGroup DisplayOrder then Category
-DisplayOrder then BudgetLine Name.
+Scoped by `budgetId` only. Response includes `startDate`, `endDate`, `budgetedAmount`.
+Excludes `isRecurring`, `revisedAt`. Route: `GET /api/budgets/{budgetId}/lines`.
 
-#### Scenario: Happy path with latest revision `@integration`
-- GIVEN a BudgetLine with 2 Revisions (latest Amount=2000)
-- WHEN GET `/api/budgets/{id}/periods/{periodId}/lines`
-- THEN HTTP 200; line shows Amount=2000 (latest revision only)
-
-#### Scenario: Budget:read caller can list `@integration`
-- GIVEN caller has ReadOnly membership
-- WHEN GET `.../lines`
-- THEN HTTP 200
-
-#### Scenario: Budget:admin required to create `@integration`
-- GIVEN caller has ReadOnly membership
-- WHEN POST `.../lines`
-- THEN HTTP 403
+#### Scenario: Returns budget-scoped lines `@integration`
+- GIVEN a Budget with 3 active BudgetLines
+- WHEN GET `/api/budgets/{budgetId}/lines`
+- THEN HTTP 200; all 3 lines with startDate, endDate, budgetedAmount; no isRecurring

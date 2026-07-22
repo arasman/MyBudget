@@ -303,6 +303,8 @@ PR1 (entity + EF + migration)
 
 **Spec refs**: REQ-CYC-03, REQ-RST-02
 
+- [x] T7: Remove BudgetLine cascade from DeletePeriod/DeleteCycle/RestoreCycle handlers
+
 ---
 
 ### PR2-T8 — `CreateExecutionRecord` handler — date-range intersection guard
@@ -351,7 +353,7 @@ PR1 (entity + EF + migration)
 
 ---
 
-### PR2-T10 — `ListExecutionRecords` handler — remove Period JOIN, use `BudgetId` directly — COMPLETE
+### PR2-T10 — `ListExecutionRecords` handler — remove Period JOIN, use `BudgetId` directly
 
 **Files**:
 - `Features/BudgetExecution/ListExecutionRecords/ListExecutionRecordsHandler.cs`
@@ -364,6 +366,8 @@ PR1 (entity + EF + migration)
 - `Handle_ReturnsRecordsForBudget` — smoke test confirming query executes without PeriodId join.
 
 **Spec refs**: Design file-changes table (ListExecutionRecords)
+
+- [ ] T10: ListExecutionRecords handler — remove Period JOIN, join on BudgetId
 
 ---
 
@@ -579,13 +583,18 @@ PR1 (entity + EF + migration)
 
 ---
 
-## PR4 — Integration Tests — COMPLETE (branch: feat/budget-line-redesign-pr4)
+## PR4 — Integration Tests (branch: feat/budget-line-redesign-pr4)
 
 **Branch**: `feat/budget-line-redesign-pr4`
 **Target**: `feat/budget-line-redesign-pr2` (PR2 branch)
 **Est. lines**: ~350
 **Dependencies**: PR2 merged into PR2 branch
 **Note**: parallel with PR3.
+
+- [x] T1: BudgetStructure integration tests (Create/Update/Delete/Restore/List/Reorder)
+- [x] T2: BudgetExecution integration tests (CreateExecutionRecord, ListPeriodExecutionTotals)
+- [x] T3: Cascade handler integration tests (DeleteCycle, DeletePeriod, RestoreCycle)
+- [x] T4: Rewrite stale tests (remove PeriodId/IsRecurring/RevisedAt fixtures)
 
 ### PR4-T1 — BudgetStructure integration tests
 
