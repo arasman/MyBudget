@@ -51,6 +51,14 @@ const routes: RouteRecordRaw[] = [
               import('@/features/budget-structure/views/BudgetLinesView.vue'),
           },
           {
+            path: 'lines/:lineId/customizations',
+            name: 'BudgetLineCustomizations',
+            component: () =>
+              import(
+                '@/features/budget-structure/views/BudgetLineCustomizationsView.vue'
+              ),
+          },
+          {
             path: 'cycles/:cycleId/matrix',
             name: 'BudgetMatrix',
             component: () =>

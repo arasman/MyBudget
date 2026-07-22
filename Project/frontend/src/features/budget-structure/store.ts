@@ -6,6 +6,7 @@ import type {
   PeriodSummary,
   CategoryGroupResponse,
   BudgetLineResponse,
+  BudgetLineRevisionResponse,
   CreateCyclePayload,
   UpdateCyclePayload,
   CreatePeriodPayload,
@@ -18,6 +19,7 @@ import type {
   CreateBudgetLinePayload,
   UpdateBudgetLinePayload,
 } from './types'
+import type { CreateRevisionPayload } from './api/budgetLines.api'
 import * as cyclesApi from './api/cycles.api'
 import * as periodsApi from './api/periods.api'
 import * as groupsApi from './api/categoryGroups.api'
@@ -34,6 +36,8 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   const periods = ref<PeriodSummary[]>([])
   const categoryGroups = ref<CategoryGroupResponse[]>([])
   const budgetLines = ref<BudgetLineResponse[]>([])
+  // Revisions — loaded on-demand in customizations view (REQ-BLR-05)
+  const revisions = ref<BudgetLineRevisionResponse[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -492,6 +496,38 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   }
 
   // ---------------------------------------------------------------------------
+  // Budget line revisions — loaded on-demand (REQ-BLR-01, REQ-BLR-02, REQ-BLR-03)
+  // ---------------------------------------------------------------------------
+
+  async function fetchRevisions(budgetId: string, lineId: string): Promise<void> {
+    await _wrap(async () => {
+      revisions.value = await budgetLinesApi.listRevisions(budgetId, lineId)
+    })
+  }
+
+  async function createRevision(
+    budgetId: string,
+    lineId: string,
+    payload: CreateRevisionPayload,
+  ): Promise<void> {
+    await _wrap(async () => {
+      await budgetLinesApi.createRevision(budgetId, lineId, payload)
+      revisions.value = await budgetLinesApi.listRevisions(budgetId, lineId)
+    })
+  }
+
+  async function deleteRevision(
+    budgetId: string,
+    lineId: string,
+    revisionId: string,
+  ): Promise<void> {
+    await _wrap(async () => {
+      await budgetLinesApi.deleteRevision(budgetId, lineId, revisionId)
+      revisions.value = await budgetLinesApi.listRevisions(budgetId, lineId)
+    })
+  }
+
+  // ---------------------------------------------------------------------------
   // Expose
   // ---------------------------------------------------------------------------
 
@@ -502,6 +538,7 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
     periods,
     categoryGroups,
     budgetLines,
+    revisions,
     loading,
     error,
     // Show-deleted toggles
@@ -543,5 +580,9 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
     updateLine,
     deleteLine,
     restoreLine,
+    // Revisions (REQ-BLR-01, REQ-BLR-02, REQ-BLR-03)
+    fetchRevisions,
+    createRevision,
+    deleteRevision,
   }
 })

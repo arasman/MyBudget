@@ -21,7 +21,7 @@ public sealed class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
 
         builder.Property(a => a.Action)
             .IsRequired()
-            .HasMaxLength(20);
+            .HasMaxLength(50);
 
         builder.Property(a => a.Timestamp)
             .IsRequired();

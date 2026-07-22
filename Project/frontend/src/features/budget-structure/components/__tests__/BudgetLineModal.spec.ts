@@ -184,3 +184,44 @@ describe('BudgetLineModal — validation (REQ-BL-2, REQ-BL-3)', () => {
     })
   })
 })
+
+// REQ-BLR-05: edit mode must NOT show Amount Revision section
+describe('BudgetLineModal — edit mode strips Amount Revision section (REQ-BLR-05)', () => {
+  function renderEditModal() {
+    setActivePinia(createPinia())
+    const existingLine = {
+      id: 'l1',
+      name: 'Salary',
+      lineType: 'Expense' as const,
+      startDate: '2025-01-01' as any,
+      endDate: null,
+      budgetedAmount: 1000,
+      currencyId: 'currency-gtq',
+      categoryGroupId: 'g1',
+    }
+    return render(BudgetLineModal, {
+      props: { modelValue: existingLine, categoryGroups: [] },
+      global: { plugins: [makeI18n()] },
+    })
+  }
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+  })
+
+  it('does not render #line-validFrom in edit mode', () => {
+    renderEditModal()
+    expect(document.querySelector('#line-validFrom')).toBeNull()
+  })
+
+  it('does not render #line-validTo in edit mode', () => {
+    renderEditModal()
+    expect(document.querySelector('#line-validTo')).toBeNull()
+  })
+
+  it('does not render #line-newAmount in edit mode', () => {
+    renderEditModal()
+    expect(document.querySelector('#line-newAmount')).toBeNull()
+  })
+})

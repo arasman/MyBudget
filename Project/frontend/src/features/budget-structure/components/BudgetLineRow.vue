@@ -137,8 +137,16 @@
             {{ t('budgetStructure.common.restore') }}
           </button>
         </template>
-        <!-- Active line: edit + delete -->
+        <!-- Active line: customizations + edit + delete -->
         <template v-else>
+          <RouterLink
+            :to="{ name: 'BudgetLineCustomizations', params: { budgetId: props.budgetId, lineId: line.id } }"
+            class="btn btn-xs btn-ghost btn-square"
+            :title="t('budgetStructure.budgetLines.customizations.title', 'Customizations')"
+            @click.stop
+          >
+            <Settings2 :size="14" />
+          </RouterLink>
           <button
             type="button"
             class="btn btn-xs btn-ghost btn-square"
@@ -165,7 +173,7 @@
 <script setup lang="ts">
 import { reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Pencil, RotateCcw, Trash2, Check, X } from 'lucide-vue-next'
+import { Pencil, RotateCcw, Trash2, Check, X, Settings2 } from 'lucide-vue-next'
 import type { BudgetLineResponse, CategoryGroupResponse, CurrencyItem, LineType, UpdateBudgetLinePayload, DateString } from '../types'
 import { useBudgetStructureStore } from '../store'
 
@@ -174,6 +182,7 @@ const props = defineProps<{
   readonly: boolean
   editing: boolean
   categoryGroups: CategoryGroupResponse[]
+  budgetId: string
 }>()
 
 const emit = defineEmits<{

@@ -218,7 +218,26 @@
         "validFromOutOfRange": "Valid from date is outside the budget line date range"
       },
       "errors": {
-        "nameDuplicate": "A budget line with this name already exists in this budget"
+        "nameDuplicate": "A budget line with this name already exists in this budget",
+        "rangeWouldOrphanRevision": "The new date range would exclude an existing revision",
+        "rangeWouldOrphanExecution": "The new date range would exclude executions linked to this line",
+        "revisionHasActiveExecutions": "This revision cannot be deleted because it has active execution records",
+        "cannotDeleteOriginalRevision": "The original revision cannot be deleted",
+        "executionOutOfDateRange": "The execution period is outside the budget line date range"
+      },
+      "customizations": {
+        "title": "Customizations",
+        "backToLines": "Back to Budget Lines",
+        "revisions": "Revisions",
+        "noRevisions": "No revisions yet.",
+        "validFrom": "Valid From",
+        "validTo": "Valid To",
+        "amount": "Amount",
+        "currency": "Currency",
+        "note": "Note",
+        "deleteRevision": "Delete",
+        "confirmDeleteRevision": "Are you sure you want to delete this revision?",
+        "createRevision": "New Revision"
       },
       "create": "New Line",
       "edit": "Edit Line",

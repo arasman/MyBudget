@@ -157,5 +157,17 @@ public sealed class AppDbContext : DbContext
         }
 
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        // REQ-BL-CONCURRENCY-1: optimistic concurrency for BudgetLine via PostgreSQL xmin.
+        // Guard: only apply on Npgsql — SQLite has no xmin system column and no "xid" type.
+        // Npgsql 10 removed UseXminAsConcurrencyToken(); configure the shadow property manually.
+        if (Database.ProviderName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            builder.Entity<BudgetLine>()
+                .Property<uint>("xmin")
+                .HasColumnType("xid")
+                .ValueGeneratedOnAddOrUpdate()
+                .IsConcurrencyToken();
+        }
     }
 }
