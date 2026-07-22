@@ -65,6 +65,11 @@
       </template>
     </td>
 
+    <!-- Date range cell (startDate – endDate) -->
+    <td class="text-sm text-base-content/70 whitespace-nowrap">
+      {{ formatDateRange(line.startDate, line.endDate) }}
+    </td>
+
     <!-- Currency cell -->
     <td>
       <template v-if="editing">
@@ -82,33 +87,9 @@
       <template v-else>{{ line.currencyCode ?? '—' }}</template>
     </td>
 
-    <!-- Budgeted amount cell -->
+    <!-- Budgeted amount cell — always read-only; amount changes require a revision (use modal) -->
     <td>
-      <template v-if="editing">
-        <input
-          v-model.number="form.budgetedAmount"
-          type="number"
-          step="0.01"
-          class="input input-xs input-bordered w-24"
-        />
-      </template>
-      <template v-else>
-        <span v-if="line.budgetedAmount != null">
-          {{ formatAmount(line.budgetedAmount) }}
-        </span>
-        <span v-else class="text-base-content/30">—</span>
-      </template>
-    </td>
-
-    <!-- Recurring cell -->
-    <td>
-      <template v-if="editing">
-        <input v-model="form.isRecurring" type="checkbox" class="checkbox checkbox-xs" />
-      </template>
-      <template v-else>
-        <span v-if="line.isRecurring" class="text-base-content/70" title="Recurring">↻</span>
-        <span v-else class="text-base-content/30">—</span>
-      </template>
+      <span>{{ formatAmount(line.budgetedAmount) }}</span>
     </td>
 
     <!-- Note cell -->
@@ -185,7 +166,7 @@
 import { reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Pencil, RotateCcw, Trash2, Check, X } from 'lucide-vue-next'
-import type { BudgetLineResponse, CategoryGroupResponse, CurrencyItem, LineType, UpdateBudgetLinePayload } from '../types'
+import type { BudgetLineResponse, CategoryGroupResponse, CurrencyItem, LineType, UpdateBudgetLinePayload, DateString } from '../types'
 import { useBudgetStructureStore } from '../store'
 
 const props = defineProps<{
@@ -233,8 +214,6 @@ const categoryName = computed(() => {
 const form = reactive({
   name: '',
   lineType: 'Expense' as LineType,
-  isRecurring: false,
-  budgetedAmount: null as number | null,
   currencyId: undefined as string | undefined,
   note: '',
   categoryGroupId: undefined as string | undefined,
@@ -244,8 +223,6 @@ const form = reactive({
 function resetForm(): void {
   form.name = props.line.name
   form.lineType = props.line.lineType
-  form.isRecurring = props.line.isRecurring
-  form.budgetedAmount = props.line.budgetedAmount ?? null
   form.currencyId = props.line.currencyId
   form.note = props.line.note ?? ''
   form.categoryGroupId = props.line.categoryGroupId
@@ -269,14 +246,26 @@ function onInlineSave(): void {
   const payload: UpdateBudgetLinePayload = {
     name: form.name,
     lineType: form.lineType,
-    isRecurring: form.isRecurring,
-    budgetedAmount: form.budgetedAmount ?? undefined,
     currencyId: form.currencyId || undefined,
     note: form.note || undefined,
     categoryGroupId: form.categoryGroupId,
     categoryId: form.categoryId || undefined,
   }
   emit('inlineSave', props.line.id, payload)
+}
+
+/**
+ * Formats a date range as "DD/MM/YYYY – Perpetuo" or "DD/MM/YYYY – DD/MM/YYYY".
+ * Parses YYYY-MM-DD directly to avoid timezone offset issues.
+ */
+function formatDateRange(startDate: DateString, endDate: DateString | null): string {
+  const fmt = (d: DateString): string => {
+    const [y, m, day] = d.split('-')
+    return `${day}/${m}/${y}`
+  }
+  const start = fmt(startDate)
+  const end = endDate ? fmt(endDate) : t('budgetStructure.budgetLines.perpetual', 'Perpetual')
+  return `${start} – ${end}`
 }
 
 function formatAmount(amount: number): string {

@@ -5,6 +5,5 @@ namespace MyBudget.Features.Features.BudgetStructure.DeleteBudgetLine;
 
 public sealed record DeleteBudgetLineCommand(
     Guid BudgetId,
-    Guid PeriodId,
     Guid LineId
 ) : IRequest<Result<Guid>>;

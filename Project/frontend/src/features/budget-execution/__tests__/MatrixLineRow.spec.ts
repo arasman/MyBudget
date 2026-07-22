@@ -82,16 +82,19 @@ vi.mock('@/features/budget-structure/components/BudgetLineModal.vue', () => ({
 
 import MatrixLineRow from '../components/MatrixLineRow.vue'
 
-const baseLine = {
+import type { BudgetLineResponse } from '@/features/budget-structure/types'
+
+const baseLine: BudgetLineResponse = {
   id: 'line-1',
   name: 'Internet',
   lineType: 'Expense' as const,
-  isRecurring: false,
+  startDate: '2025-01-01' as unknown as BudgetLineResponse['startDate'],
+  endDate: null,
   budgetedAmount: 100,
+  currencyId: 'currency-gtq',
   categoryId: 'cat-1',
   categoryGroupId: 'group-1',
-  displayOrder: 1,
-  deletedAt: null as string | null,
+  deletedAt: null,
 }
 
 const basePeriod = {
@@ -138,7 +141,7 @@ describe('MatrixLineRow.vue — toast on delete and restore', () => {
     await fireEvent.click(confirmBtn)
 
     await waitFor(() => {
-      expect(mockStructureStore.deleteLine).toHaveBeenCalledWith('budget-1', 'period-1', 'line-1')
+      expect(mockStructureStore.deleteLine).toHaveBeenCalledWith('budget-1', 'line-1')
       expect(mockToastPush).toHaveBeenCalledWith({
         type: 'success',
         title: 'budgetMatrix.rows.deleteSuccess',
@@ -254,10 +257,8 @@ describe('MatrixLineRow.vue — toast on modal edit (handleEditSubmit)', () => {
       triggerModalSubmit.call({
         name: 'Updated Line',
         lineType: 'Expense',
-        isRecurring: false,
         categoryGroupId: 'group-1',
         categoryId: 'cat-1',
-        budgetedAmount: 200,
       })
       expect(mockToastPush).toHaveBeenCalledWith({
         type: 'success',

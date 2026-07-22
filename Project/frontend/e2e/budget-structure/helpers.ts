@@ -250,16 +250,17 @@ export async function seedDeletedBudgetLine(
   const { id: categoryGroupId } = await groupResp.json()
 
   const createResp = await page.request.post(
-    `/api/budgets/${budgetId}/periods/${periodId}/lines`,
+    `/api/budgets/${budgetId}/lines`,
     {
       headers,
       data: {
         name: `Deleted Line ${Date.now()}`,
         lineType: 'Expense',
-        isRecurring: false,
         categoryGroupId,
         categoryId: null,
-        budgetedAmount: 100,
+        startDate: '2020-01-01',
+        endDate: null,
+        initialAmount: 100,
         currencyId: DEFAULT_CURRENCY_ID,
       },
     },
@@ -268,7 +269,7 @@ export async function seedDeletedBudgetLine(
   const { id } = await createResp.json()
 
   const deleteResp = await page.request.delete(
-    `/api/budgets/${budgetId}/periods/${periodId}/lines/${id}`,
+    `/api/budgets/${budgetId}/lines/${id}`,
     { headers },
   )
   expect(deleteResp.status()).toBe(204)

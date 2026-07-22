@@ -5,21 +5,22 @@ namespace MyBudget.Features.Features.BudgetStructure.ListBudgetLines;
 
 public sealed record ListBudgetLinesQuery(
     Guid BudgetId,
-    Guid PeriodId,
     bool IncludeDeleted = false)
     : IRequest<Result<IReadOnlyList<BudgetLineResponse>>>;
 
 public sealed record BudgetLineResponse(
-    Guid            Id,
-    string          Name,
-    string          LineType,
-    bool            IsRecurring,
-    Guid            CategoryGroupId,
-    Guid?           CategoryId,
-    decimal?        BudgetedAmount,
-    string?         CurrencyCode,
-    string?         CurrencySymbol,
-    DateTimeOffset? RevisedAt,
-    string?         Note,
-    DateTimeOffset? DeletedAt = null,
-    Guid?           CurrencyId = null);
+    Guid      Id,
+    Guid      BudgetId,
+    Guid      CategoryGroupId,
+    Guid?     CategoryId,
+    string    Name,
+    string    LineType,
+    int       DisplayOrder,
+    DateOnly  StartDate,
+    DateOnly? EndDate,
+    decimal?  BudgetedAmount,
+    Guid?     CurrencyId,
+    string?   CurrencyCode,
+    string?   CurrencySymbol,
+    string?   Note,
+    DateTimeOffset? DeletedAt = null);

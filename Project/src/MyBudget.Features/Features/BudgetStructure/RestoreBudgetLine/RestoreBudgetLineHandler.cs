@@ -13,25 +13,13 @@ public sealed class RestoreBudgetLineHandler : IRequestHandler<RestoreBudgetLine
 
     public async ValueTask<Result<Guid>> Handle(RestoreBudgetLineCommand cmd, CancellationToken ct)
     {
-        // Parent guard: load Period (with IgnoreQueryFilters to see soft-deleted) and verify BudgetId via Cycle
-        var period = await _db.Periods
-            .IgnoreQueryFilters()
-            .Include(p => p.Cycle)
-            .FirstOrDefaultAsync(p => p.Id == cmd.PeriodId, ct);
-
-        if (period is null || period.Cycle is null || period.Cycle.BudgetId != cmd.BudgetId)
-            return Result<Guid>.Failure("PERIOD_NOT_FOUND");
-
-        if (period.DeletedAt != null)
-            return Result<Guid>.Failure("PARENT_IS_DELETED");
-
-        // Load soft-deleted BudgetLine with parent navigation for guard checks
+        // Load soft-deleted BudgetLine by BudgetId (no PeriodId — REQ-RST-05)
         var line = await _db.BudgetLines
             .IgnoreQueryFilters()
             .Include(bl => bl.Category)
             .Include(bl => bl.CategoryGroup)
             .FirstOrDefaultAsync(
-                bl => bl.Id == cmd.BudgetLineId && bl.PeriodId == cmd.PeriodId && bl.DeletedAt != null,
+                bl => bl.Id == cmd.BudgetLineId && bl.BudgetId == cmd.BudgetId && bl.DeletedAt != null,
                 ct);
 
         if (line is null)

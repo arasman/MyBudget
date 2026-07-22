@@ -26,7 +26,7 @@
 | REQ-EXEC-4 | `budget-execution` | `Note` MUST be provided (non-null, non-empty) for ALL `EntryType` values: `Expense`, `CreditNote`, and `DebitNote`. Absence of `Note` MUST be rejected with error code `NOTE_REQUIRED` (400) regardless of entry type. |
 | REQ-EXEC-5 | `budget-execution` | When `CurrencyId` equals the Cycle's `DefaultCurrencyId`, `ExchangeRate` and `ExchangeRateTo` MUST both be null. Providing either when currencies match MUST be rejected with error code `EXCHANGE_RATE_NOT_ALLOWED` (400). |
 | REQ-EXEC-6 | `budget-execution` | When `CurrencyId` differs from the Cycle's `DefaultCurrencyId`, `ExchangeRate` and `ExchangeRateTo` MUST both be provided. Providing one without the other MUST be rejected with error code `EXCHANGE_RATE_PAIR_INCOMPLETE` (400). |
-| REQ-EXEC-7 | `budget-execution` | `PeriodId` on the ExecutionRecord MUST equal the `BudgetLine.PeriodId`. A mismatch between the route `periodId` and `BudgetLine.PeriodId` MUST be rejected with error code `PERIOD_MISMATCH` (400). |
+| REQ-EXEC-7 | `budget-execution` | The Period's date range MUST be covered by the BudgetLine's date range: `Period.StartDate >= BudgetLine.StartDate AND (BudgetLine.EndDate IS NULL OR Period.StartDate <= BudgetLine.EndDate)`. A mismatch MUST be rejected with error code `BUDGET_LINE_NOT_IN_PERIOD` (422). |
 | REQ-EXEC-CLOSED-1 | `budget-execution` | ALL write operations (Create, Update, Delete, Restore) MUST check `Period.IsClosed` before proceeding. If the period is closed, the operation MUST be rejected with error code `PERIOD_CLOSED` (409). |
 | REQ-EXEC-CREATE-1 | `budget-execution` | `POST /budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/executions` MUST create an ExecutionRecord linked to the specified BudgetLine and return `201 Created` with the new record's `Id`. Requires role `budget:operator`. |
 | REQ-EXEC-CREATE-2 | `budget-execution` | The handler MUST verify the BudgetLine exists and belongs to the specified Period and Budget. A missing or mismatched BudgetLine MUST return `404 Not Found`. |
@@ -44,7 +44,7 @@
 | REQ-EXEC-TOTALS-4 | `budget-execution` | Totals MUST be computed in the Cycle's `DefaultCurrencyId`. When an ExecutionRecord has a different `CurrencyId`, the amount MUST be converted using `Amount / ExchangeRate` before summing. |
 | REQ-EXEC-CASCADE-1 | `budget-execution` | Soft-deleting a BudgetLine MUST cascade to soft-delete all its non-deleted child ExecutionRecords in the same DB operation (same `SaveChangesAsync`). |
 | REQ-EXEC-CASCADE-2 | `budget-execution` | Restoring a BudgetLine with `includeExecutionRecords=true` MUST restore all soft-deleted child ExecutionRecords. With `includeExecutionRecords=false` (default), child ExecutionRecords remain soft-deleted. The same flag and behavior apply when BudgetLines are restored via Cycle, CategoryGroup, or Category cascade. |
-| REQ-EXEC-DATE-RANGE-1 | `budget-execution` | When `OperationDate` is provided, the backend MUST validate that it falls within the parent Period's `StartDate` and `EndDate` (inclusive). Dates outside the range MUST be rejected with error code `OPERATION_DATE_OUT_OF_RANGE` (422). |
+| REQ-EXEC-DATE-RANGE-1 | `budget-execution` | `OperationDate` MUST fall within `MAX(Period.StartDate, BudgetLine.StartDate) .. MIN(Period.EndDate, BudgetLine.EndDate ?? Period.EndDate)`. Dates outside the range MUST be rejected with error code `OPERATION_DATE_OUT_OF_RANGE` (422). |
 | REQ-EXEC-DECIMAL-VAL-1 | `budget-execution` | `ExecutionRecordForm.vue` MUST enforce client-side validation on decimal precision: `amount` MUST have at most 2 decimal places, `exchangeRate` MUST have at most 6 decimal places. Violations MUST block form submission and show inline messages using `budgetExecution.form.validation.amountDecimals` and `budgetExecution.form.validation.exchangeRateDecimals`. |
 | REQ-EXEC-DATE-VAL-1 | `budget-execution` | `ExecutionRecordForm.vue` MUST validate that the selected `operationDate` falls within the parent period's date range. The period's StartDate and EndDate MUST be passed to the form as props or retrieved from context. Violations MUST show using key `budgetExecution.form.validation.operationDateOutOfRange`. API errors with code `OPERATION_DATE_OUT_OF_RANGE` MUST also produce an error toast using key `budgetExecution.form.errors.operationDateOutOfRange`. |
 | REQ-EXEC-TOAST-MIGRATE-1 | `budget-execution` | `ExecutionRecordForm.vue` MUST remove its inline `submitError` alert banner. API errors MUST be surfaced exclusively via `toastStore.push({ type: 'error', title: t(key) })`. |
@@ -69,7 +69,7 @@
 | `NOTE_REQUIRED` | Note absent for any EntryType | 400 |
 | `EXCHANGE_RATE_NOT_ALLOWED` | ExchangeRate or ExchangeRateTo provided when CurrencyId = DefaultCurrencyId | 400 |
 | `EXCHANGE_RATE_PAIR_INCOMPLETE` | Exactly one of ExchangeRate / ExchangeRateTo provided when CurrencyId ≠ DefaultCurrencyId | 400 |
-| `PERIOD_MISMATCH` | Route periodId ≠ BudgetLine.PeriodId | 400 |
+| `BUDGET_LINE_NOT_IN_PERIOD` | BudgetLine date range does not cover the Period | 422 |
 | `OPERATION_DATE_OUT_OF_RANGE` | OperationDate outside Period.StartDate..Period.EndDate (inclusive) | 422 |
 | `PERIOD_CLOSED` | Period.IsClosed = true on any write | 409 |
 | `PARENT_IS_DELETED` | BudgetLine is soft-deleted on Create | 409 |
@@ -705,6 +705,49 @@ On successful delete or restore of an ExecutionRecord, the UI MUST push a succes
 - GIVEN the matrix summary footer is rendered
 - WHEN the user views any of the three category rows
 - THEN each row label reads "SubTotal"
+
+---
+
+### REQ-EXEC-7 — BudgetLine Period Validation (Updated)
+
+#### Scenario: BudgetLine covers the period — accepted `@integration`
+- GIVEN BudgetLine.StartDate=2025-01-01, EndDate=null; Period.StartDate=2025-03-01
+- WHEN POST `.../executions`
+- THEN HTTP 201
+
+#### Scenario: BudgetLine does not cover the period — rejected `@integration`
+- GIVEN BudgetLine.StartDate=2025-06-01; Period.StartDate=2025-03-01
+- WHEN POST `.../executions`
+- THEN HTTP 422, code `BUDGET_LINE_NOT_IN_PERIOD`
+
+#### Scenario: Perpetual BudgetLine covers any period `@integration`
+- GIVEN BudgetLine.StartDate=2020-01-01, EndDate=null; Period.StartDate=2030-01-01
+- WHEN POST `.../executions`
+- THEN HTTP 201
+
+---
+
+### REQ-EXEC-DATE-RANGE-1 — OperationDate Combined Range Check (Updated)
+
+#### Scenario: OperationDate within intersection accepted `@integration`
+- GIVEN Period=Jan 2025, BudgetLine.StartDate=2025-01-15, OperationDate=2025-01-20
+- WHEN CreateExecution
+- THEN HTTP 201
+
+#### Scenario: OperationDate before BudgetLine StartDate rejected `@integration`
+- GIVEN Period.StartDate=2025-01-01, BudgetLine.StartDate=2025-01-15, OperationDate=2025-01-10
+- WHEN CreateExecution
+- THEN HTTP 422, code `OPERATION_DATE_OUT_OF_RANGE`
+
+#### Scenario: OperationDate after BudgetLine EndDate rejected `@integration`
+- GIVEN Period.EndDate=2025-01-31, BudgetLine.EndDate=2025-01-20, OperationDate=2025-01-25
+- WHEN CreateExecution
+- THEN HTTP 422, code `OPERATION_DATE_OUT_OF_RANGE`
+
+#### Scenario: OperationDate null — no range check `@unit`
+- GIVEN OperationDate = null
+- WHEN validator runs
+- THEN no date-range error
 
 ---
 

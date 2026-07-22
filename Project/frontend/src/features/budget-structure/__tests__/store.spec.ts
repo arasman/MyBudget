@@ -40,13 +40,14 @@ vi.mock('../api/budgetLines.api', () => ({
   create: vi.fn(),
   update: vi.fn(),
   remove: vi.fn(),
+  restore: vi.fn(),
+  reorder: vi.fn(),
 }))
 
 import * as cyclesApi from '../api/cycles.api'
 import * as budgetLinesApi from '../api/budgetLines.api'
 
 const BUDGET_ID = 'budget-1'
-const PERIOD_ID = 'period-1'
 
 describe('useBudgetStructureStore', () => {
   beforeEach(() => {
@@ -141,14 +142,14 @@ describe('useBudgetStructureStore', () => {
   describe('loadLines', () => {
     it('populates budgetLines from API', async () => {
       const mockLines = [
-        { id: 'l1', name: 'Salary', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
-        { id: 'l2', name: 'Rent', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
-        { id: 'l3', name: 'Groceries', lineType: 'Expense', isRecurring: false, categoryGroupId: 'g1' },
+        { id: 'l1', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01', endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
+        { id: 'l2', name: 'Rent', lineType: 'Expense', startDate: '2025-01-01', endDate: null, budgetedAmount: 500, currencyId: 'gtq', categoryGroupId: 'g1' },
+        { id: 'l3', name: 'Groceries', lineType: 'Expense', startDate: '2025-01-01', endDate: null, budgetedAmount: 300, currencyId: 'gtq', categoryGroupId: 'g1' },
       ]
       vi.mocked(budgetLinesApi.list).mockResolvedValueOnce(mockLines as any)
 
       const store = useBudgetStructureStore()
-      await store.loadLines(BUDGET_ID, PERIOD_ID)
+      await store.loadLines(BUDGET_ID)
 
       expect(store.budgetLines).toHaveLength(3)
       expect(store.budgetLines[0]!.name).toBe('Salary')
@@ -159,14 +160,16 @@ describe('useBudgetStructureStore', () => {
     it('appends new line to budgetLines', async () => {
       vi.mocked(budgetLinesApi.create).mockResolvedValueOnce({ id: 'new-line' } as any)
       vi.mocked(budgetLinesApi.list).mockResolvedValueOnce([
-        { id: 'new-line', name: 'Salary', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
+        { id: 'new-line', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01', endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
       ] as any)
 
       const store = useBudgetStructureStore()
-      await store.createLine(BUDGET_ID, PERIOD_ID, {
+      await store.createLine(BUDGET_ID, {
         name: 'Salary',
         lineType: 'Expense',
-        isRecurring: true,
+        startDate: '2025-01-01',
+        initialAmount: 1000,
+        currencyId: 'gtq',
         categoryGroupId: 'g1',
       })
 
@@ -179,14 +182,14 @@ describe('useBudgetStructureStore', () => {
   describe('deleteLine', () => {
     it('marks the line as deleted in budgetLines (soft delete)', async () => {
       vi.mocked(budgetLinesApi.list).mockResolvedValueOnce([
-        { id: 'l1', name: 'Salary', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
-        { id: 'l2', name: 'Rent', lineType: 'Expense', isRecurring: true, categoryGroupId: 'g1' },
+        { id: 'l1', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01', endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
+        { id: 'l2', name: 'Rent', lineType: 'Expense', startDate: '2025-01-01', endDate: null, budgetedAmount: 500, currencyId: 'gtq', categoryGroupId: 'g1' },
       ] as any)
       vi.mocked(budgetLinesApi.remove).mockResolvedValueOnce(undefined)
 
       const store = useBudgetStructureStore()
-      await store.loadLines(BUDGET_ID, PERIOD_ID)
-      await store.deleteLine(BUDGET_ID, PERIOD_ID, 'l1')
+      await store.loadLines(BUDGET_ID)
+      await store.deleteLine(BUDGET_ID, 'l1')
 
       expect(store.budgetLines).toHaveLength(2)
       expect(store.budgetLines[0]!.deletedAt).toBeTruthy()

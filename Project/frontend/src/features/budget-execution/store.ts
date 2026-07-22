@@ -304,11 +304,8 @@ export const useBudgetMatrixStore = defineStore('budgetMatrix', () => {
       const structureStore = useBudgetStructureStore()
       // Reload groups (and their categories) with includeDeleted flag
       void structureStore.loadGroups(budgetId.value, value)
-      // Reload lines for the loaded period with includeDeleted flag
-      const loadedPeriodId = allPeriods.value[0]?.id
-      if (loadedPeriodId) {
-        void structureStore.loadLines(budgetId.value, loadedPeriodId, value)
-      }
+      // Reload all budget lines (budget-scoped, no periodId) — REQ-BL-STORE-1
+      void structureStore.loadLines(budgetId.value, value)
     }
   }
 

@@ -7,8 +7,9 @@ using MyBudget.Features.SharedKernel.Results;
 namespace MyBudget.Features.Features.BudgetStructure.ListBudgetLines;
 
 /// <summary>
-/// Dapper read — verifies period belongs to budget, then returns BudgetLines with latest revision
-/// via LATERAL JOIN. Returns 404 if period not found or belongs to a different budget.
+/// Dapper read — returns all BudgetLines for a Budget with their effective revision
+/// (ValidFrom &lt;= today AND (ValidTo IS NULL OR ValidTo &gt;= today)).
+/// Scoped by BudgetId only — no PeriodId.
 /// </summary>
 public sealed class ListBudgetLinesHandler
     : IRequestHandler<ListBudgetLinesQuery, Result<IReadOnlyList<BudgetLineResponse>>>
@@ -22,84 +23,74 @@ public sealed class ListBudgetLinesHandler
     {
         using var conn = _factory.CreateConnection();
 
-        // Verify period belongs to the budget via Period → Cycle chain.
-        // When IncludeDeleted=true the period itself may be soft-deleted (e.g. restore flow),
-        // so we only filter p."DeletedAt" in the default case.
-        var periodDeletedFilter = query.IncludeDeleted ? "" : "AND p.\"DeletedAt\" IS NULL";
-        var periodExists = await conn.ExecuteScalarAsync<bool>(
-            $"""
-            SELECT EXISTS (
-                SELECT 1
-                FROM "Periods" p
-                JOIN "Cycles" c ON c."Id" = p."CycleId"
-                WHERE p."Id" = @PeriodId
-                  AND c."BudgetId" = @BudgetId
-                  {periodDeletedFilter}
-                  AND c."DeletedAt" IS NULL
-            )
-            """,
-            new { query.PeriodId, query.BudgetId });
-
-        if (!periodExists)
-            return Result<IReadOnlyList<BudgetLineResponse>>.Failure("PERIOD_NOT_FOUND");
-
         var deletedFilter = query.IncludeDeleted ? "" : "AND bl.\"DeletedAt\" IS NULL";
+        var today         = DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
+
         var rows = await conn.QueryAsync<BudgetLineRow>(
             $"""
-            SELECT bl."Id", bl."Name", bl."LineType", bl."IsRecurring",
-                   bl."CategoryGroupId", bl."CategoryId", bl."DeletedAt",
-                   r."BudgetedAmount", r."CurrencyId", r."CurrencyCode", r."CurrencySymbol", r."RevisedAt", r."Note"
+            SELECT bl."Id", bl."BudgetId", bl."CategoryGroupId", bl."CategoryId",
+                   bl."Name", bl."LineType", bl."DisplayOrder",
+                   bl."StartDate", bl."EndDate", bl."DeletedAt",
+                   r."BudgetedAmount", r."CurrencyId", r."Note",
+                   c."Code"   AS "CurrencyCode",
+                   c."Symbol" AS "CurrencySymbol"
             FROM "BudgetLines" bl
             LEFT JOIN LATERAL (
-                SELECT r2."BudgetedAmount", r2."CurrencyId", c."Code" AS "CurrencyCode", c."Symbol" AS "CurrencySymbol",
-                       r2."RevisedAt", r2."Note"
+                SELECT r2."BudgetedAmount", r2."CurrencyId", r2."Note"
                 FROM "BudgetLineRevisions" r2
-                LEFT JOIN "Currencies" c ON r2."CurrencyId" = c."Id"
                 WHERE r2."BudgetLineId" = bl."Id"
-                ORDER BY r2."RevisedAt" DESC
+                  AND r2."ValidFrom" <= '{today}'
+                  AND (r2."ValidTo" IS NULL OR r2."ValidTo" >= '{today}')
                 LIMIT 1
             ) r ON true
-            WHERE bl."PeriodId" = @PeriodId {deletedFilter}
+            LEFT JOIN "Currencies" c ON r."CurrencyId" = c."Id"
+            WHERE bl."BudgetId" = @BudgetId {deletedFilter}
             ORDER BY bl."DisplayOrder", bl."Name"
             """,
-            new { query.PeriodId });
+            new { query.BudgetId });
 
         var items = rows
             .Select(r => new BudgetLineResponse(
                 r.Id,
-                r.Name,
-                ((LineType)r.LineType).ToString(),
-                r.IsRecurring,
+                r.BudgetId,
                 r.CategoryGroupId,
                 r.CategoryId,
+                r.Name,
+                ((LineType)r.LineType).ToString(),
+                r.DisplayOrder,
+                // StartDate / EndDate stored as TEXT in PostgreSQL (EF DateOnly → TEXT)
+                DateOnly.Parse(r.StartDate),
+                r.EndDate is not null ? DateOnly.Parse(r.EndDate) : null,
                 r.BudgetedAmount,
+                r.CurrencyId,
                 r.CurrencyCode,
                 r.CurrencySymbol,
-                r.RevisedAt.HasValue
-                    ? new DateTimeOffset(r.RevisedAt.Value, TimeSpan.Zero)
-                    : null,
                 r.Note,
-                r.DeletedAt.HasValue
-                    ? new DateTimeOffset(r.DeletedAt.Value, TimeSpan.Zero)
-                    : null,
-                r.CurrencyId))
+                // DeletedAt is DateTimeOffset? — pass through directly
+                r.DeletedAt))
             .ToList();
 
         return Result<IReadOnlyList<BudgetLineResponse>>.Success(items);
     }
 
-    private sealed record BudgetLineRow(
-        Guid      Id,
-        string    Name,
-        int       LineType,
-        bool      IsRecurring,
-        Guid      CategoryGroupId,
-        Guid?     CategoryId,
-        DateTime? DeletedAt,
-        decimal?  BudgetedAmount,
-        Guid?     CurrencyId,
-        string?   CurrencyCode,
-        string?   CurrencySymbol,
-        DateTime? RevisedAt,
-        string?   Note);
+    private sealed class BudgetLineRow
+    {
+        public Guid             Id              { get; init; }
+        public Guid             BudgetId        { get; init; }
+        public Guid             CategoryGroupId { get; init; }
+        public Guid?            CategoryId      { get; init; }
+        public string           Name            { get; init; } = "";
+        public int              LineType        { get; init; }
+        public int              DisplayOrder    { get; init; }
+        // StartDate / EndDate are stored as TEXT in PostgreSQL — Dapper reads them as string
+        public string           StartDate       { get; init; } = "";
+        public string?          EndDate         { get; init; }
+        // DeletedAt is 'timestamp with time zone'; Npgsql returns DateTimeOffset for this type
+        public DateTimeOffset?  DeletedAt       { get; init; }
+        public decimal?         BudgetedAmount  { get; init; }
+        public Guid?            CurrencyId      { get; init; }
+        public string?          Note            { get; init; }
+        public string?          CurrencyCode    { get; init; }
+        public string?          CurrencySymbol  { get; init; }
+    }
 }

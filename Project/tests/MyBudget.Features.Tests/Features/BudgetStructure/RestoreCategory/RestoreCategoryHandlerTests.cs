@@ -54,9 +54,10 @@ public sealed class RestoreCategoryHandlerTests : IDisposable
         _db.Categories.Add(category);
         await _db.SaveChangesAsync();
 
-        var line1 = BudgetLine.Create(budgetId, periodId, group.Id, category.Id, "Rent 1", LineType.Expense, true, 1);
-        var line2 = BudgetLine.Create(budgetId, periodId, group.Id, category.Id, "Rent 2", LineType.Expense, false, 2);
-        var line3 = BudgetLine.Create(budgetId, periodId, group.Id, category.Id, "Rent 3", LineType.Expense, false, 3);
+        // TODO PR4: update to new BudgetLine.Create signature
+        var line1 = BudgetLine.Create(budgetId, group.Id, category.Id, "Rent 1", LineType.Expense, DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 1);
+        var line2 = BudgetLine.Create(budgetId, group.Id, category.Id, "Rent 2", LineType.Expense, DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 2);
+        var line3 = BudgetLine.Create(budgetId, group.Id, category.Id, "Rent 3", LineType.Expense, DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 3);
         line1.SoftDelete(); line2.SoftDelete(); line3.SoftDelete();
         _db.BudgetLines.AddRange(line1, line2, line3);
         await _db.SaveChangesAsync();

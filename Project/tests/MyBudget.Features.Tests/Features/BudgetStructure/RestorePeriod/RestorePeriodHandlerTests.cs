@@ -69,8 +69,11 @@ public sealed class RestorePeriodHandlerTests : IDisposable
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        var line1 = BudgetLine.Create(budgetId, periodId, group.Id, null, "Rent", LineType.Expense, true, 1);
-        var line2 = BudgetLine.Create(budgetId, periodId, group.Id, null, "Food", LineType.Expense, false, 2);
+        // TODO PR4: update to new BudgetLine.Create signature; Period cascade removed (REQ-CYC-03)
+        var line1 = BudgetLine.Create(budgetId, group.Id, null, "Rent", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 1);
+        var line2 = BudgetLine.Create(budgetId, group.Id, null, "Food", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 2);
         line1.SoftDelete();
         line2.SoftDelete();
         _db.BudgetLines.AddRange(line1, line2);
@@ -79,12 +82,8 @@ public sealed class RestorePeriodHandlerTests : IDisposable
         var cmd    = new RestorePeriodCommand(budgetId, cycleId, periodId, false);
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
+        // TODO PR4: period restore no longer cascades BudgetLines — assertion will be updated
         result.IsSuccess.ShouldBeTrue();
-
-        var lines = await _db.BudgetLines.IgnoreQueryFilters()
-            .Where(bl => bl.PeriodId == periodId)
-            .ToListAsync();
-        lines.ShouldAllBe(bl => bl.DeletedAt == null);
     }
 
     [Fact]
@@ -141,15 +140,18 @@ public sealed class RestorePeriodHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task IncludeExecutionRecords_RestoresPeriodLinessAndExecutionRecords()
+    public async Task IncludeExecutionRecords_RestoresPeriodAndExecutionRecords_NotBudgetLines()
     {
+        // REQ-RST-02: RestorePeriod with IncludeExecutionRecords=true restores soft-deleted
+        // execution records for the period. BudgetLines are Budget-scoped and NOT cascade-restored.
         var (budgetId, cycleId, periodId) = await SeedBaseAsync();
 
         var group = CategoryGroup.Create(budgetId, "Housing", 1);
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        var line = BudgetLine.Create(budgetId, periodId, group.Id, null, "Rent", LineType.Expense, true, 1);
+        var line = BudgetLine.Create(budgetId, group.Id, null, "Rent", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 1);
         line.SoftDelete();
         _db.BudgetLines.Add(line);
         await _db.SaveChangesAsync();
@@ -170,9 +172,11 @@ public sealed class RestorePeriodHandlerTests : IDisposable
         var period = await _db.Periods.IgnoreQueryFilters().FirstAsync(p => p.Id == periodId);
         period.DeletedAt.ShouldBeNull();
 
-        var restoredLine = await _db.BudgetLines.IgnoreQueryFilters().FirstAsync(bl => bl.Id == line.Id);
-        restoredLine.DeletedAt.ShouldBeNull();
+        // BudgetLines are Budget-scoped: they are NOT cascade-restored by RestorePeriod (REQ-RST-02)
+        var budgetLine = await _db.BudgetLines.IgnoreQueryFilters().FirstAsync(bl => bl.Id == line.Id);
+        budgetLine.DeletedAt.ShouldNotBeNull();
 
+        // Execution records ARE restored when IncludeExecutionRecords=true
         var restoredRecord = await _db.ExecutionRecords.IgnoreQueryFilters().FirstAsync(e => e.Id == execRecord.Id);
         restoredRecord.DeletedAt.ShouldBeNull();
     }

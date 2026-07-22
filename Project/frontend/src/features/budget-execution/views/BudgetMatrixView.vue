@@ -286,6 +286,7 @@ import MatrixSummaryRow from '../components/MatrixSummaryRow.vue'
 import MatrixTotalRow from '../components/MatrixTotalRow.vue'
 import ExecutionListModal from '../components/ExecutionListModal.vue'
 import * as budgetLinesApi from '@/features/budget-structure/api/budgetLines.api'
+
 import type { CategoryGroupResponse, CategoryItem, BudgetLineResponse } from '@/features/budget-structure/types'
 
 const route = useRoute()
@@ -381,13 +382,12 @@ onMounted(async () => {
     return
   }
 
-  // Load budget lines separately — errors here are non-critical (matrix renders without line rows)
-  if (matrixStore.allPeriods.length > 0) {
-    try {
-      await structureStore.loadLines(budgetId.value, matrixStore.allPeriods[0].id)
-    } catch {
-      // non-critical — matrix renders without line rows
-    }
+  // Load all budget lines for the budget (budget-scoped, no periodId — REQ-BL-STORE-1)
+  // Errors here are non-critical; matrix renders without line rows
+  try {
+    await structureStore.loadLines(budgetId.value)
+  } catch {
+    // non-critical — matrix renders without line rows
   }
 })
 
@@ -469,17 +469,24 @@ function startAddLine(categoryId: string, groupId: string): void {
 async function confirmAddLine(categoryId: string, groupId: string): Promise<void> {
   const name = newLineName.value.trim()
   if (!name) return
-  const periodId = matrixStore.allPeriods[0]?.id
-  if (!periodId) return
   // Use the selected category from dropdown (defaults to the triggering category)
   const selectedCategoryId = newLineCategoryId.value || categoryId
   const categoryGroupId = groupId
+  // Default startDate = today (budget-scoped, no periodId — REQ-BL-02)
+  const todayStr = new Date().toISOString().slice(0, 10)
   addActing.value = true
   try {
     await structureStore.createLine(
       budgetId.value,
-      periodId,
-      { name, categoryId: selectedCategoryId, categoryGroupId, lineType: 'Expense', isRecurring: false },
+      {
+        name,
+        categoryId: selectedCategoryId,
+        categoryGroupId,
+        lineType: 'Expense',
+        startDate: todayStr,
+        initialAmount: 0,
+        currencyId: '',
+      },
       matrixStore.showDeleted,
     )
     await matrixStore.invalidateAllPeriods()
@@ -623,14 +630,9 @@ async function reorderLinesForAllPeriods(
   })
   structureStore.budgetLines = reorderedLines
 
-  // Only call reorder for the period whose lines are actually loaded in the store.
-  // Each period has distinct BudgetLine IDs; sending one period's IDs to another
-  // period's endpoint triggers REORDER_ID_NOT_IN_SCOPE on the backend.
-  const loadedPeriodId = matrixStore.allPeriods[0]?.id
-  if (!loadedPeriodId) return
-
+  // Reorder is now budget-scoped (no periodId) — REQ-BL-05
   try {
-    await budgetLinesApi.reorder(budgetId.value, loadedPeriodId, newOrder)
+    await budgetLinesApi.reorder(budgetId.value, newOrder)
   } catch {
     // Revert optimistic update — non-blocking warning, does not kill the view
     structureStore.budgetLines = structureStore.budgetLines.filter((l) =>

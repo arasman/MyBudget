@@ -432,36 +432,34 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
   }
 
   // ---------------------------------------------------------------------------
-  // Budget lines — implemented in PR5
+  // Budget lines — budget-scoped (no periodId) — REQ-BL-STORE-1
   // ---------------------------------------------------------------------------
 
-  async function loadLines(budgetId: string, periodId: string, includeDeleted?: boolean): Promise<void> {
+  async function loadLines(budgetId: string, includeDeleted?: boolean): Promise<void> {
     const deleted = includeDeleted ?? showDeletedBudgetLines.value
     await _wrap(async () => {
-      budgetLines.value = await budgetLinesApi.list(budgetId, periodId, deleted)
+      budgetLines.value = await budgetLinesApi.list(budgetId, deleted)
     })
   }
 
   async function createLine(
     budgetId: string,
-    periodId: string,
     payload: CreateBudgetLinePayload,
     includeDeleted = false,
   ): Promise<void> {
     await _wrap(async () => {
-      await budgetLinesApi.create(budgetId, periodId, payload)
-      budgetLines.value = await budgetLinesApi.list(budgetId, periodId, includeDeleted)
+      await budgetLinesApi.create(budgetId, payload)
+      budgetLines.value = await budgetLinesApi.list(budgetId, includeDeleted)
     })
   }
 
   async function updateLine(
     budgetId: string,
-    periodId: string,
     lineId: string,
     payload: UpdateBudgetLinePayload,
   ): Promise<void> {
     await _wrap(async () => {
-      await budgetLinesApi.update(budgetId, periodId, lineId, payload)
+      await budgetLinesApi.update(budgetId, lineId, payload)
       const idx = budgetLines.value.findIndex((l) => l.id === lineId)
       if (idx !== -1) {
         budgetLines.value[idx] = { ...budgetLines.value[idx]!, ...payload }
@@ -469,9 +467,9 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
     })
   }
 
-  async function deleteLine(budgetId: string, periodId: string, lineId: string): Promise<void> {
+  async function deleteLine(budgetId: string, lineId: string): Promise<void> {
     await _wrap(async () => {
-      await budgetLinesApi.remove(budgetId, periodId, lineId)
+      await budgetLinesApi.remove(budgetId, lineId)
       const idx = budgetLines.value.findIndex((l) => l.id === lineId)
       if (idx !== -1) {
         budgetLines.value[idx] = { ...budgetLines.value[idx]!, deletedAt: new Date().toISOString() }
@@ -481,12 +479,11 @@ export const useBudgetStructureStore = defineStore('budgetStructure', () => {
 
   async function restoreLine(
     budgetId: string,
-    periodId: string,
     lineId: string,
     includeExecutionRecords: boolean,
   ): Promise<void> {
     await _wrap(async () => {
-      await budgetLinesApi.restore(budgetId, periodId, lineId, includeExecutionRecords)
+      await budgetLinesApi.restore(budgetId, lineId, includeExecutionRecords)
       const idx = budgetLines.value.findIndex((l) => l.id === lineId)
       if (idx !== -1) {
         budgetLines.value[idx] = { ...budgetLines.value[idx]!, deletedAt: null }

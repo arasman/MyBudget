@@ -31,9 +31,9 @@ public sealed class DeleteBudgetLineCascadeIntegrationTests : BudgetExecutionTes
         var id1 = await CreateExecutionRecordAsync(budgetId, periodId, lineId, 100m);
         var id2 = await CreateExecutionRecordAsync(budgetId, periodId, lineId, 200m);
 
-        // Soft-delete the BudgetLine
+        // Soft-delete the BudgetLine (route is now budget-scoped, no periodId)
         var deleteResp = await Client.DeleteAsync(
-            $"/api/budgets/{budgetId}/periods/{periodId}/lines/{lineId}");
+            $"/api/budgets/{budgetId}/lines/{lineId}");
         deleteResp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
         // Assert both ExecutionRecords are now soft-deleted

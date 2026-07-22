@@ -5,6 +5,7 @@ using MyBudget.Features.SharedKernel.Results;
 
 namespace MyBudget.Features.Features.BudgetExecution.UpdateExecutionRecord;
 
+// TODO PR2b: full handler rewrite — load Period and Cycle directly (BudgetLine no longer has Period nav)
 public sealed class UpdateExecutionRecordHandler : IRequestHandler<UpdateExecutionRecordCommand, Result<Guid>>
 {
     private readonly AppDbContext _db;
@@ -13,11 +14,7 @@ public sealed class UpdateExecutionRecordHandler : IRequestHandler<UpdateExecuti
 
     public async ValueTask<Result<Guid>> Handle(UpdateExecutionRecordCommand cmd, CancellationToken ct)
     {
-        // Load non-deleted ExecutionRecord with BudgetLine -> Period -> Cycle
         var record = await _db.ExecutionRecords
-            .Include(e => e.BudgetLine)
-                .ThenInclude(bl => bl!.Period)
-                    .ThenInclude(p => p!.Cycle)
             .FirstOrDefaultAsync(
                 e => e.Id == cmd.ExecutionId
                   && e.BudgetLineId == cmd.BudgetLineId
@@ -28,10 +25,12 @@ public sealed class UpdateExecutionRecordHandler : IRequestHandler<UpdateExecuti
         if (record is null)
             return Result<Guid>.Failure("EXECUTION_RECORD_NOT_FOUND");
 
-        var period = record.BudgetLine?.Period;
-        var cycle  = period?.Cycle;
+        // Load Period and Cycle directly
+        var period = await _db.Periods
+            .Include(p => p.Cycle)
+            .FirstOrDefaultAsync(p => p.Id == cmd.PeriodId, ct);
 
-        if (period is null || cycle is null)
+        if (period?.Cycle is null)
             return Result<Guid>.Failure("EXECUTION_RECORD_NOT_FOUND");
 
         // REQ-EXEC-CLOSED-1: period closed guard
@@ -44,7 +43,7 @@ public sealed class UpdateExecutionRecordHandler : IRequestHandler<UpdateExecuti
             return Result<Guid>.Failure("OPERATION_DATE_OUT_OF_RANGE");
 
         // REQ-EXEC-5/REQ-EXEC-6: ExchangeRate pair rule
-        var defaultCurrencyId = cycle.DefaultCurrencyId;
+        var defaultCurrencyId = period.Cycle.DefaultCurrencyId;
         var isSameCurrency = cmd.CurrencyId == defaultCurrencyId;
 
         if (isSameCurrency && (cmd.ExchangeRate != null || cmd.ExchangeRateTo != null))

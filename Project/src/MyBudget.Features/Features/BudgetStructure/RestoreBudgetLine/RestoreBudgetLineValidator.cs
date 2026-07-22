@@ -9,9 +9,6 @@ public sealed class RestoreBudgetLineValidator : AbstractValidator<RestoreBudget
         RuleFor(x => x.BudgetId)
             .NotEmpty().WithErrorCode("FIELD_REQUIRED");
 
-        RuleFor(x => x.PeriodId)
-            .NotEmpty().WithErrorCode("FIELD_REQUIRED");
-
         RuleFor(x => x.BudgetLineId)
             .NotEmpty().WithErrorCode("FIELD_REQUIRED");
     }

@@ -40,12 +40,39 @@
           </select>
         </div>
 
-        <!-- Is recurring -->
+        <!-- Start date (required) -->
         <div class="form-control mb-3">
-          <label class="label cursor-pointer justify-start gap-3">
-            <input id="line-recurring" v-model="form.isRecurring" type="checkbox" class="checkbox" />
-            <span class="label-text">{{ t('budgetStructure.budgetLines.isRecurring') }}</span>
+          <label class="label" for="line-startDate">
+            <span class="label-text">{{ t('budgetStructure.budgetLines.startDate') }} *</span>
           </label>
+          <input
+            id="line-startDate"
+            v-model="form.startDate"
+            type="date"
+            class="input input-bordered w-full"
+            :class="{ 'input-error': errors.startDate }"
+          />
+          <div v-if="errors.startDate" class="label">
+            <span class="label-text-alt text-error">{{ errors.startDate }}</span>
+          </div>
+        </div>
+
+        <!-- End date (optional — null means perpetual) -->
+        <div class="form-control mb-3">
+          <label class="label" for="line-endDate">
+            <span class="label-text">{{ t('budgetStructure.budgetLines.endDate') }}</span>
+          </label>
+          <input
+            id="line-endDate"
+            v-model="form.endDate"
+            type="date"
+            class="input input-bordered w-full"
+            :class="{ 'input-error': errors.endDate }"
+            :placeholder="t('budgetStructure.budgetLines.endDatePlaceholder', 'Perpetual / No expiry')"
+          />
+          <div v-if="errors.endDate" class="label">
+            <span class="label-text-alt text-error">{{ errors.endDate }}</span>
+          </div>
         </div>
 
         <!-- Category group -->
@@ -83,22 +110,22 @@
           </select>
         </div>
 
-        <!-- Budgeted amount -->
+        <!-- Initial / Budgeted amount -->
         <div class="form-control mb-3">
-          <label class="label" for="line-amount">
+          <label class="label" for="line-initialAmount">
             <span class="label-text">{{ t('budgetStructure.budgetLines.budgetedAmount') }}</span>
           </label>
           <input
-            id="line-amount"
-            v-model.number="form.budgetedAmount"
+            id="line-initialAmount"
+            v-model.number="form.initialAmount"
             type="number"
             step="0.01"
             min="0.01"
             class="input input-bordered w-full"
-            :class="{ 'input-error': errors.budgetedAmount }"
+            :class="{ 'input-error': errors.initialAmount }"
           />
-          <div v-if="errors.budgetedAmount" class="label">
-            <span class="label-text-alt text-error">{{ errors.budgetedAmount }}</span>
+          <div v-if="errors.initialAmount" class="label">
+            <span class="label-text-alt text-error">{{ errors.initialAmount }}</span>
           </div>
         </div>
 
@@ -118,6 +145,61 @@
             </option>
           </select>
         </div>
+
+        <!-- Amount revision section (edit mode only) -->
+        <template v-if="isEditMode">
+          <div class="divider text-sm">{{ t('budgetStructure.budgetLines.amountRevision', 'Amount Revision') }}</div>
+
+          <!-- validFrom (required when changing amount) -->
+          <div class="form-control mb-3">
+            <label class="label" for="line-validFrom">
+              <span class="label-text">{{ t('budgetStructure.budgetLines.validFrom', 'Valid From') }}</span>
+            </label>
+            <input
+              id="line-validFrom"
+              v-model="form.validFrom"
+              type="date"
+              class="input input-bordered w-full"
+              :class="{ 'input-error': errors.validFrom }"
+              :min="todayString"
+            />
+            <div v-if="errors.validFrom" class="label">
+              <span class="label-text-alt text-error">{{ errors.validFrom }}</span>
+            </div>
+          </div>
+
+          <!-- validTo (optional) -->
+          <div class="form-control mb-3">
+            <label class="label" for="line-validTo">
+              <span class="label-text">{{ t('budgetStructure.budgetLines.validTo', 'Valid To') }}</span>
+            </label>
+            <input
+              id="line-validTo"
+              v-model="form.validTo"
+              type="date"
+              class="input input-bordered w-full"
+            />
+          </div>
+
+          <!-- newAmount -->
+          <div class="form-control mb-3">
+            <label class="label" for="line-newAmount">
+              <span class="label-text">{{ t('budgetStructure.budgetLines.newAmount', 'New Amount') }}</span>
+            </label>
+            <input
+              id="line-newAmount"
+              v-model.number="form.newAmount"
+              type="number"
+              step="0.01"
+              min="0.01"
+              class="input input-bordered w-full"
+              :class="{ 'input-error': errors.newAmount }"
+            />
+            <div v-if="errors.newAmount" class="label">
+              <span class="label-text-alt text-error">{{ errors.newAmount }}</span>
+            </div>
+          </div>
+        </template>
 
         <!-- Note -->
         <div class="form-control mb-4">
@@ -149,13 +231,15 @@
 <script setup lang="ts">
 import { reactive, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { BudgetLineResponse, CategoryGroupResponse, CreateBudgetLinePayload, CurrencyItem, LineType } from '../types'
+import type {
+  BudgetLineResponse,
+  CategoryGroupResponse,
+  CreateBudgetLinePayload,
+  UpdateBudgetLinePayload,
+  CurrencyItem,
+  LineType,
+} from '../types'
 import { useBudgetStructureStore } from '../store'
-
-const errors = reactive({
-  name: '',
-  budgetedAmount: '',
-})
 
 const props = defineProps<{
   modelValue: BudgetLineResponse | null
@@ -163,7 +247,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  submit: [payload: CreateBudgetLinePayload]
+  submit: [payload: CreateBudgetLinePayload | UpdateBudgetLinePayload]
   cancel: []
 }>()
 
@@ -171,6 +255,8 @@ const { t } = useI18n()
 const structureStore = useBudgetStructureStore()
 
 const isEditMode = computed(() => props.modelValue !== null)
+
+const todayString = computed(() => new Date().toISOString().slice(0, 10))
 
 /** Currencies available from the current cycle (default + optional alternate). */
 const availableCurrencies = computed((): CurrencyItem[] => {
@@ -182,24 +268,42 @@ const availableCurrencies = computed((): CurrencyItem[] => {
   return currencies
 })
 
+const errors = reactive({
+  name: '',
+  startDate: '',
+  endDate: '',
+  initialAmount: '',
+  validFrom: '',
+  newAmount: '',
+})
+
 const form = reactive<{
   name: string
   lineType: LineType
-  isRecurring: boolean
+  startDate: string
+  endDate: string
   categoryGroupId: string
   categoryId: string | undefined
-  budgetedAmount: number | undefined
+  initialAmount: number | undefined
   currencyId: string | undefined
   note: string | undefined
+  // Edit-only: amount revision
+  validFrom: string
+  validTo: string
+  newAmount: number | undefined
 }>({
   name: props.modelValue?.name ?? '',
   lineType: props.modelValue?.lineType ?? 'Expense',
-  isRecurring: props.modelValue?.isRecurring ?? false,
+  startDate: props.modelValue?.startDate ?? '',
+  endDate: props.modelValue?.endDate ?? '',
   categoryGroupId: props.modelValue?.categoryGroupId ?? '',
   categoryId: props.modelValue?.categoryId,
-  budgetedAmount: props.modelValue?.budgetedAmount,
+  initialAmount: props.modelValue?.budgetedAmount,
   currencyId: props.modelValue?.currencyId,
   note: props.modelValue?.note,
+  validFrom: '',
+  validTo: '',
+  newAmount: undefined,
 })
 
 const filteredCategories = computed(() => {
@@ -209,36 +313,79 @@ const filteredCategories = computed(() => {
 })
 
 function validate(): boolean {
+  // Reset all errors
+  errors.name = ''
+  errors.startDate = ''
+  errors.endDate = ''
+  errors.initialAmount = ''
+  errors.validFrom = ''
+  errors.newAmount = ''
+
   if (!form.name.trim()) {
     errors.name = t('budgetStructure.budgetLines.validation.nameRequired')
   } else if (form.name.trim().length > 200) {
     errors.name = t('budgetStructure.budgetLines.validation.nameTooLong')
-  } else {
-    errors.name = ''
   }
 
-  if (form.budgetedAmount != null && form.budgetedAmount <= 0) {
-    errors.budgetedAmount = t('budgetStructure.budgetLines.validation.amountPositive')
+  if (!isEditMode.value) {
+    // Create mode: startDate required
+    if (!form.startDate) {
+      errors.startDate = t('budgetStructure.budgetLines.validation.startDateRequired')
+    }
+
+    // Validate initialAmount when provided
+    if (form.initialAmount != null && form.initialAmount <= 0) {
+      errors.initialAmount = t('budgetStructure.budgetLines.validation.amountPositive')
+    }
+
+    // Validate endDate after startDate
+    if (form.endDate && form.startDate && form.endDate < form.startDate) {
+      errors.endDate = t('budgetStructure.budgetLines.validation.endDateAfterStartDate')
+    }
   } else {
-    errors.budgetedAmount = ''
+    // Edit mode: if validFrom set, ensure it's not in the past
+    if (form.validFrom && form.validFrom < todayString.value) {
+      errors.validFrom = t('budgetStructure.budgetLines.validation.validFromNotInPast')
+    }
+
+    // Validate newAmount when provided
+    if (form.newAmount != null && form.newAmount <= 0) {
+      errors.newAmount = t('budgetStructure.budgetLines.validation.amountPositive')
+    }
   }
 
-  return !errors.name && !errors.budgetedAmount
+  return !errors.name && !errors.startDate && !errors.endDate && !errors.initialAmount && !errors.validFrom && !errors.newAmount
 }
 
 function handleSubmit(): void {
   if (!validate()) return
 
-  const payload: CreateBudgetLinePayload = {
-    name: form.name.trim(),
-    lineType: form.lineType,
-    isRecurring: form.isRecurring,
-    categoryGroupId: form.categoryGroupId || undefined,
-    categoryId: form.categoryId || undefined,
-    budgetedAmount: form.budgetedAmount != null ? Number(form.budgetedAmount) : undefined,
-    currencyId: form.currencyId || undefined,
-    note: form.note?.trim() || undefined,
+  if (!isEditMode.value) {
+    const payload: CreateBudgetLinePayload = {
+      name: form.name.trim(),
+      lineType: form.lineType,
+      startDate: form.startDate,
+      endDate: form.endDate || undefined,
+      initialAmount: form.initialAmount ?? 0,
+      currencyId: form.currencyId || undefined,
+      categoryGroupId: form.categoryGroupId || undefined,
+      categoryId: form.categoryId || undefined,
+      note: form.note?.trim() || undefined,
+    }
+    emit('submit', payload)
+  } else {
+    const payload: UpdateBudgetLinePayload = {
+      name: form.name.trim(),
+      lineType: form.lineType,
+      categoryGroupId: form.categoryGroupId || undefined,
+      categoryId: form.categoryId || undefined,
+      note: form.note?.trim() || undefined,
+      validFrom: form.validFrom || undefined,
+      validTo: form.validTo || undefined,
+      newAmount: form.newAmount ?? undefined,
+      currencyId: form.currencyId || undefined,
+    }
+    emit('submit', payload)
   }
-  emit('submit', payload)
 }
 </script>

@@ -40,7 +40,9 @@ public sealed class CreateExecutionRecordOperationDateHandlerTests : IDisposable
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        var line = BudgetLine.Create(budgetId, period.Id, group.Id, null, "Rent", LineType.Expense, true);
+        // TODO PR4: update to new BudgetLine.Create signature
+        var line = BudgetLine.Create(budgetId, group.Id, null, "Rent", LineType.Expense,
+            PeriodStart, null, 1000m, CurrencySeeds.GtqId);
         _db.BudgetLines.Add(line);
         await _db.SaveChangesAsync();
 
@@ -91,25 +93,25 @@ public sealed class CreateExecutionRecordOperationDateHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task OperationDate_BeforeStart_Returns_OPERATION_DATE_OUT_OF_RANGE()
+    public async Task OperationDate_BeforeStart_Returns_BUDGET_LINE_NOT_IN_PERIOD()
     {
         var (budgetId, periodId, lineId) = await SeedAsync();
         var cmd    = BuildCmd(budgetId, periodId, lineId, new DateOnly(2025, 12, 31));
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeFalse();
-        result.Error.ShouldBe("OPERATION_DATE_OUT_OF_RANGE");
+        result.Error.ShouldBe("BUDGET_LINE_NOT_IN_PERIOD");
     }
 
     [Fact]
-    public async Task OperationDate_AfterEnd_Returns_OPERATION_DATE_OUT_OF_RANGE()
+    public async Task OperationDate_AfterEnd_Returns_BUDGET_LINE_NOT_IN_PERIOD()
     {
         var (budgetId, periodId, lineId) = await SeedAsync();
         var cmd    = BuildCmd(budgetId, periodId, lineId, new DateOnly(2026, 2, 1));
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeFalse();
-        result.Error.ShouldBe("OPERATION_DATE_OUT_OF_RANGE");
+        result.Error.ShouldBe("BUDGET_LINE_NOT_IN_PERIOD");
     }
 
     [Fact]

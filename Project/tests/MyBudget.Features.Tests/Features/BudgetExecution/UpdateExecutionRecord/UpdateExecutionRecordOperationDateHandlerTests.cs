@@ -40,7 +40,9 @@ public sealed class UpdateExecutionRecordOperationDateHandlerTests : IDisposable
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        var line = BudgetLine.Create(budgetId, period.Id, group.Id, null, "Rent", LineType.Expense, true);
+        // TODO PR4: update to new BudgetLine.Create signature
+        var line = BudgetLine.Create(budgetId, group.Id, null, "Rent", LineType.Expense,
+            PeriodStart, null, 1000m, CurrencySeeds.GtqId);
         _db.BudgetLines.Add(line);
         await _db.SaveChangesAsync();
 

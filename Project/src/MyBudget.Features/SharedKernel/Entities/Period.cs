@@ -13,7 +13,6 @@ public sealed class Period : BaseEntity, IAuditableEntity
 
     // Navigation
     public Cycle? Cycle { get; private set; }
-    public ICollection<BudgetLine> BudgetLines { get; private set; } = new List<BudgetLine>();
 
     private Period() { }
 

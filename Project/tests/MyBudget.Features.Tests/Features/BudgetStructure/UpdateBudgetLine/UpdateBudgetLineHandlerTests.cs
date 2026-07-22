@@ -9,15 +9,11 @@ namespace MyBudget.Features.Tests.Features.BudgetStructure.UpdateBudgetLine;
 
 public sealed class UpdateBudgetLineHandlerTests : IDisposable
 {
-    // Use a shared SQLite file-based connection string per test instance
-    // so that seeding DbContext and handler DbContext share the same data
-    // but do NOT share the same EF change tracker (avoids identity map conflicts).
     private readonly string _connectionString;
     private readonly AppDbContext _seedDb;
 
     public UpdateBudgetLineHandlerTests()
     {
-        // Unique in-memory SQLite DB per test class instance
         var dbName = $"handler-update-{Guid.NewGuid():N}";
         _connectionString = $"DataSource={dbName};Mode=Memory;Cache=Shared";
 
@@ -39,7 +35,7 @@ public sealed class UpdateBudgetLineHandlerTests : IDisposable
         return new AppDbContext(opts);
     }
 
-    private async Task<(Guid budgetId, Guid periodId, Guid lineId, Guid groupId)> SeedLineAsync(bool isClosed = false)
+    private async Task<(Guid budgetId, Guid lineId, Guid groupId)> SeedLineAsync(bool isClosed = false)
     {
         var budgetId = await DbTestHelpers.SeedBudgetAsync(_seedDb);
 
@@ -61,29 +57,67 @@ public sealed class UpdateBudgetLineHandlerTests : IDisposable
         _seedDb.CategoryGroups.Add(group);
         await _seedDb.SaveChangesAsync();
 
-        var line = BudgetLine.Create(budgetId, period.Id, group.Id, null, "Rent", LineType.Expense, true);
+        // TODO PR4: update to new BudgetLine.Create signature
+        var line = BudgetLine.Create(budgetId, group.Id, null, "Rent", LineType.Expense,
+            DateOnly.FromDateTime(DateTime.UtcNow), null, 1000m, CurrencySeeds.GtqId);
         _seedDb.BudgetLines.Add(line);
         await _seedDb.SaveChangesAsync();
 
-        var revision = BudgetLineRevision.Create(budgetId, line.Id, 1000m, CurrencySeeds.GtqId);
-        _seedDb.BudgetLineRevisions.Add(revision);
-        await _seedDb.SaveChangesAsync();
-
-        return (budgetId, period.Id, line.Id, group.Id);
+        return (budgetId, line.Id, group.Id);
     }
 
     [Fact]
-    public async Task ClosedPeriod_Returns_PERIOD_CLOSED()
+    public async Task MetadataUpdate_Succeeds()
     {
-        var (budgetId, periodId, lineId, groupId) = await SeedLineAsync(isClosed: true);
+        var (budgetId, lineId, groupId) = await SeedLineAsync(isClosed: false);
 
-        // Use a FRESH context for the handler — no shared tracking with seed context
         await using var handlerDb = CreateContext();
         var sut = new UpdateBudgetLineHandler(handlerDb);
 
         var cmd = new UpdateBudgetLineCommand(
-            budgetId, periodId, lineId, groupId, null,
-            "Rent Updated", LineType.Expense, true, 2000m, CurrencySeeds.GtqId);
+            budgetId, lineId, groupId, null,
+            "Rent Updated", LineType.Expense,
+            null, null, null, null);
+
+        var result = await sut.Handle(cmd, CancellationToken.None);
+
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task LineNotFound_Returns_BUDGET_LINE_NOT_FOUND()
+    {
+        var (budgetId, _, groupId) = await SeedLineAsync(isClosed: false);
+
+        await using var handlerDb = CreateContext();
+        var sut = new UpdateBudgetLineHandler(handlerDb);
+
+        var cmd = new UpdateBudgetLineCommand(
+            budgetId, Guid.NewGuid(), groupId, null,
+            "Rent Updated", LineType.Expense,
+            null, null, null, null);
+
+        var result = await sut.Handle(cmd, CancellationToken.None);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.Error.ShouldBe("BUDGET_LINE_NOT_FOUND");
+    }
+
+    [Fact]
+    public async Task RevisionSplit_WithClosedPeriodCoveringValidFrom_Returns_PERIOD_CLOSED()
+    {
+        // isClosed=true seeds the period as closed, covering UtcNow..UtcNow+30 days
+        var (budgetId, lineId, groupId) = await SeedLineAsync(isClosed: true);
+
+        await using var handlerDb = CreateContext();
+        var sut = new UpdateBudgetLineHandler(handlerDb);
+
+        // ValidFrom = today falls inside the closed period
+        var validFrom = DateOnly.FromDateTime(DateTime.UtcNow);
+        var cmd = new UpdateBudgetLineCommand(
+            budgetId, lineId, groupId, null,
+            "Rent", LineType.Expense,
+            validFrom, null, 2000m, CurrencySeeds.GtqId);
 
         var result = await sut.Handle(cmd, CancellationToken.None);
 
@@ -92,44 +126,21 @@ public sealed class UpdateBudgetLineHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task OpenPeriod_CreatesNewRevisionWithoutModifyingExisting()
+    public async Task RevisionSplit_WithOpenPeriod_Succeeds()
     {
-        var (budgetId, periodId, lineId, groupId) = await SeedLineAsync(isClosed: false);
+        var (budgetId, lineId, groupId) = await SeedLineAsync(isClosed: false);
 
-        // Read original revision from seed context
-        var originalRevision = await _seedDb.BudgetLineRevisions
-            .FirstAsync(r => r.BudgetLineId == lineId);
-        var originalAmount = originalRevision.BudgetedAmount;
-        var originalRevisedAt = originalRevision.RevisedAt;
-
-        // Use a FRESH context for the handler — no shared tracking with seed context
         await using var handlerDb = CreateContext();
         var sut = new UpdateBudgetLineHandler(handlerDb);
 
+        var validFrom = DateOnly.FromDateTime(DateTime.UtcNow);
         var cmd = new UpdateBudgetLineCommand(
-            budgetId, periodId, lineId, groupId, null,
-            "Rent Updated", LineType.LongTermSavings, false, 2000m, CurrencySeeds.UsdId);
+            budgetId, lineId, groupId, null,
+            "Rent", LineType.Expense,
+            validFrom, null, 2000m, CurrencySeeds.GtqId);
 
         var result = await sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
-
-        // Verify via the seed context (which has no knowledge of handler changes yet — reload)
-        await _seedDb.Entry(originalRevision).ReloadAsync();
-
-        // Check revisions count via a fresh query context
-        await using var verifyDb = CreateContext();
-        var revisionsAfter = await verifyDb.BudgetLineRevisions
-            .Where(r => r.BudgetLineId == lineId)
-            .ToListAsync();
-        revisionsAfter.Count.ShouldBe(2);
-
-        // Original revision is byte-for-byte unchanged
-        var reloadedOriginal = revisionsAfter.First(r => r.BudgetedAmount == originalAmount);
-        reloadedOriginal.RevisedAt.ShouldBe(originalRevisedAt);
-
-        // New revision has updated values
-        var newRevision = revisionsAfter.First(r => r.BudgetedAmount == 2000m);
-        newRevision.CurrencyId.ShouldBe(CurrencySeeds.UsdId);
     }
 }

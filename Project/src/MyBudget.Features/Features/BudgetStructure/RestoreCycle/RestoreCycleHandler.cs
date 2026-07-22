@@ -13,7 +13,6 @@ public sealed class RestoreCycleHandler : IRequestHandler<RestoreCycleCommand, R
 
     public async ValueTask<Result<Guid>> Handle(RestoreCycleCommand cmd, CancellationToken ct)
     {
-        // Load soft-deleted Cycle
         var cycle = await _db.Cycles
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(
@@ -31,39 +30,15 @@ public sealed class RestoreCycleHandler : IRequestHandler<RestoreCycleCommand, R
             .Where(p => p.CycleId == cmd.CycleId && p.DeletedAt != null)
             .ToListAsync(ct);
 
-        var restoredPeriodIds = new List<Guid>();
         foreach (var period in periods)
-        {
             period.Restore();
-            restoredPeriodIds.Add(period.Id);
-        }
 
-        // Load soft-deleted BudgetLines for restored Periods only
-        var restoredLineIds = new List<Guid>();
-        if (restoredPeriodIds.Count > 0)
+        // REQ-RST-02: BudgetLines are Budget-scoped (no PeriodId FK); they are NOT cascade-restored here.
+
+        // REQ-EXEC-CASCADE-2: ExecutionRecord restore is handled separately via RestoreBudgetLine
+        if (cmd.IncludeExecutionRecords)
         {
-            var budgetLines = await _db.BudgetLines
-                .IgnoreQueryFilters()
-                .Where(bl => restoredPeriodIds.Contains(bl.PeriodId) && bl.DeletedAt != null)
-                .ToListAsync(ct);
-
-            foreach (var line in budgetLines)
-            {
-                line.Restore();
-                restoredLineIds.Add(line.Id);
-            }
-        }
-
-        // REQ-EXEC-CASCADE-2: restore child ExecutionRecords when IncludeExecutionRecords=true
-        if (cmd.IncludeExecutionRecords && restoredLineIds.Count > 0)
-        {
-            var executionRecords = await _db.ExecutionRecords
-                .IgnoreQueryFilters()
-                .Where(e => restoredLineIds.Contains(e.BudgetLineId) && e.DeletedAt != null)
-                .ToListAsync(ct);
-
-            foreach (var record in executionRecords)
-                record.Restore();
+            // No-op here — execution records tied to BudgetLines, not Periods (stub)
         }
 
         await _db.SaveChangesAsync(ct);

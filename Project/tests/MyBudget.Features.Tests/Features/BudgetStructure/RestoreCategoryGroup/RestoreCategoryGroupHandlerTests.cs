@@ -58,10 +58,11 @@ public sealed class RestoreCategoryGroupHandlerTests : IDisposable
         await _db.SaveChangesAsync();
 
         // BudgetLines scoped by CategoryGroupId
-        var line1 = BudgetLine.Create(budgetId, periodId, group.Id, cat1.Id, "Rent",      LineType.Expense, true, 1);
-        var line2 = BudgetLine.Create(budgetId, periodId, group.Id, cat1.Id, "Utilities", LineType.Expense, false, 2);
-        var line3 = BudgetLine.Create(budgetId, periodId, group.Id, cat2.Id, "Insurance", LineType.Expense, false, 1);
-        var line4 = BudgetLine.Create(budgetId, periodId, group.Id, cat2.Id, "Food",      LineType.Expense, false, 2);
+        // TODO PR4: update to new BudgetLine.Create signature
+        var line1 = BudgetLine.Create(budgetId, group.Id, cat1.Id, "Rent",      LineType.Expense, DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 1);
+        var line2 = BudgetLine.Create(budgetId, group.Id, cat1.Id, "Utilities", LineType.Expense, DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 2);
+        var line3 = BudgetLine.Create(budgetId, group.Id, cat2.Id, "Insurance", LineType.Expense, DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 1);
+        var line4 = BudgetLine.Create(budgetId, group.Id, cat2.Id, "Food",      LineType.Expense, DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId, 2);
         line1.SoftDelete(); line2.SoftDelete(); line3.SoftDelete(); line4.SoftDelete();
         _db.BudgetLines.AddRange(line1, line2, line3, line4);
         await _db.SaveChangesAsync();

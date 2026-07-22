@@ -60,6 +60,9 @@ public sealed class IntegrationTestFactory : WebApplicationFactory<Program>, IAs
     {
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        // Drop and recreate to avoid "relation already exists" errors when schema changes
+        // across feature branches. Safe because the test DB is isolated and ephemeral.
+        await db.Database.EnsureDeletedAsync();
         await db.Database.MigrateAsync();
     }
 

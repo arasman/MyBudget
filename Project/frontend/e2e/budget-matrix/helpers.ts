@@ -123,31 +123,30 @@ export async function seedBudgetMatrixFixture(
     categoryIds.push(id)
   }
 
-  // ── 7. Create 1 BudgetLine per category per period ────────────────────────
+  // ── 7. Create 2 BudgetLines at budget level (spanning all periods) ──────────
   const lineIds: string[] = []
   const lineDefs = [
-    { name: 'Rent Payment',    lineType: 'Expense', categoryGroupId: groupIds[0], categoryId: categoryIds[0], budgetedAmount: 5000 },
-    { name: 'Weekly Groceries', lineType: 'Expense', categoryGroupId: groupIds[1], categoryId: categoryIds[1], budgetedAmount: 2000 },
+    { name: 'Rent Payment',     lineType: 'Expense', categoryGroupId: groupIds[0], categoryId: categoryIds[0], initialAmount: 5000 },
+    { name: 'Weekly Groceries', lineType: 'Expense', categoryGroupId: groupIds[1], categoryId: categoryIds[1], initialAmount: 2000 },
   ]
 
-  for (const periodId of periodIds) {
-    for (const def of lineDefs) {
-      const resp = await request.post(`/api/budgets/${budgetId}/periods/${periodId}/lines`, {
-        headers,
-        data: {
-          name: def.name,
-          lineType: def.lineType,
-          isRecurring: false,
-          categoryGroupId: def.categoryGroupId,
-          categoryId: def.categoryId,
-          budgetedAmount: def.budgetedAmount,
-          currencyId: GTQ_CURRENCY_ID,
-        },
-      })
-      expect(resp.status()).toBe(201)
-      const { id } = await resp.json()
-      lineIds.push(id)
-    }
+  for (const def of lineDefs) {
+    const resp = await request.post(`/api/budgets/${budgetId}/lines`, {
+      headers,
+      data: {
+        name: def.name,
+        lineType: def.lineType,
+        categoryGroupId: def.categoryGroupId,
+        categoryId: def.categoryId,
+        startDate: '2020-01-01',
+        endDate: null,
+        initialAmount: def.initialAmount,
+        currencyId: GTQ_CURRENCY_ID,
+      },
+    })
+    expect(resp.status()).toBe(201)
+    const { id } = await resp.json()
+    lineIds.push(id)
   }
 
   return { budgetId, cycleId, periodIds, groupIds, categoryIds, lineIds, accessToken }

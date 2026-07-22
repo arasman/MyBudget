@@ -14,43 +14,60 @@ public sealed class UpdateBudgetLineHandler : IRequestHandler<UpdateBudgetLineCo
 
     public async ValueTask<Result<Guid>> Handle(UpdateBudgetLineCommand cmd, CancellationToken ct)
     {
-        // Load BudgetLine -> Period -> Cycle -> verify BudgetId
         var line = await _db.BudgetLines
-            .Include(l => l.Period)
-                .ThenInclude(p => p!.Cycle)
-            .FirstOrDefaultAsync(l => l.Id == cmd.LineId && l.PeriodId == cmd.PeriodId, ct);
+            .Include(bl => bl.Revisions)
+            .FirstOrDefaultAsync(l => l.Id == cmd.LineId && l.BudgetId == cmd.BudgetId, ct);
 
-        if (line is null || line.Period is null || line.Period.Cycle is null ||
-            line.Period.Cycle.BudgetId != cmd.BudgetId)
+        if (line is null)
             return Result<Guid>.Failure("BUDGET_LINE_NOT_FOUND");
 
-        // ADR-BS-05: IsClosed guard -> HTTP 409
-        if (line.Period.IsClosed)
-            return Result<Guid>.Failure("PERIOD_CLOSED");
+        // REQ-BL-NAME-1: name uniqueness — self-exclusion applies
+        var nameConflict = await _db.BudgetLines
+            .IgnoreQueryFilters()
+            .AnyAsync(bl => bl.Id != cmd.LineId
+                         && bl.BudgetId == cmd.BudgetId
+                         && bl.Name == cmd.Name.Trim(), ct);
 
-        // Name uniqueness per (PeriodId, CategoryGroupId, CategoryId), self-excluded — includes soft-deleted (REQ-BL-NAME-1)
-        var normalizedName = cmd.Name.Trim().ToLowerInvariant();
-        var categoryGroupId = cmd.CategoryGroupId;
-        var categoryId      = cmd.CategoryId;
-        var isDuplicateName = await _db.BudgetLines.IgnoreQueryFilters().AnyAsync(l =>
-            l.PeriodId        == cmd.PeriodId    &&
-            l.Id              != cmd.LineId       &&
-            l.CategoryGroupId == categoryGroupId  &&
-            l.CategoryId      == categoryId       &&
-            l.Name.ToLower() == normalizedName, ct);
-
-        if (isDuplicateName)
+        if (nameConflict)
             return Result<Guid>.Failure("BUDGET_LINE_NAME_DUPLICATE");
 
-        // Resolve CurrencyId: explicit or fall back to Cycle.DefaultCurrencyId
-        var currencyId = cmd.CurrencyId ?? line.Period.Cycle.DefaultCurrencyId;
+        // Metadata update (name, category, lineType) — always applied
+        line.Update(cmd.CategoryGroupId, cmd.CategoryId, cmd.Name, cmd.LineType);
 
-        // Update line fields
-        line.Update(cmd.CategoryGroupId, cmd.CategoryId, cmd.Name, cmd.LineType, cmd.IsRecurring);
+        // REQ-BL-03: Revision split — only when ValidFrom + BudgetedAmount are provided
+        if (cmd.ValidFrom.HasValue && cmd.BudgetedAmount.HasValue)
+        {
+            // Edge Case A — IsClosed guard: if any period covers ValidFrom and is closed → reject
+            var isClosed = await _db.Periods
+                .AnyAsync(p => p.BudgetId == cmd.BudgetId
+                            && p.StartDate <= cmd.ValidFrom.Value
+                            && (p.EndDate >= cmd.ValidFrom.Value)
+                            && p.IsClosed, ct);
 
-        // ADR-BS-06: Insert NEW BudgetLineRevision — never modify existing ones
-        var revision = BudgetLineRevision.Create(line.Period!.Cycle!.BudgetId, line.Id, cmd.BudgetedAmount, currencyId);
-        _db.BudgetLineRevisions.Add(revision);
+            if (isClosed)
+                return Result<Guid>.Failure("PERIOD_CLOSED");
+
+            // Prefer explicit currencyId; fall back to the line's existing revision currency
+            var currencyId = cmd.CurrencyId
+                ?? line.Revisions.MaxBy(r => r.ValidFrom)?.CurrencyId
+                ?? CurrencySeeds.GtqId;
+
+            // Track existing revision IDs before the split so we can identify new ones after.
+            var existingRevisionIds = line.Revisions.Select(r => r.Id).ToHashSet();
+
+            line.SplitRevision(cmd.ValidFrom.Value, cmd.ValidTo, cmd.BudgetedAmount.Value, currencyId);
+
+            // EF Core incorrectly tracks new entities added to a tracked collection navigation
+            // as Modified (not Added) when they have a client-set GUID as PK. Fix by explicitly
+            // detaching new revisions and re-adding them via the DbSet.
+            var newRevisions = line.Revisions
+                .Where(r => !existingRevisionIds.Contains(r.Id))
+                .ToList();
+            foreach (var newRev in newRevisions)
+            {
+                _db.Entry(newRev).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+            }
+        }
 
         await _db.SaveChangesAsync(ct);
         return Result<Guid>.Success(line.Id);

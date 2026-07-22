@@ -31,11 +31,11 @@ public sealed class RestoreBudgetLineWithExecutionsIntegrationTests : BudgetExec
         var id2 = await CreateExecutionRecordAsync(budgetId, periodId, lineId, 200m);
 
         // Soft-delete the line (cascades to execution records)
-        await Client.DeleteAsync($"/api/budgets/{budgetId}/periods/{periodId}/lines/{lineId}");
+        await Client.DeleteAsync($"/api/budgets/{budgetId}/lines/{lineId}");
 
         // Restore BudgetLine with includeExecutionRecords=true
         var restoreResp = await Client.PostAsync(
-            $"/api/budgets/{budgetId}/periods/{periodId}/lines/{lineId}/restore?includeExecutionRecords=true",
+            $"/api/budgets/{budgetId}/lines/{lineId}/restore?includeExecutionRecords=true",
             null);
         restoreResp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
@@ -71,11 +71,11 @@ public sealed class RestoreBudgetLineWithExecutionsIntegrationTests : BudgetExec
         var id1 = await CreateExecutionRecordAsync(budgetId, periodId, lineId, 100m);
 
         // Soft-delete the line (cascades to execution records)
-        await Client.DeleteAsync($"/api/budgets/{budgetId}/periods/{periodId}/lines/{lineId}");
+        await Client.DeleteAsync($"/api/budgets/{budgetId}/lines/{lineId}");
 
         // Restore BudgetLine WITHOUT includeExecutionRecords
         var restoreResp = await Client.PostAsync(
-            $"/api/budgets/{budgetId}/periods/{periodId}/lines/{lineId}/restore?includeExecutionRecords=false",
+            $"/api/budgets/{budgetId}/lines/{lineId}/restore?includeExecutionRecords=false",
             null);
         restoreResp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 

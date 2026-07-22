@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using MyBudget.Features.SharedKernel.Entities;
 using Shouldly;
 
 namespace MyBudget.Integration.Tests.Features.BudgetStructure;
@@ -95,25 +96,24 @@ public sealed class ReadEndpointTests : BudgetStructureTestBase
     public async Task ListBudgetLines_ShowsLatestRevisionAmount()
     {
         var (_, budgetId) = await SetupOwnerAsync("read-lines1@example.com");
-        var cycleId       = await CreateCycleAsync(budgetId);
-        var periodId      = await CreatePeriodAsync(budgetId, cycleId);
         var groupId       = await CreateCategoryGroupAsync(budgetId);
-        var lineId        = await CreateBudgetLineAsync(budgetId, periodId, groupId, amount: 1500m);
+        var lineId        = await CreateBudgetLineAsync(budgetId, Guid.Empty, groupId, amount: 1500m);
 
-        // Update line to create a second revision with 2000
+        // Update line to create a second revision with 2000 (revision split from today)
         await Client.PutAsJsonAsync(
-            $"/api/budgets/{budgetId}/periods/{periodId}/lines/{lineId}",
+            $"/api/budgets/{budgetId}/lines/{lineId}",
             new
             {
                 name            = "Rent",
                 lineType        = "Expense",
-                isRecurring     = false,
                 categoryGroupId = groupId,
+                validFrom       = DateOnly.FromDateTime(DateTime.UtcNow),
                 budgetedAmount  = 2000m,
-                currency        = "GTQ",
+                currencyId      = CurrencySeeds.GtqId,
             });
 
-        var response = await Client.GetAsync($"/api/budgets/{budgetId}/periods/{periodId}/lines");
+        // REQ-READ-04: list is budget-scoped, not period-scoped
+        var response = await Client.GetAsync($"/api/budgets/{budgetId}/lines");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var lines = await response.Content.ReadFromJsonAsync<BudgetLineItem[]>(JsonOpts);
@@ -124,15 +124,14 @@ public sealed class ReadEndpointTests : BudgetStructureTestBase
     public async Task ListBudgetLines_ViewerCaller_Returns200()
     {
         var (_, budgetId) = await SetupOwnerAsync("read-lines2-owner@example.com");
-        var cycleId       = await CreateCycleAsync(budgetId);
-        var periodId      = await CreatePeriodAsync(budgetId, cycleId);
         var groupId       = await CreateCategoryGroupAsync(budgetId);
-        await CreateBudgetLineAsync(budgetId, periodId, groupId);
+        await CreateBudgetLineAsync(budgetId, Guid.Empty, groupId);
 
         var viewerToken = await SetupViewerAsync(budgetId, "read-lines2-viewer@example.com");
         AuthorizeClient(viewerToken);
 
-        var response = await Client.GetAsync($"/api/budgets/{budgetId}/periods/{periodId}/lines");
+        // REQ-READ-04: budget-scoped list endpoint
+        var response = await Client.GetAsync($"/api/budgets/{budgetId}/lines");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
@@ -141,23 +140,21 @@ public sealed class ReadEndpointTests : BudgetStructureTestBase
     public async Task CreateBudgetLine_ViewerCaller_Returns403()
     {
         var (_, budgetId) = await SetupOwnerAsync("read-lines3-owner@example.com");
-        var cycleId       = await CreateCycleAsync(budgetId);
-        var periodId      = await CreatePeriodAsync(budgetId, cycleId);
         var groupId       = await CreateCategoryGroupAsync(budgetId);
 
         var viewerToken = await SetupViewerAsync(budgetId, "read-lines3-viewer@example.com");
         AuthorizeClient(viewerToken);
 
         var response = await Client.PostAsJsonAsync(
-            $"/api/budgets/{budgetId}/periods/{periodId}/lines",
+            $"/api/budgets/{budgetId}/lines",
             new
             {
                 name            = "Rent",
                 lineType        = "Expense",
-                isRecurring     = false,
                 categoryGroupId = groupId,
-                budgetedAmount  = 1500m,
-                currency        = "GTQ",
+                startDate       = new DateOnly(2025, 1, 1),
+                initialAmount   = 1500m,
+                currencyId      = CurrencySeeds.GtqId,
             });
 
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
@@ -170,5 +167,5 @@ public sealed class ReadEndpointTests : BudgetStructureTestBase
     private sealed record PeriodItem(Guid Id, string Name, int PeriodNumber, DateOnly StartDate, DateOnly EndDate, bool IsClosed);
     private sealed record CategoryGroupResponse(Guid Id, string Name, int DisplayOrder, CategoryItem[] Categories);
     private sealed record CategoryItem(Guid Id, string Name, int DisplayOrder);
-    private sealed record BudgetLineItem(Guid Id, string Name, string LineType, bool IsRecurring, Guid CategoryGroupId, Guid? CategoryId, decimal? BudgetedAmount, string? CurrencyCode, string? CurrencySymbol);
+    private sealed record BudgetLineItem(Guid Id, string Name, string LineType, Guid CategoryGroupId, Guid? CategoryId, DateOnly StartDate, DateOnly? EndDate, decimal? BudgetedAmount, string? CurrencyCode, string? CurrencySymbol);
 }

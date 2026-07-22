@@ -5,6 +5,7 @@ using MyBudget.Features.SharedKernel.Results;
 
 namespace MyBudget.Features.Features.BudgetExecution.DeleteExecutionRecord;
 
+// TODO PR2b: full handler rewrite — load Period directly (BudgetLine no longer has Period nav)
 public sealed class DeleteExecutionRecordHandler : IRequestHandler<DeleteExecutionRecordCommand, Result<Guid>>
 {
     private readonly AppDbContext _db;
@@ -13,11 +14,8 @@ public sealed class DeleteExecutionRecordHandler : IRequestHandler<DeleteExecuti
 
     public async ValueTask<Result<Guid>> Handle(DeleteExecutionRecordCommand cmd, CancellationToken ct)
     {
-        // Load non-deleted ExecutionRecord with BudgetLine -> Period
+        // Load ExecutionRecord without BudgetLine->Period chain
         var record = await _db.ExecutionRecords
-            .Include(e => e.BudgetLine)
-                .ThenInclude(bl => bl!.Period)
-                    .ThenInclude(p => p!.Cycle)
             .FirstOrDefaultAsync(
                 e => e.Id == cmd.ExecutionId
                   && e.BudgetLineId == cmd.BudgetLineId
@@ -25,11 +23,12 @@ public sealed class DeleteExecutionRecordHandler : IRequestHandler<DeleteExecuti
                   && e.BudgetId == cmd.BudgetId,
                 ct);
 
-        // REQ-EXEC-DELETE-2: already soft-deleted -> 404
         if (record is null)
             return Result<Guid>.Failure("EXECUTION_RECORD_NOT_FOUND");
 
-        var period = record.BudgetLine?.Period;
+        // Load Period directly for IsClosed guard
+        var period = await _db.Periods
+            .FirstOrDefaultAsync(p => p.Id == cmd.PeriodId, ct);
 
         if (period is null)
             return Result<Guid>.Failure("EXECUTION_RECORD_NOT_FOUND");

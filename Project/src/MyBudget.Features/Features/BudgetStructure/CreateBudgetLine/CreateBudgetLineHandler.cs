@@ -4,6 +4,7 @@ using MyBudget.Features.SharedKernel.Entities;
 using MyBudget.Features.SharedKernel.Persistence;
 using MyBudget.Features.SharedKernel.Results;
 
+
 namespace MyBudget.Features.Features.BudgetStructure.CreateBudgetLine;
 
 public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCommand, Result<Guid>>
@@ -14,55 +15,46 @@ public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCo
 
     public async ValueTask<Result<Guid>> Handle(CreateBudgetLineCommand cmd, CancellationToken ct)
     {
-        // Load Period -> Cycle -> verify BudgetId
-        var period = await _db.Periods
-            .Include(p => p.Cycle)
-            .FirstOrDefaultAsync(p => p.Id == cmd.PeriodId, ct);
+        var budgetExists = await _db.Budgets
+            .AnyAsync(b => b.Id == cmd.BudgetId, ct);
 
-        if (period is null || period.Cycle is null || period.Cycle.BudgetId != cmd.BudgetId)
-            return Result<Guid>.Failure("PERIOD_NOT_FOUND");
+        if (!budgetExists)
+            return Result<Guid>.Failure("BUDGET_NOT_FOUND");
 
-        // ADR-BS-05: IsClosed guard -> HTTP 409
-        if (period.IsClosed)
-            return Result<Guid>.Failure("PERIOD_CLOSED");
+        // REQ-BL-NAME-1: name must be unique within the budget, including soft-deleted lines
+        var nameExists = await _db.BudgetLines
+            .IgnoreQueryFilters()
+            .AnyAsync(bl => bl.BudgetId == cmd.BudgetId && bl.Name == cmd.Name.Trim(), ct);
 
-        // Name uniqueness per (PeriodId, CategoryGroupId, CategoryId) — includes soft-deleted lines (REQ-BL-NAME-1)
-        var normalizedName = cmd.Name.Trim().ToLowerInvariant();
-        var isDuplicateName = await _db.BudgetLines.IgnoreQueryFilters().AnyAsync(l =>
-            l.PeriodId        == cmd.PeriodId        &&
-            l.CategoryGroupId == cmd.CategoryGroupId &&
-            l.CategoryId      == cmd.CategoryId      &&
-            l.Name.ToLower() == normalizedName, ct);
-
-        if (isDuplicateName)
+        if (nameExists)
             return Result<Guid>.Failure("BUDGET_LINE_NAME_DUPLICATE");
 
-        // Resolve CurrencyId: explicit or fall back to Cycle.DefaultCurrencyId
-        var currencyId = cmd.CurrencyId ?? period.Cycle.DefaultCurrencyId;
+        // If currencyId not supplied, fall back to the default currency of the most recent cycle
+        var currencyId = cmd.CurrencyId;
+        if (currencyId is null)
+        {
+            var cycleDefault = await _db.Cycles
+                .IgnoreQueryFilters()
+                .Where(c => c.BudgetId == cmd.BudgetId && c.DeletedAt == null)
+                .OrderByDescending(c => c.StartDate)
+                .Select(c => (Guid?)c.DefaultCurrencyId)
+                .FirstOrDefaultAsync(ct);
 
-        // Determine DisplayOrder: count of existing active lines in same (PeriodId, CategoryGroupId, CategoryId) + 1
-        var existingCount = await _db.BudgetLines
-            .CountAsync(l => l.PeriodId == cmd.PeriodId
-                          && l.CategoryGroupId == cmd.CategoryGroupId
-                          && l.CategoryId == cmd.CategoryId, ct);
+            currencyId = cycleDefault ?? CurrencySeeds.GtqId;
+        }
 
-        // ADR-BS-06: Create BudgetLine + initial BudgetLineRevision
-        var budgetId = period.Cycle!.BudgetId;
         var line = BudgetLine.Create(
-            budgetId,
-            cmd.PeriodId,
+            cmd.BudgetId,
             cmd.CategoryGroupId,
             cmd.CategoryId,
             cmd.Name,
             cmd.LineType,
-            cmd.IsRecurring,
-            existingCount + 1);
+            cmd.StartDate,
+            cmd.EndDate,
+            cmd.InitialAmount,
+            currencyId.Value);
 
         _db.BudgetLines.Add(line);
-        await _db.SaveChangesAsync(ct); // persist to get the Id
-
-        var revision = BudgetLineRevision.Create(budgetId, line.Id, cmd.BudgetedAmount, currencyId);
-        _db.BudgetLineRevisions.Add(revision);
         await _db.SaveChangesAsync(ct);
 
         return Result<Guid>.Success(line.Id);

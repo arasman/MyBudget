@@ -130,8 +130,8 @@ namespace MyBudget.Features.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsRecurring")
-                        .HasColumnType("boolean");
+                    b.Property<string>("EndDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("LineType")
                         .HasColumnType("integer");
@@ -141,8 +141,9 @@ namespace MyBudget.Features.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<Guid>("PeriodId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("StartDate")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -157,8 +158,12 @@ namespace MyBudget.Features.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("PeriodId")
-                        .HasDatabaseName("IX_BudgetLines_PeriodId");
+                    b.HasIndex("BudgetId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("IX_BudgetLines_BudgetId_Name");
+
+                    b.HasIndex("BudgetId", "StartDate")
+                        .HasDatabaseName("IX_BudgetLines_BudgetId_StartDate");
 
                     b.ToTable("BudgetLines", (string)null);
                 });
@@ -189,11 +194,15 @@ namespace MyBudget.Features.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<DateTimeOffset>("RevisedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ValidFrom")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ValidTo")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -202,9 +211,8 @@ namespace MyBudget.Features.Migrations
 
                     b.HasIndex("CurrencyId");
 
-                    b.HasIndex("BudgetLineId", "RevisedAt")
-                        .IsDescending(false, true)
-                        .HasDatabaseName("IX_BudgetLineRevisions_BudgetLineId_RevisedAt");
+                    b.HasIndex("BudgetLineId", "ValidFrom")
+                        .HasDatabaseName("IX_BudgetLineRevisions_BudgetLineId_ValidFrom");
 
                     b.ToTable("BudgetLineRevisions", (string)null);
                 });
@@ -857,17 +865,9 @@ namespace MyBudget.Features.Migrations
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("MyBudget.Features.SharedKernel.Entities.Period", "Period")
-                        .WithMany("BudgetLines")
-                        .HasForeignKey("PeriodId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Category");
 
                     b.Navigation("CategoryGroup");
-
-                    b.Navigation("Period");
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.BudgetLineRevision", b =>
@@ -1080,11 +1080,6 @@ namespace MyBudget.Features.Migrations
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Cycle", b =>
                 {
                     b.Navigation("Periods");
-                });
-
-            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Period", b =>
-                {
-                    b.Navigation("BudgetLines");
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.User", b =>

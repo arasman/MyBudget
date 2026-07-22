@@ -11,13 +11,13 @@ public sealed class UpdateBudgetLineValidatorTests
     private static UpdateBudgetLineCommand ValidCommand() =>
         new(
             BudgetId:        Guid.NewGuid(),
-            PeriodId:        Guid.NewGuid(),
             LineId:          Guid.NewGuid(),
             CategoryGroupId: Guid.NewGuid(),
             CategoryId:      null,
             Name:            "Rent",
             LineType:        LineType.Expense,
-            IsRecurring:     true,
+            ValidFrom:       null,
+            ValidTo:         null,
             BudgetedAmount:  2000m,
             CurrencyId:      CurrencySeeds.UsdId);
 
@@ -41,14 +41,6 @@ public sealed class UpdateBudgetLineValidatorTests
         var result = _sut.Validate(ValidCommand() with { BudgetId = Guid.Empty });
         result.IsValid.ShouldBeFalse();
         result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateBudgetLineCommand.BudgetId));
-    }
-
-    [Fact]
-    public void PeriodId_Empty_Fails()
-    {
-        var result = _sut.Validate(ValidCommand() with { PeriodId = Guid.Empty });
-        result.IsValid.ShouldBeFalse();
-        result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateBudgetLineCommand.PeriodId));
     }
 
     [Fact]
@@ -98,7 +90,7 @@ public sealed class UpdateBudgetLineValidatorTests
         result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateBudgetLineCommand.BudgetedAmount));
     }
 
-    // REQ-BL-AMOUNT-1: amount must be > 0 (changed from >= 0)
+    // REQ-BL-AMOUNT-1: amount must be > 0
     [Fact]
     public void BudgetedAmount_Zero_Rejected()
     {
@@ -112,6 +104,68 @@ public sealed class UpdateBudgetLineValidatorTests
     public void BudgetedAmount_Positive_Passes()
     {
         var result = _sut.Validate(ValidCommand() with { BudgetedAmount = 0.01m });
+        result.IsValid.ShouldBeTrue();
+    }
+
+    // REQ-BL-03: ValidFrom must not be in the past
+    [Fact]
+    public void ValidFrom_Yesterday_Fails()
+    {
+        var yesterday = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
+        var result = _sut.Validate(ValidCommand() with { ValidFrom = yesterday, BudgetedAmount = 500m });
+        result.IsValid.ShouldBeFalse();
+        result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateBudgetLineCommand.ValidFrom)
+                                      && e.ErrorCode == "VALIDFROM_IN_PAST");
+    }
+
+    [Fact]
+    public void ValidFrom_Today_Passes()
+    {
+        var today  = DateOnly.FromDateTime(DateTime.UtcNow);
+        var result = _sut.Validate(ValidCommand() with { ValidFrom = today, BudgetedAmount = 500m });
+        result.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ValidFrom_Future_Passes()
+    {
+        var future = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30));
+        var result = _sut.Validate(ValidCommand() with { ValidFrom = future, BudgetedAmount = 500m });
+        result.IsValid.ShouldBeTrue();
+    }
+
+    // REQ-BL-03: ValidTo must be >= ValidFrom when both are provided
+    [Fact]
+    public void ValidTo_BeforeValidFrom_Fails()
+    {
+        var today  = DateOnly.FromDateTime(DateTime.UtcNow);
+        var result = _sut.Validate(ValidCommand() with
+        {
+            ValidFrom      = today.AddDays(10),
+            ValidTo        = today.AddDays(5),
+            BudgetedAmount = 500m
+        });
+        result.IsValid.ShouldBeFalse();
+        result.Errors.ShouldContain(e => e.PropertyName == nameof(UpdateBudgetLineCommand.ValidTo));
+    }
+
+    [Fact]
+    public void ValidTo_AfterValidFrom_Passes()
+    {
+        var today  = DateOnly.FromDateTime(DateTime.UtcNow);
+        var result = _sut.Validate(ValidCommand() with
+        {
+            ValidFrom      = today,
+            ValidTo        = today.AddDays(30),
+            BudgetedAmount = 500m
+        });
+        result.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ValidFrom_Null_NoRevisionValidation_Passes()
+    {
+        var result = _sut.Validate(ValidCommand() with { ValidFrom = null, BudgetedAmount = null });
         result.IsValid.ShouldBeTrue();
     }
 }

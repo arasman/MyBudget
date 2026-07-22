@@ -13,20 +13,19 @@ public sealed class ReorderBudgetLinesHandler : IRequestHandler<ReorderBudgetLin
 
     public async ValueTask<Result<bool>> Handle(ReorderBudgetLinesCommand cmd, CancellationToken ct)
     {
-        // Verify Period belongs to the budget via Cycle
-        var periodExists = await _db.Periods
-            .Include(p => p.Cycle)
-            .AnyAsync(p => p.Id == cmd.PeriodId && p.Cycle!.BudgetId == cmd.BudgetId, ct);
+        // Verify Budget exists
+        var budgetExists = await _db.Budgets
+            .AnyAsync(b => b.Id == cmd.BudgetId, ct);
 
-        if (!periodExists)
-            return Result<bool>.Failure("PERIOD_NOT_FOUND");
+        if (!budgetExists)
+            return Result<bool>.Failure("BUDGET_NOT_FOUND");
 
-        // Load all active BudgetLines for this Period
+        // Load all active BudgetLines for this Budget
         var allLines = await _db.BudgetLines
-            .Where(l => l.PeriodId == cmd.PeriodId)
+            .Where(l => l.BudgetId == cmd.BudgetId)
             .ToListAsync(ct);
 
-        // Validate: all provided IDs belong to this Period
+        // Validate: all provided IDs belong to this Budget
         var allLineIds = allLines.Select(l => l.Id).ToHashSet();
         if (!cmd.OrderedIds.All(id => allLineIds.Contains(id)))
             return Result<bool>.Failure("REORDER_ID_NOT_IN_SCOPE");

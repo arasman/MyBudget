@@ -154,14 +154,6 @@
                 <!-- Active period: normal actions -->
                 <template v-else>
                   <button
-                    type="button"
-                    class="btn btn-xs btn-ghost btn-square"
-                    :title="t('budgetStructure.periods.viewLines')"
-                    @click="goToLines(period.id)"
-                  >
-                    <List :size="14" />
-                  </button>
-                  <button
                     v-if="canWriteStructure"
                     type="button"
                     class="btn btn-xs btn-ghost btn-square"
@@ -276,21 +268,20 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBudgetStructureStore } from '../store'
 import { useLayoutStore } from '@/stores/layout.store'
 import { useToastStore } from '@/stores/toast.store'
 import { useRoleGate } from '../composables/useRoleGate'
 import { extractApiErrorCode } from '../utils/apiError'
-import { Check, List, Pencil, RefreshCw, RotateCcw, Trash2, X } from 'lucide-vue-next'
+import { Check, Pencil, RefreshCw, RotateCcw, Trash2, X } from 'lucide-vue-next'
 import BudgetTabs from '../components/BudgetTabs.vue'
 import PeriodForm from '../components/PeriodForm.vue'
 import * as budgetLinesApi from '../api/budgetLines.api'
 import type { PeriodSummary, DateString } from '../types'
 
 const route = useRoute()
-const router = useRouter()
 const { t } = useI18n()
 
 const budgetId = route.params.budgetId as string
@@ -402,7 +393,7 @@ async function startRestore(periodId: string): Promise<void> {
   restoringPeriodId.value = periodId
   restoreLoading.value = true
   try {
-    const lines = await budgetLinesApi.list(budgetId, periodId, true)
+    const lines = await budgetLinesApi.list(budgetId, true)
     restoreDeletedLineCount.value = lines.filter((l) => !!l.deletedAt).length
     restoreConfirmStep.value = 'disclosure'
   } finally {
@@ -461,9 +452,6 @@ async function handleFormSubmit(payload: {
   }
 }
 
-function goToLines(periodId: string): void {
-  router.push({ name: 'BudgetLines', params: { budgetId, cycleId, periodId } })
-}
 
 watch(() => store.showDeletedPeriods, async () => {
   await store.loadPeriods(budgetId, cycleId)

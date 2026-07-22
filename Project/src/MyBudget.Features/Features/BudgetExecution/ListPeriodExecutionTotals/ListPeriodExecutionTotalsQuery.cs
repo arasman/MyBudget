@@ -15,6 +15,7 @@ public sealed record PeriodExecutionTotalsResponse(
 public sealed record LineTotalDto(
     Guid    BudgetLineId,
     string  BudgetLineName,
+    decimal BudgetedAmount,
     decimal TotalExpenses,
     decimal TotalCreditNotes,
     decimal TotalDebitNotes,

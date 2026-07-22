@@ -41,9 +41,10 @@ public static class CreateExecutionRecordEndpoint
         {
             return result.Error switch
             {
-                "PERIOD_CLOSED"    => Results.Conflict(new { error = result.Error }),
-                "PARENT_IS_DELETED" => Results.Conflict(new { error = result.Error }),
-                "BUDGET_LINE_NOT_FOUND" => Results.NotFound(new { error = result.Error }),
+                "PERIOD_CLOSED"              => Results.Conflict(new { error = result.Error }),
+                "PARENT_IS_DELETED"          => Results.Conflict(new { error = result.Error }),
+                "BUDGET_LINE_NOT_FOUND"      => Results.NotFound(new { error = result.Error }),
+                "BUDGET_LINE_NOT_IN_PERIOD"  => Results.UnprocessableEntity(new { error = result.Error }),
                 _ => Results.Problem(result.Error, statusCode: StatusCodes.Status422UnprocessableEntity),
             };
         }

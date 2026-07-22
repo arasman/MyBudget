@@ -6,7 +6,7 @@ using Shouldly;
 
 namespace MyBudget.Features.Tests.Features.BudgetStructure.UpdateBudgetLine;
 
-/// <summary>Tests for REQ-BL-NAME-1 in update path: budget line name uniqueness.</summary>
+/// <summary>Tests for REQ-BL-NAME-1 in update path: budget line name uniqueness scoped to BudgetId.</summary>
 public sealed class UpdateBudgetLineNameDuplicateHandlerTests : IDisposable
 {
     private readonly AppDbContext _db;
@@ -20,46 +20,36 @@ public sealed class UpdateBudgetLineNameDuplicateHandlerTests : IDisposable
 
     public void Dispose() => _db.Dispose();
 
-    private async Task<(Guid budgetId, Guid periodId, Guid groupId)> SeedAsync()
+    private async Task<(Guid budgetId, Guid groupId)> SeedAsync()
     {
         var budgetId = await DbTestHelpers.SeedBudgetAsync(_db);
-
-        var cycle = Cycle.Create(budgetId, "Test Cycle",
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(365)),
-            CurrencySeeds.GtqId);
-        _db.Cycles.Add(cycle);
-        await _db.SaveChangesAsync();
-
-        var period = Period.Create(budgetId, cycle.Id, "January", 1,
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
-        _db.Periods.Add(period);
-        await _db.SaveChangesAsync();
 
         var group = CategoryGroup.Create(budgetId, "Housing", 1);
         _db.CategoryGroups.Add(group);
         await _db.SaveChangesAsync();
 
-        return (budgetId, period.Id, group.Id);
+        return (budgetId, group.Id);
     }
 
     [Fact]
     public async Task SoftDeletedSiblingDuplicate_Returns_BUDGET_LINE_NAME_DUPLICATE()
     {
-        var (budgetId, periodId, groupId) = await SeedAsync();
+        var (budgetId, groupId) = await SeedAsync();
 
-        var deleted = BudgetLine.Create(budgetId, periodId, groupId, null, "Utilities", LineType.Expense, true);
+        var deleted = BudgetLine.Create(budgetId, groupId, null, "Utilities", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId);
         deleted.SoftDelete();
         _db.BudgetLines.Add(deleted);
 
-        var target = BudgetLine.Create(budgetId, periodId, groupId, null, "Rent", LineType.Expense, false);
+        var target = BudgetLine.Create(budgetId, groupId, null, "Rent", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId);
         _db.BudgetLines.Add(target);
         await _db.SaveChangesAsync();
 
         var cmd = new UpdateBudgetLineCommand(
-            budgetId, periodId, target.Id,
-            groupId, null, "Utilities", LineType.Expense, false, 500m, null);
+            budgetId, target.Id,
+            groupId, null, "Utilities", LineType.Expense,
+            null, null, 500m, null);
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeFalse();
@@ -69,17 +59,43 @@ public sealed class UpdateBudgetLineNameDuplicateHandlerTests : IDisposable
     [Fact]
     public async Task SelfRename_Succeeds()
     {
-        var (budgetId, periodId, groupId) = await SeedAsync();
+        var (budgetId, groupId) = await SeedAsync();
 
-        var target = BudgetLine.Create(budgetId, periodId, groupId, null, "Rent", LineType.Expense, true);
+        var target = BudgetLine.Create(budgetId, groupId, null, "Rent", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId);
         _db.BudgetLines.Add(target);
         await _db.SaveChangesAsync();
 
         var cmd = new UpdateBudgetLineCommand(
-            budgetId, periodId, target.Id,
-            groupId, null, "Rent", LineType.Expense, true, 600m, null);
+            budgetId, target.Id,
+            groupId, null, "Rent", LineType.Expense,
+            null, null, 600m, null);
         var result = await _sut.Handle(cmd, CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ActiveSiblingDuplicate_Returns_BUDGET_LINE_NAME_DUPLICATE()
+    {
+        var (budgetId, groupId) = await SeedAsync();
+
+        var sibling = BudgetLine.Create(budgetId, groupId, null, "Utilities", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId);
+        _db.BudgetLines.Add(sibling);
+
+        var target = BudgetLine.Create(budgetId, groupId, null, "Rent", LineType.Expense,
+            DateOnly.MinValue, null, 1000m, CurrencySeeds.GtqId);
+        _db.BudgetLines.Add(target);
+        await _db.SaveChangesAsync();
+
+        var cmd = new UpdateBudgetLineCommand(
+            budgetId, target.Id,
+            groupId, null, "Utilities", LineType.Expense,
+            null, null, 500m, null);
+        var result = await _sut.Handle(cmd, CancellationToken.None);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.Error.ShouldBe("BUDGET_LINE_NAME_DUPLICATE");
     }
 }

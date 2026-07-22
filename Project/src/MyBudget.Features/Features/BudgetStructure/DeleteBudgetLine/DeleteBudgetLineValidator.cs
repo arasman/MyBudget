@@ -9,9 +9,6 @@ public sealed class DeleteBudgetLineValidator : AbstractValidator<DeleteBudgetLi
         RuleFor(x => x.BudgetId)
             .NotEmpty().WithErrorCode("FIELD_REQUIRED");
 
-        RuleFor(x => x.PeriodId)
-            .NotEmpty().WithErrorCode("FIELD_REQUIRED");
-
         RuleFor(x => x.LineId)
             .NotEmpty().WithErrorCode("FIELD_REQUIRED");
     }
