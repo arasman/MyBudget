@@ -103,29 +103,29 @@ All PRs merge sequentially into `feat/budget-line-customizations`; only the trac
 
 #### ListBudgetLineRevisions
 
-- [ ] T2.7 **[RED]** Write integration tests for `GET /api/budgets/{budgetId}/lines/{lineId}/revisions`: (a) 200 + ordered revisions; (b) 404 when lineId not found; (c) 401 unauthenticated; (d) 403 insufficient role.
-- [ ] T2.8 **[GREEN]** Create `Features/BudgetStructure/ListBudgetLineRevisions/` — `ListBudgetLineRevisionsQuery.cs`, `ListBudgetLineRevisionsHandler.cs` (Dapper), `ListBudgetLineRevisionsEndpoint.cs`, and `RevisionDto.cs`.
+- [x] T2.7 **[RED]** Write integration tests for `GET /api/budgets/{budgetId}/lines/{lineId}/revisions`: (a) 200 + ordered revisions; (b) 404 when lineId not found; (c) 401 unauthenticated; (d) 403 insufficient role.
+- [x] T2.8 **[GREEN]** Create `Features/BudgetStructure/ListBudgetLineRevisions/` — `ListBudgetLineRevisionsQuery.cs`, `ListBudgetLineRevisionsHandler.cs` (Dapper), `ListBudgetLineRevisionsEndpoint.cs`, and `RevisionDto.cs`.
 
 #### CreateBudgetLineRevision
 
-- [ ] T2.9 **[RED]** Write xUnit validator tests for `CreateBudgetLineRevisionCommand`: (a) `validFrom` before today → 422; (b) `validFrom` outside BudgetLine range → 422; (c) `newAmount` ≤ 0 → 422.
-- [ ] T2.10 **[GREEN]** Create `Features/BudgetStructure/CreateBudgetLineRevision/CreateBudgetLineRevisionValidator.cs`.
-- [ ] T2.11 **[RED]** Write integration tests for `POST .../revisions`: (a) 201 + gapless chain; (b) 409 on stale `xmin` (PostgreSQL only — mark SQLite skip).
-- [ ] T2.12 **[GREEN]** Create `CreateBudgetLineRevisionCommand.cs`, `CreateBudgetLineRevisionHandler.cs` (calls `BudgetLine.SplitRevision`), `CreateBudgetLineRevisionEndpoint.cs`; catch `DbUpdateConcurrencyException` → 409.
+- [x] T2.9 **[RED]** Write xUnit validator tests for `CreateBudgetLineRevisionCommand`: (a) `validFrom` before today → 422; (b) `validFrom` outside BudgetLine range → 422; (c) `newAmount` ≤ 0 → 422.
+- [x] T2.10 **[GREEN]** Create `Features/BudgetStructure/CreateBudgetLineRevision/CreateBudgetLineRevisionValidator.cs`.
+- [x] T2.11 **[RED]** Write integration tests for `POST .../revisions`: (a) 201 + gapless chain; (b) 409 on stale `xmin` (PostgreSQL only — mark SQLite skip).
+- [x] T2.12 **[GREEN]** Create `CreateBudgetLineRevisionCommand.cs`, `CreateBudgetLineRevisionHandler.cs` (calls `BudgetLine.SplitRevision`), `CreateBudgetLineRevisionEndpoint.cs`; catch `DbUpdateConcurrencyException` → 409.
 
 #### DeleteBudgetLineRevision
 
-- [ ] T2.13 **[RED]** Write integration tests for `DELETE .../revisions/{revisionId}`: (a) 204 + gapless repair; (b) 422 `CANNOT_DELETE_ORIGINAL_REVISION`; (c) 409 `REVISION_HAS_ACTIVE_EXECUTIONS`; (d) soft-deleted executions → 204; (e) audit entry `BudgetLineRevisionDeleted` written; (f) 409 on stale `xmin` (mark SQLite skip).
-- [ ] T2.14 **[GREEN]** Create `DeleteBudgetLineRevisionCommand.cs`, `DeleteBudgetLineRevisionHandler.cs` (explicit `_db.BudgetLineRevisions.Remove(target)` + explicit `AuditLog.Create("BudgetLineRevisionDeleted", ...)` before `SaveChangesAsync`), `DeleteBudgetLineRevisionEndpoint.cs`.
+- [x] T2.13 **[RED]** Write integration tests for `DELETE .../revisions/{revisionId}`: (a) 204 + gapless repair; (b) 422 `CANNOT_DELETE_ORIGINAL_REVISION`; (c) 409 `REVISION_HAS_ACTIVE_EXECUTIONS`; (d) soft-deleted executions → 204; (e) audit entry `BudgetLineRevisionDeleted` written; (f) 409 on stale `xmin` (mark SQLite skip).
+- [x] T2.14 **[GREEN]** Create `DeleteBudgetLineRevisionCommand.cs`, `DeleteBudgetLineRevisionHandler.cs` (explicit `_db.BudgetLineRevisions.Remove(target)` + explicit `AuditLog.Create("BudgetLineRevisionDeleted", ...)` before `SaveChangesAsync`), `DeleteBudgetLineRevisionEndpoint.cs`.
 
 #### UpdateBudgetLineDateRange
 
-- [ ] T2.15 **[RED]** Write integration tests for `PATCH .../date-range`: (a) 200 + EndDate updated + audit entry; (b) 422 `RANGE_WOULD_ORPHAN_REVISION`; (c) 409 `RANGE_WOULD_ORPHAN_EXECUTION`; (d) soft-deleted executions outside range → 200; (e) 409 on stale `xmin` (mark SQLite skip).
-- [ ] T2.16 **[GREEN]** Create `UpdateBudgetLineDateRangeCommand.cs`, `UpdateBudgetLineDateRangeValidator.cs`, `UpdateBudgetLineDateRangeHandler.cs` (loads line + revisions, calls `UpdateDateRange`, queries active executions for ORPHAN_EXECUTION guard, `SaveChangesAsync` triggers interceptor audit for `BudgetLineDateRangeUpdated`), `UpdateBudgetLineDateRangeEndpoint.cs`.
+- [x] T2.15 **[RED]** Write integration tests for `PATCH .../date-range`: (a) 200 + EndDate updated + audit entry; (b) 422 `RANGE_WOULD_ORPHAN_REVISION`; (c) 409 `RANGE_WOULD_ORPHAN_EXECUTION`; (d) soft-deleted executions outside range → 200; (e) 409 on stale `xmin` (mark SQLite skip).
+- [x] T2.16 **[GREEN]** Create `UpdateBudgetLineDateRangeCommand.cs`, `UpdateBudgetLineDateRangeValidator.cs`, `UpdateBudgetLineDateRangeHandler.cs` (loads line + revisions, calls `UpdateDateRange`, queries active executions for ORPHAN_EXECUTION guard, `SaveChangesAsync` triggers interceptor audit for `BudgetLineDateRangeUpdated`), `UpdateBudgetLineDateRangeEndpoint.cs`.
 
 ### Phase 2 — PR2b Verification
 
-- [ ] T2b.V Run `dotnet test` — all PR2b integration tests green; concurrency tests on SQLite marked skip where noted.
+- [ ] T2b.V Run `dotnet test` — all PR2b integration tests green; concurrency tests on SQLite marked skip where noted. [PENDING — requires Docker PostgreSQL stack]
 
 ---
 
