@@ -125,7 +125,7 @@ All PRs merge sequentially into `feat/budget-line-customizations`; only the trac
 
 ### Phase 2 — PR2b Verification
 
-- [ ] T2b.V Run `dotnet test` — all PR2b integration tests green; concurrency tests on SQLite marked skip where noted. [PENDING — requires Docker PostgreSQL stack]
+- [x] T2b.V Run `dotnet test` — all PR2b integration tests green; concurrency tests on SQLite marked skip where noted. [190 total: 187 passed, 3 skipped (xmin)]
 
 ---
 
@@ -136,19 +136,19 @@ All PRs merge sequentially into `feat/budget-line-customizations`; only the trac
 
 ### Phase 1 — Unit Tests
 
-- [ ] T3.1 **[RED]** Write xUnit unit tests for `RestoreExecutionRecordHandler` date-range guard: (a) period within BudgetLine range → passes; (b) period starts before BudgetLine start → 422 `EXECUTION_OUT_OF_DATE_RANGE`; (c) period ends after BudgetLine end → 422; (d) `OperationDate` outside range but period inside → passes (REQ-EXEC-RESTORE-DATERANGE-1 OperationDate assertion).
+- [x] T3.1 **[RED]** Write xUnit unit tests for `RestoreExecutionRecordHandler` date-range guard: (a) period within BudgetLine range → passes; (b) period starts before BudgetLine start → 422 `EXECUTION_OUT_OF_DATE_RANGE`; (c) period ends after BudgetLine end → 422; (d) `OperationDate` outside range but period inside → passes (REQ-EXEC-RESTORE-DATERANGE-1 OperationDate assertion).
 
 ### Phase 2 — Integration Tests
 
-- [ ] T3.2 **[RED]** Write integration tests for `POST .../executions/{id}/restore`: (a) happy path — period within BudgetLine range → 200; (b) period before BudgetLine start → 422 `EXECUTION_OUT_OF_DATE_RANGE`; (c) period after BudgetLine end → 422; (d) `Period.IsClosed = true` still returns 409 `PERIOD_CLOSED` (existing guard not broken).
+- [x] T3.2 **[RED]** Write integration tests for `POST .../executions/{id}/restore`: (a) happy path — period within BudgetLine range → 200; (b) period before BudgetLine start → 422 `EXECUTION_OUT_OF_DATE_RANGE`; (c) period after BudgetLine end → 422; (d) `Period.IsClosed = true` still returns 409 `PERIOD_CLOSED` (existing guard not broken).
 
 ### Phase 3 — Implementation
 
-- [ ] T3.3 **[GREEN]** Modify `Features/BudgetExecution/RestoreExecutionRecord/RestoreExecutionRecordHandler.cs`: load parent `BudgetLine`; after `IsClosed` check, assert `Period.StartDate >= BudgetLine.StartDate` and `Period.EndDate <= BudgetLine.EndDate` (when not null); return 422 `EXECUTION_OUT_OF_DATE_RANGE` on violation.
+- [x] T3.3 **[GREEN]** Modify `Features/BudgetExecution/RestoreExecutionRecord/RestoreExecutionRecordHandler.cs`: load parent `BudgetLine`; after `IsClosed` check, assert `Period.StartDate >= BudgetLine.StartDate` and `Period.EndDate <= BudgetLine.EndDate` (when not null); return 422 `EXECUTION_OUT_OF_DATE_RANGE` on violation.
 
 ### Phase 4 — PR3 Verification
 
-- [ ] T3.4 Run `dotnet test` — all PR3 tests green; no regressions on existing restore tests.
+- [x] T3.4 Run `dotnet test` — all PR3 tests green; no regressions on existing restore tests. [419 unit, 193 integration (190 pass, 3 skip), 382 frontend]
 
 ---
 
