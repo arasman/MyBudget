@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-20 (input-validation-audit archived)
+**Last updated**: 2026-07-21 (budget-line-redesign archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -397,6 +397,42 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 **Tests**: 523 backend unit + integration | 304 frontend unit | 89 E2E — all green
 **SDD artifacts**: `openspec/changes/archive/2026-07-20-input-validation-audit/`
+
+---
+
+### 9f. `budget-line-redesign` ✅ archived 2026-07-21
+
+**What**: Promote BudgetLine from Period-scoped to Budget-level with date-range validity and a gapless append-only revision system.
+
+**Domain**: BudgetLine was previously scoped to a Period (PeriodId FK), requiring manual recreation per period and a fragile `IsRecurring` flag. Redesigned to be Budget-level with `StartDate`/`EndDate` validity range. Planned amount tracked via `BudgetLineRevision` with `ValidFrom`/`ValidTo` fields — gapless invariant enforced via `SplitRevision()` domain method.
+
+**Scope in**:
+- Entity redesign: removed `PeriodId`, `IsRecurring`, `RevisedAt`; added `StartDate`, `EndDate`, `ValidFrom`, `ValidTo`; `SplitRevision()` domain method (gapless, Edge Case B overwrite)
+- `UNIQUE(BudgetId, Name)` — includes soft-deleted rows; no filtered index
+- 12 backend slices updated: Create/Update/Delete/Restore/List/ReorderBudgetLines; CreateExecutionRecord (date-range intersection guard `BUDGET_LINE_NOT_IN_PERIOD`); ListPeriodExecutionTotals (ValidFrom LATERAL JOIN for revision amount)
+- Frontend: budget-level route `/budgets/:id/lines`; Budget Lines tab in BudgetTabs; `BudgetLineModal` with Amount Revision section (validFrom/validTo/newAmount); inline amount cell read-only (revision requires modal)
+- E2E helpers updated to budget-level API routes; per-period List action removed from CycleDetailView
+- Delivery: 5 chained PRs (PR1 entity + EF, PR2a BudgetStructure slices, PR2b BudgetExecution slices, PR3 frontend, PR4 integration tests)
+
+**Tests**: 391 unit + 170 integration + 333 frontend unit + 89 E2E = 983 total — all green
+**SDD artifacts**: `openspec/archive/budget-line-redesign/`
+
+**Deferred (→ `budget-line-customizations`)**: Separate Customizations view for managing revision date ranges per BudgetLine; backend range guards (BudgetLine date change blocked by active executions, revision delete blocked by active executions); restore validation when execution record falls outside current date range.
+
+---
+
+### 9g. `budget-line-customizations` ⏳ planned
+
+**What**: Revision management UI + backend range guards for BudgetLine date-range integrity.
+
+**Domain**: BudgetLines now carry date-range validity and a gapless revision history. Users need a dedicated view to manage revision splits (amount changes over time). The backend needs guards to prevent date-range changes that would orphan execution records.
+
+**Scope in** *(requires SDD exploration)*:
+- PR1 — Customizations view (frontend): new route `/budgets/:id/lines/:lineId/customizations`; table showing all revisions (ValidFrom, ValidTo, Amount, Currency); inline create (triggers SplitRevision) and delete; strip revision fields from BudgetLineModal edit mode
+- PR2 — Backend range guards: reject BudgetLine `startDate`/`endDate` change if any active (non-deleted) revisions or execution records fall outside the new range; reject revision deletion if any period with active executions falls in that revision's range
+- PR3 — Restore validation: block restore of soft-deleted execution record if period falls outside BudgetLine's current date range; surface descriptive error `EXECUTION_OUT_OF_DATE_RANGE`
+
+**Scope out**: Guided "fix date range before restore" modal (→ follow-on UX story).
 
 ---
 
