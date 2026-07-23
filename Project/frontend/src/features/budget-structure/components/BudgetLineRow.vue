@@ -97,17 +97,18 @@
       <span>{{ formatAmount(line.budgetedAmount) }}</span>
     </td>
 
-    <!-- Note cell -->
-    <td class="max-w-xs truncate text-sm text-base-content/60" :title="editing ? '' : (line.note ?? '')">
+    <!-- Description cell -->
+    <td class="max-w-xs truncate text-sm text-base-content/60" :title="editing ? '' : (line.description ?? '')">
       <template v-if="editing">
         <input
-          v-model="form.note"
+          v-model="form.description"
           type="text"
           class="input input-xs input-bordered w-full"
-          :placeholder="t('budgetStructure.budgetLines.note')"
+          :placeholder="t('budgetStructure.budgetLines.description')"
+          maxlength="500"
         />
       </template>
-      <template v-else>{{ line.note ? truncate(line.note, 40) : '—' }}</template>
+      <template v-else>{{ line.description ? truncate(line.description, 80) : '—' }}</template>
     </td>
 
     <!-- Actions cell -->
@@ -232,7 +233,7 @@ const form = reactive({
   name: '',
   lineType: 'Expense' as LineType,
   currencyId: undefined as string | undefined,
-  note: '',
+  description: '',
   categoryGroupId: undefined as string | undefined,
   categoryId: undefined as string | undefined,
 })
@@ -241,7 +242,7 @@ function resetForm(): void {
   form.name = props.line.name
   form.lineType = props.line.lineType
   form.currencyId = props.line.currencyId
-  form.note = props.line.note ?? ''
+  form.description = props.line.description ?? ''
   form.categoryGroupId = props.line.categoryGroupId
   form.categoryId = props.line.categoryId
 }
@@ -264,7 +265,7 @@ function onInlineSave(): void {
     name: form.name,
     lineType: form.lineType,
     currencyId: form.currencyId || undefined,
-    note: form.note || undefined,
+    description: form.description || undefined,
     categoryGroupId: form.categoryGroupId,
     categoryId: form.categoryId || undefined,
   }

@@ -31,12 +31,13 @@ public sealed class ListBudgetLinesHandler
             SELECT bl."Id", bl."BudgetId", bl."CategoryGroupId", bl."CategoryId",
                    bl."Name", bl."LineType", bl."DisplayOrder",
                    bl."StartDate", bl."EndDate", bl."DeletedAt",
-                   r."BudgetedAmount", r."CurrencyId", r."Note",
+                   bl."Description",
+                   r."BudgetedAmount", r."CurrencyId",
                    c."Code"   AS "CurrencyCode",
                    c."Symbol" AS "CurrencySymbol"
             FROM "BudgetLines" bl
             LEFT JOIN LATERAL (
-                SELECT r2."BudgetedAmount", r2."CurrencyId", r2."Note"
+                SELECT r2."BudgetedAmount", r2."CurrencyId"
                 FROM "BudgetLineRevisions" r2
                 WHERE r2."BudgetLineId" = bl."Id"
                   AND r2."ValidFrom" <= '{today}'
@@ -65,7 +66,7 @@ public sealed class ListBudgetLinesHandler
                 r.CurrencyId,
                 r.CurrencyCode,
                 r.CurrencySymbol,
-                r.Note,
+                r.Description,
                 // DeletedAt is DateTimeOffset? — pass through directly
                 r.DeletedAt))
             .ToList();
@@ -89,7 +90,7 @@ public sealed class ListBudgetLinesHandler
         public DateTimeOffset?  DeletedAt       { get; init; }
         public decimal?         BudgetedAmount  { get; init; }
         public Guid?            CurrencyId      { get; init; }
-        public string?          Note            { get; init; }
+        public string?          Description     { get; init; }
         public string?          CurrencyCode    { get; init; }
         public string?          CurrencySymbol  { get; init; }
     }

@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-22 (budget-line-customizations archived)
+**Last updated**: 2026-07-23 (budget-line-description archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -441,18 +441,41 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 9h. `budget-line-description` ⏳ planned
+### 9h. `budget-line-description` ✅ archived 2026-07-23
 
-**What**: Add an optional `Description` field to `BudgetLine` and remove the misleading `Note` column from BudgetLine views.
+**What**: Add optional `Description` field to `BudgetLine` and remove the misleading `Note` column from BudgetLine views.
 
-**Domain**: The `Note` currently visible in the BudgetLines table is projected from `BudgetLineRevision.Note` (the active revision) — a revision-level annotation, not a line-level descriptor. Editing it via the BudgetLine modal or inline edit has no effect. This change removes that confusion and replaces it with a proper `Description` field on `BudgetLine` itself — a static, optional label that describes what the line represents.
+**Domain**: The `Note` visible in BudgetLines was projected from `BudgetLineRevision.Note` (the active revision) — a revision-level annotation, not a line-level descriptor. Editing it via the BudgetLine modal or inline edit had no effect (dead path on the backend). This change removes that confusion: `note` stays exclusively in the Customizations view (via `UpdateBudgetLineRevision`), and a new `Description` field on `BudgetLine` serves as a static, optional descriptor of what the line represents.
 
-**Scope in** *(requires SDD exploration)*:
-- Backend: `Description (varchar(500)?, nullable)` column on `BudgetLines`; EF Core migration; add to `CreateBudgetLine` and `UpdateBudgetLine` commands; include in `ListBudgetLines` response (from `bl."Description"`, not from revision lateral join)
-- Frontend: `Description` field in `BudgetLineModal` (create and edit); column in `BudgetLinesView` table; `BudgetLineRow` inline edit; remove the `note` column from all BudgetLine views
+**Scope in**:
+- Backend: `Description varchar(500)?` on `BudgetLines`; EF migration `AddBudgetLineDescription`; wired through `CreateBudgetLine`, `UpdateBudgetLine`, `ListBudgetLines` slices; `note` removed from line-level request records
+- `CreateBudgetLineRevision`: `note` wired end-to-end (command, handler, endpoint, frontend) — applied before `SaveChangesAsync`
+- Frontend: `description` textarea in `BudgetLineModal`; `description` column in `BudgetLinesView` (truncated 80 chars); inline edit in `BudgetLineRow`; `note` input added to CustomizationsView inline add row
+- Label: "Budgeted Amount" → "Monthly Amount" / "Monto Mensual" in BudgetLines and Customizations
 - i18n: `budgetStructure.budgetLines.description` key in EN and ES
 
-**Scope out**: Description on `BudgetLineRevision` (already has `Note`), description search/filter.
+**Tests**: 386 frontend — all green; backend build clean
+**Commit**: `c401834` on `feat/budget-line-description`
+**SDD artifacts**: `openspec/changes/archive/2026-07-23-budget-line-description/`
+
+**Deferred (→ `language`)**: Pre-existing i18n gaps across the app (e.g. "Cycles", "Categories" showing in English when locale is ES); language selector UI so users can switch between EN and ES at runtime.
+
+---
+
+### 9i. `language` ⏳ planned
+
+**What**: Full i18n audit + runtime language selector.
+
+**Domain**: Several UI areas still display English strings when the app is in Spanish (e.g. "Cycles", "Categories", other entity labels). No runtime language toggle exists — locale is currently hardcoded. This feature closes the translation debt and adds a language picker.
+
+**Scope in** *(requires SDD exploration)*:
+- Audit all i18n namespaces; identify missing/untranslated keys in `es.json`
+- Complete Spanish translations for all missing keys
+- Language selector component (dropdown or toggle) accessible from app layout / user menu
+- Persist selected locale (localStorage or user profile)
+- i18n: ensure `en.json` and `es.json` are in full parity
+
+**Scope out**: Additional languages beyond EN/ES, server-side locale detection.
 
 ---
 

@@ -108,7 +108,7 @@ function makeI18n() {
             endDate: 'End Date',
             budgetedAmount: 'Budgeted Amount',
             currency: 'Currency',
-            note: 'Note',
+            description: 'Description',
             types: { income: 'Income', expense: 'Expense' },
             empty: { title: 'No budget lines yet', description: 'Add lines.', action: 'New Line' },
           },

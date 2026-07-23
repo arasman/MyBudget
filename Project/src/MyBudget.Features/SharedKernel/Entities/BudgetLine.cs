@@ -6,6 +6,7 @@ public sealed class BudgetLine : BaseEntity, IAuditableEntity
     public Guid CategoryGroupId { get; private set; }
     public Guid? CategoryId { get; private set; }
     public string Name { get; private set; } = string.Empty;
+    public string? Description { get; private set; }
     public LineType LineType { get; private set; }
     public DateOnly StartDate { get; private set; }
     public DateOnly? EndDate { get; private set; }
@@ -31,7 +32,8 @@ public sealed class BudgetLine : BaseEntity, IAuditableEntity
         DateOnly? endDate,
         decimal initialAmount,
         Guid currencyId,
-        int displayOrder = 0)
+        int displayOrder = 0,
+        string? description = null)
     {
         var line = new BudgetLine
         {
@@ -39,6 +41,7 @@ public sealed class BudgetLine : BaseEntity, IAuditableEntity
             CategoryGroupId = categoryGroupId,
             CategoryId      = categoryId,
             Name            = name.Trim(),
+            Description     = string.IsNullOrEmpty(description) ? null : description,
             LineType        = lineType,
             StartDate       = startDate,
             EndDate         = endDate,
@@ -60,11 +63,12 @@ public sealed class BudgetLine : BaseEntity, IAuditableEntity
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void Update(Guid categoryGroupId, Guid? categoryId, string name, LineType lineType)
+    public void Update(Guid categoryGroupId, Guid? categoryId, string name, LineType lineType, string? description = null)
     {
         CategoryGroupId = categoryGroupId;
         CategoryId      = categoryId;
         Name            = name.Trim();
+        Description     = string.IsNullOrEmpty(description) ? null : description;
         LineType        = lineType;
         UpdatedAt       = DateTimeOffset.UtcNow;
     }

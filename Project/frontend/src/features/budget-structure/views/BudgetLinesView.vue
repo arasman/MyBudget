@@ -60,7 +60,7 @@
               {{ t('budgetStructure.budgetLines.budgetedAmount') }}
               <span v-if="sortColumn === 'budgetedAmount'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th>{{ t('budgetStructure.budgetLines.note') }}</th>
+            <th>{{ t('budgetStructure.budgetLines.description') }}</th>
             <th>{{ t('budgetStructure.common.actions') }}</th>
           </tr>
         </thead>
@@ -163,10 +163,11 @@
             </td>
             <td>
               <input
-                v-model="inlineAddForm.note"
+                v-model="inlineAddForm.description"
                 type="text"
                 class="input input-xs input-bordered w-full"
-                :placeholder="t('budgetStructure.budgetLines.note')"
+                :placeholder="t('budgetStructure.budgetLines.description')"
+                maxlength="500"
               />
             </td>
             <td>
@@ -348,7 +349,7 @@ const inlineAddForm = reactive({
   endDate: '',
   initialAmount: null as number | null,
   currencyId: undefined as string | undefined,
-  note: '',
+  description: '',
   categoryGroupId: '',
   categoryId: undefined as string | undefined,
 })
@@ -441,7 +442,7 @@ function openInlineAdd(): void {
   inlineAddForm.endDate = ''
   inlineAddForm.initialAmount = null
   inlineAddForm.currencyId = undefined
-  inlineAddForm.note = ''
+  inlineAddForm.description = ''
   inlineAddForm.categoryGroupId = store.categoryGroups[0]?.id ?? ''
   inlineAddForm.categoryId = undefined
   showInlineAdd.value = true
@@ -457,7 +458,7 @@ async function handleInlineAddSave(): Promise<void> {
       endDate: inlineAddForm.endDate || undefined,
       initialAmount: inlineAddForm.initialAmount ?? 0,
       currencyId: inlineAddForm.currencyId ?? '',
-      note: inlineAddForm.note || undefined,
+      description: inlineAddForm.description || undefined,
       categoryGroupId: inlineAddForm.categoryGroupId || undefined,
       categoryId: inlineAddForm.categoryId || undefined,
     })

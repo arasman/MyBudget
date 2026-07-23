@@ -32,7 +32,8 @@ public static class UpdateBudgetLineEndpoint
             body.CategoryGroupId, body.CategoryId,
             body.Name, body.LineType,
             body.ValidFrom, body.ValidTo,
-            body.BudgetedAmount, body.CurrencyId);
+            body.BudgetedAmount, body.CurrencyId,
+            Description: body.Description);
 
         var result = await mediator.Send(cmd, ct);
 
@@ -58,4 +59,5 @@ public sealed record UpdateBudgetLineRequest(
     DateOnly? ValidFrom,
     DateOnly? ValidTo,
     decimal?  BudgetedAmount,
-    Guid?     CurrencyId);
+    Guid?     CurrencyId,
+    string?   Description = null);

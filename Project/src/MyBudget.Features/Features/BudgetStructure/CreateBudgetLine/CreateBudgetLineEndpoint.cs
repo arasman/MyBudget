@@ -31,7 +31,8 @@ public static class CreateBudgetLineEndpoint
             body.CategoryGroupId, body.CategoryId,
             body.Name, body.LineType,
             body.StartDate, body.EndDate,
-            body.InitialAmount, body.CurrencyId);
+            body.InitialAmount, body.CurrencyId,
+            Description: body.Description);
 
         var result = await mediator.Send(cmd, ct);
 
@@ -59,4 +60,5 @@ public sealed record CreateBudgetLineRequest(
     DateOnly  StartDate,
     DateOnly? EndDate,
     decimal   InitialAmount,
-    Guid?     CurrencyId);
+    Guid?     CurrencyId,
+    string?   Description = null);

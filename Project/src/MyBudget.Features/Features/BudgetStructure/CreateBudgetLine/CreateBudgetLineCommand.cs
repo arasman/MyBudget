@@ -13,5 +13,6 @@ public sealed record CreateBudgetLineCommand(
     DateOnly  StartDate,
     DateOnly? EndDate,
     decimal   InitialAmount,
-    Guid?     CurrencyId
+    Guid?     CurrencyId,
+    string?   Description = null
 ) : IRequest<Result<Guid>>;

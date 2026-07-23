@@ -117,7 +117,15 @@
                   class="input input-xs input-bordered w-24"
                 />
               </td>
-              <td colspan="2">—</td>
+              <td>—</td>
+              <td>
+                <input
+                  v-model="inlineAddForm.note"
+                  type="text"
+                  class="input input-xs input-bordered w-full"
+                  :placeholder="t('budgetStructure.budgetLines.customizations.note')"
+                />
+              </td>
               <td>
                 <div class="flex gap-1">
                   <button
@@ -207,6 +215,7 @@ const inlineAddForm = reactive({
   validFrom: '',
   validTo: '',
   amount: null as number | null,
+  note: '',
 })
 
 // Inline revision edit state
@@ -241,6 +250,7 @@ function openInlineAdd(): void {
   inlineAddForm.validFrom = new Date().toISOString().slice(0, 10)
   inlineAddForm.validTo = ''
   inlineAddForm.amount = null
+  inlineAddForm.note = ''
   showInlineAdd.value = true
 }
 
@@ -251,6 +261,7 @@ async function handleInlineAddSave(): Promise<void> {
       validFrom: inlineAddForm.validFrom,
       validTo: inlineAddForm.validTo || undefined,
       amount: inlineAddForm.amount,
+      note: inlineAddForm.note || undefined,
     })
     showInlineAdd.value = false
     toastStore.push({ type: 'success', title: t('budgetStructure.budgetLines.customizations.createSuccess') })

@@ -15,5 +15,6 @@ public sealed record UpdateBudgetLineCommand(
     DateOnly? ValidFrom,
     DateOnly? ValidTo,
     decimal?  BudgetedAmount,
-    Guid?     CurrencyId
+    Guid?     CurrencyId,
+    string?   Description = null
 ) : IRequest<Result<Guid>>;

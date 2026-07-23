@@ -27,7 +27,7 @@ public static class CreateBudgetLineRevisionEndpoint
         CancellationToken ct)
     {
         var cmd = new CreateBudgetLineRevisionCommand(
-            id, lineId, body.ValidFrom, body.ValidTo, body.Amount, body.CurrencyId);
+            id, lineId, body.ValidFrom, body.ValidTo, body.Amount, body.CurrencyId, body.Note);
 
         var result = await mediator.Send(cmd, ct);
 
@@ -52,4 +52,5 @@ public sealed record CreateBudgetLineRevisionRequest(
     DateOnly  ValidFrom,
     DateOnly? ValidTo,
     decimal   Amount,
-    Guid?     CurrencyId);
+    Guid?     CurrencyId,
+    string?   Note = null);

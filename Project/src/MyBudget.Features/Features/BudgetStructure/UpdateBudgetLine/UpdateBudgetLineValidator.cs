@@ -40,5 +40,9 @@ public sealed class UpdateBudgetLineValidator : AbstractValidator<UpdateBudgetLi
             .Must((cmd, validTo) => validTo!.Value >= cmd.ValidFrom!.Value)
             .WithErrorCode("FIELD_INVALID")
             .When(x => x.ValidFrom.HasValue && x.ValidTo.HasValue);
+
+        RuleFor(x => x.Description)
+            .MaximumLength(500).WithErrorCode("FIELD_INVALID")
+            .When(x => x.Description is not null);
     }
 }

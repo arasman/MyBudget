@@ -30,7 +30,7 @@ function makeI18n() {
             budgetedAmount: 'Budgeted Amount',
             initialAmount: 'Initial Amount',
             currency: 'Currency',
-            note: 'Note',
+            description: 'Description',
             types: {
               expense: 'Expense',
               longTermSavings: 'Long-term Savings',
