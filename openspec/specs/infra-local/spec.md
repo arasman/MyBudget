@@ -26,7 +26,7 @@ Define the Docker Compose infrastructure configuration for local development and
 
 ### Requirement: PostgreSQL Service
 
-The postgres service MUST use the `postgres:16-alpine` image. It MUST expose port `5432` on the host. Data MUST be persisted in a named volume `postgres-data`. The database name, user, and password MUST NOT be hardcoded in `docker-compose.yml` — they MUST be read from a `.env` file.
+The postgres service MUST use the `postgres:16-alpine` image. It MUST expose port `5432` on the host. Data MUST be persisted in a named volume `postgres-data`. The database name, user, and password MUST NOT be hardcoded in `docker-compose.yml` — they MUST be read from a `.env` file. The postgres service MUST additionally create the `mybudget_e2e` database on first container initialization, either via an init SQL file in `docker-entrypoint-initdb.d/` or an equivalent entrypoint mechanism. `mybudget_e2e` MUST exist and be accessible before any E2E run.
 
 #### Scenario: PostgreSQL persists data across restarts
 
@@ -39,6 +39,18 @@ The postgres service MUST use the `postgres:16-alpine` image. It MUST expose por
 - GIVEN the `.env` file contains `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` values
 - WHEN postgres starts
 - THEN the database is accessible using those credentials and no credentials appear in `docker-compose.yml`
+
+#### Scenario: mybudget_e2e database exists after first container start
+
+- GIVEN no postgres volume exists (first run)
+- WHEN `docker compose --profile infra up -d` is executed
+- THEN `mybudget_e2e` database exists and is connectable before any E2E test runs
+
+#### Scenario: mybudget_e2e persists across restarts
+
+- GIVEN postgres is running with `mybudget_e2e` present and containing migrated schema
+- WHEN the container is restarted
+- THEN `mybudget_e2e` is still accessible (volume preserved)
 
 ---
 
@@ -75,3 +87,15 @@ The `.env` file MUST be listed in `.gitignore` and MUST NOT be committed to the 
 - GIVEN a developer clones the repository
 - WHEN they read `.env.example`
 - THEN all variables required by `docker-compose.yml` are listed with descriptions and example values
+
+---
+
+### Requirement: E2E Database Provisioning Convention
+
+`mybudget_e2e` MUST be documented as automatically provisioned via docker init SQL. `mybudget_test` provisioning MUST be documented as owned by `IntegrationTestFactory` via `EnsureDeletedAsync()` — no manual creation is required. `mybudget` (dev) MUST be provisioned via `.env` as before.
+
+#### Scenario: Developer onboarding creates all three databases
+
+- GIVEN a developer has Docker Desktop running and has run `docker compose --profile infra up -d`
+- WHEN they inspect the postgres instance
+- THEN `mybudget_e2e` exists (created by init SQL) and `mybudget` exists (from `.env`); `mybudget_test` is created on first integration test run

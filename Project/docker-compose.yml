@@ -21,6 +21,11 @@ services:
       - ${POSTGRES_PORT:-5432}:5432
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      # Init SQL runs once on first initdb — creates mybudget_test and mybudget_e2e.
+      # For existing volumes (volume already initialized), run once manually:
+      #   docker exec project-postgres-1 psql -U mybudget -c "CREATE DATABASE mybudget_test;"
+      #   docker exec project-postgres-1 psql -U mybudget -c "CREATE DATABASE mybudget_e2e;"
+      - ./docker/01-create-test-dbs.sql:/docker-entrypoint-initdb.d/01-create-test-dbs.sql:ro
     env_file: .env
     restart: unless-stopped
 

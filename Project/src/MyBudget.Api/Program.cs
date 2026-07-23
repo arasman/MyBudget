@@ -62,7 +62,7 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// 7. MigrateAsync — runs before any request is served (skipped in Testing; factory handles it)
+// 7. MigrateAsync — runs before any request is served (skipped in Testing only; WebApplicationFactory handles it)
 if (!app.Environment.IsEnvironment("Testing"))
 {
     using var scope = app.Services.CreateScope();

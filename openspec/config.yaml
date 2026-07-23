@@ -30,7 +30,7 @@ testing:
     integration:
       available: true
       command: "dotnet test tests/MyBudget.Integration.Tests"
-      note: "Requires Docker infra (Postgres, Redis, Mailpit). Uses WebApplicationFactory + SQLite in-memory override."
+      note: "Requires Docker infra (Postgres, Redis, Mailpit). Uses WebApplicationFactory against a real PostgreSQL instance (mybudget_test)."
     e2e:
       available: true
       command: "pnpm exec playwright test (in Project/frontend/)"
