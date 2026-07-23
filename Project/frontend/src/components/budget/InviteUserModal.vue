@@ -69,9 +69,9 @@ async function onSubmit() {
     if (errorCode === 'AUTH_ALREADY_MEMBER') {
       serverError.value = t('invitation.modal.error.alreadyMember')
     } else if (axiosError.response?.status === 422) {
-      serverError.value = 'Cannot invite as Owner. Please select a different role.'
+      serverError.value = t('invitation.modal.error.ownerRoleForbidden')
     } else if (axiosError.response?.status === 403) {
-      serverError.value = 'You do not have permission to invite users to this budget.'
+      serverError.value = t('invitation.modal.error.forbidden')
     } else {
       serverError.value = t('common.error')
     }

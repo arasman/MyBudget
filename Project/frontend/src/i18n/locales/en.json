@@ -482,7 +482,9 @@
       "submit": "Send Invitation",
       "successMessage": "Invitation sent successfully.",
       "error": {
-        "alreadyMember": "This user is already a member of this budget."
+        "alreadyMember": "This user is already a member of this budget.",
+        "ownerRoleForbidden": "Cannot invite as Owner. Please select a different role.",
+        "forbidden": "You do not have permission to invite users to this budget."
       }
     },
     "accept": {

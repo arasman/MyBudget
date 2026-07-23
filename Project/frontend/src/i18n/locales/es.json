@@ -482,7 +482,9 @@
       "submit": "Enviar invitación",
       "successMessage": "Invitación enviada exitosamente.",
       "error": {
-        "alreadyMember": "Este usuario ya es miembro de este presupuesto."
+        "alreadyMember": "Este usuario ya es miembro de este presupuesto.",
+        "ownerRoleForbidden": "No se puede invitar como Propietario. Seleccioná un rol diferente.",
+        "forbidden": "No tenés permiso para invitar usuarios a este presupuesto."
       }
     },
     "accept": {
