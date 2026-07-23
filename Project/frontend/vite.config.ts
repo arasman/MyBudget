@@ -12,7 +12,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5184',
+        target: process.env['VITE_API_TARGET'] ?? 'http://localhost:5184',
         changeOrigin: true,
       },
     },

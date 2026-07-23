@@ -10,12 +10,11 @@ namespace MyBudget.Integration.Tests.Infrastructure;
 /// <summary>
 /// Integration test factory that overrides configuration to point at the test Postgres DB.
 /// Requires Docker Compose stack running (Postgres on port 5432).
-/// JWT__Key is set via environment variable or appsettings defaults.
+/// Connection string is read from appsettings.Testing.json — no hardcoded constants.
 /// </summary>
 public sealed class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private const string TestConnectionString =
-        "Host=localhost;Port=5432;Database=mybudget_test;Username=mybudget;Password=mybudget;";
+    private string? _testConnectionString;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -23,10 +22,11 @@ public sealed class IntegrationTestFactory : WebApplicationFactory<Program>, IAs
 
         builder.ConfigureAppConfiguration((_, config) =>
         {
+            // appsettings.Testing.json is auto-loaded by ASP.NET Core because UseEnvironment("Testing")
+            // is set above — no explicit AddJsonFile needed. The connection string in
+            // appsettings.Testing.json is the single source of truth; no hardcoded constants.
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                // Use a dedicated test DB so integration tests don't contaminate dev data
-                ["ConnectionStrings:DefaultConnection"] = TestConnectionString,
                 // JWT key for integration tests — not a secret
                 ["JWT__Key"] = "IntegrationTest-Secret-Key-MinLength32!!",
                 ["JWT:Key"]  = "IntegrationTest-Secret-Key-MinLength32!!",
@@ -39,8 +39,12 @@ public sealed class IntegrationTestFactory : WebApplicationFactory<Program>, IAs
             });
         });
 
-        builder.ConfigureServices(services =>
+        builder.ConfigureServices((ctx, services) =>
         {
+            _testConnectionString = ctx.Configuration["ConnectionStrings:DefaultConnection"]
+                ?? throw new InvalidOperationException(
+                    "ConnectionStrings:DefaultConnection is missing from appsettings.Testing.json");
+
             // Remove existing DbContext registration and replace with test DB
             var descriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
@@ -48,7 +52,7 @@ public sealed class IntegrationTestFactory : WebApplicationFactory<Program>, IAs
                 services.Remove(descriptor);
 
             services.AddDbContext<AppDbContext>(opts =>
-                opts.UseNpgsql(TestConnectionString));
+                opts.UseNpgsql(_testConnectionString));
         });
     }
 
