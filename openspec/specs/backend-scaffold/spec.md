@@ -80,13 +80,37 @@ The solution MUST contain exactly three projects under `Project/src/`: `MyBudget
 
 ### Requirement: EF Core Baseline
 
-`AppDbContext` MUST use the Npgsql EF Core provider. A single empty migration named `InitialCreate` MUST exist under `Project/src/MyBudget.Features/Migrations/`. The application MUST call `MigrateAsync()` on startup before handling any HTTP request. All `decimal` columns MUST have global precision `(18, 2)` configured in `OnModelCreating`. No secrets (connection strings) MAY appear in `appsettings.json`.
+`AppDbContext` MUST use the Npgsql EF Core provider. A single empty migration named `InitialCreate` MUST exist under `Project/src/MyBudget.Features/Migrations/`. The application MUST call `MigrateAsync()` on startup before handling any HTTP request, EXCEPT when `ASPNETCORE_ENVIRONMENT` is `Testing` — in that environment `MigrateAsync()` MUST NOT be called by `Program.cs` (integration test harness owns migration). E2E environment MUST call `MigrateAsync()` on startup to create schema before the E2E reset endpoint is available. All `decimal` columns MUST have global precision `(18, 2)` configured in `OnModelCreating`. No secrets (connection strings) MAY appear in `appsettings.json`. Each environment MUST load its database connection string exclusively from its environment-specific appsettings layer: `appsettings.Testing.json` MUST target `mybudget_test`; `appsettings.E2E.json` MUST target `mybudget_e2e`; Development MUST NOT load either test connection string.
 
 #### Scenario: Migration creates the history table on a clean database
 
 - GIVEN a PostgreSQL instance is running and the database does not exist
-- WHEN the application starts and `MigrateAsync()` is called
+- WHEN the application starts in Development and `MigrateAsync()` is called
 - THEN the `__EFMigrationsHistory` table is created and contains one row for `InitialCreate`
+
+#### Scenario: MigrateAsync is skipped when environment is Testing
+
+- GIVEN the API starts with `ASPNETCORE_ENVIRONMENT=Testing`
+- WHEN the startup pipeline completes
+- THEN `MigrateAsync()` is NOT called by `Program.cs` (test harness owns migration)
+
+#### Scenario: MigrateAsync is called when environment is E2E
+
+- GIVEN the API starts with `ASPNETCORE_ENVIRONMENT=E2E`
+- WHEN the startup pipeline completes
+- THEN `MigrateAsync()` IS called by `Program.cs` to create schema before reset endpoint
+
+#### Scenario: E2E environment loads mybudget_e2e connection string
+
+- GIVEN `appsettings.E2E.json` exists with `DefaultConnection` pointing to `mybudget_e2e`
+- WHEN the API starts with `ASPNETCORE_ENVIRONMENT=E2E`
+- THEN `AppDbContext` and `ConnectionFactory` both resolve to `mybudget_e2e`
+
+#### Scenario: Testing environment loads mybudget_test connection string
+
+- GIVEN `appsettings.Testing.json` exists with `DefaultConnection` pointing to `mybudget_test`
+- WHEN the API starts with `ASPNETCORE_ENVIRONMENT=Testing`
+- THEN `AppDbContext` resolves to `mybudget_test`
 
 #### Scenario: Decimal precision is enforced globally
 
@@ -150,3 +174,21 @@ No middleware MUST be registered between `UseAuthentication` and `UseAuthorizati
 - GIVEN `appsettings.json` contains no connection strings and User Secrets holds the PostgreSQL connection string
 - WHEN the application starts in Development environment
 - THEN the connection string is resolved from User Secrets and the database is reachable
+
+---
+
+### Requirement: Integration Test Factory — Config-Driven Connection
+
+`IntegrationTestFactory` MUST read `DefaultConnection` from `IConfiguration` (resolved from `appsettings.Testing.json`) and MUST NOT use a hardcoded connection string constant. The factory MUST call `EnsureDeletedAsync()` + `MigrateAsync()` per test collection to own schema state for `mybudget_test`.
+
+#### Scenario: Factory reads connection string from config
+
+- GIVEN `appsettings.Testing.json` contains `DefaultConnection` pointing to `mybudget_test`
+- WHEN `IntegrationTestFactory` initializes
+- THEN it connects to `mybudget_test` without any hardcoded constant
+
+#### Scenario: Factory wipes and migrates per collection
+
+- GIVEN a new test collection starts
+- WHEN `InitializeAsync` runs
+- THEN `EnsureDeletedAsync()` is called followed by `MigrateAsync()` and the schema is current
