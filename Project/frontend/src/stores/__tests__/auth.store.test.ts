@@ -7,7 +7,16 @@ vi.mock('@/api/axios', () => ({
   default: {
     post: vi.fn(),
     get: vi.fn(),
+    defaults: { headers: { common: {} } },
   },
+}))
+
+vi.mock('@/stores/locale.store', () => ({
+  useLocaleStore: vi.fn(() => ({ setLocale: vi.fn(), locale: 'en' })),
+}))
+
+vi.mock('@/i18n', () => ({
+  i18n: { global: { locale: { value: 'en' } } },
 }))
 
 import http from '@/api/axios'

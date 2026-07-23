@@ -111,7 +111,7 @@
             <!-- status badge — no inline edit -->
             <td>
               <span class="badge badge-sm" :class="statusBadgeClass(period.isClosed ? 'Closed' : 'Open')">
-                {{ period.isClosed ? 'Closed' : 'Open' }}
+                {{ $t('enums.periodStatus.' + (period.isClosed ? 'closed' : 'open')) }}
               </span>
             </td>
 
@@ -210,9 +210,9 @@
             <span class="label-text">{{ t('budgetStructure.periods.status') }}</span>
           </label>
           <select id="status-select" v-model="newStatus" class="select select-bordered w-full">
-            <option value="Open">Open</option>
-            <option value="Closed">Closed</option>
-            <option value="Locked">Locked</option>
+            <option value="Open">{{ t('enums.periodStatus.open') }}</option>
+            <option value="Closed">{{ t('enums.periodStatus.closed') }}</option>
+            <option value="Locked">{{ t('enums.periodStatus.locked') }}</option>
           </select>
         </div>
         <div class="modal-action">

@@ -123,9 +123,9 @@ defineExpose({ open })
             <span class="label-text">{{ t('invitation.modal.roleLabel') }}</span>
           </label>
           <select v-model="form.role" class="select select-bordered">
-            <option value="admin">Admin</option>
-            <option value="operator">Operator</option>
-            <option value="read-only">Read Only</option>
+            <option value="admin">{{ t('enums.role.admin') }}</option>
+            <option value="operator">{{ t('enums.role.operator') }}</option>
+            <option value="read-only">{{ t('enums.role.readOnly') }}</option>
           </select>
         </div>
 

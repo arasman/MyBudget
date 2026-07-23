@@ -92,4 +92,11 @@ public sealed class User : BaseEntity
         ForcePasswordChange = true;
         UpdatedAt           = DateTimeOffset.UtcNow;
     }
+
+    /// <summary>Updates the user's preferred locale.</summary>
+    public void UpdateLocale(string locale)
+    {
+        PreferredLocale = locale;
+        UpdatedAt       = DateTimeOffset.UtcNow;
+    }
 }

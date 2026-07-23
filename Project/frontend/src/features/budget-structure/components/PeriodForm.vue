@@ -71,9 +71,9 @@
             v-model="form.status"
             class="select select-bordered w-full"
           >
-            <option value="Open">Open</option>
-            <option value="Closed">Closed</option>
-            <option value="Locked">Locked</option>
+            <option value="Open">{{ t('enums.periodStatus.open') }}</option>
+            <option value="Closed">{{ t('enums.periodStatus.closed') }}</option>
+            <option value="Locked">{{ t('enums.periodStatus.locked') }}</option>
           </select>
         </div>
 

@@ -8,7 +8,9 @@
     },
     "save": "Guardar",
     "cancel": "Cancelar",
-    "confirm": "Confirmar"
+    "confirm": "Confirmar",
+    "noNotifications": "Sin notificaciones",
+    "switchLanguage": "Cambiar idioma"
   },
   "nav": {
     "backToHome": "Volver al inicio",
@@ -457,6 +459,19 @@
     "refresh": {
       "tooltip": "Actualizar datos del período",
       "label": "Actualizar"
+    }
+  },
+  "enums": {
+    "periodStatus": {
+      "open": "Abierto",
+      "closed": "Cerrado",
+      "locked": "Bloqueado"
+    },
+    "role": {
+      "admin": "Administrador",
+      "operator": "Operador",
+      "readOnly": "Solo lectura",
+      "owner": "Propietario"
     }
   },
   "invitation": {

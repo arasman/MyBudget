@@ -8,7 +8,9 @@
     },
     "save": "Save",
     "cancel": "Cancel",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "noNotifications": "No notifications",
+    "switchLanguage": "Switch language"
   },
   "nav": {
     "backToHome": "Back to Home",
@@ -457,6 +459,19 @@
     "refresh": {
       "tooltip": "Refresh period data",
       "label": "Refresh"
+    }
+  },
+  "enums": {
+    "periodStatus": {
+      "open": "Open",
+      "closed": "Closed",
+      "locked": "Locked"
+    },
+    "role": {
+      "admin": "Admin",
+      "operator": "Operator",
+      "readOnly": "Read Only",
+      "owner": "Owner"
     }
   },
   "invitation": {
