@@ -69,9 +69,9 @@ async function onSubmit() {
     if (errorCode === 'AUTH_ALREADY_MEMBER') {
       serverError.value = t('invitation.modal.error.alreadyMember')
     } else if (axiosError.response?.status === 422) {
-      serverError.value = 'Cannot invite as Owner. Please select a different role.'
+      serverError.value = t('invitation.modal.error.ownerRoleForbidden')
     } else if (axiosError.response?.status === 403) {
-      serverError.value = 'You do not have permission to invite users to this budget.'
+      serverError.value = t('invitation.modal.error.forbidden')
     } else {
       serverError.value = t('common.error')
     }
@@ -123,9 +123,9 @@ defineExpose({ open })
             <span class="label-text">{{ t('invitation.modal.roleLabel') }}</span>
           </label>
           <select v-model="form.role" class="select select-bordered">
-            <option value="admin">Admin</option>
-            <option value="operator">Operator</option>
-            <option value="read-only">Read Only</option>
+            <option value="admin">{{ t('enums.role.admin') }}</option>
+            <option value="operator">{{ t('enums.role.operator') }}</option>
+            <option value="read-only">{{ t('enums.role.readOnly') }}</option>
           </select>
         </div>
 

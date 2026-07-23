@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import http from '@/api/axios'
+import { useLocaleStore } from '@/stores/locale.store'
 
 export interface BudgetMembershipDto {
   budgetId: string
@@ -108,6 +109,11 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchMe(): Promise<void> {
     const { data } = await http.get<User>('/api/auth/me')
     user.value = data
+    // Seed locale from server only when localStorage has no explicit locale preference.
+    if (!localStorage.getItem('locale') && data.preferredLocale) {
+      const localeStore = useLocaleStore()
+      localeStore.setLocale(data.preferredLocale as 'en' | 'es')
+    }
   }
 
   // Private helpers

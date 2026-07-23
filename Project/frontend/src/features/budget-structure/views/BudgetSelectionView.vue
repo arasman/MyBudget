@@ -61,7 +61,7 @@
 
             <!-- Actions -->
             <div class="flex items-center gap-1 shrink-0 ml-3">
-              <span class="badge badge-outline capitalize mr-1">{{ m.role }}</span>
+              <span class="badge badge-outline mr-1">{{ t('enums.role.' + toRoleKey(m.role)) }}</span>
 
               <!-- Inline edit: save / cancel -->
               <template v-if="inlineEditingBudgetId === m.budgetId">
@@ -172,6 +172,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Check, List, Pencil, Trash2, X } from 'lucide-vue-next'
+import { toRoleKey } from '@/utils/enum-key'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLayoutStore } from '@/stores/layout.store'
 import { useToastStore } from '@/stores/toast.store'

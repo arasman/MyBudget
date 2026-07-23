@@ -8,7 +8,9 @@
     },
     "save": "Save",
     "cancel": "Cancel",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "noNotifications": "No notifications",
+    "switchLanguage": "Switch language"
   },
   "nav": {
     "backToHome": "Back to Home",
@@ -459,6 +461,19 @@
       "label": "Refresh"
     }
   },
+  "enums": {
+    "periodStatus": {
+      "open": "Open",
+      "closed": "Closed",
+      "locked": "Locked"
+    },
+    "role": {
+      "admin": "Admin",
+      "operator": "Operator",
+      "readOnly": "Read Only",
+      "owner": "Owner"
+    }
+  },
   "invitation": {
     "modal": {
       "title": "Invite a User",
@@ -467,7 +482,9 @@
       "submit": "Send Invitation",
       "successMessage": "Invitation sent successfully.",
       "error": {
-        "alreadyMember": "This user is already a member of this budget."
+        "alreadyMember": "This user is already a member of this budget.",
+        "ownerRoleForbidden": "Cannot invite as Owner. Please select a different role.",
+        "forbidden": "You do not have permission to invite users to this budget."
       }
     },
     "accept": {

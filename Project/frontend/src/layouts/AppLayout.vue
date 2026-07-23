@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLayoutStore } from '@/stores/layout.store'
 import { useNotificationStore } from '@/stores/notification.store'
 import type { PageAction } from '@/stores/layout.store'
+import { toRoleKey } from '@/utils/enum-key'
 import ChangePasswordModal from '@/components/auth/ChangePasswordModal.vue'
 import AppToast from '@/components/AppToast.vue'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 const authStore = useAuthStore()
 const layoutStore = useLayoutStore()
 const notificationStore = useNotificationStore()
@@ -44,11 +48,11 @@ const activeMembership = computed(() => {
   return user.memberships.find((m) => m.budgetId === budgetId) ?? null
 })
 
-// Role badge label for the active membership
+// Role badge label for the active membership (translated via i18n)
 const activeRoleBadge = computed(() => {
   const role = activeMembership.value?.role
   if (!role) return null
-  return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
+  return t('enums.role.' + toRoleKey(role))
 })
 
 // Budget switcher: active memberships only (deleted budgets excluded)
@@ -198,7 +202,7 @@ function variantClass(action: PageAction): string {
           >
             <div class="card-body">
               <p v-if="notificationStore.notifications.length === 0" class="text-sm text-base-content/60">
-                No notifications
+                {{ $t('common.noNotifications') }}
               </p>
               <ul v-else class="space-y-1">
                 <li
@@ -245,6 +249,9 @@ function variantClass(action: PageAction): string {
             <li class="divider" />
             <li>
               <button @click="changePasswordModal?.open()">{{ $t('auth.password.changePassword') }}</button>
+            </li>
+            <li class="px-4 py-2">
+              <LanguageSwitcher />
             </li>
             <li>
               <button @click="onLogout">{{ $t('auth.logoutLabel') }}</button>
