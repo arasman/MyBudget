@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-23 (budget-line-description archived)
+**Last updated**: 2026-07-23 (language archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -462,20 +462,28 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 
 ---
 
-### 9i. `language` ⏳ planned
+### 9i. `language` ✅ archived 2026-07-23
 
-**What**: Full i18n audit + runtime language selector.
+**What**: Full i18n wiring — ES/EN language switcher, server locale sync, and hardcoded string cleanup.
 
-**Domain**: Several UI areas still display English strings when the app is in Spanish (e.g. "Cycles", "Categories", other entity labels). No runtime language toggle exists — locale is currently hardcoded. This feature closes the translation debt and adds a language picker.
+**Domain**: The i18n foundation (vue-i18n v9, en/es JSON files, locale store, backend `User.PreferredLocale`) existed but was entirely disconnected. `LanguageSwitcher.vue` was dead code. Server locale preference was never applied after login. Four hardcoded English string clusters existed across components.
 
-**Scope in** *(requires SDD exploration)*:
-- Audit all i18n namespaces; identify missing/untranslated keys in `es.json`
-- Complete Spanish translations for all missing keys
-- Language selector component (dropdown or toggle) accessible from app layout / user menu
-- Persist selected locale (localStorage or user profile)
-- i18n: ensure `en.json` and `es.json` are in full parity
+**Scope in**:
+- `LanguageSwitcher.vue` mounted in `AppLayout` user dropdown and all `PublicLayout` pages (login, register, forgot-password, reset-password, accept-invitation)
+- Locale seeded from `User.PreferredLocale` on first login when `localStorage` absent; manual pre-login switch preserved
+- `PATCH /api/auth/me/locale` — `UpdateLocale` vertical slice (command, handler, validator, endpoint); any authenticated user, validates against `SupportedCultures`; 204 No Content
+- PATCH write-back on authenticated switch moved to `LanguageSwitcher.vue` (breaks circular dep with `locale.store`)
+- Shared enum i18n keys: `enums.periodStatus.{open,closed,locked}`, `enums.role.{admin,operator,readOnly,owner}`
+- `toRoleKey` normalization helper (`utils/enum-key.ts`) — server kebab-case → camelCase i18n key
+- Hardcoded strings replaced: `noNotifications`, period status labels, role labels, InviteUserModal error messages
+- `aria-label` added to `LanguageSwitcher` (bound to `common.switchLanguage` i18n key)
+- TDD: 6 new test files — validator unit, handler integration (3 cases), locale.store unit, auth.store unit, LanguageSwitcher component (PATCH + aria-label), InviteUserModal component (EN/ES role labels)
 
-**Scope out**: Additional languages beyond EN/ES, server-side locale detection.
+**Tests**: 398 Vitest | 437 .NET unit | 3 integration — all green
+**Commits**: `4ae7898`, `78b5388` on `feat/language` → merged to `main`
+**SDD artifacts**: `openspec/changes/archive/2026-07-23-language/`
+
+**Scope out**: Additional languages beyond EN/ES, server-side locale detection, RTL layout, locale-aware date/number formatting.
 
 ---
 
