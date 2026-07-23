@@ -16,6 +16,11 @@ public sealed class BudgetLineConfiguration : IEntityTypeConfiguration<BudgetLin
             .IsRequired()
             .HasMaxLength(200);
 
+        builder.Property(l => l.Description)
+            .HasColumnName("Description")
+            .HasMaxLength(500)
+            .IsRequired(false);
+
         builder.Property(l => l.LineType)
             .HasConversion<int>();
 

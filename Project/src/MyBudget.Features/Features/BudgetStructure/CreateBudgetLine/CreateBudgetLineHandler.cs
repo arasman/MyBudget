@@ -52,7 +52,8 @@ public sealed class CreateBudgetLineHandler : IRequestHandler<CreateBudgetLineCo
             cmd.StartDate,
             cmd.EndDate,
             cmd.InitialAmount,
-            currencyId.Value);
+            currencyId.Value,
+            description: cmd.Description);
 
         _db.BudgetLines.Add(line);
         await _db.SaveChangesAsync(ct);

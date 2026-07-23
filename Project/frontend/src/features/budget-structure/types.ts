@@ -108,7 +108,7 @@ export interface BudgetLineResponse {
   categoryId?: string
   currencyCode?: string
   currencySymbol?: string
-  note?: string
+  description?: string
   deletedAt?: string | null
 }
 
@@ -191,7 +191,7 @@ export interface CreateBudgetLinePayload {
   currencyId?: string
   categoryGroupId?: string
   categoryId?: string
-  note?: string
+  description?: string
 }
 
 export interface UpdateBudgetLinePayload {
@@ -199,7 +199,7 @@ export interface UpdateBudgetLinePayload {
   lineType: LineType
   categoryGroupId?: string
   categoryId?: string
-  note?: string
+  description?: string
   // Optional amount revision fields — required together when changing the budgeted amount
   validFrom?: string
   validTo?: string

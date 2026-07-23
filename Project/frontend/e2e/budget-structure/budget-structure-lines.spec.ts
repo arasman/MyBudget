@@ -155,7 +155,7 @@ test.describe('Budget Structure — Budget Lines', () => {
     // Select category group (required)
     await page.getByLabel('Category Groups').selectOption({ label: 'Income Group' })
     // Set budgeted amount
-    const amountInput = page.getByLabel('Budgeted Amount')
+    const amountInput = page.getByLabel('Monthly Amount')
     await amountInput.fill('5000')
     // Set start date (required by BudgetLine redesign)
     await page.getByLabel('Start Date').fill('2024-01-01')

@@ -31,8 +31,8 @@ public sealed class UpdateBudgetLineHandler : IRequestHandler<UpdateBudgetLineCo
         if (nameConflict)
             return Result<Guid>.Failure("BUDGET_LINE_NAME_DUPLICATE");
 
-        // Metadata update (name, category, lineType) — always applied
-        line.Update(cmd.CategoryGroupId, cmd.CategoryId, cmd.Name, cmd.LineType);
+        // Metadata update (name, category, lineType, description) — always applied
+        line.Update(cmd.CategoryGroupId, cmd.CategoryId, cmd.Name, cmd.LineType, cmd.Description);
 
         // REQ-BL-03: Revision split — only when ValidFrom + BudgetedAmount are provided
         if (cmd.ValidFrom.HasValue && cmd.BudgetedAmount.HasValue)

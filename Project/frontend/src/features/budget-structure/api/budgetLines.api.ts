@@ -78,6 +78,7 @@ export interface CreateRevisionPayload {
   validTo?: string
   amount: number
   currencyId?: string
+  note?: string
 }
 
 /** POST /api/budgets/:budgetId/lines/:lineId/revisions — create a new revision via SplitRevision */

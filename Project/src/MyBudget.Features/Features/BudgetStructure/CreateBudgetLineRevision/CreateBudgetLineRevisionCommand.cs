@@ -9,5 +9,6 @@ public sealed record CreateBudgetLineRevisionCommand(
     DateOnly  ValidFrom,
     DateOnly? ValidTo,
     decimal   Amount,
-    Guid?     CurrencyId)
+    Guid?     CurrencyId,
+    string?   Note = null)
     : IRequest<Result<Guid>>;

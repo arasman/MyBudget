@@ -46,6 +46,15 @@ public sealed class CreateBudgetLineRevisionHandler
 
         line.SplitRevision(cmd.ValidFrom, cmd.ValidTo, cmd.Amount, currencyId);
 
+        // Identify the created/modified revision at ValidFrom before save
+        var createdRevision = line.Revisions
+            .FirstOrDefault(r => r.ValidFrom == cmd.ValidFrom && !existingRevisionIds.Contains(r.Id))
+            ?? line.Revisions.First(r => r.ValidFrom == cmd.ValidFrom);
+
+        // Apply note before SaveChangesAsync so it is persisted in the same transaction
+        if (cmd.Note is not null)
+            createdRevision.UpdateRevision(createdRevision.BudgetedAmount, cmd.Note);
+
         // EF Core: explicitly mark new revision entities as Added
         var newRevisions = line.Revisions
             .Where(r => !existingRevisionIds.Contains(r.Id))
@@ -62,11 +71,6 @@ public sealed class CreateBudgetLineRevisionHandler
         {
             return Result<Guid>.Failure("REVISION_CONCURRENCY_CONFLICT");
         }
-
-        // Return ID of the "new" revision that starts at ValidFrom
-        var createdRevision = line.Revisions
-            .FirstOrDefault(r => r.ValidFrom == cmd.ValidFrom && !existingRevisionIds.Contains(r.Id))
-            ?? line.Revisions.First(r => r.ValidFrom == cmd.ValidFrom);
 
         return Result<Guid>.Success(createdRevision.Id);
     }

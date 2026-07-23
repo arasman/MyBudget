@@ -177,16 +177,17 @@
           </template>
         </div>
 
-        <!-- Note -->
+        <!-- Description -->
         <div class="form-control mb-4">
-          <label class="label" for="line-note">
-            <span class="label-text">{{ t('budgetStructure.budgetLines.note') }}</span>
+          <label class="label" for="line-description">
+            <span class="label-text">{{ t('budgetStructure.budgetLines.description') }}</span>
           </label>
           <textarea
-            id="line-note"
-            v-model="form.note"
+            id="line-description"
+            v-model="form.description"
             class="textarea textarea-bordered w-full"
             rows="3"
+            maxlength="500"
           />
         </div>
 
@@ -262,7 +263,7 @@ const form = reactive<{
   categoryId: string | undefined
   initialAmount: number | undefined
   currencyId: string | undefined
-  note: string | undefined
+  description: string | undefined
 }>({
   name: props.modelValue?.name ?? '',
   lineType: props.modelValue?.lineType ?? 'Expense',
@@ -272,7 +273,7 @@ const form = reactive<{
   categoryId: props.modelValue?.categoryId,
   initialAmount: props.modelValue?.budgetedAmount,
   currencyId: props.modelValue?.currencyId,
-  note: props.modelValue?.note,
+  description: props.modelValue?.description,
 })
 
 const filteredCategories = computed(() => {
@@ -327,7 +328,7 @@ function handleSubmit(): void {
       currencyId: form.currencyId || undefined,
       categoryGroupId: form.categoryGroupId || undefined,
       categoryId: form.categoryId || undefined,
-      note: form.note?.trim() || undefined,
+      description: form.description?.trim() || undefined,
     }
     emit('submit', payload)
   } else {
@@ -336,7 +337,7 @@ function handleSubmit(): void {
       lineType: form.lineType,
       categoryGroupId: form.categoryGroupId || undefined,
       categoryId: form.categoryId || undefined,
-      note: form.note?.trim() || undefined,
+      description: form.description?.trim() || undefined,
       currencyId: form.currencyId || undefined,
     }
     emit('submit', payload)
