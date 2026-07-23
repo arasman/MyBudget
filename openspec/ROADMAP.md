@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-23 (language archived)
+**Last updated**: 2026-07-23 (db-isolation archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -484,6 +484,38 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 **SDD artifacts**: `openspec/changes/archive/2026-07-23-language/`
 
 **Scope out**: Additional languages beyond EN/ES, server-side locale detection, RTL layout, locale-aware date/number formatting.
+
+---
+
+### 9j. `db-isolation` ✅ archived 2026-07-23
+
+**What**: Three-environment DB isolation — dev / test / e2e never share data.
+
+**Domain**: Integration tests were hitting `mybudget_test` correctly but factory hardcoded the connection string. E2E tests had no isolation — data accumulated in the dev DB with no teardown. This change enforces strict DB ownership per environment.
+
+**Scope in**:
+- `appsettings.E2E.json`: dedicated `mybudget_e2e` connection string + JWT key
+- `Program.cs`: skip `MigrateAsync` for `Testing` only (E2E migrates at startup so schema exists before `globalSetup` fires)
+- `POST /api/test/reset`: VSA endpoint gated at registration time (`Testing`/`E2E` only); uses `DROP SCHEMA public CASCADE + MigrateAsync` to reset without needing DB-level permissions
+- `IntegrationTestFactory`: reads `DefaultConnection` from `appsettings.Testing.json` via `IConfiguration` — no hardcoded constants
+- `launchSettings.json`: `e2e` profile (port 5079, `ASPNETCORE_ENVIRONMENT=E2E`)
+- `vite.config.ts`: `VITE_API_TARGET` env var for proxy target (default `http://localhost:5184`)
+- `global-setup.ts` / `global-teardown.ts`: Playwright lifecycle hooks call reset endpoint
+- `docker/01-create-test-dbs.sql`: idempotent provisioning for fresh volumes
+- `openspec/config.yaml`: corrected incorrect "SQLite in-memory" note (integration tests use real Postgres)
+
+**How to run E2E**:
+```bash
+# Terminal 1 — API in E2E mode
+dotnet run --project src/MyBudget.Api --launch-profile e2e
+# Terminal 2 — frontend pointing to E2E API
+set VITE_API_TARGET=http://localhost:5079 && pnpm run dev
+# Terminal 3
+pnpm exec playwright test
+```
+
+**Tests**: 88/89 E2E pass (1 pre-existing UI timing flakiness); 176 integration + 437 unit — all green
+**SDD artifacts**: `openspec/changes/archive/2026-07-23-db-isolation/`
 
 ---
 
