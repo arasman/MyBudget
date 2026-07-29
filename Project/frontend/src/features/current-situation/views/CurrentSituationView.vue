@@ -38,10 +38,7 @@
 
     <!-- Main content -->
     <div v-else class="flex flex-col gap-4">
-      <!-- Execution summary (read-only) -->
-      <ExecutionSummaryPanel :summary="store.currentRecord.executionSummary" />
-
-      <!-- Cut form: exchange rate + balances -->
+      <!-- Cut form: date + exchange rate + accounts -->
       <CutRecordForm
         :accounts="store.currentRecord.accounts"
         :exchange-rate="store.currentRecord.exchangeRate"
@@ -51,13 +48,28 @@
         :save-error="store.saveError"
         :remaining="store.currentRecord.executionSummary.remaining"
         :primary-currency-id="store.currentRecord.primaryCurrencyId"
+        :cut-date="selectedDate"
         @save="handleSave"
         @update:live-totals="liveTotals = $event"
+        @date-change="handleDateChange"
       />
 
-      <!-- Totals (live-updating as user edits balances) -->
-      <CutTotalsPanel :totals="liveTotals ?? store.currentRecord.totals" />
+      <!-- Combined totals + execution summary panel -->
+      <CutTotalsPanel
+        :totals="liveTotals ?? store.currentRecord.totals"
+        :execution-summary="store.currentRecord.executionSummary"
+      />
     </div>
+
+    <!-- Load strategy modal -->
+    <LoadStrategyModal
+      v-if="showStrategyModal && pendingDate"
+      :target-date="pendingDate"
+      :cut-dates="store.cutDates"
+      :loading="strategyLoading"
+      @select="handleStrategySelect"
+      @cancel="handleStrategyCancel"
+    />
 
     <!-- Delete modal -->
     <DeleteCutModal
@@ -79,11 +91,12 @@ import type { CutTotalsDto } from '../types/cutRecord'
 import BudgetTabs from '@/features/budget-structure/components/BudgetTabs.vue'
 import CutDateNavigator from '../components/CutDateNavigator.vue'
 import CutRecordForm from '../components/CutRecordForm.vue'
-import ExecutionSummaryPanel from '../components/ExecutionSummaryPanel.vue'
 import CutTotalsPanel from '../components/CutTotalsPanel.vue'
 import DeleteCutModal from '../components/DeleteCutModal.vue'
+import LoadStrategyModal from '../components/LoadStrategyModal.vue'
 import { listCurrencies } from '@/features/budget-structure/api/currencies.api'
 import type { CurrencyItem } from '@/features/budget-structure/types'
+import { getCutRecord } from '../api/cutRecordApi'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -96,8 +109,16 @@ const showDeleteModal = ref(false)
 const deleteLoading = ref(false)
 const liveTotals = ref<CutTotalsDto | null>(null)
 
+const selectedDate = ref('')
+const showStrategyModal = ref(false)
+const pendingDate = ref<string | null>(null)
+const strategyLoading = ref(false)
+
 // Reset live totals whenever a new record loads (form will re-emit immediately)
-watch(() => store.currentRecord, () => { liveTotals.value = null })
+watch(() => store.currentRecord, (record) => {
+  liveTotals.value = null
+  if (record) selectedDate.value = record.cutDate
+})
 
 function openDeleteModal(): void {
   showDeleteModal.value = true
@@ -120,6 +141,69 @@ async function handleSave(payload: {
     await store.upsertCutRecord(budgetId.value, store.currentDate, payload)
   } catch {
     // saveError is set inside the store
+  }
+}
+
+async function handleDateChange(date: string): Promise<void> {
+  selectedDate.value = date
+  if (store.cutDates.includes(date)) {
+    await store.fetchCutRecord(budgetId.value, date)
+  } else {
+    pendingDate.value = date
+    showStrategyModal.value = true
+  }
+}
+
+function handleStrategyCancel(): void {
+  showStrategyModal.value = false
+  pendingDate.value = null
+  if (store.currentRecord) selectedDate.value = store.currentRecord.cutDate
+}
+
+async function handleStrategySelect(
+  strategy: 'blank' | 'clone' | 'from-date',
+  sourceDate?: string,
+): Promise<void> {
+  if (!pendingDate.value) return
+  const targetDate = pendingDate.value
+  strategyLoading.value = true
+  try {
+    if (strategy === 'blank') {
+      await store.fetchCutRecord(budgetId.value, targetDate)
+      if (store.currentRecord) {
+        store.currentRecord = {
+          ...store.currentRecord,
+          accounts: store.currentRecord.accounts.map((a) => ({
+            ...a,
+            balance: 0,
+            balanceInPrimary: 0,
+          })),
+        }
+      }
+    } else if (strategy === 'clone') {
+      await store.fetchCutRecord(budgetId.value, targetDate)
+    } else if (strategy === 'from-date' && sourceDate) {
+      const sourceRecord = await getCutRecord(budgetId.value, sourceDate)
+      const sourceBalances: Record<string, number> = {}
+      for (const acc of sourceRecord.accounts) {
+        sourceBalances[acc.bankAccountId] = acc.balance
+      }
+      await store.fetchCutRecord(budgetId.value, targetDate)
+      if (store.currentRecord) {
+        store.currentRecord = {
+          ...store.currentRecord,
+          accounts: store.currentRecord.accounts.map((a) => ({
+            ...a,
+            balance: sourceBalances[a.bankAccountId] ?? 0,
+            balanceInPrimary: sourceBalances[a.bankAccountId] ?? 0,
+          })),
+        }
+      }
+    }
+    showStrategyModal.value = false
+    pendingDate.value = null
+  } finally {
+    strategyLoading.value = false
   }
 }
 

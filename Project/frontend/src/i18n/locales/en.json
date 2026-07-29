@@ -518,7 +518,21 @@
       "negativeAccounts": "Liabilities (subtract from total)",
       "accountAlias": "Account",
       "currency": "Currency",
-      "balance": "Balance"
+      "balance": "Balance",
+      "cutDate": "Cut Date"
+    },
+    "loadStrategy": {
+      "title": "No record for this date",
+      "subtitle": "How do you want to load data for {date}?",
+      "blank": "Start blank",
+      "blankHint": "All balances will be set to 0",
+      "clone": "Clone from last record",
+      "cloneHint": "Copies balances from the most recent cut record",
+      "fromDate": "From a specific date",
+      "fromDateHint": "Pick an existing cut record to copy balances from",
+      "selectDate": "Select a date",
+      "noExistingDates": "No existing cut records to copy from",
+      "load": "Load"
     },
     "executionSummary": {
       "title": "Budget Execution Summary",

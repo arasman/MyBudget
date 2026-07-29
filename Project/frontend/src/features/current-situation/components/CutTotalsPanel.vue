@@ -4,6 +4,7 @@
       {{ t('currentSituation.totals.title') }}
     </h3>
     <div class="grid grid-cols-1 gap-2">
+      <!-- Assets -->
       <div class="flex justify-between items-center">
         <span class="text-sm text-success">{{ t('currentSituation.totals.positive') }}</span>
         <div class="text-right">
@@ -13,6 +14,8 @@
           </span>
         </div>
       </div>
+
+      <!-- Liabilities -->
       <div class="flex justify-between items-center">
         <span class="text-sm text-error">{{ t('currentSituation.totals.negative') }}</span>
         <div class="text-right">
@@ -22,11 +25,38 @@
           </span>
         </div>
       </div>
+
       <div class="divider my-1"></div>
+
+      <!-- Budget execution summary -->
+      <div class="flex justify-between items-center">
+        <span class="text-sm text-base-content/70">{{ t('currentSituation.executionSummary.totalBudgeted') }}</span>
+        <span class="font-mono text-sm">{{ formatAmount(executionSummary.totalBudgeted) }}</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-sm text-base-content/70">{{ t('currentSituation.executionSummary.totalRegistered') }}</span>
+        <span class="font-mono text-sm">{{ formatAmount(executionSummary.totalRegistered) }}</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-sm text-base-content/70">{{ t('currentSituation.executionSummary.remaining') }}</span>
+        <span
+          class="font-mono text-sm"
+          :class="executionSummary.remaining >= 0 ? 'text-success' : 'text-error'"
+        >
+          {{ formatAmount(executionSummary.remaining) }}
+        </span>
+      </div>
+
+      <div class="divider my-1"></div>
+
+      <!-- Net Position -->
       <div class="flex justify-between items-center font-bold">
         <span class="text-sm">{{ t('currentSituation.totals.deudaEnCurso') }}</span>
         <div class="text-right">
-          <span class="font-mono" :class="totals.totalDeudaEnCurso >= 0 ? 'text-success' : 'text-error'">
+          <span
+            class="font-mono"
+            :class="totals.totalDeudaEnCurso >= 0 ? 'text-success' : 'text-error'"
+          >
             {{ formatAmount(totals.totalDeudaEnCurso) }}
           </span>
           <span
@@ -43,10 +73,11 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import type { CutTotalsDto } from '../types/cutRecord'
+import type { CutTotalsDto, BudgetExecutionSummaryDto } from '../types/cutRecord'
 
 defineProps<{
   totals: CutTotalsDto
+  executionSummary: BudgetExecutionSummaryDto
 }>()
 
 const { t } = useI18n()

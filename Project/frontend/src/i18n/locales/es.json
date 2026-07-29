@@ -518,7 +518,21 @@
       "negativeAccounts": "Pasivos (restan del total)",
       "accountAlias": "Cuenta",
       "currency": "Moneda",
-      "balance": "Saldo"
+      "balance": "Saldo",
+      "cutDate": "Fecha del corte"
+    },
+    "loadStrategy": {
+      "title": "Sin registro para esta fecha",
+      "subtitle": "¿Cómo querés cargar los datos para el {date}?",
+      "blank": "En blanco",
+      "blankHint": "Todos los saldos se cargan en 0",
+      "clone": "Clonar desde el último registro",
+      "cloneHint": "Copia los saldos del corte más reciente",
+      "fromDate": "Desde una fecha específica",
+      "fromDateHint": "Elegí un corte existente para copiar sus saldos",
+      "selectDate": "Elegí una fecha",
+      "noExistingDates": "No hay registros de corte existentes para copiar",
+      "load": "Cargar"
     },
     "executionSummary": {
       "title": "Resumen de ejecución presupuestaria",

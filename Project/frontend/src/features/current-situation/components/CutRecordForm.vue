@@ -1,7 +1,18 @@
 <template>
   <div class="card bg-base-200 p-4">
-    <!-- Header: exchange rate + draft badge -->
-    <div class="flex items-center gap-4 mb-4">
+    <!-- Date + exchange rate row -->
+    <div class="flex items-end gap-4 mb-4">
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text">{{ t('currentSituation.form.cutDate') }}</span>
+        </label>
+        <input
+          v-model="localDate"
+          type="date"
+          class="input input-bordered input-sm w-40"
+          @change="emit('date-change', localDate)"
+        />
+      </div>
       <div class="form-control">
         <label class="label">
           <span class="label-text">{{ t('currentSituation.form.exchangeRate') }}</span>
@@ -15,79 +26,71 @@
           :placeholder="t('currentSituation.form.exchangeRatePlaceholder')"
         />
       </div>
-
-      <div v-if="isDraft" class="badge badge-warning gap-1 self-end mb-2">
+      <div v-if="isDraft" class="badge badge-warning mb-2">
         {{ t('currentSituation.draft') }}
       </div>
     </div>
 
-    <!-- Account rows -->
-    <div v-if="positiveAccounts.length > 0" class="mb-4">
-      <h4 class="text-sm font-semibold mb-2 text-success">
-        {{ t('currentSituation.form.positiveAccounts') }}
-      </h4>
-      <div class="overflow-x-auto">
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th>{{ t('currentSituation.form.accountAlias') }}</th>
-              <th>{{ t('currentSituation.form.currency') }}</th>
-              <th>{{ t('currentSituation.form.balance') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="acc in positiveAccounts" :key="acc.bankAccountId">
-              <td>{{ acc.alias }}</td>
-              <td>
-                <span class="badge badge-success badge-sm">{{ getCurrencyCode(acc.currencyId) }}</span>
-              </td>
-              <td>
-                <input
-                  v-model.number="balances[acc.bankAccountId]"
-                  type="number"
-                  class="input input-bordered input-xs w-32"
-                  min="0"
-                  step="0.01"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div v-if="negativeAccounts.length > 0" class="mb-4">
-      <h4 class="text-sm font-semibold mb-2 text-error">
-        {{ t('currentSituation.form.negativeAccounts') }}
-      </h4>
-      <div class="overflow-x-auto">
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th>{{ t('currentSituation.form.accountAlias') }}</th>
-              <th>{{ t('currentSituation.form.currency') }}</th>
-              <th>{{ t('currentSituation.form.balance') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="acc in negativeAccounts" :key="acc.bankAccountId">
-              <td>{{ acc.alias }}</td>
-              <td>
-                <span class="badge badge-error badge-sm">{{ getCurrencyCode(acc.currencyId) }}</span>
-              </td>
-              <td>
-                <input
-                  v-model.number="balances[acc.bankAccountId]"
-                  type="number"
-                  class="input input-bordered input-xs w-32"
-                  min="0"
-                  step="0.01"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <!-- Unified accounts table -->
+    <div v-if="positiveAccounts.length > 0 || negativeAccounts.length > 0" class="overflow-x-auto mb-4">
+      <table class="table table-sm w-full">
+        <colgroup>
+          <col class="w-1/2" />
+          <col class="w-24" />
+          <col class="w-36" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>{{ t('currentSituation.form.accountAlias') }}</th>
+            <th>{{ t('currentSituation.form.currency') }}</th>
+            <th>{{ t('currentSituation.form.balance') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Assets section -->
+          <tr v-if="positiveAccounts.length > 0">
+            <td colspan="3" class="text-xs font-semibold text-success bg-success/5 py-1 px-2">
+              {{ t('currentSituation.form.positiveAccounts') }}
+            </td>
+          </tr>
+          <tr v-for="acc in positiveAccounts" :key="acc.bankAccountId">
+            <td>{{ acc.alias }}</td>
+            <td>
+              <span class="badge badge-success badge-sm">{{ getCurrencyCode(acc.currencyId) }}</span>
+            </td>
+            <td>
+              <input
+                v-model.number="balances[acc.bankAccountId]"
+                type="number"
+                class="input input-bordered input-xs w-32"
+                min="0"
+                step="0.01"
+              />
+            </td>
+          </tr>
+          <!-- Liabilities section -->
+          <tr v-if="negativeAccounts.length > 0">
+            <td colspan="3" class="text-xs font-semibold text-error bg-error/5 py-1 px-2">
+              {{ t('currentSituation.form.negativeAccounts') }}
+            </td>
+          </tr>
+          <tr v-for="acc in negativeAccounts" :key="acc.bankAccountId">
+            <td>{{ acc.alias }}</td>
+            <td>
+              <span class="badge badge-error badge-sm">{{ getCurrencyCode(acc.currencyId) }}</span>
+            </td>
+            <td>
+              <input
+                v-model.number="balances[acc.bankAccountId]"
+                type="number"
+                class="input input-bordered input-xs w-32"
+                min="0"
+                step="0.01"
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Save error -->
@@ -123,16 +126,26 @@ const props = defineProps<{
   saveError: string | null
   remaining: number
   primaryCurrencyId: string | null
+  cutDate: string
 }>()
 
 const emit = defineEmits<{
   save: [payload: { exchangeRate: number; accounts: { bankAccountId: string; balance: number }[] }]
   'update:liveTotals': [totals: CutTotalsDto]
+  'date-change': [date: string]
 }>()
 
 const { t } = useI18n()
 
+const localDate = ref(props.cutDate)
 const localExchangeRate = ref(props.exchangeRate)
+
+watch(
+  () => props.cutDate,
+  (d) => {
+    localDate.value = d
+  },
+)
 const balances = ref<Record<string, number>>({})
 
 watch(
