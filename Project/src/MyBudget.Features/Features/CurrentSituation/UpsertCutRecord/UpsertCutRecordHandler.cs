@@ -37,7 +37,6 @@ public sealed class UpsertCutRecordHandler : IRequestHandler<UpsertCutRecordComm
             FROM "Periods" p
             JOIN "Cycles" cy ON cy."Id" = p."CycleId"
             WHERE cy."BudgetId"  = @BudgetId
-              AND cy."IsActive"  = true
               AND cy."DeletedAt" IS NULL
               AND p."DeletedAt"  IS NULL
               AND p."IsClosed"   = false
@@ -47,14 +46,20 @@ public sealed class UpsertCutRecordHandler : IRequestHandler<UpsertCutRecordComm
 
         var coveringPeriods = await conn.ExecuteScalarAsync<int>(
             activePeriodSql,
-            new { cmd.BudgetId, CutDate = cmd.CutDate });
+            new { cmd.BudgetId, CutDate = cmd.CutDate.ToDateTime(TimeOnly.MinValue) });
 
         if (coveringPeriods == 0)
             return Result<bool>.Failure("NO_ACTIVE_PERIOD_FOR_CUT_DATE");
 
         // Load the active cycle to determine primary/alternate currency
+        // Find the cycle whose date range contains the cut date (no IsActive filter —
+        // IsActive is a UI display flag, not a data integrity guard for cut records).
         var cycle = await _db.Cycles
-            .FirstOrDefaultAsync(c => c.BudgetId == cmd.BudgetId && c.IsActive, ct);
+            .FirstOrDefaultAsync(
+                c => c.BudgetId == cmd.BudgetId
+                     && c.StartDate <= cmd.CutDate
+                     && c.EndDate   >= cmd.CutDate,
+                ct);
 
         if (cycle is null)
             return Result<bool>.Failure("NO_ACTIVE_PERIOD_FOR_CUT_DATE");

@@ -461,6 +461,87 @@
       "label": "Actualizar"
     }
   },
+  "bankAccount": {
+    "title": "Cuentas Bancarias",
+    "create": "Nueva cuenta",
+    "createTitle": "Crear cuenta bancaria",
+    "editTitle": "Editar cuenta bancaria",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteTitle": "Eliminar cuenta bancaria",
+    "deleteConfirm": "¿Estás seguro de que deseas eliminar \"{alias}\"?",
+    "positive": "Suma",
+    "negative": "Resta",
+    "empty": "Aún no hay cuentas bancarias. Crea tu primera cuenta.",
+    "columns": {
+      "alias": "Alias",
+      "currency": "Moneda",
+      "type": "Tipo",
+      "order": "Orden",
+      "actions": "Acciones"
+    },
+    "form": {
+      "alias": "Alias",
+      "aliasPlaceholder": "ej. Banco Industrial GTQ",
+      "currency": "Moneda",
+      "selectCurrency": "— Seleccionar moneda —",
+      "isPositive": "Suma al total (positivo)",
+      "isPositiveHint": "Esta cuenta suma al saldo neto",
+      "isNegativeHint": "Esta cuenta representa un pasivo (resta)",
+      "displayOrder": "Orden de visualización"
+    },
+    "validation": {
+      "aliasRequired": "El alias es obligatorio",
+      "aliasTooLong": "El alias no puede superar 100 caracteres",
+      "currencyRequired": "La moneda es obligatoria",
+      "displayOrderMin": "El orden debe ser 0 o mayor"
+    },
+    "errors": {
+      "saveFailed": "Error al guardar la cuenta bancaria",
+      "deleteFailed": "Error al eliminar la cuenta bancaria"
+    }
+  },
+  "currentSituation": {
+    "title": "Situación Actual",
+    "tabTitle": "Situación Actual",
+    "draft": "Borrador",
+    "delete": "Eliminar corte",
+    "noData": "No hay registro de corte disponible. Navegá a una fecha o creá un nuevo corte.",
+    "navigation": {
+      "previous": "Corte anterior",
+      "next": "Corte siguiente"
+    },
+    "form": {
+      "exchangeRate": "Tipo de cambio",
+      "exchangeRatePlaceholder": "ej. 7.800000",
+      "positiveAccounts": "Activos (suman al total)",
+      "negativeAccounts": "Pasivos (restan del total)",
+      "accountAlias": "Cuenta",
+      "currency": "Moneda",
+      "balance": "Saldo"
+    },
+    "executionSummary": {
+      "title": "Resumen de ejecución presupuestaria",
+      "totalBudgeted": "Total presupuestado",
+      "totalRegistered": "Total registrado",
+      "remaining": "Saldo disponible"
+    },
+    "totals": {
+      "title": "Totales del corte",
+      "positive": "Total activos (suma)",
+      "negative": "Total pasivos (deuda)",
+      "deudaEnCurso": "Posición neta (Deuda en Curso)"
+    },
+    "deleteModal": {
+      "title": "Eliminar registro de corte",
+      "instruction": "Esta acción es irreversible. Escribí la fecha del corte \"{date}\" para confirmar.",
+      "typeDate": "Confirmar fecha del corte",
+      "confirm": "Eliminar definitivamente"
+    },
+    "errors": {
+      "noActivePeriod": "Ningún período presupuestario activo cubre la fecha de este corte. Revisá la configuración de ciclos y períodos antes de guardar."
+    }
+  },
   "enums": {
     "periodStatus": {
       "open": "Abierto",

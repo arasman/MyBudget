@@ -104,42 +104,42 @@ Chain strategy: feature-branch-chain
 
 ## Phase 5: Frontend — BankAccount Feature
 
-- [ ] 5.1 Create `frontend/src/features/bank-accounts/api/bankAccountApi.ts` — typed functions: `createBankAccount`, `listBankAccounts`, `updateBankAccount`, `deleteBankAccount` calling `/api/budgets/{budgetId}/bank-accounts`
-- [ ] 5.2 Create `frontend/src/features/bank-accounts/types/bankAccount.ts` — TS interfaces: `BankAccount`, `CreateBankAccountDto`, `UpdateBankAccountDto`
-- [ ] 5.3 Create `frontend/src/features/bank-accounts/store/useBankAccountStore.ts` — Pinia store: state `accounts[]`, `loading`, `error`; actions `fetchAccounts`, `createAccount`, `updateAccount`, `deleteAccount`
-- [ ] 5.4 Create `frontend/src/features/bank-accounts/views/BankAccountListView.vue` — presents account list, create/edit modal, delete confirm; accessible from budget config (spec CS-8)
-- [ ] 5.5 Create `frontend/src/features/bank-accounts/components/BankAccountForm.vue` — form for alias, currencyId (dropdown), isPositive (toggle), displayOrder; validates client-side
-- [ ] 5.6 Add `bankAccount.*` i18n keys to `frontend/src/i18n/locales/en.json` and `frontend/src/i18n/locales/es.json` (spec CS-8)
-- [ ] 5.7 Modify `frontend/src/router/index.ts` — add route `/budgets/:budgetId/bank-accounts` pointing to `BankAccountListView`
-- [ ] 5.8 Unit test `useBankAccountStore` — fetchAccounts populates state; createAccount appends; deleteAccount removes (Vitest + mock api)
-- [ ] 5.9 Unit test `BankAccountForm.vue` — renders fields; shows error on empty alias; emits `submit` with payload (@testing-library/vue)
+- [x] 5.1 Create `frontend/src/features/bank-accounts/api/bankAccountApi.ts` — typed functions: `createBankAccount`, `listBankAccounts`, `updateBankAccount`, `deleteBankAccount` calling `/api/budgets/{budgetId}/bank-accounts`
+- [x] 5.2 Create `frontend/src/features/bank-accounts/types/bankAccount.ts` — TS interfaces: `BankAccount`, `CreateBankAccountDto`, `UpdateBankAccountDto`
+- [x] 5.3 Create `frontend/src/features/bank-accounts/store/useBankAccountStore.ts` — Pinia store: state `accounts[]`, `loading`, `error`; actions `fetchAccounts`, `createAccount`, `updateAccount`, `deleteAccount`
+- [x] 5.4 Create `frontend/src/features/bank-accounts/views/BankAccountListView.vue` — presents account list, create/edit modal, delete confirm; accessible from budget config (spec CS-8)
+- [x] 5.5 Create `frontend/src/features/bank-accounts/components/BankAccountForm.vue` — form for alias, currencyId (dropdown), isPositive (toggle), displayOrder; validates client-side
+- [x] 5.6 Add `bankAccount.*` i18n keys to `frontend/src/i18n/locales/en.json` and `frontend/src/i18n/locales/es.json` (spec CS-8)
+- [x] 5.7 Modify `frontend/src/router/index.ts` — add route `/budgets/:budgetId/bank-accounts` pointing to `BankAccountListView`
+- [x] 5.8 Unit test `useBankAccountStore` — fetchAccounts populates state; createAccount appends; deleteAccount removes (Vitest + mock api)
+- [x] 5.9 Unit test `BankAccountForm.vue` — renders fields; shows error on empty alias; emits `submit` with payload (@testing-library/vue)
 
 ---
 
 ## Phase 6: Frontend — CurrentSituation Feature
 
-- [ ] 6.1 Create `frontend/src/features/current-situation/api/cutRecordApi.ts` — typed functions: `getCutRecord`, `upsertCutRecord`, `listCutDates`, `deleteCutRecord`
-- [ ] 6.2 Create `frontend/src/features/current-situation/types/cutRecord.ts` — TS interfaces: `CutRecordResponse`, `CutBankAccountDto`, `BudgetExecutionSummaryDto`, `CutTotalsDto`, `UpsertCutRecordDto`
-- [ ] 6.3 Create `frontend/src/features/current-situation/store/useCutRecordStore.ts` — Pinia store: state `currentRecord`, `cutDates[]`, `currentDateIndex`, `loading`; actions `fetchCutDates`, `fetchCutRecord(date)`, `upsertCutRecord`, `deleteCutRecord`; computed `hasPrevious`, `hasNext`, `previousDate`, `nextDate`
-- [ ] 6.4 Create `frontend/src/features/current-situation/views/CurrentSituationView.vue` — top-level view: date navigator header, cut form, execution summary panel, totals panel; loads most recent cut on mount (spec CS-7)
-- [ ] 6.5 Create `frontend/src/features/current-situation/components/CutDateNavigator.vue` — prev/next buttons, current date display; disables prev when at first date, next when at last (spec CS-7)
-- [ ] 6.6 Create `frontend/src/features/current-situation/components/CutRecordForm.vue` — exchange rate input, account balance rows (alias, currency badge, isPositive indicator, balance input), save button; marks IsDraft badge when applicable
-- [ ] 6.7 Create `frontend/src/features/current-situation/components/ExecutionSummaryPanel.vue` — displays TotalBudgeted, TotalRegistered, Remaining from `BudgetExecutionSummaryDto`
-- [ ] 6.8 Create `frontend/src/features/current-situation/components/CutTotalsPanel.vue` — displays TotalPositive, TotalNegative, TotalDeudaEnCurso (primary + alt)
-- [ ] 6.9 Create `frontend/src/features/current-situation/components/DeleteCutModal.vue` — confirmation modal: text input requiring user to type the cut date; delete button enabled only when typed value matches (spec CS-4)
-- [ ] 6.10 Add `currentSituation.*` i18n keys to `frontend/src/i18n/locales/en.json` and `frontend/src/i18n/locales/es.json` (spec CS-7)
-- [ ] 6.11 Modify `frontend/src/router/index.ts` — add route `/budgets/:budgetId/current-situation` pointing to `CurrentSituationView`
-- [ ] 6.12 Modify `frontend/src/features/budget-structure/components/BudgetTabs.vue` — add "Current Situation" tab with correct route-link (spec CS-7)
-- [ ] 6.13 Unit test `useCutRecordStore` — fetchCutDates populates dates; date navigation increments/decrements index correctly; hasPrevious/hasNext computed correctly (Vitest)
-- [ ] 6.14 Unit test `CutDateNavigator.vue` — prev disabled at first date; next disabled at last date; emits `navigate` with correct date (Vitest + @testing-library/vue)
-- [ ] 6.15 Unit test `DeleteCutModal.vue` — delete button disabled until typed date matches; emits `confirm` on submit (Vitest + @testing-library/vue)
+- [x] 6.1 Create `frontend/src/features/current-situation/api/cutRecordApi.ts` — typed functions: `getCutRecord`, `upsertCutRecord`, `listCutDates`, `deleteCutRecord`
+- [x] 6.2 Create `frontend/src/features/current-situation/types/cutRecord.ts` — TS interfaces: `CutRecordResponse`, `CutBankAccountDto`, `BudgetExecutionSummaryDto`, `CutTotalsDto`, `UpsertCutRecordDto`
+- [x] 6.3 Create `frontend/src/features/current-situation/store/useCutRecordStore.ts` — Pinia store: state `currentRecord`, `cutDates[]`, `currentDateIndex`, `loading`; actions `fetchCutDates`, `fetchCutRecord(date)`, `upsertCutRecord`, `deleteCutRecord`; computed `hasPrevious`, `hasNext`, `previousDate`, `nextDate`
+- [x] 6.4 Create `frontend/src/features/current-situation/views/CurrentSituationView.vue` — top-level view: date navigator header, cut form, execution summary panel, totals panel; loads most recent cut on mount (spec CS-7)
+- [x] 6.5 Create `frontend/src/features/current-situation/components/CutDateNavigator.vue` — prev/next buttons, current date display; disables prev when at first date, next when at last (spec CS-7)
+- [x] 6.6 Create `frontend/src/features/current-situation/components/CutRecordForm.vue` — exchange rate input, account balance rows (alias, currency badge, isPositive indicator, balance input), save button; marks IsDraft badge when applicable
+- [x] 6.7 Create `frontend/src/features/current-situation/components/ExecutionSummaryPanel.vue` — displays TotalBudgeted, TotalRegistered, Remaining from `BudgetExecutionSummaryDto`
+- [x] 6.8 Create `frontend/src/features/current-situation/components/CutTotalsPanel.vue` — displays TotalPositive, TotalNegative, TotalDeudaEnCurso (primary + alt)
+- [x] 6.9 Create `frontend/src/features/current-situation/components/DeleteCutModal.vue` — confirmation modal: text input requiring user to type the cut date; delete button enabled only when typed value matches (spec CS-4)
+- [x] 6.10 Add `currentSituation.*` i18n keys to `frontend/src/i18n/locales/en.json` and `frontend/src/i18n/locales/es.json` (spec CS-7)
+- [x] 6.11 Modify `frontend/src/router/index.ts` — add route `/budgets/:budgetId/current-situation` pointing to `CurrentSituationView`
+- [x] 6.12 Modify `frontend/src/features/budget-structure/components/BudgetTabs.vue` — add "Current Situation" tab with correct route-link (spec CS-7)
+- [x] 6.13 Unit test `useCutRecordStore` — fetchCutDates populates dates; date navigation increments/decrements index correctly; hasPrevious/hasNext computed correctly (Vitest)
+- [x] 6.14 Unit test `CutDateNavigator.vue` — prev disabled at first date; next disabled at last date; emits `navigate` with correct date (Vitest + @testing-library/vue)
+- [x] 6.15 Unit test `DeleteCutModal.vue` — delete button disabled until typed date matches; emits `confirm` on submit (Vitest + @testing-library/vue)
 
 ---
 
 ## Phase 7: E2E Tests
 
-- [ ] 7.1 E2E `bank-account-crud.spec.ts` — create account "Caja GTQ", verify appears in list; edit alias, verify updated; delete, verify removed from list and absent from new cut draft (spec CS-8)
-- [ ] 7.2 E2E `cut-record-create.spec.ts` — navigate to `/budgets/:id/current-situation`; enter balances + exchange rate; save; verify record persisted; reload and verify data (spec CS-1, CS-7)
-- [ ] 7.3 E2E `cut-record-navigation.spec.ts` — create 3 cuts on different dates; navigate prev/next; verify correct dates display in sequence (spec CS-7)
-- [ ] 7.4 E2E `cut-record-delete.spec.ts` — open delete modal; assert delete disabled without correct date typed; type date; confirm; verify cut removed from date list (spec CS-4)
-- [ ] 7.5 E2E `cut-draft-clone.spec.ts` — create cut for date A; add new account B after cut A; open cut for date B (later); verify A's balance cloned, B's balance = 0, soft-deleted account absent (spec CS-2)
+- [x] 7.1 E2E `bank-account-crud.spec.ts` — create account "Caja GTQ", verify appears in list; edit alias, verify updated; delete, verify removed from list and absent from new cut draft (spec CS-8)
+- [x] 7.2 E2E `cut-record-create.spec.ts` — navigate to `/budgets/:id/current-situation`; enter balances + exchange rate; save; verify record persisted; reload and verify data (spec CS-1, CS-7)
+- [x] 7.3 E2E `cut-record-navigation.spec.ts` — create 3 cuts on different dates; navigate prev/next; verify correct dates display in sequence (spec CS-7)
+- [x] 7.4 E2E `cut-record-delete.spec.ts` — open delete modal; assert delete disabled without correct date typed; type date; confirm; verify cut removed from date list (spec CS-4)
+- [x] 7.5 E2E `cut-draft-clone.spec.ts` — create cut for date A; add new account B after cut A; open cut for date B (later); verify A's balance cloned, B's balance = 0, soft-deleted account absent (spec CS-2)

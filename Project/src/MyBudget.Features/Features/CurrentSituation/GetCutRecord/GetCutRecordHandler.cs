@@ -38,7 +38,7 @@ public sealed class GetCutRecordHandler
             """;
 
         var header = await conn.QueryFirstOrDefaultAsync<CutHeaderRow>(
-            cutHeaderSql, new { query.BudgetId, CutDate = query.CutDate });
+            cutHeaderSql, new { query.BudgetId, CutDate = query.CutDate.ToDateTime(TimeOnly.MinValue) });
 
         // ── Step 2: budget execution summary (active period at cut date) ─────
         const string executionSql = """
@@ -51,7 +51,6 @@ public sealed class GetCutRecordHandler
                 FROM "Periods" p
                 JOIN "Cycles" cy ON cy."Id" = p."CycleId"
                 WHERE cy."BudgetId"  = @BudgetId
-                  AND cy."IsActive"  = true
                   AND cy."DeletedAt" IS NULL
                   AND p."DeletedAt"  IS NULL
                   AND p."IsClosed"   = false
@@ -111,7 +110,7 @@ public sealed class GetCutRecordHandler
             """;
 
         var execSummary = await conn.QueryFirstOrDefaultAsync<ExecutionSummaryRow>(
-            executionSql, new { query.BudgetId, CutDate = query.CutDate });
+            executionSql, new { query.BudgetId, CutDate = query.CutDate.ToDateTime(TimeOnly.MinValue) });
 
         var summaryDto = execSummary is not null
             ? new BudgetExecutionSummaryDto(
@@ -191,7 +190,7 @@ public sealed class GetCutRecordHandler
                 """;
 
             var draftRows = await conn.QueryAsync<CutBankAccountDto>(
-                draftSql, new { query.BudgetId, CutDate = query.CutDate });
+                draftSql, new { query.BudgetId, CutDate = query.CutDate.ToDateTime(TimeOnly.MinValue) });
 
             accounts = draftRows.ToList();
         }
