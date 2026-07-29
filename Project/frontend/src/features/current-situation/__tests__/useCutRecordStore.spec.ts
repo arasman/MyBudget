@@ -30,6 +30,7 @@ const makeRecord = (overrides: Partial<CutRecordResponse> = {}): CutRecordRespon
   cutDate: '2026-07-25',
   exchangeRate: 7.8,
   projectionsJson: null,
+  primaryCurrencyId: '11111111-1111-1111-1111-111111111111',
   executionSummary: { totalBudgeted: 1000, totalRegistered: 800, remaining: 200 },
   accounts: [],
   totals: {

@@ -1,5 +1,6 @@
 <template>
-  <div class="p-4">
+  <div class="container mx-auto px-4 py-6">
+    <BudgetTabs :budget-id="budgetId" class="mb-6" />
     <!-- Page header with navigation -->
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-xl font-semibold">{{ t('currentSituation.title') }}</h2>
@@ -48,11 +49,14 @@
         :currencies="currencies"
         :save-loading="store.saveLoading"
         :save-error="store.saveError"
+        :remaining="store.currentRecord.executionSummary.remaining"
+        :primary-currency-id="store.currentRecord.primaryCurrencyId"
         @save="handleSave"
+        @update:live-totals="liveTotals = $event"
       />
 
-      <!-- Totals -->
-      <CutTotalsPanel :totals="store.currentRecord.totals" />
+      <!-- Totals (live-updating as user edits balances) -->
+      <CutTotalsPanel :totals="liveTotals ?? store.currentRecord.totals" />
     </div>
 
     <!-- Delete modal -->
@@ -67,10 +71,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useCutRecordStore } from '../store/useCutRecordStore'
+import type { CutTotalsDto } from '../types/cutRecord'
+import BudgetTabs from '@/features/budget-structure/components/BudgetTabs.vue'
 import CutDateNavigator from '../components/CutDateNavigator.vue'
 import CutRecordForm from '../components/CutRecordForm.vue'
 import ExecutionSummaryPanel from '../components/ExecutionSummaryPanel.vue'
@@ -88,6 +94,10 @@ const budgetId = computed(() => route.params['budgetId'] as string)
 const currencies = ref<CurrencyItem[]>([])
 const showDeleteModal = ref(false)
 const deleteLoading = ref(false)
+const liveTotals = ref<CutTotalsDto | null>(null)
+
+// Reset live totals whenever a new record loads (form will re-emit immediately)
+watch(() => store.currentRecord, () => { liveTotals.value = null })
 
 function openDeleteModal(): void {
   showDeleteModal.value = true

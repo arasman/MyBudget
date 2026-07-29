@@ -29,6 +29,7 @@ export interface CutRecordResponse {
   cutDate: string
   exchangeRate: number
   projectionsJson: string | null
+  primaryCurrencyId: string | null
   executionSummary: BudgetExecutionSummaryDto
   accounts: CutBankAccountDto[]
   totals: CutTotalsDto

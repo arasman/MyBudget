@@ -40,6 +40,19 @@ public sealed class GetCutRecordHandler
         var header = await conn.QueryFirstOrDefaultAsync<CutHeaderRow>(
             cutHeaderSql, new { query.BudgetId, CutDate = query.CutDate.ToDateTime(TimeOnly.MinValue) });
 
+        // ── Step 2a: primary currency of the covering cycle ──────────────────
+        const string primaryCurrencySql = """
+            SELECT cy."DefaultCurrencyId"
+            FROM "Cycles" cy
+            WHERE cy."BudgetId"  = @BudgetId
+              AND cy."StartDate" <= @CutDate
+              AND cy."EndDate"   >= @CutDate
+            LIMIT 1
+            """;
+
+        var primaryCurrencyId = await conn.QueryFirstOrDefaultAsync<Guid?>(
+            primaryCurrencySql, new { query.BudgetId, CutDate = query.CutDate.ToDateTime(TimeOnly.MinValue) });
+
         // ── Step 2: budget execution summary (active period at cut date) ─────
         const string executionSql = """
             WITH active_period AS (
@@ -221,6 +234,7 @@ public sealed class GetCutRecordHandler
             query.CutDate,
             exchangeRate,
             projectionsJson,
+            primaryCurrencyId,
             summaryDto,
             accounts,
             totals));

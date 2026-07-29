@@ -111,7 +111,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { CutBankAccountDto } from '../types/cutRecord'
+import type { CutBankAccountDto, CutTotalsDto } from '../types/cutRecord'
 import type { CurrencyItem } from '@/features/budget-structure/types'
 
 const props = defineProps<{
@@ -121,10 +121,13 @@ const props = defineProps<{
   currencies: CurrencyItem[]
   saveLoading: boolean
   saveError: string | null
+  remaining: number
+  primaryCurrencyId: string | null
 }>()
 
 const emit = defineEmits<{
   save: [payload: { exchangeRate: number; accounts: { bankAccountId: string; balance: number }[] }]
+  'update:liveTotals': [totals: CutTotalsDto]
 }>()
 
 const { t } = useI18n()
@@ -132,7 +135,6 @@ const { t } = useI18n()
 const localExchangeRate = ref(props.exchangeRate)
 const balances = ref<Record<string, number>>({})
 
-// Initialize balances from accounts
 watch(
   () => props.accounts,
   (accounts) => {
@@ -163,6 +165,40 @@ const negativeAccounts = computed(() =>
 function getCurrencyCode(currencyId: string): string {
   return props.currencies.find((c) => c.id === currencyId)?.code ?? currencyId.slice(0, 8)
 }
+
+function toBalanceInPrimary(acc: CutBankAccountDto, balance: number): number {
+  if (!props.primaryCurrencyId || acc.currencyId === props.primaryCurrencyId) return balance
+  const er = localExchangeRate.value > 0 ? localExchangeRate.value : 1
+  return balance * er
+}
+
+const liveTotals = computed<CutTotalsDto>(() => {
+  const er = localExchangeRate.value > 0 ? localExchangeRate.value : 1
+  let totalPositive = 0
+  let totalNegative = 0
+
+  for (const acc of props.accounts) {
+    const balance = balances.value[acc.bankAccountId] ?? 0
+    const bip = toBalanceInPrimary(acc, balance)
+    if (acc.isPositive) totalPositive += bip
+    else totalNegative += bip
+  }
+
+  const totalDeudaEnCurso = props.remaining + totalNegative
+
+  return {
+    totalPositive,
+    totalNegative,
+    totalDeudaEnCurso,
+    totalPositiveAlt: totalPositive / er,
+    totalNegativeAlt: totalNegative / er,
+    totalDeudaEnCursoAlt: totalDeudaEnCurso / er,
+  }
+})
+
+watch(liveTotals, (totals) => {
+  emit('update:liveTotals', totals)
+}, { immediate: true })
 
 function handleSave(): void {
   emit('save', {

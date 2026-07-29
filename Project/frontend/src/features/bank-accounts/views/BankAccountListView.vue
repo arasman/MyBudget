@@ -1,5 +1,6 @@
 <template>
-  <div class="p-4">
+  <div class="container mx-auto px-4 py-6">
+    <BudgetTabs :budget-id="budgetId" class="mb-6" />
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-xl font-semibold">{{ t('bankAccount.title') }}</h2>
       <button class="btn btn-primary btn-sm" @click="openCreate">
@@ -112,6 +113,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBankAccountStore } from '../store/useBankAccountStore'
+import BudgetTabs from '@/features/budget-structure/components/BudgetTabs.vue'
 import BankAccountForm from '../components/BankAccountForm.vue'
 import type { BankAccount, CreateBankAccountDto, UpdateBankAccountDto } from '../types/bankAccount'
 import { listCurrencies } from '@/features/budget-structure/api/currencies.api'

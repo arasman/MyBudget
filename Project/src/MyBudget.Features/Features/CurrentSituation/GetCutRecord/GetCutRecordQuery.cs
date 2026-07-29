@@ -16,6 +16,7 @@ public sealed record GetCutRecordResponse(
     DateOnly                        CutDate,
     decimal                         ExchangeRate,
     string?                         ProjectionsJson,
+    Guid?                           PrimaryCurrencyId,
     BudgetExecutionSummaryDto       ExecutionSummary,
     IReadOnlyList<CutBankAccountDto> Accounts,
     CutTotalsDto                    Totals);
