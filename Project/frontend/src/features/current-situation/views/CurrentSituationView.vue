@@ -37,7 +37,7 @@
     </div>
 
     <!-- Main content -->
-    <div v-else class="flex flex-col gap-4">
+    <div v-else class="flex flex-col gap-4 select-none">
       <!-- Cut form: date + exchange rate + accounts -->
       <CutRecordForm
         ref="formRef"
