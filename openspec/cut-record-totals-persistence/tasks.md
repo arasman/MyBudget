@@ -28,24 +28,24 @@ Chain strategy: feature-branch-chain
 
 ## Phase 1: Foundation — Entity, EF Config, Migration
 
-- [ ] 1.1 Create `SharedKernel/Entities/CutTotals.cs` — positional record, 16 `decimal`s (CS-6 names) + `CutTotals.Zero`. Satisfies: CS-6
-- [ ] 1.2 Modify `SharedKernel/Entities/CutRecord.cs` — add 16 `decimal` props (CS-6 names); `Create(…, CutTotals totals, string? projectionsJson = null)`; `Update(exchangeRate, CutTotals totals, projectionsJson)`. Satisfies: CS-1, CS-6
-- [ ] 1.3 Modify `SharedKernel/Persistence/Configurations/CutRecordConfiguration.cs` — `HasPrecision(18, 2).IsRequired()` × 16 new columns. Satisfies: CS-6 (rounding precision scenario)
-- [ ] 1.4 Scaffold + hand-edit `Migrations/{ts}_AddCutRecordPersistedTotals.cs` — phase A: `AddColumn` nullable × 16; phase B: `migrationBuilder.Sql` backfill (bank-account aggregation UPDATE + LEFT JOIN LATERAL execution CTE, per design.md Migration/Rollout SQL) + zero-fill NULLs; phase C: `AlterColumn` non-nullable × 16; `Down` drops all 16. Satisfies: CS-9
+- [x] 1.1 Create `SharedKernel/Entities/CutTotals.cs` — positional record, 16 `decimal`s (CS-6 names) + `CutTotals.Zero`. Satisfies: CS-6
+- [x] 1.2 Modify `SharedKernel/Entities/CutRecord.cs` — add 16 `decimal` props (CS-6 names); `Create(…, CutTotals totals, string? projectionsJson = null)`; `Update(exchangeRate, CutTotals totals, projectionsJson)`. Satisfies: CS-1, CS-6
+- [x] 1.3 Modify `SharedKernel/Persistence/Configurations/CutRecordConfiguration.cs` — `HasPrecision(18, 2).IsRequired()` × 16 new columns. Satisfies: CS-6 (rounding precision scenario)
+- [x] 1.4 Scaffold + hand-edit `Migrations/{ts}_AddCutRecordPersistedTotals.cs` — phase A: `AddColumn` nullable × 16; phase B: `migrationBuilder.Sql` backfill (bank-account aggregation UPDATE + LEFT JOIN LATERAL execution CTE, per design.md Migration/Rollout SQL) + zero-fill NULLs; phase C: `AlterColumn` non-nullable × 16; `Down` drops all 16. Satisfies: CS-9
 
 ---
 
 ## Phase 2: Shared Query/Calculator Components
 
-- [ ] 2.1 Create `Features/CurrentSituation/Shared/CutTotalsCalculator.cs` — pure static `Compute(rows, summary, exchangeRate) → CutTotals`; `exchangeRate <= 0` guard → divisor `1m`; `Math.Round(v, 2, MidpointRounding.AwayFromZero)` on all 16. Satisfies: CS-6
-- [ ] 2.2 Create `Features/CurrentSituation/Shared/BudgetExecutionSummaryQuery.cs` — extract the existing CTE verbatim from `GetCutRecordHandler` into `ExecuteAsync(IDbConnection, budgetId, cutDate)` returning `(TotalBudgeted, TotalRegistered, Remaining)` or zeros when no active period. Satisfies: CS-2 (execution summary scenarios)
+- [x] 2.1 Create `Features/CurrentSituation/Shared/CutTotalsCalculator.cs` — pure static `Compute(rows, summary, exchangeRate) → CutTotals`; `exchangeRate <= 0` guard → divisor `1m`; `Math.Round(v, 2, MidpointRounding.AwayFromZero)` on all 16. Satisfies: CS-6
+- [x] 2.2 Create `Features/CurrentSituation/Shared/BudgetExecutionSummaryQuery.cs` — extract the existing CTE verbatim from `GetCutRecordHandler` into `ExecuteAsync(IDbConnection, budgetId, cutDate)` returning `(TotalBudgeted, TotalRegistered, Remaining)` or zeros when no active period. Satisfies: CS-2 (execution summary scenarios)
 
 ---
 
 ## Phase 3: Handler Wiring
 
-- [ ] 3.1 Modify `Features/CurrentSituation/UpsertCutRecord/UpsertCutRecordHandler.cs` — reorder: resolve accounts + compute `BalanceInPrimary` + fail `ACCOUNT_NOT_FOUND` before any `SaveChanges`; call `BudgetExecutionSummaryQuery` + `CutTotalsCalculator`; wrap totals + header + `CutBankAccount` rows in one `BeginTransactionAsync`; ignore any total fields in the request body. Satisfies: CS-1 (all scenarios)
-- [ ] 3.2 Modify `Features/CurrentSituation/GetCutRecord/GetCutRecordHandler.cs` — existing-record path: SELECT header + 16 persisted columns, remove LINQ sums and the execution CTE call, populate `CutTotalsDto`/`BudgetExecutionSummaryDto` from stored columns; draft path: call `BudgetExecutionSummaryQuery` + `CutTotalsCalculator` (unchanged live behavior). Satisfies: CS-2 (all scenarios)
+- [x] 3.1 Modify `Features/CurrentSituation/UpsertCutRecord/UpsertCutRecordHandler.cs` — reorder: resolve accounts + compute `BalanceInPrimary` + fail `ACCOUNT_NOT_FOUND` before any `SaveChanges`; call `BudgetExecutionSummaryQuery` + `CutTotalsCalculator`; wrap totals + header + `CutBankAccount` rows in one `BeginTransactionAsync`; ignore any total fields in the request body. Satisfies: CS-1 (all scenarios)
+- [x] 3.2 Modify `Features/CurrentSituation/GetCutRecord/GetCutRecordHandler.cs` — existing-record path: SELECT header + 16 persisted columns, remove LINQ sums and the execution CTE call, populate `CutTotalsDto`/`BudgetExecutionSummaryDto` from stored columns; draft path: call `BudgetExecutionSummaryQuery` + `CutTotalsCalculator` (unchanged live behavior). Satisfies: CS-2 (all scenarios)
 
 ---
 

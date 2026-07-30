@@ -1,5 +1,6 @@
 using Dapper;
 using Mediator;
+using MyBudget.Features.Features.CurrentSituation.Shared;
 using MyBudget.Features.SharedKernel.Persistence;
 using MyBudget.Features.SharedKernel.Results;
 
@@ -8,10 +9,11 @@ namespace MyBudget.Features.Features.CurrentSituation.GetCutRecord;
 /// <summary>
 /// Dapper read-handler for GetCutRecord (CS-2).
 ///
-/// Existing record path: loads persisted CutBankAccount rows, computes totals at query time.
-/// Draft path: LEFT JOINs active BankAccounts against the last cut's balances for cloning.
-/// Budget execution summary: CTE joining Periods+Cycles, summing BudgetLineRevisions vs ExecutionRecords.
-/// CS-6: totals computed from CutBankAccount rows (existing) or Balance=0/cloned draft rows.
+/// Existing record path: reads the 16 persisted total columns and the execution summary
+/// verbatim from storage — no bank-account aggregation, no execution-summary CTE (CS-2, CS-6).
+/// Draft path: LEFT JOINs active BankAccounts against the last cut's balances for cloning,
+/// then computes totals live via the shared BudgetExecutionSummaryQuery + CutTotalsCalculator
+/// (unchanged behavior — same components used at upsert time).
 /// </summary>
 public sealed class GetCutRecordHandler
     : IRequestHandler<GetCutRecordQuery, Result<GetCutRecordResponse>>
@@ -28,9 +30,25 @@ public sealed class GetCutRecordHandler
         // ── Step 1: check if a cut record exists for the requested date ──────
         const string cutHeaderSql = """
             SELECT
-                cr."Id"              AS "Id",
-                cr."ExchangeRate"    AS "ExchangeRate",
-                cr."ProjectionsJson" AS "ProjectionsJson"
+                cr."Id"                   AS "Id",
+                cr."ExchangeRate"         AS "ExchangeRate",
+                cr."ProjectionsJson"      AS "ProjectionsJson",
+                cr."TotalPositive"        AS "TotalPositive",
+                cr."TotalPositiveAlt"     AS "TotalPositiveAlt",
+                cr."TotalNegative"        AS "TotalNegative",
+                cr."TotalNegativeAlt"     AS "TotalNegativeAlt",
+                cr."TotalDeudaEnCurso"    AS "TotalDeudaEnCurso",
+                cr."TotalDeudaEnCursoAlt" AS "TotalDeudaEnCursoAlt",
+                cr."TotalBudgeted"        AS "TotalBudgeted",
+                cr."TotalBudgetedAlt"     AS "TotalBudgetedAlt",
+                cr."TotalRegistered"      AS "TotalRegistered",
+                cr."TotalRegisteredAlt"   AS "TotalRegisteredAlt",
+                cr."Remaining"            AS "Remaining",
+                cr."RemainingAlt"         AS "RemainingAlt",
+                cr."TotalAvailable"       AS "TotalAvailable",
+                cr."TotalAvailableAlt"    AS "TotalAvailableAlt",
+                cr."TotalNet"             AS "TotalNet",
+                cr."TotalNetAlt"          AS "TotalNetAlt"
             FROM "CutRecords" cr
             WHERE cr."BudgetId" = @BudgetId
               AND cr."CutDate"  = @CutDate
@@ -53,95 +71,18 @@ public sealed class GetCutRecordHandler
         var primaryCurrencyId = await conn.QueryFirstOrDefaultAsync<Guid?>(
             primaryCurrencySql, new { query.BudgetId, CutDate = query.CutDate.ToDateTime(TimeOnly.MinValue) });
 
-        // ── Step 2: budget execution summary (active period at cut date) ─────
-        const string executionSql = """
-            WITH active_period AS (
-                SELECT
-                    p."Id"                    AS "PeriodId",
-                    p."StartDate"             AS "PeriodStart",
-                    p."EndDate"               AS "PeriodEnd",
-                    cy."DefaultCurrencyId"    AS "DefaultCurrencyId"
-                FROM "Periods" p
-                JOIN "Cycles" cy ON cy."Id" = p."CycleId"
-                WHERE cy."BudgetId"  = @BudgetId
-                  AND cy."DeletedAt" IS NULL
-                  AND p."DeletedAt"  IS NULL
-                  AND p."IsClosed"   = false
-                  AND p."StartDate"  <= @CutDate
-                  AND p."EndDate"    >= @CutDate
-                LIMIT 1
-            ),
-            budgeted AS (
-                SELECT COALESCE(SUM(rev."BudgetedAmount"), 0) AS "TotalBudgeted"
-                FROM "BudgetLines" bl
-                JOIN active_period ap ON true
-                LEFT JOIN LATERAL (
-                    SELECT r."BudgetedAmount"
-                    FROM "BudgetLineRevisions" r
-                    WHERE r."BudgetLineId" = bl."Id"
-                      AND r."ValidFrom"::date <= ap."PeriodStart"
-                      AND (r."ValidTo" IS NULL OR r."ValidTo"::date >= ap."PeriodStart")
-                    LIMIT 1
-                ) rev ON true
-                WHERE bl."BudgetId"  = @BudgetId
-                  AND bl."DeletedAt" IS NULL
-                  AND bl."StartDate"::date <= ap."PeriodEnd"
-                  AND (bl."EndDate" IS NULL OR bl."EndDate"::date >= ap."PeriodStart")
-            ),
-            registered AS (
-                SELECT COALESCE(SUM(
-                    CASE
-                        WHEN e."EntryType" = 1 THEN  -- Expense
-                            CASE WHEN e."CurrencyId" = ap."DefaultCurrencyId" OR e."ExchangeRate" IS NULL
-                                THEN e."Amount"
-                                ELSE e."Amount" * e."ExchangeRate"
-                            END
-                        WHEN e."EntryType" = 3 THEN  -- DebitNote
-                            CASE WHEN e."CurrencyId" = ap."DefaultCurrencyId" OR e."ExchangeRate" IS NULL
-                                THEN e."Amount"
-                                ELSE e."Amount" * e."ExchangeRate"
-                            END
-                        WHEN e."EntryType" = 2 THEN  -- CreditNote (subtract)
-                            -(CASE WHEN e."CurrencyId" = ap."DefaultCurrencyId" OR e."ExchangeRate" IS NULL
-                                THEN e."Amount"
-                                ELSE e."Amount" * e."ExchangeRate"
-                             END)
-                        ELSE 0
-                    END
-                ), 0) AS "TotalRegistered"
-                FROM "ExecutionRecords" e
-                JOIN active_period ap ON ap."PeriodId" = e."PeriodId"
-                WHERE e."BudgetId"  = @BudgetId
-                  AND e."DeletedAt" IS NULL
-            )
-            SELECT
-                b."TotalBudgeted",
-                r."TotalRegistered",
-                (b."TotalBudgeted" - r."TotalRegistered") AS "Remaining"
-            FROM budgeted b
-            CROSS JOIN registered r
-            """;
-
-        var execSummary = await conn.QueryFirstOrDefaultAsync<ExecutionSummaryRow>(
-            executionSql, new { query.BudgetId, CutDate = query.CutDate.ToDateTime(TimeOnly.MinValue) });
-
-        var summaryDto = execSummary is not null
-            ? new BudgetExecutionSummaryDto(
-                execSummary.TotalBudgeted,
-                execSummary.TotalRegistered,
-                execSummary.Remaining)
-            : new BudgetExecutionSummaryDto(0, 0, 0);
-
-        // ── Step 3: load accounts (existing or draft) ─────────────────────
+        // ── Step 3: load accounts (existing or draft) + totals ────────────
         IReadOnlyList<CutBankAccountDto> accounts;
         bool isDraft;
         Guid? cutRecordId;
         decimal exchangeRate;
         string? projectionsJson;
+        BudgetExecutionSummaryDto summaryDto;
+        CutTotalsDto totals;
 
         if (header is not null)
         {
-            // Existing record — load persisted CutBankAccount rows
+            // Existing record — read persisted totals verbatim, no aggregation/CTE (CS-2, CS-6).
             isDraft         = false;
             cutRecordId     = header.Id;
             exchangeRate    = header.ExchangeRate;
@@ -165,10 +106,23 @@ public sealed class GetCutRecordHandler
                 accountsSql, new { CutRecordId = header.Id });
 
             accounts = rows.ToList();
+
+            summaryDto = new BudgetExecutionSummaryDto(
+                header.TotalBudgeted,
+                header.TotalRegistered,
+                header.Remaining);
+
+            totals = new CutTotalsDto(
+                header.TotalPositive,
+                header.TotalNegative,
+                header.TotalDeudaEnCurso,
+                header.TotalPositiveAlt,
+                header.TotalNegativeAlt,
+                header.TotalDeudaEnCursoAlt);
         }
         else
         {
-            // Draft — clone from last cut or use zero balances
+            // Draft — clone from last cut or use zero balances; totals computed live.
             isDraft         = true;
             cutRecordId     = null;
             exchangeRate    = 1m;
@@ -206,27 +160,28 @@ public sealed class GetCutRecordHandler
                 draftSql, new { query.BudgetId, CutDate = query.CutDate.ToDateTime(TimeOnly.MinValue) });
 
             accounts = draftRows.ToList();
+
+            var executionSummary = await BudgetExecutionSummaryQuery.ExecuteAsync(
+                conn, query.BudgetId, query.CutDate);
+
+            summaryDto = new BudgetExecutionSummaryDto(
+                executionSummary.TotalBudgeted,
+                executionSummary.TotalRegistered,
+                executionSummary.Remaining);
+
+            var computed = CutTotalsCalculator.Compute(
+                accounts.Select(a => (a.IsPositive, a.BalanceInPrimary)),
+                executionSummary,
+                exchangeRate);
+
+            totals = new CutTotalsDto(
+                computed.TotalPositive,
+                computed.TotalNegative,
+                computed.TotalDeudaEnCurso,
+                computed.TotalPositiveAlt,
+                computed.TotalNegativeAlt,
+                computed.TotalDeudaEnCursoAlt);
         }
-
-        // ── Step 4: compute totals (CS-6) ────────────────────────────────
-        var remaining      = summaryDto.Remaining;
-        var totalPositive  = accounts.Where(a => a.IsPositive).Sum(a => a.BalanceInPrimary);
-        var totalNegative  = accounts.Where(a => !a.IsPositive).Sum(a => a.BalanceInPrimary);
-        var totalDeuda     = remaining + totalNegative;
-
-        // Alt-currency variants (divide by exchange rate; guard division by zero)
-        var er             = exchangeRate > 0 ? exchangeRate : 1m;
-        var totalPositiveAlt      = totalPositive  / er;
-        var totalNegativeAlt      = totalNegative  / er;
-        var totalDeudaAlt         = totalDeuda     / er;
-
-        var totals = new CutTotalsDto(
-            totalPositive,
-            totalNegative,
-            totalDeuda,
-            totalPositiveAlt,
-            totalNegativeAlt,
-            totalDeudaAlt);
 
         return Result<GetCutRecordResponse>.Success(new GetCutRecordResponse(
             isDraft,
@@ -245,10 +200,21 @@ public sealed class GetCutRecordHandler
     private sealed record CutHeaderRow(
         Guid    Id,
         decimal ExchangeRate,
-        string? ProjectionsJson);
-
-    private sealed record ExecutionSummaryRow(
+        string? ProjectionsJson,
+        decimal TotalPositive,
+        decimal TotalPositiveAlt,
+        decimal TotalNegative,
+        decimal TotalNegativeAlt,
+        decimal TotalDeudaEnCurso,
+        decimal TotalDeudaEnCursoAlt,
         decimal TotalBudgeted,
+        decimal TotalBudgetedAlt,
         decimal TotalRegistered,
-        decimal Remaining);
+        decimal TotalRegisteredAlt,
+        decimal Remaining,
+        decimal RemainingAlt,
+        decimal TotalAvailable,
+        decimal TotalAvailableAlt,
+        decimal TotalNet,
+        decimal TotalNetAlt);
 }

@@ -1,6 +1,7 @@
 using Dapper;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
+using MyBudget.Features.Features.CurrentSituation.Shared;
 using MyBudget.Features.SharedKernel.Entities;
 using MyBudget.Features.SharedKernel.Persistence;
 using MyBudget.Features.SharedKernel.Results;
@@ -10,11 +11,12 @@ namespace MyBudget.Features.Features.CurrentSituation.UpsertCutRecord;
 /// <summary>
 /// Full-replace upsert for a cut record:
 ///   (a) verify an active period covers CutDate (CS-1);
-///   (b) load or create the CutRecord header;
-///   (c) delete all existing CutBankAccount rows;
-///   (d) for each account: compute BalanceInPrimary (CS-5);
-///   (e) insert new CutBankAccount rows;
-///   (f) SaveChanges.
+///   (b) resolve accounts, compute BalanceInPrimary (CS-5), and fail ACCOUNT_NOT_FOUND
+///       — all before any SaveChanges (design.md Decision 4);
+///   (c) compute the execution summary (shared query) and the 16 totals (shared calculator, CS-6);
+///   (d) in one transaction: create/replace the CutRecord header with totals, delete existing
+///       CutBankAccount rows, insert the new ones.
+/// Request body total fields (if any) are never read — totals are always server-computed.
 /// </summary>
 public sealed class UpsertCutRecordHandler : IRequestHandler<UpsertCutRecordCommand, Result<bool>>
 {
@@ -64,7 +66,42 @@ public sealed class UpsertCutRecordHandler : IRequestHandler<UpsertCutRecordComm
         if (cycle is null)
             return Result<bool>.Failure("NO_ACTIVE_PERIOD_FOR_CUT_DATE");
 
-        // (b) Load or create CutRecord header
+        // (b) Resolve accounts + compute BalanceInPrimary (CS-5) + fail ACCOUNT_NOT_FOUND
+        //     — before any SaveChanges (design.md Decision 4).
+        var accountIds = cmd.Accounts.Select(a => a.BankAccountId).ToList();
+
+        var accounts = await _db.BankAccounts
+            .IgnoreQueryFilters()
+            .Where(a => accountIds.Contains(a.Id) && a.BudgetId == cmd.BudgetId)
+            .ToListAsync(ct);
+
+        var accountLookup = accounts.ToDictionary(a => a.Id);
+
+        var resolvedItems = new List<(BankAccount BankAccount, decimal Balance, decimal BalanceInPrimary)>();
+
+        foreach (var item in cmd.Accounts)
+        {
+            if (!accountLookup.TryGetValue(item.BankAccountId, out var bankAccount))
+                return Result<bool>.Failure("ACCOUNT_NOT_FOUND");
+
+            var balanceInPrimary = bankAccount.CurrencyId == cycle.DefaultCurrencyId
+                ? item.Balance
+                : item.Balance * cmd.ExchangeRate;
+
+            resolvedItems.Add((bankAccount, item.Balance, balanceInPrimary));
+        }
+
+        // (c) Execution summary (shared query) + 16 totals (shared calculator, CS-6)
+        var executionSummary = await BudgetExecutionSummaryQuery.ExecuteAsync(conn, cmd.BudgetId, cmd.CutDate);
+
+        var totals = CutTotalsCalculator.Compute(
+            resolvedItems.Select(r => (r.BankAccount.IsPositive, r.BalanceInPrimary)),
+            executionSummary,
+            cmd.ExchangeRate);
+
+        // (d) One transaction: header (create/replace with totals) + CutBankAccount rows.
+        await using var tx = await _db.Database.BeginTransactionAsync(ct);
+
         var cutRecord = await _db.CutRecords
             .Include(cr => cr.CutBankAccounts)
             .FirstOrDefaultAsync(
@@ -77,39 +114,21 @@ public sealed class UpsertCutRecordHandler : IRequestHandler<UpsertCutRecordComm
                 cmd.BudgetId,
                 cmd.CutDate,
                 cmd.ExchangeRate,
+                totals,
                 cmd.ProjectionsJson);
             _db.CutRecords.Add(cutRecord);
         }
         else
         {
-            // (c) Delete existing snapshot rows
             _db.CutBankAccounts.RemoveRange(cutRecord.CutBankAccounts);
-            cutRecord.Update(cmd.ExchangeRate, cmd.ProjectionsJson);
+            cutRecord.Update(cmd.ExchangeRate, totals, cmd.ProjectionsJson);
         }
 
         // Save to get the CutRecord Id before inserting CutBankAccounts
         await _db.SaveChangesAsync(ct);
 
-        // (d) & (e) Insert new CutBankAccount rows
-        var accountIds = cmd.Accounts.Select(a => a.BankAccountId).ToList();
-
-        var accounts = await _db.BankAccounts
-            .IgnoreQueryFilters()
-            .Where(a => accountIds.Contains(a.Id) && a.BudgetId == cmd.BudgetId)
-            .ToListAsync(ct);
-
-        var accountLookup = accounts.ToDictionary(a => a.Id);
-
-        foreach (var item in cmd.Accounts)
+        foreach (var (bankAccount, balance, balanceInPrimary) in resolvedItems)
         {
-            if (!accountLookup.TryGetValue(item.BankAccountId, out var bankAccount))
-                return Result<bool>.Failure("ACCOUNT_NOT_FOUND");
-
-            // CS-5: BalanceInPrimary computation
-            var balanceInPrimary = bankAccount.CurrencyId == cycle.DefaultCurrencyId
-                ? item.Balance
-                : item.Balance * cmd.ExchangeRate;
-
             var snapshot = CutBankAccount.Create(
                 cutRecord.Id,
                 bankAccount.Id,
@@ -117,13 +136,14 @@ public sealed class UpsertCutRecordHandler : IRequestHandler<UpsertCutRecordComm
                 bankAccount.CurrencyId,
                 bankAccount.IsPositive,
                 bankAccount.DisplayOrder,
-                item.Balance,
+                balance,
                 balanceInPrimary);
 
             _db.CutBankAccounts.Add(snapshot);
         }
 
         await _db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
 
         return Result<bool>.Success(true);
     }
