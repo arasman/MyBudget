@@ -1,113 +1,85 @@
 <template>
   <div class="card bg-base-200 p-4">
     <!-- Date + exchange rate row -->
-    <div class="flex items-end gap-4 mb-4">
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">{{ t('currentSituation.form.cutDate') }}</span>
-        </label>
+    <div v-if="isDraft" class="badge badge-warning mb-3">
+      {{ t('currentSituation.draft') }}
+    </div>
+    <div class="flex flex-col sm:flex-row sm:items-end gap-4 mb-4">
+      <div class="flex flex-col gap-1">
+        <span class="label-text text-sm">{{ t('currentSituation.form.cutDate') }}</span>
         <input
           v-model="localDate"
           type="date"
-          class="input input-bordered input-sm w-40"
+          class="input input-bordered input-sm w-full sm:w-40"
           @change="emit('date-change', localDate)"
         />
       </div>
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">{{ t('currentSituation.form.exchangeRate') }}</span>
-        </label>
+      <div class="flex flex-col gap-1">
+        <span class="label-text text-sm">{{ t('currentSituation.form.exchangeRate') }}</span>
         <input
           v-model.number="localExchangeRate"
           type="number"
-          class="input input-bordered input-sm w-40"
+          class="input input-bordered input-sm w-full sm:w-40"
           min="0.000001"
           step="0.000001"
           :placeholder="t('currentSituation.form.exchangeRatePlaceholder')"
         />
       </div>
-      <div v-if="isDraft" class="badge badge-warning mb-2">
-        {{ t('currentSituation.draft') }}
-      </div>
     </div>
 
-    <!-- Unified accounts table -->
-    <div v-if="positiveAccounts.length > 0 || negativeAccounts.length > 0" class="overflow-x-auto mb-4">
-      <table class="table table-sm w-full">
-        <colgroup>
-          <col class="w-1/2" />
-          <col class="w-24" />
-          <col class="w-36" />
-        </colgroup>
-        <thead>
-          <tr>
-            <th>{{ t('currentSituation.form.accountAlias') }}</th>
-            <th>{{ t('currentSituation.form.currency') }}</th>
-            <th>{{ t('currentSituation.form.balance') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Assets section -->
-          <tr v-if="positiveAccounts.length > 0">
-            <td colspan="3" class="text-xs font-semibold text-success bg-success/5 py-1 px-2">
-              {{ t('currentSituation.form.positiveAccounts') }}
-            </td>
-          </tr>
-          <tr v-for="acc in positiveAccounts" :key="acc.bankAccountId">
-            <td>{{ acc.alias }}</td>
-            <td>
-              <span class="badge badge-success badge-sm">{{ getCurrencyCode(acc.currencyId) }}</span>
-            </td>
-            <td>
-              <input
-                v-model.number="balances[acc.bankAccountId]"
-                type="number"
-                class="input input-bordered input-xs w-32"
-                min="0"
-                step="0.01"
-              />
-            </td>
-          </tr>
-          <!-- Liabilities section -->
-          <tr v-if="negativeAccounts.length > 0">
-            <td colspan="3" class="text-xs font-semibold text-error bg-error/5 py-1 px-2">
-              {{ t('currentSituation.form.negativeAccounts') }}
-            </td>
-          </tr>
-          <tr v-for="acc in negativeAccounts" :key="acc.bankAccountId">
-            <td>{{ acc.alias }}</td>
-            <td>
-              <span class="badge badge-error badge-sm">{{ getCurrencyCode(acc.currencyId) }}</span>
-            </td>
-            <td>
-              <input
-                v-model.number="balances[acc.bankAccountId]"
-                type="number"
-                class="input input-bordered input-xs w-32"
-                min="0"
-                step="0.01"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Unified accounts list -->
+    <div v-if="positiveAccounts.length > 0 || negativeAccounts.length > 0" class="mb-4 flex flex-col gap-1">
+      <!-- Assets section -->
+      <template v-if="positiveAccounts.length > 0">
+        <div class="text-xs font-semibold text-success bg-success/5 py-1 px-2 rounded">
+          {{ t('currentSituation.form.positiveAccounts') }}
+        </div>
+        <div
+          v-for="acc in positiveAccounts"
+          :key="acc.bankAccountId"
+          class="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-y-1 sm:gap-x-3 sm:items-center py-2 border-b border-base-300"
+        >
+          <span class="text-sm">{{ acc.alias }}</span>
+          <label class="input input-bordered input-xs flex items-center gap-1 w-full">
+            <span class="text-xs text-base-content/50 shrink-0">{{ getCurrencyCode(acc.currencyId) }}</span>
+            <input
+              :value="formatBalanceDisplay(acc.bankAccountId)"
+              type="text"
+              inputmode="decimal"
+              class="grow text-right bg-transparent outline-none min-w-0"
+              @focus="onBalanceFocus(acc.bankAccountId, $event)"
+              @blur="onBalanceBlur(acc.bankAccountId, $event)"
+            />
+          </label>
+        </div>
+      </template>
+
+      <!-- Liabilities section -->
+      <template v-if="negativeAccounts.length > 0">
+        <div class="text-xs font-semibold text-error bg-error/5 py-1 px-2 rounded mt-2">
+          {{ t('currentSituation.form.negativeAccounts') }}
+        </div>
+        <div
+          v-for="acc in negativeAccounts"
+          :key="acc.bankAccountId"
+          class="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-y-1 sm:gap-x-3 sm:items-center py-2 border-b border-base-300"
+        >
+          <span class="text-sm">{{ acc.alias }}</span>
+          <label class="input input-bordered input-xs flex items-center gap-1 w-full">
+            <span class="text-xs text-base-content/50 shrink-0">{{ getCurrencyCode(acc.currencyId) }}</span>
+            <input
+              :value="formatBalanceDisplay(acc.bankAccountId)"
+              type="text"
+              inputmode="decimal"
+              class="grow text-right bg-transparent outline-none min-w-0"
+              @focus="onBalanceFocus(acc.bankAccountId, $event)"
+              @blur="onBalanceBlur(acc.bankAccountId, $event)"
+            />
+          </label>
+        </div>
+      </template>
     </div>
 
-    <!-- Save error -->
-    <div v-if="saveError" class="alert alert-error alert-sm mb-3 text-sm">
-      {{
-        saveError === 'noActivePeriod'
-          ? t('currentSituation.errors.noActivePeriod')
-          : saveError
-      }}
-    </div>
-
-    <div class="flex justify-end">
-      <button class="btn btn-primary btn-sm" :disabled="saveLoading" @click="handleSave">
-        <span v-if="saveLoading" class="loading loading-spinner loading-xs"></span>
-        {{ t('common.save') }}
-      </button>
-    </div>
   </div>
 </template>
 
@@ -122,8 +94,6 @@ const props = defineProps<{
   exchangeRate: number
   isDraft: boolean
   currencies: CurrencyItem[]
-  saveLoading: boolean
-  saveError: string | null
   remaining: number
   primaryCurrencyId: string | null
   cutDate: string
@@ -132,6 +102,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   save: [payload: { exchangeRate: number; accounts: { bankAccountId: string; balance: number }[] }]
   'update:liveTotals': [totals: CutTotalsDto]
+  'update:liveExchangeRate': [rate: number]
   'date-change': [date: string]
 }>()
 
@@ -146,6 +117,7 @@ watch(
     localDate.value = d
   },
 )
+
 const balances = ref<Record<string, number>>({})
 
 watch(
@@ -167,6 +139,15 @@ watch(
   },
 )
 
+watch(
+  localExchangeRate,
+  (rate) => {
+    const safeRate = Number.isFinite(rate) && rate > 0 ? rate : 1
+    emit('update:liveExchangeRate', safeRate)
+  },
+  { immediate: true },
+)
+
 const positiveAccounts = computed(() =>
   props.accounts.filter((a) => a.isPositive).sort((a, b) => a.displayOrder - b.displayOrder),
 )
@@ -177,6 +158,28 @@ const negativeAccounts = computed(() =>
 
 function getCurrencyCode(currencyId: string): string {
   return props.currencies.find((c) => c.id === currencyId)?.code ?? currencyId.slice(0, 8)
+}
+
+function safeBalance(id: string): number {
+  const val = balances.value[id]
+  return Number.isFinite(val) ? val : 0
+}
+
+function formatBalanceDisplay(id: string): string {
+  return safeBalance(id).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+function onBalanceFocus(id: string, e: FocusEvent): void {
+  const input = e.target as HTMLInputElement
+  const val = safeBalance(id)
+  input.value = val === 0 ? '' : String(val)
+  input.select()
+}
+
+function onBalanceBlur(id: string, e: FocusEvent): void {
+  const raw = (e.target as HTMLInputElement).value.replace(/,/g, '').trim()
+  const parsed = parseFloat(raw)
+  balances.value[id] = Number.isFinite(parsed) ? parsed : 0
 }
 
 function toBalanceInPrimary(acc: CutBankAccountDto, balance: number): number {
@@ -191,7 +194,7 @@ const liveTotals = computed<CutTotalsDto>(() => {
   let totalNegative = 0
 
   for (const acc of props.accounts) {
-    const balance = balances.value[acc.bankAccountId] ?? 0
+    const balance = safeBalance(acc.bankAccountId)
     const bip = toBalanceInPrimary(acc, balance)
     if (acc.isPositive) totalPositive += bip
     else totalNegative += bip
@@ -218,8 +221,10 @@ function handleSave(): void {
     exchangeRate: localExchangeRate.value,
     accounts: Object.entries(balances.value).map(([bankAccountId, balance]) => ({
       bankAccountId,
-      balance,
+      balance: Number.isFinite(balance) ? balance : 0,
     })),
   })
 }
+
+defineExpose({ triggerSave: handleSave })
 </script>

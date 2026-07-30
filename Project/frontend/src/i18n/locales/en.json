@@ -538,13 +538,15 @@
       "title": "Budget Execution Summary",
       "totalBudgeted": "Total Budgeted",
       "totalRegistered": "Total Registered",
-      "remaining": "Remaining"
+      "remaining": "Budget Commitment"
     },
     "totals": {
       "title": "Cut Totals",
       "positive": "Total Assets (sum)",
       "negative": "Total Liabilities (debt)",
-      "deudaEnCurso": "Net Position (Deuda en Curso)"
+      "deudaEnCurso": "Total Debt",
+      "totalAvailable": "Total Available",
+      "totalNet": "Total Net"
     },
     "deleteModal": {
       "title": "Delete Cut Record",

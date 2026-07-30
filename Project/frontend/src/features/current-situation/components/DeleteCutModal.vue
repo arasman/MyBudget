@@ -6,14 +6,12 @@
         {{ t('currentSituation.deleteModal.instruction', { date: cutDate }) }}
       </p>
 
-      <div class="form-control mb-4">
-        <label class="label">
-          <span class="label-text">{{ t('currentSituation.deleteModal.typeDate') }}</span>
-        </label>
+      <div class="flex flex-col gap-1 mb-4">
+        <span class="label-text text-sm">{{ t('currentSituation.deleteModal.typeDate') }}</span>
         <input
           v-model="typedDate"
           type="text"
-          class="input input-bordered"
+          class="input input-bordered w-full"
           :placeholder="cutDate"
           autocomplete="off"
         />

@@ -538,13 +538,15 @@
       "title": "Resumen de ejecución presupuestaria",
       "totalBudgeted": "Total presupuestado",
       "totalRegistered": "Total registrado",
-      "remaining": "Saldo disponible"
+      "remaining": "Compromiso Presupuestario"
     },
     "totals": {
       "title": "Totales del corte",
       "positive": "Total activos (suma)",
       "negative": "Total pasivos (deuda)",
-      "deudaEnCurso": "Posición neta (Deuda en Curso)"
+      "deudaEnCurso": "Deuda Total",
+      "totalAvailable": "Total Disponible",
+      "totalNet": "Posición Neta"
     },
     "deleteModal": {
       "title": "Eliminar registro de corte",

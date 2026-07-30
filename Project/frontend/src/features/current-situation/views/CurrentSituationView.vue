@@ -40,17 +40,17 @@
     <div v-else class="flex flex-col gap-4">
       <!-- Cut form: date + exchange rate + accounts -->
       <CutRecordForm
+        ref="formRef"
         :accounts="store.currentRecord.accounts"
         :exchange-rate="store.currentRecord.exchangeRate"
         :is-draft="store.currentRecord.isDraft"
         :currencies="currencies"
-        :save-loading="store.saveLoading"
-        :save-error="store.saveError"
         :remaining="store.currentRecord.executionSummary.remaining"
         :primary-currency-id="store.currentRecord.primaryCurrencyId"
         :cut-date="selectedDate"
         @save="handleSave"
         @update:live-totals="liveTotals = $event"
+        @update:live-exchange-rate="liveExchangeRate = $event"
         @date-change="handleDateChange"
       />
 
@@ -58,7 +58,27 @@
       <CutTotalsPanel
         :totals="liveTotals ?? store.currentRecord.totals"
         :execution-summary="store.currentRecord.executionSummary"
+        :exchange-rate="liveExchangeRate"
       />
+
+      <!-- Save error + action -->
+      <div v-if="store.saveError" class="alert alert-error text-sm">
+        {{
+          store.saveError === 'noActivePeriod'
+            ? t('currentSituation.errors.noActivePeriod')
+            : store.saveError
+        }}
+      </div>
+      <div class="flex justify-end">
+        <button
+          class="btn btn-primary w-full sm:w-auto sm:btn-sm"
+          :disabled="store.saveLoading"
+          @click="formRef?.triggerSave()"
+        >
+          <span v-if="store.saveLoading" class="loading loading-spinner loading-xs"></span>
+          {{ t('common.save') }}
+        </button>
+      </div>
     </div>
 
     <!-- Load strategy modal -->
@@ -104,10 +124,12 @@ const store = useCutRecordStore()
 
 const budgetId = computed(() => route.params['budgetId'] as string)
 
+const formRef = ref<InstanceType<typeof CutRecordForm> | null>(null)
 const currencies = ref<CurrencyItem[]>([])
 const showDeleteModal = ref(false)
 const deleteLoading = ref(false)
 const liveTotals = ref<CutTotalsDto | null>(null)
+const liveExchangeRate = ref(1)
 
 const selectedDate = ref('')
 const showStrategyModal = ref(false)
@@ -117,6 +139,7 @@ const strategyLoading = ref(false)
 // Reset live totals whenever a new record loads (form will re-emit immediately)
 watch(() => store.currentRecord, (record) => {
   liveTotals.value = null
+  liveExchangeRate.value = record?.exchangeRate ?? 1
   if (record) selectedDate.value = record.cutDate
 })
 
@@ -136,9 +159,9 @@ async function handleSave(payload: {
   exchangeRate: number
   accounts: { bankAccountId: string; balance: number }[]
 }): Promise<void> {
-  if (!store.currentDate) return
+  if (!selectedDate.value) return
   try {
-    await store.upsertCutRecord(budgetId.value, store.currentDate, payload)
+    await store.upsertCutRecord(budgetId.value, selectedDate.value, payload)
   } catch {
     // saveError is set inside the store
   }
