@@ -4,19 +4,26 @@ import { setActivePinia, createPinia } from 'pinia'
 // ---------------------------------------------------------------------------
 // Hoist mock references
 // ---------------------------------------------------------------------------
-const { mockListBankAccounts, mockCreateBankAccount, mockUpdateBankAccount, mockDeleteBankAccount } =
-  vi.hoisted(() => ({
-    mockListBankAccounts: vi.fn(),
-    mockCreateBankAccount: vi.fn(),
-    mockUpdateBankAccount: vi.fn(),
-    mockDeleteBankAccount: vi.fn(),
-  }))
+const {
+  mockListBankAccounts,
+  mockCreateBankAccount,
+  mockUpdateBankAccount,
+  mockDeleteBankAccount,
+  mockRestoreBankAccount,
+} = vi.hoisted(() => ({
+  mockListBankAccounts: vi.fn(),
+  mockCreateBankAccount: vi.fn(),
+  mockUpdateBankAccount: vi.fn(),
+  mockDeleteBankAccount: vi.fn(),
+  mockRestoreBankAccount: vi.fn(),
+}))
 
 vi.mock('@/features/bank-accounts/api/bankAccountApi', () => ({
   listBankAccounts: mockListBankAccounts,
   createBankAccount: mockCreateBankAccount,
   updateBankAccount: mockUpdateBankAccount,
   deleteBankAccount: mockDeleteBankAccount,
+  restoreBankAccount: mockRestoreBankAccount,
 }))
 
 import { useBankAccountStore } from '../store/useBankAccountStore'
@@ -65,6 +72,26 @@ describe('useBankAccountStore', () => {
 
       expect(store.accounts).toHaveLength(0)
       expect(store.error).toBe('Network error')
+    })
+
+    it('passes includeDeleted=true when showDeletedAccounts is true', async () => {
+      mockListBankAccounts.mockResolvedValue([])
+
+      const store = useBankAccountStore()
+      store.showDeletedAccounts = true
+      await store.fetchAccounts(BUDGET_ID)
+
+      expect(mockListBankAccounts).toHaveBeenCalledWith(BUDGET_ID, { includeDeleted: true })
+    })
+
+    it('passes includeDeleted=false when showDeletedAccounts is false', async () => {
+      mockListBankAccounts.mockResolvedValue([])
+
+      const store = useBankAccountStore()
+      store.showDeletedAccounts = false
+      await store.fetchAccounts(BUDGET_ID)
+
+      expect(mockListBankAccounts).toHaveBeenCalledWith(BUDGET_ID, { includeDeleted: false })
     })
   })
 
@@ -122,6 +149,27 @@ describe('useBankAccountStore', () => {
         expect(store.accounts).toHaveLength(1)
         expect(store.accounts[0].id).toBe('acc-2')
       })()
+    })
+  })
+
+  describe('restoreAccount', () => {
+    it('calls restoreBankAccount api and refreshes accounts list', async () => {
+      const restoredAccount = makeAccount({ id: 'acc-del', deletedAt: null })
+      mockRestoreBankAccount.mockResolvedValue(undefined)
+      mockListBankAccounts.mockResolvedValue([restoredAccount])
+
+      const store = useBankAccountStore()
+      await store.restoreAccount(BUDGET_ID, 'acc-del')
+
+      expect(mockRestoreBankAccount).toHaveBeenCalledWith(BUDGET_ID, 'acc-del')
+      expect(mockListBankAccounts).toHaveBeenCalledOnce()
+    })
+  })
+
+  describe('showDeletedAccounts', () => {
+    it('defaults to false', () => {
+      const store = useBankAccountStore()
+      expect(store.showDeletedAccounts).toBe(false)
     })
   })
 })

@@ -20,10 +20,11 @@ public static class ListBankAccountsEndpoint
 
     private static async Task<IResult> Handle(
         Guid id,
+        bool? includeDeleted,
         IMediator mediator,
         CancellationToken ct)
     {
-        var query  = new ListBankAccountsQuery(id);
+        var query  = new ListBankAccountsQuery(id, includeDeleted ?? false);
         var result = await mediator.Send(query, ct);
 
         return result.IsSuccess

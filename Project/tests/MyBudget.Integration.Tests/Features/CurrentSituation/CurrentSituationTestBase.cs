@@ -149,11 +149,12 @@ public abstract class CurrentSituationTestBase : BudgetStructureTestBase
     protected sealed record ErrorResponse(string Error);
 
     protected sealed record BankAccountListItem(
-        Guid   Id,
-        Guid   CurrencyId,
-        string Alias,
-        bool   IsPositive,
-        int    DisplayOrder);
+        Guid              Id,
+        Guid              CurrencyId,
+        string            Alias,
+        bool              IsPositive,
+        int               DisplayOrder,
+        DateTimeOffset?   DeletedAt);
 
     protected sealed record CutRecordResponse(
         bool                            IsDraft,

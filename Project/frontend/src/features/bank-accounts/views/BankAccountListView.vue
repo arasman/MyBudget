@@ -1,11 +1,26 @@
 <template>
   <div class="container mx-auto px-4 py-6">
     <BudgetTabs :budget-id="budgetId" class="mb-6" />
+
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-xl font-semibold">{{ t('bankAccount.title') }}</h2>
       <button class="btn btn-primary btn-sm" @click="openCreate">
         + {{ t('bankAccount.create') }}
       </button>
+    </div>
+
+    <!-- Show deleted toggle -->
+    <div class="flex items-center gap-2 mb-4">
+      <input
+        id="show-deleted-accounts"
+        v-model="store.showDeletedAccounts"
+        type="checkbox"
+        class="checkbox checkbox-sm"
+        @change="store.fetchAccounts(budgetId)"
+      />
+      <label for="show-deleted-accounts" class="label-text cursor-pointer">
+        {{ t('bankAccount.showDeleted') }}
+      </label>
     </div>
 
     <div v-if="store.loading" class="text-center py-8">
@@ -20,7 +35,7 @@
       {{ t('bankAccount.empty') }}
     </div>
 
-    <div v-else class="overflow-x-auto">
+    <div v-else class="overflow-x-auto select-none">
       <table class="table table-zebra w-full">
         <thead>
           <tr>
@@ -32,8 +47,17 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="account in store.accounts" :key="account.id">
-            <td>{{ account.alias }}</td>
+          <tr
+            v-for="account in store.accounts"
+            :key="account.id"
+            :class="{ 'opacity-60': !!account.deletedAt }"
+          >
+            <td>
+              {{ account.alias }}
+              <span v-if="account.deletedAt" class="badge badge-error badge-sm ml-2">
+                {{ t('bankAccount.deleted') }}
+              </span>
+            </td>
             <td>{{ getCurrencyCode(account.currencyId) }}</td>
             <td>
               <span
@@ -50,12 +74,34 @@
             <td>{{ account.displayOrder }}</td>
             <td>
               <div class="flex gap-1">
-                <button class="btn btn-xs btn-ghost" @click="openEdit(account)">
-                  {{ t('bankAccount.edit') }}
-                </button>
-                <button class="btn btn-xs btn-error btn-ghost" @click="openDelete(account)">
-                  {{ t('bankAccount.delete') }}
-                </button>
+                <!-- Active account actions -->
+                <template v-if="!account.deletedAt">
+                  <button
+                    class="btn btn-xs btn-ghost btn-square"
+                    :title="t('bankAccount.edit')"
+                    @click="openEdit(account)"
+                  >
+                    <Pencil :size="14" />
+                  </button>
+                  <button
+                    class="btn btn-xs btn-ghost btn-square text-error"
+                    :title="t('bankAccount.delete')"
+                    @click="openDelete(account)"
+                  >
+                    <Trash2 :size="14" />
+                  </button>
+                </template>
+                <!-- Deleted account actions -->
+                <template v-else>
+                  <button
+                    class="btn btn-success btn-xs"
+                    :title="t('bankAccount.restore')"
+                    @click="handleRestore(account)"
+                  >
+                    <RotateCcw :size="14" />
+                    {{ t('bankAccount.restore') }}
+                  </button>
+                </template>
               </div>
             </td>
           </tr>
@@ -112,7 +158,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { Pencil, RotateCcw, Trash2 } from 'lucide-vue-next'
 import { useBankAccountStore } from '../store/useBankAccountStore'
+import { useToastStore } from '@/stores/toast.store'
+import { extractApiErrorCode } from '@/features/budget-structure/utils/apiError'
 import BudgetTabs from '@/features/budget-structure/components/BudgetTabs.vue'
 import BankAccountForm from '../components/BankAccountForm.vue'
 import type { BankAccount, CreateBankAccountDto, UpdateBankAccountDto } from '../types/bankAccount'
@@ -122,6 +171,7 @@ import type { CurrencyItem } from '@/features/budget-structure/types'
 const route = useRoute()
 const { t } = useI18n()
 const store = useBankAccountStore()
+const toastStore = useToastStore()
 
 const budgetId = computed(() => route.params['budgetId'] as string)
 
@@ -175,12 +225,19 @@ async function handleFormSubmit(
   try {
     if (editingAccount.value) {
       await store.updateAccount(budgetId.value, editingAccount.value.id, payload as UpdateBankAccountDto)
+      toastStore.push({ type: 'success', title: t('bankAccount.updateSuccess') })
     } else {
       await store.createAccount(budgetId.value, payload as CreateBankAccountDto)
+      toastStore.push({ type: 'success', title: t('bankAccount.createSuccess') })
     }
     closeForm()
   } catch (e) {
-    formError.value = e instanceof Error ? e.message : t('bankAccount.errors.saveFailed')
+    const code = extractApiErrorCode(e)
+    if (code === 'ALIAS_DUPLICATE') {
+      toastStore.push({ type: 'error', title: t('bankAccount.errors.aliasDuplicate') })
+    } else {
+      toastStore.push({ type: 'error', title: t('bankAccount.errors.saveFailed') })
+    }
   }
 }
 
@@ -189,12 +246,22 @@ async function confirmDelete(): Promise<void> {
   deleteLoading.value = true
   try {
     await store.deleteAccount(budgetId.value, deletingAccount.value.id)
+    toastStore.push({ type: 'success', title: t('bankAccount.deleteSuccess') })
     deletingAccount.value = null
   } catch (e) {
     formError.value = e instanceof Error ? e.message : t('bankAccount.errors.deleteFailed')
     deletingAccount.value = null
   } finally {
     deleteLoading.value = false
+  }
+}
+
+async function handleRestore(account: BankAccount): Promise<void> {
+  try {
+    await store.restoreAccount(budgetId.value, account.id)
+    toastStore.push({ type: 'success', title: t('bankAccount.restoreSuccess') })
+  } catch (e) {
+    formError.value = e instanceof Error ? e.message : t('bankAccount.errors.saveFailed')
   }
 }
 

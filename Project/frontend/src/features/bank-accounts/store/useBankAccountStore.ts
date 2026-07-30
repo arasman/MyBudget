@@ -10,6 +10,7 @@ export const useBankAccountStore = defineStore('bankAccounts', () => {
   const accounts = ref<BankAccount[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const showDeletedAccounts = ref(false)
 
   // ---------------------------------------------------------------------------
   // Actions
@@ -19,7 +20,9 @@ export const useBankAccountStore = defineStore('bankAccounts', () => {
     loading.value = true
     error.value = null
     try {
-      accounts.value = await api.listBankAccounts(budgetId)
+      accounts.value = await api.listBankAccounts(budgetId, {
+        includeDeleted: showDeletedAccounts.value,
+      })
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to load bank accounts'
     } finally {
@@ -47,6 +50,11 @@ export const useBankAccountStore = defineStore('bankAccounts', () => {
     accounts.value = accounts.value.filter((a) => a.id !== accountId)
   }
 
+  async function restoreAccount(budgetId: string, accountId: string): Promise<void> {
+    await api.restoreBankAccount(budgetId, accountId)
+    await fetchAccounts(budgetId)
+  }
+
   // ---------------------------------------------------------------------------
   // Expose
   // ---------------------------------------------------------------------------
@@ -54,9 +62,11 @@ export const useBankAccountStore = defineStore('bankAccounts', () => {
     accounts,
     loading,
     error,
+    showDeletedAccounts,
     fetchAccounts,
     createAccount,
     updateAccount,
     deleteAccount,
+    restoreAccount,
   }
 })
