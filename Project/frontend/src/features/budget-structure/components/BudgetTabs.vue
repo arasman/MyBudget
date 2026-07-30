@@ -42,6 +42,22 @@
       >
         {{ t('budgetMatrix.title') }}
       </RouterLink>
+      <RouterLink
+        :to="{ name: 'BankAccounts', params: { budgetId } }"
+        role="tab"
+        class="tab"
+        :class="{ 'tab-active': isActive('BankAccounts') }"
+      >
+        {{ t('bankAccount.title') }}
+      </RouterLink>
+      <RouterLink
+        :to="{ name: 'CurrentSituation', params: { budgetId } }"
+        role="tab"
+        class="tab"
+        :class="{ 'tab-active': isActive('CurrentSituation') }"
+      >
+        {{ t('currentSituation.tabTitle') }}
+      </RouterLink>
     </div>
   </div>
 </template>
@@ -64,13 +80,19 @@ const CYCLE_ROUTE_NAMES = new Set(['CycleList', 'CycleDetail'])
 const CATEGORY_ROUTE_NAMES = new Set(['CategoryTree'])
 const BUDGET_LINES_ROUTE_NAMES = new Set(['BudgetLines', 'BudgetLineCustomizations'])
 const MATRIX_ROUTE_NAMES = new Set(['BudgetMatrix'])
+const CURRENT_SITUATION_ROUTE_NAMES = new Set(['CurrentSituation'])
+const BANK_ACCOUNTS_ROUTE_NAMES = new Set(['BankAccounts'])
 
-function isActive(tab: 'CycleList' | 'CategoryTree' | 'BudgetLines' | 'BudgetMatrix'): boolean {
+function isActive(
+  tab: 'CycleList' | 'CategoryTree' | 'BudgetLines' | 'BudgetMatrix' | 'BankAccounts' | 'CurrentSituation',
+): boolean {
   const name = route.name as string | undefined
   if (!name) return false
   if (tab === 'CycleList') return CYCLE_ROUTE_NAMES.has(name)
   if (tab === 'CategoryTree') return CATEGORY_ROUTE_NAMES.has(name)
   if (tab === 'BudgetLines') return BUDGET_LINES_ROUTE_NAMES.has(name)
+  if (tab === 'BankAccounts') return BANK_ACCOUNTS_ROUTE_NAMES.has(name)
+  if (tab === 'CurrentSituation') return CURRENT_SITUATION_ROUTE_NAMES.has(name)
   return MATRIX_ROUTE_NAMES.has(name)
 }
 </script>

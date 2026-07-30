@@ -65,6 +65,18 @@ const routes: RouteRecordRaw[] = [
               import('@/features/budget-execution/views/BudgetMatrixView.vue'),
             meta: { requiresAuth: true },
           },
+          {
+            path: 'bank-accounts',
+            name: 'BankAccounts',
+            component: () =>
+              import('@/features/bank-accounts/views/BankAccountListView.vue'),
+          },
+          {
+            path: 'current-situation',
+            name: 'CurrentSituation',
+            component: () =>
+              import('@/features/current-situation/views/CurrentSituationView.vue'),
+          },
         ],
       },
     ],

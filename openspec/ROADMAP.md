@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-23 (db-isolation archived)
+**Last updated**: 2026-07-29 (current-situation archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -519,34 +519,43 @@ pnpm exec playwright test
 
 ---
 
-### 10. `current-situation` ⏳ planned
+### 10. `current-situation` ✅ archived 2026-07-29
 
-**What**: Backend for accounts, funds, balances, and payment methods.
+**What**: Periodic financial snapshot — bank account catalog + daily cut record workflow.
 
-**Domain**: Sheet 3 of the owner's Excel — current balance across bank accounts, funds, credit cards; income projections; multi-period commitments (compromisos); payment method catalog.
+**Domain**: Users need a daily snapshot ("corte") showing bank account balances and budget execution status at a point in time. Introduces a bank account catalog and a cut record lifecycle with multi-currency support.
 
-**Scope in** *(requires full SDD exploration)*:
-- Entities: Account, Fund, PaymentMethod (bank/account/credit card)
-- Credit card settlement tracking (cuotas)
-- Historial y Situación Actual view: balance per account, period totals, income vs expense summary
-- RBAC: `budget:operator` for write, `budget:read` for read
+**Scope in**:
+- PR1 — Backend: 3 new entities (`BankAccount`, `CutRecord`, `CutBankAccount`); EF Core migration; 8 VSA slices (CreateBankAccount, UpdateBankAccount, DeleteBankAccount, ListBankAccounts, UpsertCutRecord, GetCutRecord, ListCutDates, DeleteCutRecord); Dapper reads; budget execution summary via CTE; soft-delete on BankAccount
+- PR2 — Frontend: `BankAccountListView`, `BankAccountForm`; `CurrentSituationView` with `CutRecordForm`, `CutTotalsPanel`, `CutDateNavigator`, `LoadStrategyModal`, `DeleteCutModal`; `useBankAccountStore`, `useCutRecordStore`; BudgetTabs nav entry; live totals recomputed from form inputs; liveExchangeRate propagation; responsive layout (daisyUI v5 + Tailwind grid); currency-prefix inputs; 3-column Q/USD totals panel with sign-based negatives; Total Available + Total Net computed rows
+- i18n: `bankAccount.*` + `currentSituation.*` namespaces in EN and ES
+- UX post-verify: save-draft bug fix (`selectedDate` vs `store.currentDate`), NaN guard on blank inputs, `defineExpose({ triggerSave })`, save button moved to view
 
-**Scope out**: Project tracking (→ MVP B), installment/debt tracking (→ MVP B).
+**Scope out**: Persisting totals (→ `dashboard`, deferred for performance at scale), RestoreBankAccount + show-deleted UI for BankAccounts (→ `bank-account-restore`).
 
----
-
-### 11. `current-situation-ui` ⏳ planned
-
-**What**: Frontend for account balances, payment methods, and situation view.
-
-**Scope in** *(requires exploration)*:
-- Accounts and funds management panel
-- Situación Actual dashboard view
-- Credit card settlement view
+**Tests**: 428/428 Vitest — all green; PASS WITH WARNINGS (0 CRITICAL)
+**SDD artifacts**: `openspec/changes/archive/2026-07-29-current-situation/`
+**Specs**: `openspec/specs/bank-accounts/spec.md`, `openspec/specs/current-situation/spec.md`
 
 ---
 
-### 12. `dashboard` ⏳ planned
+### 10a. `bank-account-restore` ⏳ planned
+
+**What**: Restore capability and soft-delete UX for BankAccounts — parity with BudgetLines pattern.
+
+**Domain**: `BankAccount` already uses soft-delete (`DeletedAt`). The delete action exists in the UI but there is no way to restore a deleted account or view deleted accounts. This change closes that gap.
+
+**Scope in**:
+- Backend: `RestoreBankAccount` VSA slice (handler + endpoint); `ListBankAccounts` — add `showDeleted` query param, expose `DeletedAt` in DTO
+- Frontend `BankAccountListView`: replace text buttons with Pencil/Trash2 icons; show-deleted toggle (checkbox); deleted rows with opacity-60 + red badge; restore button (RotateCcw icon) for deleted accounts; re-fetch on toggle
+
+**Scope out**: Cascading restore effects (BankAccount has no children entities).
+
+**SDD artifacts**: pending
+
+---
+
+### 11. `dashboard` ⏳ planned
 
 **What**: Key charts and summary KPIs for the budget.
 

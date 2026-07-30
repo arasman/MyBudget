@@ -33,8 +33,9 @@ test.describe('Budget Structure — Period Management', () => {
       await page.goto(`/budgets/${budgetId}/cycles/${cycleId}`)
       await expect(page).toHaveURL(`/budgets/${budgetId}/cycles/${cycleId}`, { timeout: 10_000 })
 
-      // Wait for the list container to mount before asserting absence
-      await expect(page.getByRole('table')).toBeVisible({ timeout: 10_000 })
+      // Wait for the page to mount — "Show deleted" toggle is always present
+      // even when the active list is empty (only a deleted period exists here)
+      await expect(page.getByLabel('Show deleted')).toBeVisible({ timeout: 10_000 })
 
       // Deleted period must NOT be visible with toggle OFF (default)
       await expect(page.getByText('Deleted Period').first()).not.toBeVisible({ timeout: 5_000 })

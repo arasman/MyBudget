@@ -71,6 +71,48 @@ namespace MyBudget.Features.Migrations
                     b.ToTable("AuditLogs", (string)null);
                 });
 
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.BankAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Alias")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("BudgetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CurrencyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsPositive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BudgetId")
+                        .HasDatabaseName("IX_BankAccounts_BudgetId");
+
+                    b.HasIndex("CurrencyId");
+
+                    b.ToTable("BankAccounts", (string)null);
+                });
+
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Budget", b =>
                 {
                     b.Property<Guid>("Id")
@@ -396,6 +438,94 @@ namespace MyBudget.Features.Migrations
                             Name = "Euro",
                             Symbol = "€"
                         });
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.CutBankAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Alias")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("BalanceInPrimary")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid>("BankAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CurrencyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CutRecordId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsPositive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankAccountId");
+
+                    b.HasIndex("CutRecordId")
+                        .HasDatabaseName("IX_CutBankAccounts_CutRecordId");
+
+                    b.HasIndex("CutRecordId", "BankAccountId")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_CutBankAccounts_CutRecordId_BankAccountId");
+
+                    b.ToTable("CutBankAccounts", (string)null);
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.CutRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BudgetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("CutDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("ExchangeRate")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)");
+
+                    b.Property<string>("ProjectionsJson")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BudgetId", "CutDate")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_CutRecords_BudgetId_CutDate");
+
+                    b.ToTable("CutRecords", (string)null);
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Cycle", b =>
@@ -846,6 +976,21 @@ namespace MyBudget.Features.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.BankAccount", b =>
+                {
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.Budget", null)
+                        .WithMany()
+                        .HasForeignKey("BudgetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.Currency", null)
+                        .WithMany()
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Budget", b =>
                 {
                     b.HasOne("MyBudget.Features.SharedKernel.Entities.User", "Owner")
@@ -951,6 +1096,34 @@ namespace MyBudget.Features.Migrations
                         .IsRequired();
 
                     b.Navigation("Budget");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.CutBankAccount", b =>
+                {
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.BankAccount", "BankAccount")
+                        .WithMany()
+                        .HasForeignKey("BankAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.CutRecord", "CutRecord")
+                        .WithMany("CutBankAccounts")
+                        .HasForeignKey("CutRecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BankAccount");
+
+                    b.Navigation("CutRecord");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.CutRecord", b =>
+                {
+                    b.HasOne("MyBudget.Features.SharedKernel.Entities.Budget", null)
+                        .WithMany()
+                        .HasForeignKey("BudgetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Cycle", b =>
@@ -1086,6 +1259,11 @@ namespace MyBudget.Features.Migrations
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.CategoryGroup", b =>
                 {
                     b.Navigation("Categories");
+                });
+
+            modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.CutRecord", b =>
+                {
+                    b.Navigation("CutBankAccounts");
                 });
 
             modelBuilder.Entity("MyBudget.Features.SharedKernel.Entities.Cycle", b =>

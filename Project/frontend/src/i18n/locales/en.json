@@ -461,6 +461,103 @@
       "label": "Refresh"
     }
   },
+  "bankAccount": {
+    "title": "Bank Accounts",
+    "create": "New Account",
+    "createTitle": "Create Bank Account",
+    "editTitle": "Edit Bank Account",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteTitle": "Delete Bank Account",
+    "deleteConfirm": "Are you sure you want to delete \"{alias}\"?",
+    "positive": "Adds",
+    "negative": "Subtracts",
+    "empty": "No bank accounts yet. Create your first account.",
+    "columns": {
+      "alias": "Alias",
+      "currency": "Currency",
+      "type": "Type",
+      "order": "Order",
+      "actions": "Actions"
+    },
+    "form": {
+      "alias": "Alias",
+      "aliasPlaceholder": "e.g. Banco Industrial GTQ",
+      "currency": "Currency",
+      "selectCurrency": "— Select currency —",
+      "isPositive": "Adds to total (positive)",
+      "isPositiveHint": "This account adds to your net balance",
+      "isNegativeHint": "This account represents a liability (subtracts)",
+      "displayOrder": "Display Order"
+    },
+    "validation": {
+      "aliasRequired": "Alias is required",
+      "aliasTooLong": "Alias must be 100 characters or fewer",
+      "currencyRequired": "Currency is required",
+      "displayOrderMin": "Display order must be 0 or greater"
+    },
+    "errors": {
+      "saveFailed": "Failed to save bank account",
+      "deleteFailed": "Failed to delete bank account"
+    }
+  },
+  "currentSituation": {
+    "title": "Current Situation",
+    "tabTitle": "Current Situation",
+    "draft": "Draft",
+    "delete": "Delete Cut",
+    "noData": "No cut record available. Navigate to a date or create a new cut.",
+    "navigation": {
+      "previous": "Previous cut",
+      "next": "Next cut"
+    },
+    "form": {
+      "exchangeRate": "Exchange Rate",
+      "exchangeRatePlaceholder": "e.g. 7.800000",
+      "positiveAccounts": "Assets (add to total)",
+      "negativeAccounts": "Liabilities (subtract from total)",
+      "accountAlias": "Account",
+      "currency": "Currency",
+      "balance": "Balance",
+      "cutDate": "Cut Date"
+    },
+    "loadStrategy": {
+      "title": "No record for this date",
+      "subtitle": "How do you want to load data for {date}?",
+      "blank": "Start blank",
+      "blankHint": "All balances will be set to 0",
+      "clone": "Clone from last record",
+      "cloneHint": "Copies balances from the most recent cut record",
+      "fromDate": "From a specific date",
+      "fromDateHint": "Pick an existing cut record to copy balances from",
+      "selectDate": "Select a date",
+      "noExistingDates": "No existing cut records to copy from",
+      "load": "Load"
+    },
+    "executionSummary": {
+      "title": "Budget Execution Summary",
+      "totalBudgeted": "Total Budgeted",
+      "totalRegistered": "Total Registered",
+      "remaining": "Budget Commitment"
+    },
+    "totals": {
+      "title": "Cut Totals",
+      "positive": "Total Assets (sum)",
+      "negative": "Total Liabilities (debt)",
+      "deudaEnCurso": "Total Debt",
+      "totalAvailable": "Total Available",
+      "totalNet": "Total Net"
+    },
+    "deleteModal": {
+      "title": "Delete Cut Record",
+      "instruction": "This action is irreversible. Type the cut date \"{date}\" to confirm.",
+      "typeDate": "Confirm cut date",
+      "confirm": "Delete permanently"
+    },
+    "errors": {
+      "noActivePeriod": "No active budget period covers this cut date. Please check your cycle and period setup before saving."
+    }
+  },
   "enums": {
     "periodStatus": {
       "open": "Open",

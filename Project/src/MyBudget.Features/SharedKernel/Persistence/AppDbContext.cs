@@ -37,6 +37,9 @@ public sealed class AppDbContext : DbContext
     public DbSet<SecurityAuditLog>     SecurityAuditLogs     => Set<SecurityAuditLog>();
     public DbSet<PasswordResetToken>   PasswordResetTokens   => Set<PasswordResetToken>();
     public DbSet<PasswordHistory>      PasswordHistories     => Set<PasswordHistory>();
+    public DbSet<BankAccount>          BankAccounts          => Set<BankAccount>();
+    public DbSet<CutRecord>            CutRecords            => Set<CutRecord>();
+    public DbSet<CutBankAccount>       CutBankAccounts       => Set<CutBankAccount>();
 
     // ---------------------------------------------------------------------------
     // SaveChangesAsync override — audit log interception (PR2)
