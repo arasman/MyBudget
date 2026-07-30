@@ -1,10 +1,12 @@
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using MyBudget.Features.SharedKernel.Persistence;
 
 namespace MyBudget.Features.Features.BankAccounts.CreateBankAccount;
 
 public sealed class CreateBankAccountValidator : AbstractValidator<CreateBankAccountCommand>
 {
-    public CreateBankAccountValidator()
+    public CreateBankAccountValidator(AppDbContext db)
     {
         RuleFor(x => x.BudgetId)
             .NotEmpty().WithErrorCode("FIELD_REQUIRED");
@@ -18,5 +20,16 @@ public sealed class CreateBankAccountValidator : AbstractValidator<CreateBankAcc
 
         RuleFor(x => x.DisplayOrder)
             .GreaterThanOrEqualTo(0).WithErrorCode("DISPLAY_ORDER_INVALID");
+
+        RuleFor(x => x.Alias)
+            .MustAsync(async (cmd, alias, ct) =>
+            {
+                return !await db.BankAccounts
+                    .IgnoreQueryFilters()
+                    .AnyAsync(a => a.BudgetId == cmd.BudgetId
+                                && a.Alias == alias.Trim(), ct);
+            })
+            .WithErrorCode("ALIAS_DUPLICATE")
+            .When(x => !string.IsNullOrWhiteSpace(x.Alias));
     }
 }

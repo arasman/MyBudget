@@ -498,8 +498,16 @@
     },
     "errors": {
       "saveFailed": "Failed to save bank account",
-      "deleteFailed": "Failed to delete bank account"
-    }
+      "deleteFailed": "Failed to delete bank account",
+      "aliasDuplicate": "An account with this alias already exists"
+    },
+    "showDeleted": "Show deleted",
+    "deleted": "deleted",
+    "restore": "Restore",
+    "createSuccess": "Bank account created",
+    "updateSuccess": "Bank account updated",
+    "deleteSuccess": "Bank account deleted",
+    "restoreSuccess": "Bank account restored"
   },
   "currentSituation": {
     "title": "Current Situation",
@@ -554,6 +562,8 @@
       "typeDate": "Confirm cut date",
       "confirm": "Delete permanently"
     },
+    "saveSuccess": "Cut record saved",
+    "deleteSuccess": "Cut record deleted",
     "errors": {
       "noActivePeriod": "No active budget period covers this cut date. Please check your cycle and period setup before saving."
     }

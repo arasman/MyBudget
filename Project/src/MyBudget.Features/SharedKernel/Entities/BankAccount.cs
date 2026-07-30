@@ -47,4 +47,10 @@ public sealed class BankAccount : BaseEntity, IAuditableEntity
         DeletedAt = DateTimeOffset.UtcNow;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
+
+    public void Restore()
+    {
+        DeletedAt = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 }

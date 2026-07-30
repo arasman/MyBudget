@@ -37,7 +37,7 @@
     </div>
 
     <!-- Main content -->
-    <div v-else class="flex flex-col gap-4">
+    <div v-else class="flex flex-col gap-4 select-none">
       <!-- Cut form: date + exchange rate + accounts -->
       <CutRecordForm
         ref="formRef"
@@ -107,6 +107,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useCutRecordStore } from '../store/useCutRecordStore'
+import { useToastStore } from '@/stores/toast.store'
 import type { CutTotalsDto } from '../types/cutRecord'
 import BudgetTabs from '@/features/budget-structure/components/BudgetTabs.vue'
 import CutDateNavigator from '../components/CutDateNavigator.vue'
@@ -121,6 +122,7 @@ import { getCutRecord } from '../api/cutRecordApi'
 const route = useRoute()
 const { t } = useI18n()
 const store = useCutRecordStore()
+const toastStore = useToastStore()
 
 const budgetId = computed(() => route.params['budgetId'] as string)
 
@@ -162,6 +164,7 @@ async function handleSave(payload: {
   if (!selectedDate.value) return
   try {
     await store.upsertCutRecord(budgetId.value, selectedDate.value, payload)
+    toastStore.push({ type: 'success', title: t('currentSituation.saveSuccess') })
   } catch {
     // saveError is set inside the store
   }
@@ -237,6 +240,7 @@ async function handleDelete(): Promise<void> {
     const dateToDelete = store.currentDate
     await store.deleteCutRecord(budgetId.value, dateToDelete)
     showDeleteModal.value = false
+    toastStore.push({ type: 'success', title: t('currentSituation.deleteSuccess') })
     // Load most recent cut if available
     if (store.cutDates.length > 0) {
       const latestDate = store.cutDates[store.cutDates.length - 1]

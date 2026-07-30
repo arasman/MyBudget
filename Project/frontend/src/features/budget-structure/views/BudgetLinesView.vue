@@ -30,7 +30,7 @@
     />
 
     <!-- Lines table -->
-    <div v-else class="overflow-x-auto">
+    <div v-else class="overflow-x-auto select-none">
       <table class="table table-zebra w-full">
         <thead>
           <tr>

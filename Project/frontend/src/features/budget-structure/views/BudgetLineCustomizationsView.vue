@@ -19,7 +19,7 @@
       </div>
 
       <!-- Revisions table -->
-      <div v-if="store.revisions.length > 0 || showInlineAdd" class="overflow-x-auto">
+      <div v-if="store.revisions.length > 0 || showInlineAdd" class="overflow-x-auto select-none">
         <table class="table table-zebra w-full">
           <thead>
             <tr>

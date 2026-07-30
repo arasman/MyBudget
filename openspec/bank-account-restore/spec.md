@@ -1,144 +1,12 @@
-# Spec: Bank Accounts
+# Spec: Bank Account Restore (delta)
 
 ## Purpose
 
-Defines the behavioral requirements for the bank-accounts capability: budget-scoped bank account catalog with soft-delete.
+Delta spec for the `bank-account-restore` change. Extends the `bank-accounts` capability (see `openspec/specs/bank-accounts/spec.md`) with restore, inclusive listing, alias uniqueness enforcement, and toast feedback.
 
 ---
 
-## Capability: bank-accounts
-
-### BA-1: Create Bank Account
-
-The system MUST allow a `budget:admin` user to create a bank account for a budget. Alias MUST be non-empty and at most 100 characters, and MUST be unique within the budget among ALL accounts, including soft-deleted ones. CurrencyId MUST reference an existing currency. DisplayOrder MUST be a non-negative integer. A budget MAY have multiple accounts with the same currency.
-
-#### Scenario: Successful creation
-
-- GIVEN an authenticated `budget:admin` user
-- WHEN POST `/api/budgets/{id}/bank-accounts` with valid alias, currencyId, isPositive, displayOrder
-- THEN 201 Created is returned with the new account id
-
-#### Scenario: Alias exceeds length
-
-- GIVEN a `budget:admin` user
-- WHEN POST with alias longer than 100 characters
-- THEN 422 Unprocessable Entity is returned
-
-#### Scenario: Duplicate alias of active account blocked
-
-- GIVEN a budget with an active account aliased "Savings"
-- WHEN POST `.../bank-accounts` with alias "Savings"
-- THEN 422 Unprocessable Entity is returned
-
-#### Scenario: Duplicate alias of soft-deleted account blocked
-
-- GIVEN a budget with a soft-deleted account aliased "OldChecking"
-- WHEN POST `.../bank-accounts` with alias "OldChecking"
-- THEN 422 Unprocessable Entity is returned (alias is still reserved)
-
-#### Scenario: Non-admin role rejected
-
-- GIVEN an authenticated `budget:operator` or `budget:read` user
-- WHEN POST `/api/budgets/{id}/bank-accounts`
-- THEN 403 Forbidden is returned
-
----
-
-### BA-2: List Bank Accounts
-
-The system MUST return all bank accounts for a budget ordered by DisplayOrder. Soft-deleted accounts (DeletedAt IS NOT NULL) MUST be excluded from the response by default. When `includeDeleted=true` is supplied, soft-deleted accounts MUST be included. Every account in the response MUST include a `deletedAt` field (null for active accounts).
-
-#### Scenario: Active accounts returned in order
-
-- GIVEN a budget with 3 active accounts at DisplayOrder 1, 2, 3
-- WHEN GET `/api/budgets/{id}/bank-accounts`
-- THEN 200 OK is returned with accounts sorted by DisplayOrder ascending
-
-#### Scenario: Soft-deleted accounts excluded
-
-- GIVEN a budget with 1 active and 1 soft-deleted account
-- WHEN GET `/api/budgets/{id}/bank-accounts`
-- THEN only the active account is returned
-
-#### Scenario: Default listing excludes deleted accounts
-
-- GIVEN a budget with 1 active and 1 soft-deleted account
-- WHEN GET `/api/budgets/{budgetId}/bank-accounts` (no query param)
-- THEN only the active account is returned; `deletedAt` is null on all returned items
-
-#### Scenario: includeDeleted=true returns all accounts
-
-- GIVEN a budget with 1 active and 1 soft-deleted account
-- WHEN GET `/api/budgets/{budgetId}/bank-accounts?includeDeleted=true`
-- THEN both accounts are returned; the soft-deleted account has `deletedAt` populated
-
-#### Scenario: deletedAt field always present
-
-- GIVEN any GET listing request
-- WHEN response is received
-- THEN every account object contains a `deletedAt` field (string ISO-8601 or null)
-
-#### Scenario: Read access sufficient
-
-- GIVEN a `budget:read` user
-- WHEN GET `/api/budgets/{id}/bank-accounts`
-- THEN 200 OK is returned
-
----
-
-### BA-3: Update Bank Account
-
-The system MUST allow a `budget:admin` user to update alias, isPositive, and displayOrder of an existing non-deleted bank account. CurrencyId MUST NOT be changed after creation. Alias MUST be unique within the budget among ALL accounts (including soft-deleted), excluding the account being updated.
-
-#### Scenario: Successful update
-
-- GIVEN an existing active bank account
-- WHEN PUT `/api/budgets/{id}/bank-accounts/{accountId}` with new alias
-- THEN 200 OK is returned and alias is persisted
-
-#### Scenario: Update alias to same value (no-op uniqueness) accepted
-
-- GIVEN an active account "Checking" being updated
-- WHEN PUT `.../bank-accounts/{accountId}` with alias "Checking" (unchanged)
-- THEN 200 OK is returned
-
-#### Scenario: Update alias to alias of another active account blocked
-
-- GIVEN account A is "Checking" and account B is "Savings"
-- WHEN PUT `.../bank-accounts/{accountIdA}` with alias "Savings"
-- THEN 422 Unprocessable Entity is returned
-
-#### Scenario: Update alias to alias of a soft-deleted account blocked
-
-- GIVEN account A is "Checking" and a soft-deleted account has alias "Archived"
-- WHEN PUT `.../bank-accounts/{accountIdA}` with alias "Archived"
-- THEN 422 Unprocessable Entity is returned
-
-#### Scenario: Account not found
-
-- GIVEN a non-existent or soft-deleted accountId
-- WHEN PUT `/api/budgets/{id}/bank-accounts/{accountId}`
-- THEN 404 Not Found is returned
-
----
-
-### BA-4: Soft-Delete Bank Account
-
-The system MUST allow a `budget:admin` user to soft-delete a bank account at any time, even if it is referenced in existing cut records. Soft-deletion MUST set DeletedAt to the current timestamp. The alias in existing CutBankAccount snapshot rows MUST be preserved as-is (no cascade update).
-
-#### Scenario: Successful soft-delete
-
-- GIVEN an active bank account referenced in a past cut
-- WHEN DELETE `/api/budgets/{id}/bank-accounts/{accountId}`
-- THEN 204 No Content is returned and DeletedAt is set
-
-#### Scenario: Historical snapshots unaffected
-
-- GIVEN a soft-deleted account with CutBankAccount rows
-- WHEN GET on an existing cut record
-- THEN historical balance rows still appear with the original alias
-
----
+## Capability: bank-accounts (delta additions)
 
 ### BA-5: Restore Bank Account
 
@@ -167,6 +35,78 @@ A soft-deleted bank account MUST be restorable by a `budget:admin` user via POST
 - GIVEN an authenticated `budget:operator` or `budget:read` user
 - WHEN POST `.../restore`
 - THEN 403 Forbidden is returned
+
+---
+
+### BA-2 (amended): List Bank Accounts — includeDeleted support
+
+The existing BA-2 behavior (active accounts only, ordered by DisplayOrder) MUST remain unchanged when `includeDeleted` is absent or false. When `includeDeleted=true` is supplied, soft-deleted accounts MUST be included. Every account in the response MUST include a `deletedAt` field (null for active accounts).
+
+#### Scenario: Default listing excludes deleted accounts
+
+- GIVEN a budget with 1 active and 1 soft-deleted account
+- WHEN GET `/api/budgets/{budgetId}/bank-accounts` (no query param)
+- THEN only the active account is returned; `deletedAt` is null on all returned items
+
+#### Scenario: includeDeleted=true returns all accounts
+
+- GIVEN a budget with 1 active and 1 soft-deleted account
+- WHEN GET `/api/budgets/{budgetId}/bank-accounts?includeDeleted=true`
+- THEN both accounts are returned; the soft-deleted account has `deletedAt` populated
+
+#### Scenario: deletedAt field always present
+
+- GIVEN any GET listing request
+- WHEN response is received
+- THEN every account object contains a `deletedAt` field (string ISO-8601 or null)
+
+---
+
+### BA-1 (amended): Create Bank Account — alias uniqueness including soft-deleted
+
+The alias MUST be unique within the budget among ALL accounts, including soft-deleted ones. A request that would duplicate an alias belonging to an active or soft-deleted account MUST be rejected with 422. This prevents a restore from ever colliding on alias.
+
+#### Scenario: Duplicate alias of active account blocked
+
+- GIVEN a budget with an active account aliased "Savings"
+- WHEN POST `.../bank-accounts` with alias "Savings"
+- THEN 422 Unprocessable Entity is returned
+
+#### Scenario: Duplicate alias of soft-deleted account blocked
+
+- GIVEN a budget with a soft-deleted account aliased "OldChecking"
+- WHEN POST `.../bank-accounts` with alias "OldChecking"
+- THEN 422 Unprocessable Entity is returned (alias is still reserved)
+
+#### Scenario: Unique alias accepted
+
+- GIVEN no account in the budget (active or deleted) has alias "NewAccount"
+- WHEN POST `.../bank-accounts` with alias "NewAccount"
+- THEN 201 Created is returned
+
+---
+
+### BA-3 (amended): Update Bank Account — alias uniqueness including soft-deleted, excluding self
+
+On update, the alias MUST be unique within the budget among ALL accounts (including soft-deleted), excluding the account being updated. A request that would create an alias collision MUST be rejected with 422.
+
+#### Scenario: Update alias to same value (no-op uniqueness) accepted
+
+- GIVEN an active account "Checking" being updated
+- WHEN PUT `.../bank-accounts/{accountId}` with alias "Checking" (unchanged)
+- THEN 200 OK is returned
+
+#### Scenario: Update alias to alias of another active account blocked
+
+- GIVEN account A is "Checking" and account B is "Savings"
+- WHEN PUT `.../bank-accounts/{accountIdA}` with alias "Savings"
+- THEN 422 Unprocessable Entity is returned
+
+#### Scenario: Update alias to alias of a soft-deleted account blocked
+
+- GIVEN account A is "Checking" and a soft-deleted account has alias "Archived"
+- WHEN PUT `.../bank-accounts/{accountIdA}` with alias "Archived"
+- THEN 422 Unprocessable Entity is returned
 
 ---
 
@@ -313,11 +253,9 @@ All four test layers are required.
 
 ---
 
-## Non-Goals
+## Non-Goals (reaffirmed from proposal)
 
-- No account balance reconciliation or audit trail beyond creation/update timestamps
-- No linked accounts across budgets
-- No account hierarchy or nesting
 - DisplayOrder reordering on restore
 - Cut record interaction with restored accounts
 - Batch restore or undo-delete confirmation modal
+- Account balance reconciliation

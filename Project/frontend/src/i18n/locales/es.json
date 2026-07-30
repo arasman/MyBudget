@@ -498,8 +498,16 @@
     },
     "errors": {
       "saveFailed": "Error al guardar la cuenta bancaria",
-      "deleteFailed": "Error al eliminar la cuenta bancaria"
-    }
+      "deleteFailed": "Error al eliminar la cuenta bancaria",
+      "aliasDuplicate": "Ya existe una cuenta con este alias"
+    },
+    "showDeleted": "Mostrar eliminadas",
+    "deleted": "eliminada",
+    "restore": "Restaurar",
+    "createSuccess": "Cuenta bancaria creada",
+    "updateSuccess": "Cuenta bancaria actualizada",
+    "deleteSuccess": "Cuenta bancaria eliminada",
+    "restoreSuccess": "Cuenta bancaria restaurada"
   },
   "currentSituation": {
     "title": "Situación Actual",
@@ -556,7 +564,9 @@
     },
     "errors": {
       "noActivePeriod": "Ningún período presupuestario activo cubre la fecha de este corte. Revisá la configuración de ciclos y períodos antes de guardar."
-    }
+    },
+    "saveSuccess": "Corte guardado",
+    "deleteSuccess": "Corte eliminado"
   },
   "enums": {
     "periodStatus": {
