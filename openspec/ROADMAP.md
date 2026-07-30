@@ -553,7 +553,7 @@ pnpm exec playwright test
 - Tests: unit (entity + validators), integration (restore + includeDeleted + alias uniqueness), frontend, E2E
 
 **Warnings at archive**:
-- W-01: `budget:read` role not explicitly tested for 403 on restore endpoint (covered mechanically by policy — low risk, follow-up in next test-hygiene session)
+- ~~W-01: `budget:read` role not explicitly tested for 403 on restore endpoint~~ — closed 2026-07-30: added `RestoreAccount_ViewerRole_Returns403` in `RestoreBankAccountTests.cs`
 
 **Tests**: 471 .NET unit | 440 frontend unit — all green; integration + E2E require live stack
 **SDD artifacts**: `openspec/bank-account-restore/`

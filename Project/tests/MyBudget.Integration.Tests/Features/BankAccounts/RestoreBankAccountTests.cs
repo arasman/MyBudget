@@ -82,4 +82,20 @@ public sealed class RestoreBankAccountTests : CurrentSituationTestBase
 
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task RestoreAccount_ViewerRole_Returns403()
+    {
+        var (_, budgetId) = await SetupOwnerAsync("ba-restore5-owner@example.com");
+        var accountId     = await CreateBankAccountAsync(budgetId, "Restricted Account");
+        await DeleteBankAccountAsync(budgetId, accountId);
+
+        var viewerToken = await SetupViewerAsync(budgetId, "ba-restore5-viewer@example.com");
+        AuthorizeClient(viewerToken);
+
+        var response = await Client.PostAsync(
+            $"/api/budgets/{budgetId}/bank-accounts/{accountId}/restore", null);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
 }
