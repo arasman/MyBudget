@@ -564,7 +564,9 @@
     },
     "errors": {
       "noActivePeriod": "Ningún período presupuestario activo cubre la fecha de este corte. Revisá la configuración de ciclos y períodos antes de guardar."
-    }
+    },
+    "saveSuccess": "Corte guardado",
+    "deleteSuccess": "Corte eliminado"
   },
   "enums": {
     "periodStatus": {

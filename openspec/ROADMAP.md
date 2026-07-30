@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-29 (current-situation archived)
+**Last updated**: 2026-07-29 (bank-account-restore archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -539,19 +539,38 @@ pnpm exec playwright test
 
 ---
 
-### 10a. `bank-account-restore` ⏳ planned
+### 10a. `bank-account-restore` ✅ archived 2026-07-29
 
 **What**: Restore capability and soft-delete UX for BankAccounts — parity with BudgetLines pattern.
 
-**Domain**: `BankAccount` already uses soft-delete (`DeletedAt`). The delete action exists in the UI but there is no way to restore a deleted account or view deleted accounts. This change closes that gap.
+**Domain**: `BankAccount` already uses soft-delete (`DeletedAt`). The delete action existed in the UI but there was no way to restore a deleted account or view deleted accounts. This change closes that gap and adds alias uniqueness enforcement.
 
 **Scope in**:
-- Backend: `RestoreBankAccount` VSA slice (handler + endpoint); `ListBankAccounts` — add `showDeleted` query param, expose `DeletedAt` in DTO
-- Frontend `BankAccountListView`: replace text buttons with Pencil/Trash2 icons; show-deleted toggle (checkbox); deleted rows with opacity-60 + red badge; restore button (RotateCcw icon) for deleted accounts; re-fetch on toggle
+- Backend: `BankAccount.Restore()` domain method; `RestoreBankAccount` VSA slice (POST `.../restore`, 204/404); `ListBankAccounts` — `includeDeleted` query param + `DeletedAt` in DTO
+- Backend: `CreateBankAccount` + `UpdateBankAccount` validators — async alias uniqueness including soft-deleted (`IgnoreQueryFilters`)
+- Backend: `ValidationBehaviour` migrated to `ValidateAsync` (required for `MustAsync` rules)
+- Frontend `BankAccountListView`: Pencil/Trash2 icon buttons; show-deleted toggle; `opacity-60` + badge "deleted" on deleted rows; RotateCcw restore button; success toasts (create/edit/delete/restore); `ALIAS_DUPLICATE` error toast on 422; `select-none` on table container
+- Tests: unit (entity + validators), integration (restore + includeDeleted + alias uniqueness), frontend, E2E
 
-**Scope out**: Cascading restore effects (BankAccount has no children entities).
+**Warnings at archive**:
+- W-01: `budget:read` role not explicitly tested for 403 on restore endpoint (covered mechanically by policy — low risk, follow-up in next test-hygiene session)
 
-**SDD artifacts**: pending
+**Tests**: 471 .NET unit | 440 frontend unit — all green; integration + E2E require live stack
+**SDD artifacts**: `openspec/bank-account-restore/`
+
+---
+
+### 10b. `cut-record-totals-persistence` ⏳ planned
+
+**What**: Persist computed cut record totals in both primary and alternate currency to the CutRecord header.
+
+**Domain**: Currently totals (Total Assets, Total Liabilities, Total Budgeted, Total Registered, Budget Commitment, Total Available, Total Debt, Total Net) are recomputed at every read from `CutBankAccount` rows. This change would persist them at save time for dashboards, historical reporting, and query performance at scale.
+
+**Scope in** *(requires exploration)*:
+- Backend: new columns on `CutRecord` entity (e.g. `TotalAssetsInPrimary`, `TotalAssetsInAlternate`, etc.); EF migration; `UpsertCutRecordCommand` extended with total fields; handler persists totals; `GetCutRecord` DTO returns stored values
+- Frontend: `CutRecordForm` sends computed totals in the upsert payload
+
+**Dependency**: Requires `current-situation` (archived ✅).
 
 ---
 
@@ -562,6 +581,7 @@ pnpm exec playwright test
 **Scope in** *(requires exploration)*:
 - 2–3 key charts: income vs budgeted vs executed; breakdown by category; period totals over time
 - Mostly frontend (Vue + chart library); backend may need aggregate query endpoints
+- May depend on `cut-record-totals-persistence` for historical snapshots
 
 ---
 

@@ -562,6 +562,8 @@
       "typeDate": "Confirm cut date",
       "confirm": "Delete permanently"
     },
+    "saveSuccess": "Cut record saved",
+    "deleteSuccess": "Cut record deleted",
     "errors": {
       "noActivePeriod": "No active budget period covers this cut date. Please check your cycle and period setup before saving."
     }
