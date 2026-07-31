@@ -98,4 +98,4 @@ Caveats to carry into tasks: (1) the backfill uses **current** execution data, w
 
 ## Open Questions
 
-- [ ] None blocking. Optional: add ES/EN i18n copy for snapshot semantics ("as of last save") — proposal success criterion, but a copy-only change that can slip to its own slice.
+- [x] Add ES/EN i18n copy for snapshot semantics ("as of last save") — proposal success criterion, CLOSED by commit 8902804 where CutTotalsPanel.vue renders the i18n key.

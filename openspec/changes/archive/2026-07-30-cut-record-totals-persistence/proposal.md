@@ -93,10 +93,10 @@ Single revert: down migration drops the 16 columns; handler changes revert to re
 
 ## Success Criteria
 
-- [ ] `CutRecord` persists all 16 totals; migration applies and backfills existing rows
-- [ ] `UpsertCutRecordHandler` computes all 16 totals server-side; upsert request contract unchanged (no client-supplied totals)
-- [ ] `GetCutRecord` for an existing cut returns all 16 stored values without re-running the bank-account aggregation or the execution-summary CTE
-- [ ] `GetCutRecord` draft path (no persisted cut) still returns live-computed totals for all 8 concepts
-- [ ] Re-saving a cut recomputes and overwrites all 16 totals
-- [ ] Integration test: persisted totals equal freshly computed totals at save time; editing bank account balances or execution records afterwards does **not** change the saved cut's persisted totals
-- [ ] Snapshot semantics documented in spec and reflected in ES + EN UI copy
+- [x] `CutRecord` persists all 16 totals; migration applies and backfills existing rows
+- [x] `UpsertCutRecordHandler` computes all 16 totals server-side; upsert request contract unchanged (no client-supplied totals)
+- [x] `GetCutRecord` for an existing cut returns all 16 stored values without re-running the bank-account aggregation or the execution-summary CTE
+- [x] `GetCutRecord` draft path (no persisted cut) still returns live-computed totals for all 8 concepts
+- [x] Re-saving a cut recomputes and overwrites all 16 totals
+- [x] Integration test: persisted totals equal freshly computed totals at save time; editing bank account balances or execution records afterwards does **not** change the saved cut's persisted totals
+- [x] Snapshot semantics documented in spec and reflected in ES + EN UI copy (CLOSED by commit 8902804: CutTotalsPanel.vue now renders the i18n key)
