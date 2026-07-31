@@ -35,9 +35,9 @@ Chain strategy: feature-branch-chain
 
 ## Phase 2 (PR2): Backend — Totals Band (DASH-2,3,11)
 
-- [ ] 2.1 RED→GREEN: `GetCutTotalsBand/{Query,Handler,Endpoint}.cs` — two-stage period-avg then MIN/MAX/AVG
-- [ ] 2.2 RED→GREEN: date-containment join excludes out-of-range cuts from band only; kept in lifetime series (DASH-11)
-- [ ] 2.3 RED→GREEN: `periodCount` 0/1 → insufficient-data flag (DASH-3)
+- [x] 2.1 RED→GREEN: `GetCutTotalsBand/{Query,Handler,Endpoint}.cs` — two-stage period-avg then MIN/MAX/AVG
+- [x] 2.2 RED→GREEN: date-containment join excludes out-of-range cuts from band only; kept in lifetime series (DASH-11)
+- [x] 2.3 RED→GREEN: `periodCount` 0/1 → insufficient-data flag (DASH-3)
 
 ## Phase 3 (PR3): Backend — BudgetLine Series (DASH-4,5,6,12)
 
