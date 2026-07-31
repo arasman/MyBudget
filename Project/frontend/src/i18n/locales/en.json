@@ -554,7 +554,8 @@
       "negative": "Total Liabilities (debt)",
       "deudaEnCurso": "Total Debt",
       "totalAvailable": "Total Available",
-      "totalNet": "Total Net"
+      "totalNet": "Total Net",
+      "snapshotNotice": "Totals reflect account balances and budget execution as of this cut's last save. Later changes to accounts or execution records won't affect a saved cut until it is saved again."
     },
     "deleteModal": {
       "title": "Delete Cut Record",

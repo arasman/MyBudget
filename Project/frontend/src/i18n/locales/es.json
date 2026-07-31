@@ -554,7 +554,8 @@
       "negative": "Total pasivos (deuda)",
       "deudaEnCurso": "Deuda Total",
       "totalAvailable": "Total Disponible",
-      "totalNet": "Posición Neta"
+      "totalNet": "Posición Neta",
+      "snapshotNotice": "Los totales reflejan los saldos de cuentas y la ejecución presupuestaria al momento del último guardado de este corte. Los cambios posteriores en cuentas o registros de ejecución no afectan un corte guardado hasta que se vuelva a guardar."
     },
     "deleteModal": {
       "title": "Eliminar registro de corte",

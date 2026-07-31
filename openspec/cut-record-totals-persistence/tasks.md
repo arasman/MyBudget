@@ -65,11 +65,11 @@ Chain strategy: feature-branch-chain
 
 ## Phase 5: Frontend Regression + E2E
 
-- [ ] 5.1 Re-run `frontend/src/features/current-situation/__tests__/useCutRecordStore.spec.ts` as a regression check — no code change; confirms DTO shape unchanged
-- [ ] 5.2 Create `frontend/e2e/current-situation/cut-totals-snapshot.spec.ts` — save a cut, mutate an execution record in the active period, reload the cut, assert displayed totals unchanged. Satisfies: CS-6 "Snapshot unaffected by later data changes" (E2E level)
+- [x] 5.1 Re-run `frontend/src/features/current-situation/__tests__/useCutRecordStore.spec.ts` as a regression check — no code change; confirms DTO shape unchanged
+- [x] 5.2 Create `frontend/e2e/current-situation/cut-totals-snapshot.spec.ts` — save a cut, mutate an execution record in the active period, reload the cut, assert displayed totals unchanged. Satisfies: CS-6 "Snapshot unaffected by later data changes" (E2E level)
 
 ---
 
 ## Phase 6: Documentation (optional, may slip to its own slice)
 
-- [ ] 6.1 Add ES/EN i18n copy in `frontend/src/i18n/locales/{en,es}.json` documenting snapshot semantics ("totals reflect state as of last save"). Satisfies: proposal success criterion "Snapshot semantics documented … reflected in ES + EN UI copy"
+- [x] 6.1 Add ES/EN i18n copy in `frontend/src/i18n/locales/{en,es}.json` documenting snapshot semantics ("totals reflect state as of last save"). Satisfies: proposal success criterion "Snapshot semantics documented … reflected in ES + EN UI copy"
