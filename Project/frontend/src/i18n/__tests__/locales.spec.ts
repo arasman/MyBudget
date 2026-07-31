@@ -91,3 +91,19 @@ describe('i18n locale keys — global-toast-audit', () => {
     expect(es.budgetMatrix.rows[key].length).toBeGreaterThan(0)
   })
 })
+
+// cut-record-totals-persistence (proposal.md success criterion): snapshot semantics
+// copy must exist in both locales under currentSituation.totals
+describe('i18n locale keys — current-situation totals snapshot notice (cut-record-totals-persistence)', () => {
+  it('en.json contains currentSituation.totals.snapshotNotice', () => {
+    expect(en.currentSituation.totals).toHaveProperty('snapshotNotice')
+    expect(typeof en.currentSituation.totals.snapshotNotice).toBe('string')
+    expect(en.currentSituation.totals.snapshotNotice.length).toBeGreaterThan(0)
+  })
+
+  it('es.json contains currentSituation.totals.snapshotNotice', () => {
+    expect(es.currentSituation.totals).toHaveProperty('snapshotNotice')
+    expect(typeof es.currentSituation.totals.snapshotNotice).toBe('string')
+    expect(es.currentSituation.totals.snapshotNotice.length).toBeGreaterThan(0)
+  })
+})

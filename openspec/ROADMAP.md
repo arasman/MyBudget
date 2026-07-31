@@ -560,17 +560,24 @@ pnpm exec playwright test
 
 ---
 
-### 10b. `cut-record-totals-persistence` ⏳ planned
+### 10b. `cut-record-totals-persistence` ✅ archived 2026-07-30
 
-**What**: Persist computed cut record totals in both primary and alternate currency to the CutRecord header.
+**What**: Persist computed cut record totals (16 columns: 8 concepts × primary/alternate) on the CutRecord header, moving from query-time to write-time computation.
 
-**Domain**: Currently totals (Total Assets, Total Liabilities, Total Budgeted, Total Registered, Budget Commitment, Total Available, Total Debt, Total Net) are recomputed at every read from `CutBankAccount` rows. This change would persist them at save time for dashboards, historical reporting, and query performance at scale.
+**Domain**: Totals (Total Assets, Total Liabilities, Total Budgeted, Total Registered, Budget Commitment, Total Available, Total Debt, Total Net) were recomputed at every read from `CutBankAccount` rows. This change persists them at save time for dashboards, historical reporting, and query performance at scale, while drafts (no persisted cut) still compute live.
 
-**Scope in** *(requires exploration)*:
-- Backend: new columns on `CutRecord` entity (e.g. `TotalAssetsInPrimary`, `TotalAssetsInAlternate`, etc.); EF migration; `UpsertCutRecordCommand` extended with total fields; handler persists totals; `GetCutRecord` DTO returns stored values
-- Frontend: `CutRecordForm` sends computed totals in the upsert payload
+**Scope in**:
+- PR1 — Backend: 16 new columns on `CutRecord` entity; EF migration with 3-phase backfill for existing rows; shared `CutTotalsCalculator` + `BudgetExecutionSummaryQuery` extraction; `UpsertCutRecordHandler` computes and persists all 16 totals server-side (client-supplied totals ignored); `GetCutRecord` reads stored values verbatim for existing cuts, computes live for drafts
+- PR2 — Backend tests: 6 unit tests + 23 integration facts covering all spec scenarios (CS-1, CS-2, CS-6, CS-9), including snapshot-unaffected-by-later-edits
+- PR3 — Frontend: `cut-totals-snapshot.spec.ts` E2E + DTO shape regression check; ES/EN i18n `snapshotNotice` copy
+- Post-verify fix (commit 8902804): `CutTotalsPanel.vue` renders `snapshotNotice` as a footnote — closes the sole verify WARNING (copy existed but wasn't wired to any component)
 
-**Dependency**: Requires `current-situation` (archived ✅).
+**Scope out**: None — full proposal scope delivered.
+
+**Tests**: Backend 721/718/3/0 (dotnet test); Frontend 57 files/442 tests; E2E 108/108 — all green
+**SDD artifacts**: `openspec/changes/archive/2026-07-30-cut-record-totals-persistence/`
+**Specs**: `openspec/specs/current-situation/spec.md` (CS-1, CS-2, CS-6 modified; CS-9 added)
+**Dependency**: Required `current-situation` (archived ✅).
 
 ---
 

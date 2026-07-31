@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MyBudget.Features.SharedKernel.Entities;
 using MyBudget.Features.SharedKernel.Persistence;
@@ -143,6 +144,155 @@ public abstract class CurrentSituationTestBase : BudgetStructureTestBase
         Guid budgetId, DateOnly cutDate)
         => await Client.GetAsync(
             $"/api/budgets/{budgetId}/cut-records/{cutDate:yyyy-MM-dd}");
+
+    // ── CS-9 / CS-6 test helpers: direct DB access for the persisted 16 columns ──
+    // The GET response DTO only exposes 6 + 3 of the 16 persisted totals (design.md
+    // "Response DTOs are unchanged"); reaching CutRecord directly is required to assert
+    // on the remaining columns (Alt execution trio, TotalAvailable/TotalNet + Alt).
+
+    /// <summary>Reads the persisted CutRecord entity (all 16 total columns) directly via EF.</summary>
+    protected async Task<CutRecord?> GetPersistedCutRecordEntityAsync(Guid budgetId, DateOnly cutDate)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.CutRecords
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cr => cr.BudgetId == budgetId && cr.CutDate == cutDate);
+    }
+
+    /// <summary>
+    /// Directly overwrites a persisted CutBankAccount snapshot's balance — the closest
+    /// analog to "editing a bank account balance" after a cut is saved. BankAccount itself
+    /// has no live stored Balance; balances only ever exist as immutable per-cut snapshots.
+    /// </summary>
+    protected async Task MutateCutBankAccountBalanceAsync(Guid bankAccountId, decimal newBalanceInPrimary)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.Database.ExecuteSqlInterpolatedAsync(
+            $"""UPDATE "CutBankAccounts" SET "BalanceInPrimary" = {newBalanceInPrimary} WHERE "BankAccountId" = {bankAccountId}""");
+    }
+
+    /// <summary>
+    /// Directly overwrites all 16 persisted total columns on a CutRecord header row to a
+    /// single marker value — used to prove a read path does or does not re-derive totals.
+    /// </summary>
+    protected async Task MutateCutRecordHeaderTotalsAsync(Guid cutRecordId, decimal marker)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE "CutRecords" SET
+                "TotalPositive" = {marker}, "TotalPositiveAlt" = {marker},
+                "TotalNegative" = {marker}, "TotalNegativeAlt" = {marker},
+                "TotalDeudaEnCurso" = {marker}, "TotalDeudaEnCursoAlt" = {marker},
+                "TotalBudgeted" = {marker}, "TotalBudgetedAlt" = {marker},
+                "TotalRegistered" = {marker}, "TotalRegisteredAlt" = {marker},
+                "Remaining" = {marker}, "RemainingAlt" = {marker},
+                "TotalAvailable" = {marker}, "TotalAvailableAlt" = {marker},
+                "TotalNet" = {marker}, "TotalNetAlt" = {marker}
+            WHERE "Id" = {cutRecordId}
+            """);
+    }
+
+    /// <summary>
+    /// Counts, at the Postgres schema level, how many of the 16 persisted total columns on
+    /// "CutRecords" are declared NOT NULL — used by the CS-9 post-migration assertion.
+    /// </summary>
+    protected async Task<int> CountNonNullCutRecordTotalColumnsAsync()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db   = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var conn = db.Database.GetDbConnection();
+        if (conn.State != System.Data.ConnectionState.Open)
+            await conn.OpenAsync();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_name = 'CutRecords' AND is_nullable = 'NO'
+              AND column_name = ANY (ARRAY[
+                'TotalPositive','TotalPositiveAlt','TotalNegative','TotalNegativeAlt',
+                'TotalDeudaEnCurso','TotalDeudaEnCursoAlt','TotalBudgeted','TotalBudgetedAlt',
+                'TotalRegistered','TotalRegisteredAlt','Remaining','RemainingAlt',
+                'TotalAvailable','TotalAvailableAlt','TotalNet','TotalNetAlt'
+              ])
+            """;
+        var result = await cmd.ExecuteScalarAsync();
+        return Convert.ToInt32(result);
+    }
+
+    // ── ExecutionRecord helpers (needed for CS-6 snapshot / CS-9 backfill setup) ──
+    // CurrentSituationTestBase does not extend BudgetExecutionTestBase (C# has no multiple
+    // inheritance), so the minimal Create/Update helpers are duplicated here.
+
+    protected async Task<Guid> CreateExecutionRecordAsync(
+        Guid     budgetId,
+        Guid     periodId,
+        Guid     lineId,
+        decimal  amount,
+        DateOnly operationDate,
+        int      entryType = 1) // 1 = Expense
+    {
+        var response = await Client.PostAsJsonAsync(
+            $"/api/budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/executions",
+            new
+            {
+                entryType,
+                amount,
+                note            = "Test execution note",
+                operationDate,
+                currencyId      = GtqId,
+                exchangeRate    = (decimal?)null,
+                exchangeRateTo  = (decimal?)null,
+                accountId       = (Guid?)null,
+                paymentMethodId = (Guid?)null,
+            });
+
+        response.EnsureSuccessStatusCode();
+        var body = await response.Content.ReadFromJsonAsync<IdResponse>(JsonOpts);
+        return body!.Id;
+    }
+
+    protected async Task UpdateExecutionRecordAsync(
+        Guid     budgetId,
+        Guid     periodId,
+        Guid     lineId,
+        Guid     executionId,
+        decimal  amount,
+        DateOnly operationDate,
+        int      entryType = 1)
+    {
+        var response = await Client.PutAsJsonAsync(
+            $"/api/budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/executions/{executionId}",
+            new
+            {
+                entryType,
+                amount,
+                note            = "Updated execution note",
+                operationDate,
+                currencyId      = GtqId,
+                exchangeRate    = (decimal?)null,
+                exchangeRateTo  = (decimal?)null,
+                accountId       = (Guid?)null,
+                paymentMethodId = (Guid?)null,
+            });
+
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <summary>
+    /// Composes SetupActiveCycleAndPeriodAsync with a category group + budget line so
+    /// tests can predict a non-zero TotalBudgeted/Remaining for the CS-6 total concepts.
+    /// </summary>
+    protected async Task<(Guid CycleId, Guid PeriodId, Guid GroupId, Guid LineId)> SetupPeriodWithBudgetLineAsync(
+        Guid budgetId, DateOnly cutDate, decimal budgetedAmount)
+    {
+        var (cycleId, periodId) = await SetupActiveCycleAndPeriodAsync(budgetId, cutDate);
+        var groupId = await CreateCategoryGroupAsync(budgetId);
+        var lineId  = await CreateBudgetLineAsync(budgetId, periodId, groupId, amount: budgetedAmount);
+        return (cycleId, periodId, groupId, lineId);
+    }
 
     // ── Response types ────────────────────────────────────────────────────────
 

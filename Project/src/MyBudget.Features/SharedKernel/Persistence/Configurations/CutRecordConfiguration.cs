@@ -22,6 +22,24 @@ public sealed class CutRecordConfiguration : IEntityTypeConfiguration<CutRecord>
         builder.Property(c => c.ProjectionsJson)
             .HasColumnType("text");
 
+        // CS-6: 16 persisted totals — decimal(18,2), matching CutBankAccount.BalanceInPrimary.
+        builder.Property(c => c.TotalPositive).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalPositiveAlt).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalNegative).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalNegativeAlt).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalDeudaEnCurso).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalDeudaEnCursoAlt).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalBudgeted).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalBudgetedAlt).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalRegistered).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalRegisteredAlt).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.Remaining).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.RemainingAlt).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalAvailable).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalAvailableAlt).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalNet).HasPrecision(18, 2).IsRequired();
+        builder.Property(c => c.TotalNetAlt).HasPrecision(18, 2).IsRequired();
+
         // FK: BudgetId -> Budgets (Restrict)
         builder.HasOne<Budget>()
             .WithMany()

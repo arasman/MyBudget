@@ -1,14 +1,8 @@
-# Spec: Current Situation (Periodic Financial Snapshot)
+# Delta for current-situation
 
-## Purpose
+## MODIFIED Requirements
 
-Defines the behavioral requirements for the current-situation capability: periodic cut record lifecycle, balance snapshots, and budget execution summary at cut date.
-
----
-
-## Capability: current-situation
-
-### CS-1: Upsert Cut Record
+### Requirement: CS-1 Upsert Cut Record
 
 The system MUST allow a `budget:operator` user to create or replace a cut record for a given date. Date format in the URL path MUST be `YYYY-MM-DD`. The upsert MUST fully replace all CutBankAccount rows for that date (delete then re-insert). An active period (StartDate ≤ CutDate ≤ EndDate, cycle is active, period is not closed) MUST exist; otherwise the request MUST be rejected with 422. ExchangeRate MUST be a positive decimal.
 
@@ -65,7 +59,7 @@ The upsert MUST also compute all 16 total columns (8 concepts × primary/alterna
 
 ---
 
-### CS-2: Get Cut Record
+### Requirement: CS-2 Get Cut Record
 
 The system MUST return the cut record for a given date. If a persisted cut record exists for the date, the response MUST return all 16 persisted total columns (see CS-6) read directly from storage; the bank-account aggregation and the execution-summary query MUST NOT be re-executed for an existing record. If the record does not exist, the system MUST return a draft response pre-populated with currently-active bank accounts (DeletedAt IS NULL) and balance 0, with all 8 total concepts computed live from current data, exactly as before this change. If a previous cut exists, the draft MUST copy balances for accounts present in both; newly-added accounts (not in previous cut) MUST use balance 0; accounts soft-deleted since the last cut MUST be excluded. If no cut has ever existed for the budget, the draft MUST include all active accounts with balance 0.
 
@@ -116,67 +110,7 @@ The draft response MUST include the live budget execution summary for the active
 
 ---
 
-### CS-3: List Cut Dates
-
-The system MUST return the list of calendar dates for which a cut record exists for a given budget, ordered ascending. Only `budget:read` or higher access is required.
-
-#### Scenario: Dates returned ascending
-
-- GIVEN 3 cut records on different dates
-- WHEN GET `/api/budgets/{id}/cut-records/dates`
-- THEN a list of 3 dates in YYYY-MM-DD format is returned in ascending order
-
-#### Scenario: No cuts exist
-
-- GIVEN no cut records for the budget
-- WHEN GET `/api/budgets/{id}/cut-records/dates`
-- THEN 200 OK with an empty list
-
----
-
-### CS-4: Delete Cut Record
-
-The system MUST allow a `budget:operator` user to hard-delete a cut record and all associated CutBankAccount rows. The delete MUST be physical (no soft-delete). The frontend MUST present a confirmation modal requiring the user to type the cut date before the API call is made (UI constraint only — the API itself has no typed-confirmation requirement).
-
-#### Scenario: Successful delete
-
-- GIVEN an existing cut record for 2026-07-28
-- WHEN DELETE `/api/budgets/{id}/cut-records/2026-07-28`
-- THEN 204 No Content is returned and the record plus all CutBankAccount rows are removed
-
-#### Scenario: Delete non-existent cut
-
-- GIVEN no cut record for the date
-- WHEN DELETE `/api/budgets/{id}/cut-records/{date}`
-- THEN 404 Not Found is returned
-
-#### Scenario: Non-operator role rejected
-
-- GIVEN a `budget:read` user
-- WHEN DELETE `/api/budgets/{id}/cut-records/{date}`
-- THEN 403 Forbidden is returned
-
----
-
-### CS-5: Balance and Exchange Rate Computation
-
-The system MUST compute BalanceInPrimary at write time (upsert) using the cut's ExchangeRate. When a bank account's currency matches the budget's primary currency, BalanceInPrimary MUST equal Balance. When a bank account's currency matches the budget's alternate currency, BalanceInPrimary MUST equal Balance × CutRecord.ExchangeRate. The ExchangeRate MUST NOT be applied to ExecutionRecord data.
-
-#### Scenario: Primary currency account
-
-- GIVEN an account with CurrencyId = budget primary currency
-- WHEN a balance of 1000 is saved for any ExchangeRate
-- THEN BalanceInPrimary = 1000
-
-#### Scenario: Alternate currency account
-
-- GIVEN an account with CurrencyId = budget alternate currency
-- WHEN a balance of 100 is saved with ExchangeRate = 7.8
-- THEN BalanceInPrimary = 780
-
----
-
-### CS-6: Cut Totals
+### Requirement: CS-6 Cut Totals
 
 The system MUST compute and persist 16 total columns on CutRecord (8 concepts × primary/alternate) at upsert time (see CS-1), not at query time. All 16 columns MUST use `decimal(18,2)` precision, consistent with `CutBankAccount.BalanceInPrimary` (CS-5).
 
@@ -214,49 +148,9 @@ Once a cut is saved, these 16 values are frozen (snapshot semantics): subsequent
 
 ---
 
-### CS-7: Frontend — Current Situation View
+## ADDED Requirements
 
-The system MUST expose a route `/budgets/:budgetId/current-situation` as a tab in BudgetTabs. The view MUST support navigation to the previous and next cut date using the dates from ListCutDates. The view MUST display the cut form (exchange rate, bank account balances), budget execution summary, and computed totals. All UI strings MUST be available in ES and EN via vue-i18n.
-
-#### Scenario: Tab renders on navigation
-
-- GIVEN a budget with at least one cut
-- WHEN the user navigates to `/budgets/:budgetId/current-situation`
-- THEN the most recent cut is displayed
-
-#### Scenario: Previous/next navigation
-
-- GIVEN cuts on 2026-07-20, 2026-07-25, 2026-07-28
-- WHEN the user views 2026-07-25 and clicks "next"
-- THEN 2026-07-28 is displayed
-
-#### Scenario: Delete confirmation modal
-
-- GIVEN the user wants to delete a cut
-- WHEN the user opens the delete modal and types the correct cut date
-- THEN the delete button is enabled and the API call proceeds on confirm
-
----
-
-### CS-8: Bank Account Management (Frontend)
-
-The system MUST provide a standalone bank account management section accessible from budget configuration (not exclusively from within the cut form). The section MUST support create, update, and soft-delete operations. All UI strings MUST be available in ES and EN.
-
-#### Scenario: Account created from config section
-
-- GIVEN the user is on the budget configuration page
-- WHEN the user creates a bank account with alias "Caja GTQ"
-- THEN the account appears in the list and is available for new cut records
-
-#### Scenario: Soft-delete from config section
-
-- GIVEN an existing account
-- WHEN the user deletes it from the config section
-- THEN the account no longer appears in the list or in new cut drafts
-
----
-
-### CS-9: Migration Backfill for Persisted Totals
+### Requirement: CS-9 Migration Backfill for Persisted Totals
 
 The system MUST provide a one-time migration that backfills all 16 total columns for every existing CutRecord row created before this change. Backfilled values MUST be computed using the same logic GetCutRecordHandler used prior to this change (bank-account aggregation for the 6 balance-derived totals, the execution-summary query for TotalBudgeted/TotalRegistered/Remaining, and the existing TotalAvailable/TotalNet formulas). After migration, all 16 columns MUST be non-nullable; the read path MUST NOT retain a live-fallback branch for missing totals.
 
@@ -271,13 +165,3 @@ The system MUST provide a one-time migration that backfills all 16 total columns
 - GIVEN the migration has completed
 - WHEN any CutRecord row is queried
 - THEN all 16 total columns have non-null decimal values
-
----
-
-## Non-Goals (Explicit Exclusions)
-
-- ProjectionsJson column: reserved as nullable placeholder. No schema defined. No read or write behavior specified.
-- No accounts receivable or payable installment tracking (Layer 2).
-- No TotalProyectadoCurso, TotalProyectado, TotalAdeudadoProyectado fields.
-- ExecutionRecord.AccountId remains an opaque nullable Guid with no FK to BankAccounts.
-- No historical trend charts or cross-cut comparisons.
