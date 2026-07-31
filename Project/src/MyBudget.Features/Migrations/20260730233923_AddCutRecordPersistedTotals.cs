@@ -87,99 +87,114 @@ namespace MyBudget.Features.Migrations
 
             // ── Phase B: backfill (CS-9) ───────────────────────────────────────
             // Bank-account aggregation ("a") + execution-summary CTE ("ex"), correlated
-            // per-row on cr."BudgetId"/cr."CutDate" — same logic as
+            // per-row via "src" (a "CutRecords" self-join anchor) — same logic as
             // BudgetExecutionSummaryQuery + CutTotalsCalculator, re-expressed in SQL.
             // Rows whose period has since closed correctly backfill the execution trio
             // to 0 (p."IsClosed" = false filter), matching pre-change GetCutRecord output.
+            //
+            // NOTE: correlation is against "src" (a plain FROM-list entry inside the derived
+            // table "x"), never against the UPDATE target "cr" directly — Postgres rejects a
+            // LATERAL subquery in an UPDATE ... FROM clause correlating to the target relation
+            // itself ("42P10: invalid reference to FROM-clause entry for table cr"); LATERAL
+            // may only reference other entries already present in the same FROM list.
             migrationBuilder.Sql("""
                 UPDATE "CutRecords" cr
                 SET
-                    "TotalPositive"        = ROUND(a."Pos", 2),
-                    "TotalPositiveAlt"     = ROUND(a."Pos" / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
-                    "TotalNegative"        = ROUND(a."Neg", 2),
-                    "TotalNegativeAlt"     = ROUND(a."Neg" / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
-                    "TotalDeudaEnCurso"    = ROUND(ex."Remaining" + a."Neg", 2),
-                    "TotalDeudaEnCursoAlt" = ROUND((ex."Remaining" + a."Neg") / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
-                    "TotalBudgeted"        = ROUND(ex."TotalBudgeted", 2),
-                    "TotalBudgetedAlt"     = ROUND(ex."TotalBudgeted" / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
-                    "TotalRegistered"      = ROUND(ex."TotalRegistered", 2),
-                    "TotalRegisteredAlt"   = ROUND(ex."TotalRegistered" / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
-                    "Remaining"            = ROUND(ex."Remaining", 2),
-                    "RemainingAlt"         = ROUND(ex."Remaining" / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
-                    "TotalAvailable"       = ROUND(a."Pos", 2),
-                    "TotalAvailableAlt"    = ROUND(a."Pos" / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
-                    "TotalNet"             = ROUND(a."Pos" - (ex."Remaining" + a."Neg"), 2),
-                    "TotalNetAlt"          = ROUND((a."Pos" - (ex."Remaining" + a."Neg")) / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2)
+                    "TotalPositive"        = ROUND(x."Pos", 2),
+                    "TotalPositiveAlt"     = ROUND(x."Pos" / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
+                    "TotalNegative"        = ROUND(x."Neg", 2),
+                    "TotalNegativeAlt"     = ROUND(x."Neg" / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
+                    "TotalDeudaEnCurso"    = ROUND(x."Remaining" + x."Neg", 2),
+                    "TotalDeudaEnCursoAlt" = ROUND((x."Remaining" + x."Neg") / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
+                    "TotalBudgeted"        = ROUND(x."TotalBudgeted", 2),
+                    "TotalBudgetedAlt"     = ROUND(x."TotalBudgeted" / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
+                    "TotalRegistered"      = ROUND(x."TotalRegistered", 2),
+                    "TotalRegisteredAlt"   = ROUND(x."TotalRegistered" / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
+                    "Remaining"            = ROUND(x."Remaining", 2),
+                    "RemainingAlt"         = ROUND(x."Remaining" / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
+                    "TotalAvailable"       = ROUND(x."Pos", 2),
+                    "TotalAvailableAlt"    = ROUND(x."Pos" / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2),
+                    "TotalNet"             = ROUND(x."Pos" - (x."Remaining" + x."Neg"), 2),
+                    "TotalNetAlt"          = ROUND((x."Pos" - (x."Remaining" + x."Neg")) / (CASE WHEN cr."ExchangeRate" > 0 THEN cr."ExchangeRate" ELSE 1 END), 2)
                 FROM (
                     SELECT
-                        cba."CutRecordId",
-                        COALESCE(SUM(cba."BalanceInPrimary") FILTER (WHERE cba."IsPositive"), 0)     AS "Pos",
-                        COALESCE(SUM(cba."BalanceInPrimary") FILTER (WHERE NOT cba."IsPositive"), 0) AS "Neg"
-                    FROM "CutBankAccounts" cba
-                    GROUP BY cba."CutRecordId"
-                ) a
-                LEFT JOIN LATERAL (
-                    WITH active_period AS (
+                        src."Id" AS "CutRecordId",
+                        a."Pos", a."Neg",
+                        COALESCE(ex."TotalBudgeted", 0)   AS "TotalBudgeted",
+                        COALESCE(ex."TotalRegistered", 0) AS "TotalRegistered",
+                        COALESCE(ex."Remaining", 0)       AS "Remaining"
+                    FROM "CutRecords" src
+                    JOIN (
                         SELECT
-                            p."Id"                 AS "PeriodId",
-                            p."StartDate"          AS "PeriodStart",
-                            p."EndDate"            AS "PeriodEnd",
-                            cy."DefaultCurrencyId" AS "DefaultCurrencyId"
-                        FROM "Periods" p
-                        JOIN "Cycles" cy ON cy."Id" = p."CycleId"
-                        WHERE cy."BudgetId"  = cr."BudgetId"
-                          AND cy."DeletedAt" IS NULL
-                          AND p."DeletedAt"  IS NULL
-                          AND p."IsClosed"   = false
-                          AND p."StartDate"  <= cr."CutDate"
-                          AND p."EndDate"    >= cr."CutDate"
-                        LIMIT 1
-                    ),
-                    budgeted AS (
-                        SELECT COALESCE(SUM(rev."BudgetedAmount"), 0) AS "TotalBudgeted"
-                        FROM "BudgetLines" bl
-                        JOIN active_period ap ON true
-                        LEFT JOIN LATERAL (
-                            SELECT r."BudgetedAmount"
-                            FROM "BudgetLineRevisions" r
-                            WHERE r."BudgetLineId" = bl."Id"
-                              AND r."ValidFrom"::date <= ap."PeriodStart"
-                              AND (r."ValidTo" IS NULL OR r."ValidTo"::date >= ap."PeriodStart")
+                            cba."CutRecordId",
+                            COALESCE(SUM(cba."BalanceInPrimary") FILTER (WHERE cba."IsPositive"), 0)     AS "Pos",
+                            COALESCE(SUM(cba."BalanceInPrimary") FILTER (WHERE NOT cba."IsPositive"), 0) AS "Neg"
+                        FROM "CutBankAccounts" cba
+                        GROUP BY cba."CutRecordId"
+                    ) a ON a."CutRecordId" = src."Id"
+                    LEFT JOIN LATERAL (
+                        WITH active_period AS (
+                            SELECT
+                                p."Id"                 AS "PeriodId",
+                                p."StartDate"          AS "PeriodStart",
+                                p."EndDate"            AS "PeriodEnd",
+                                cy."DefaultCurrencyId" AS "DefaultCurrencyId"
+                            FROM "Periods" p
+                            JOIN "Cycles" cy ON cy."Id" = p."CycleId"
+                            WHERE cy."BudgetId"  = src."BudgetId"
+                              AND cy."DeletedAt" IS NULL
+                              AND p."DeletedAt"  IS NULL
+                              AND p."IsClosed"   = false
+                              AND p."StartDate"  <= src."CutDate"
+                              AND p."EndDate"    >= src."CutDate"
                             LIMIT 1
-                        ) rev ON true
-                        WHERE bl."BudgetId"  = cr."BudgetId"
-                          AND bl."DeletedAt" IS NULL
-                          AND bl."StartDate"::date <= ap."PeriodEnd"
-                          AND (bl."EndDate" IS NULL OR bl."EndDate"::date >= ap."PeriodStart")
-                    ),
-                    registered AS (
-                        SELECT COALESCE(SUM(
-                            CASE
-                                WHEN e."EntryType" = 1 THEN
-                                    CASE WHEN e."CurrencyId" = ap."DefaultCurrencyId" OR e."ExchangeRate" IS NULL
-                                        THEN e."Amount" ELSE e."Amount" * e."ExchangeRate" END
-                                WHEN e."EntryType" = 3 THEN
-                                    CASE WHEN e."CurrencyId" = ap."DefaultCurrencyId" OR e."ExchangeRate" IS NULL
-                                        THEN e."Amount" ELSE e."Amount" * e."ExchangeRate" END
-                                WHEN e."EntryType" = 2 THEN
-                                    -(CASE WHEN e."CurrencyId" = ap."DefaultCurrencyId" OR e."ExchangeRate" IS NULL
-                                        THEN e."Amount" ELSE e."Amount" * e."ExchangeRate" END)
-                                ELSE 0
-                            END
-                        ), 0) AS "TotalRegistered"
-                        FROM "ExecutionRecords" e
-                        JOIN active_period ap ON ap."PeriodId" = e."PeriodId"
-                        WHERE e."BudgetId"  = cr."BudgetId"
-                          AND e."DeletedAt" IS NULL
-                    )
-                    SELECT
-                        b."TotalBudgeted",
-                        r."TotalRegistered",
-                        (b."TotalBudgeted" - r."TotalRegistered") AS "Remaining"
-                    FROM budgeted b
-                    CROSS JOIN registered r
-                ) ex ON true
-                WHERE cr."Id" = a."CutRecordId";
+                        ),
+                        budgeted AS (
+                            SELECT COALESCE(SUM(rev."BudgetedAmount"), 0) AS "TotalBudgeted"
+                            FROM "BudgetLines" bl
+                            JOIN active_period ap ON true
+                            LEFT JOIN LATERAL (
+                                SELECT r."BudgetedAmount"
+                                FROM "BudgetLineRevisions" r
+                                WHERE r."BudgetLineId" = bl."Id"
+                                  AND r."ValidFrom"::date <= ap."PeriodStart"
+                                  AND (r."ValidTo" IS NULL OR r."ValidTo"::date >= ap."PeriodStart")
+                                LIMIT 1
+                            ) rev ON true
+                            WHERE bl."BudgetId"  = src."BudgetId"
+                              AND bl."DeletedAt" IS NULL
+                              AND bl."StartDate"::date <= ap."PeriodEnd"
+                              AND (bl."EndDate" IS NULL OR bl."EndDate"::date >= ap."PeriodStart")
+                        ),
+                        registered AS (
+                            SELECT COALESCE(SUM(
+                                CASE
+                                    WHEN e."EntryType" = 1 THEN
+                                        CASE WHEN e."CurrencyId" = ap."DefaultCurrencyId" OR e."ExchangeRate" IS NULL
+                                            THEN e."Amount" ELSE e."Amount" * e."ExchangeRate" END
+                                    WHEN e."EntryType" = 3 THEN
+                                        CASE WHEN e."CurrencyId" = ap."DefaultCurrencyId" OR e."ExchangeRate" IS NULL
+                                            THEN e."Amount" ELSE e."Amount" * e."ExchangeRate" END
+                                    WHEN e."EntryType" = 2 THEN
+                                        -(CASE WHEN e."CurrencyId" = ap."DefaultCurrencyId" OR e."ExchangeRate" IS NULL
+                                            THEN e."Amount" ELSE e."Amount" * e."ExchangeRate" END)
+                                    ELSE 0
+                                END
+                            ), 0) AS "TotalRegistered"
+                            FROM "ExecutionRecords" e
+                            JOIN active_period ap ON ap."PeriodId" = e."PeriodId"
+                            WHERE e."BudgetId"  = src."BudgetId"
+                              AND e."DeletedAt" IS NULL
+                        )
+                        SELECT
+                            b."TotalBudgeted",
+                            r."TotalRegistered",
+                            (b."TotalBudgeted" - r."TotalRegistered") AS "Remaining"
+                        FROM budgeted b
+                        CROSS JOIN registered r
+                    ) ex ON true
+                ) x
+                WHERE cr."Id" = x."CutRecordId";
 
                 -- Cuts with no CutBankAccounts rows never matched the join above; zero-fill them.
                 UPDATE "CutRecords" SET

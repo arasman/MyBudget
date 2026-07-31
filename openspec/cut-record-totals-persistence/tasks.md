@@ -51,15 +51,15 @@ Chain strategy: feature-branch-chain
 
 ## Phase 4: Backend Tests
 
-- [ ] 4.1 Unit test `MyBudget.Features.Tests/Features/CurrentSituation/CutTotalsCalculatorTests.cs` — CS-6 table case (500/200/300 → 500/200/500); zero-exchange-rate guard; rounding half-away-from-zero on >2-decimal inputs; empty rows → `CutTotals.Zero`. Satisfies: CS-6
-- [ ] 4.2 Delete `MyBudget.Features.Tests/Features/CurrentSituation/CutTotalsComputationTests.cs` — superseded by 4.1; its inline re-implementation duplicated arithmetic now centralized in `CutTotalsCalculator`
-- [ ] 4.3 Extend `MyBudget.Integration.Tests/Features/CurrentSituation/CutRecordIntegrationTests.cs` — persisted totals equal freshly computed totals at save time. Satisfies: CS-6 "Totals computed correctly at save time"
-- [ ] 4.4 Extend `CutRecordIntegrationTests.cs` — editing bank account balances or execution records after save does not change the saved cut's persisted totals. Satisfies: CS-6 "Snapshot unaffected by later data changes"
-- [ ] 4.5 Extend `CutRecordIntegrationTests.cs` — re-save overwrites all 16 persisted totals. Satisfies: CS-1 "Re-save overwrites all 16 totals"
-- [ ] 4.6 Extend `CutRecordIntegrationTests.cs` — PUT body with client-submitted total fields is ignored; server-computed values persisted instead. Satisfies: CS-1 "Client-submitted totals ignored"
-- [ ] 4.7 Extend `CutRecordIntegrationTests.cs` — GET for an existing cut returns the 16 stored columns verbatim without re-running the aggregation/CTE. Satisfies: CS-2 "Existing cut returns persisted totals verbatim"
-- [ ] 4.8 Extend `CutRecordIntegrationTests.cs` — draft GET (no persisted cut) still computes all 8 total concepts live. Satisfies: CS-2 "Draft computes all 8 total concepts live"
-- [ ] 4.9 Extend `CutRecordIntegrationTests.cs`/`CurrentSituationTestBase.cs` — pre-seed rows with no persisted totals, run the migration, assert backfilled values equal pre-change `GetCutRecord` output; assert all 16 columns non-null post-migration. Satisfies: CS-9 (both scenarios)
+- [x] 4.1 Unit test `MyBudget.Features.Tests/Features/CurrentSituation/CutTotalsCalculatorTests.cs` — CS-6 table case (500/200/300 → 500/200/500); zero-exchange-rate guard; rounding half-away-from-zero on >2-decimal inputs; empty rows → `CutTotals.Zero`. Satisfies: CS-6
+- [x] 4.2 Delete `MyBudget.Features.Tests/Features/CurrentSituation/CutTotalsComputationTests.cs` — superseded by 4.1; its inline re-implementation duplicated arithmetic now centralized in `CutTotalsCalculator`
+- [x] 4.3 Extend `MyBudget.Integration.Tests/Features/CurrentSituation/CutRecordIntegrationTests.cs` — persisted totals equal freshly computed totals at save time. Satisfies: CS-6 "Totals computed correctly at save time"
+- [x] 4.4 Extend `CutRecordIntegrationTests.cs` — editing bank account balances or execution records after save does not change the saved cut's persisted totals. Satisfies: CS-6 "Snapshot unaffected by later data changes"
+- [x] 4.5 Extend `CutRecordIntegrationTests.cs` — re-save overwrites all 16 persisted totals. Satisfies: CS-1 "Re-save overwrites all 16 totals"
+- [x] 4.6 Extend `CutRecordIntegrationTests.cs` — PUT body with client-submitted total fields is ignored; server-computed values persisted instead. Satisfies: CS-1 "Client-submitted totals ignored"
+- [x] 4.7 Extend `CutRecordIntegrationTests.cs` — GET for an existing cut returns the 16 stored columns verbatim without re-running the aggregation/CTE. Satisfies: CS-2 "Existing cut returns persisted totals verbatim"
+- [x] 4.8 Extend `CutRecordIntegrationTests.cs` — draft GET (no persisted cut) still computes all 8 total concepts live. Satisfies: CS-2 "Draft computes all 8 total concepts live"
+- [x] 4.9 Extend `CutRecordIntegrationTests.cs`/`CurrentSituationTestBase.cs` — pre-seed rows with no persisted totals, run the migration, assert backfilled values equal pre-change `GetCutRecord` output; assert all 16 columns non-null post-migration. Satisfies: CS-9 (both scenarios)
 
 ---
 
