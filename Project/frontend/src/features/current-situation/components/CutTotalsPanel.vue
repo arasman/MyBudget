@@ -72,6 +72,9 @@
         </tr>
       </tbody>
     </table>
+    <p class="text-xs text-base-content/40 mt-3">
+      {{ t('currentSituation.totals.snapshotNotice') }}
+    </p>
   </div>
 </template>
 
