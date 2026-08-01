@@ -207,3 +207,52 @@ describe('i18n locale keys — dashboard lifetime/band widgets (DASH-2/3/7/9)', 
     expect(es.dashboard.band.insufficientData.description.length).toBeGreaterThan(0)
   })
 })
+
+// dashboard (DASH-4/DASH-5/DASH-6/DASH-9/DASH-10/DASH-12, PR6): BudgetLine
+// per-period widget, BudgetLine multi-select, within-cycle/cross-cycle mode
+// switch labels, and the safety-critical currency-mismatch warning copy.
+describe('i18n locale keys — dashboard BudgetLine series + currency-mismatch guard (DASH-4/5/6/12)', () => {
+  it('en.json and es.json contain dashboard.lineSeries.title/axisLabel', () => {
+    expect(en.dashboard.lineSeries.title.length).toBeGreaterThan(0)
+    expect(en.dashboard.lineSeries.axisLabel.length).toBeGreaterThan(0)
+    expect(es.dashboard.lineSeries.title.length).toBeGreaterThan(0)
+    expect(es.dashboard.lineSeries.axisLabel.length).toBeGreaterThan(0)
+  })
+
+  const linePickerKeys = ['title', 'selectAll', 'clearAll'] as const
+
+  it.each(linePickerKeys)('en.json contains dashboard.linePicker.%s', (key) => {
+    expect(en.dashboard.linePicker).toHaveProperty(key)
+    expect(typeof en.dashboard.linePicker[key]).toBe('string')
+    expect(en.dashboard.linePicker[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(linePickerKeys)('es.json contains dashboard.linePicker.%s', (key) => {
+    expect(es.dashboard.linePicker).toHaveProperty(key)
+    expect(typeof es.dashboard.linePicker[key]).toBe('string')
+    expect(es.dashboard.linePicker[key].length).toBeGreaterThan(0)
+  })
+
+  const comparisonModeKeys = ['withinCycle', 'crossCycle', 'cycleLabel', 'periodsLabel', 'cyclesLabel'] as const
+
+  it.each(comparisonModeKeys)('en.json contains dashboard.comparisonMode.%s', (key) => {
+    expect(en.dashboard.comparisonMode).toHaveProperty(key)
+    expect(typeof en.dashboard.comparisonMode[key]).toBe('string')
+    expect(en.dashboard.comparisonMode[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(comparisonModeKeys)('es.json contains dashboard.comparisonMode.%s', (key) => {
+    expect(es.dashboard.comparisonMode).toHaveProperty(key)
+    expect(typeof es.dashboard.comparisonMode[key]).toBe('string')
+    expect(es.dashboard.comparisonMode[key].length).toBeGreaterThan(0)
+  })
+
+  // DASH-12 is safety-critical copy: it must exist, be non-empty, and be a
+  // clear explanatory message (not a bare generic error string) in both locales.
+  it('en.json and es.json contain a clear dashboard.currencyMismatch.title/description', () => {
+    expect(en.dashboard.currencyMismatch.title.length).toBeGreaterThan(0)
+    expect(en.dashboard.currencyMismatch.description.length).toBeGreaterThan(10)
+    expect(es.dashboard.currencyMismatch.title.length).toBeGreaterThan(0)
+    expect(es.dashboard.currencyMismatch.description.length).toBeGreaterThan(10)
+  })
+})

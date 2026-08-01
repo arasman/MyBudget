@@ -1,5 +1,5 @@
 import type { ChartSeriesInput } from '../components/BaseChart.vue'
-import type { CutTotalsPoint, PeriodAverage, TotalsBand, TotalKey } from '../types/dashboard'
+import type { CutTotalsPoint, PeriodAverage, TotalsBand, TotalKey, BudgetLineSeriesRow, PeriodSeries } from '../types/dashboard'
 
 /**
  * DASH-1/DASH-11: raw per-cut lifetime series → BaseChart-ready datasets.
@@ -82,6 +82,52 @@ export function buildBandChartSeries(
       borderColor: color,
       backgroundColor: color,
       pointRadius: 2,
+      fill: false,
+    })
+  })
+
+  return result
+}
+
+/**
+ * DASH-4/5/6: per-BudgetLine per-Period series. `periods` MUST be the exact
+ * period order the caller wants plotted on the x-axis (already resolved for
+ * within-cycle or cross-cycle mode by `resolvePeriodIds` — this function
+ * does not know or care which mode produced it). Per spec DASH-5 ("budgeted/
+ * registered values are returned side by side"), each selected BudgetLine
+ * gets 2 datasets: budgeted and net/registered. A period with no row for a
+ * given line (e.g. the line didn't exist yet in that period) plots as 0,
+ * NOT a gap — BudgetLine identity is stable across cycles (DASH-4), so a
+ * missing row means "zero activity that period", not "unmatched line".
+ */
+export function buildLineSeries(
+  rows: BudgetLineSeriesRow[],
+  periods: PeriodSeries[],
+  selectedLineIds: string[],
+  palette: string[],
+): ChartSeriesInput[] {
+  const result: ChartSeriesInput[] = []
+
+  selectedLineIds.forEach((lineId, index) => {
+    const lineRows = rows.filter((r) => r.budgetLineId === lineId)
+    const name = lineRows[0]?.budgetLineName ?? lineId
+    const color = palette[index % palette.length] ?? '#3b82f6'
+    const byPeriod = new Map(lineRows.map((r) => [r.periodId, r]))
+
+    result.push({
+      key: `${lineId}:budgeted`,
+      label: `${name} (budgeted)`,
+      data: periods.map((p) => byPeriod.get(p.periodId)?.budgetedAmount ?? 0),
+      borderColor: color,
+      backgroundColor: color,
+      fill: false,
+    })
+    result.push({
+      key: `${lineId}:net`,
+      label: `${name} (net)`,
+      data: periods.map((p) => byPeriod.get(p.periodId)?.netTotal ?? 0),
+      borderColor: withAlpha(color, 0.5),
+      backgroundColor: withAlpha(color, 0.5),
       fill: false,
     })
   })

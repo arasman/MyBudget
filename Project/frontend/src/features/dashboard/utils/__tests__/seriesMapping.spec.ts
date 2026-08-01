@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { buildLifetimeSeries, buildBandChartSeries, withAlpha } from '../seriesMapping'
-import type { CutTotalsPoint, PeriodAverage, TotalsBand, TotalKey } from '../../types/dashboard'
+import { buildLifetimeSeries, buildBandChartSeries, buildLineSeries, withAlpha } from '../seriesMapping'
+import type { CutTotalsPoint, PeriodAverage, TotalsBand, TotalKey, BudgetLineSeriesRow, PeriodSeries } from '../../types/dashboard'
 
 const KEYS: TotalKey[] = ['totalNet', 'totalAvailable']
 
@@ -180,5 +180,57 @@ describe('buildBandChartSeries (DASH-2/3/11)', () => {
     const availableAvg = result.find((d) => d.key === 'totalAvailable:avg')!
     expect(netAvg.borderColor).toBe('#3b82f6')
     expect(availableAvg.borderColor).toBe('#ec4899')
+  })
+})
+
+describe('buildLineSeries (DASH-4/5/6)', () => {
+  function periods(): PeriodSeries[] {
+    return [
+      { periodId: 'p1', cycleId: 'c1', periodStart: '2026-01-01', defaultCurrencyId: 'usd' },
+      { periodId: 'p2', cycleId: 'c1', periodStart: '2026-02-01', defaultCurrencyId: 'usd' },
+    ]
+  }
+
+  function rows(): BudgetLineSeriesRow[] {
+    return [
+      { budgetLineId: 'l1', budgetLineName: 'Groceries', periodId: 'p1', budgetedAmount: 100, netTotal: 80 },
+      { budgetLineId: 'l1', budgetLineName: 'Groceries', periodId: 'p2', budgetedAmount: 100, netTotal: 90 },
+      { budgetLineId: 'l2', budgetLineName: 'Rent', periodId: 'p1', budgetedAmount: 500, netTotal: 500 },
+      { budgetLineId: 'l2', budgetLineName: 'Rent', periodId: 'p2', budgetedAmount: 500, netTotal: 500 },
+    ]
+  }
+
+  it('produces 2 datasets per selected BudgetLine — budgeted and net — in period order', () => {
+    const result = buildLineSeries(rows(), periods(), ['l1'], ['#3b82f6'])
+
+    expect(result).toHaveLength(2)
+    expect(result[0]).toMatchObject({ key: 'l1:budgeted', label: 'Groceries (budgeted)', data: [100, 100] })
+    expect(result[1]).toMatchObject({ key: 'l1:net', label: 'Groceries (net)', data: [80, 90] })
+  })
+
+  it('maps multiple selected BudgetLines independently, each with its own name and color', () => {
+    const result = buildLineSeries(rows(), periods(), ['l1', 'l2'], ['#3b82f6', '#ec4899'])
+
+    const l1Budgeted = result.find((d) => d.key === 'l1:budgeted')!
+    const l2Budgeted = result.find((d) => d.key === 'l2:budgeted')!
+    expect(l1Budgeted.borderColor).toBe('#3b82f6')
+    expect(l2Budgeted.label).toBe('Rent (budgeted)')
+    expect(l2Budgeted.data).toEqual([500, 500])
+    expect(l2Budgeted.borderColor).toBe('#ec4899')
+  })
+
+  it('fills 0 for a period a selected BudgetLine has no row for', () => {
+    const sparseRows = rows().filter((r) => !(r.budgetLineId === 'l1' && r.periodId === 'p2'))
+
+    const result = buildLineSeries(sparseRows, periods(), ['l1'], ['#3b82f6'])
+
+    const budgeted = result.find((d) => d.key === 'l1:budgeted')!
+    expect(budgeted.data).toEqual([100, 0])
+  })
+
+  it('returns an empty array when no BudgetLine is selected', () => {
+    const result = buildLineSeries(rows(), periods(), [], ['#3b82f6'])
+
+    expect(result).toEqual([])
   })
 })

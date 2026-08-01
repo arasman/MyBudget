@@ -612,6 +612,26 @@
         "title": "Aún no hay suficiente historial",
         "description": "Se necesitan al menos 2 períodos con registros de corte para mostrar la banda de comportamiento promedio. Seguí registrando cortes para desbloquear este gráfico."
       }
+    },
+    "lineSeries": {
+      "title": "Comportamiento de Líneas Presupuestarias",
+      "axisLabel": "Monto"
+    },
+    "linePicker": {
+      "title": "Líneas Presupuestarias",
+      "selectAll": "Seleccionar todo",
+      "clearAll": "Deseleccionar todo"
+    },
+    "comparisonMode": {
+      "withinCycle": "Dentro del ciclo",
+      "crossCycle": "Entre ciclos",
+      "cycleLabel": "Ciclo",
+      "periodsLabel": "Períodos",
+      "cyclesLabel": "Ciclos"
+    },
+    "currencyMismatch": {
+      "title": "Monedas distintas",
+      "description": "Estas líneas pertenecen a ciclos con monedas distintas — no se pueden comparar en un mismo gráfico."
     }
   },
   "enums": {

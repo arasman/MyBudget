@@ -64,9 +64,9 @@ Chain strategy: feature-branch-chain
 
 ## Phase 6 (PR6): BudgetLine Widgets (DASH-4,5,6,12)
 
-- [ ] 6.1 RED→GREEN: `BudgetLineSeriesChart.vue` — "transaction-time rate" label (DASH-9)
-- [ ] 6.2 RED→GREEN: `ComparisonModeSwitch.vue` — within-cycle vs cross-cycle period resolution
-- [ ] 6.3 RED→GREEN: currency-mismatch guard — differing `defaultCurrencyId` warns, never one blended-axis chart (DASH-12)
+- [x] 6.1 RED→GREEN: `BudgetLineSeriesChart.vue` — "transaction-time rate" label (DASH-9)
+- [x] 6.2 RED→GREEN: `ComparisonModeSwitch.vue` — within-cycle vs cross-cycle period resolution
+- [x] 6.3 RED→GREEN: currency-mismatch guard — differing `defaultCurrencyId` warns, never one blended-axis chart (DASH-12)
 
 ## Phase 7 (PR7): Assembly, i18n, E2E (DASH-7,8,10)
 

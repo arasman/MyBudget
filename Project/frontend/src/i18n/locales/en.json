@@ -612,6 +612,26 @@
         "title": "Not enough history yet",
         "description": "At least 2 periods with cut records are needed to show the average behavior band. Keep recording cuts to unlock this chart."
       }
+    },
+    "lineSeries": {
+      "title": "Budget Line Behavior",
+      "axisLabel": "Amount"
+    },
+    "linePicker": {
+      "title": "Budget Lines",
+      "selectAll": "Select all",
+      "clearAll": "Clear all"
+    },
+    "comparisonMode": {
+      "withinCycle": "Within cycle",
+      "crossCycle": "Cross-cycle",
+      "cycleLabel": "Cycle",
+      "periodsLabel": "Periods",
+      "cyclesLabel": "Cycles"
+    },
+    "currencyMismatch": {
+      "title": "Currency mismatch",
+      "description": "These lines belong to Cycles with different currencies — they cannot be compared on the same chart."
     }
   },
   "enums": {
