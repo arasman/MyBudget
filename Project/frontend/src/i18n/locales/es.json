@@ -632,7 +632,9 @@
     "currencyMismatch": {
       "title": "Monedas distintas",
       "description": "Estas líneas pertenecen a ciclos con monedas distintas — no se pueden comparar en un mismo gráfico."
-    }
+    },
+    "title": "Panel",
+    "tabTitle": "Panel"
   },
   "enums": {
     "periodStatus": {

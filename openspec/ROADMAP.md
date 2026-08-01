@@ -581,14 +581,21 @@ pnpm exec playwright test
 
 ---
 
-### 11. `dashboard` ⏳ planned
+### 11. `dashboard` 🚧 PR7/7 pending merge
 
-**What**: Key charts and summary KPIs for the budget.
+**What**: Read-only trend and comparison views over persisted `CutRecord` totals and `ExecutionRecord`/`BudgetLine` data. Fuses this entry with the former `extended-charts` MVP B item — cross-cycle/period comparisons are delivered here, not deferred.
 
-**Scope in** *(requires exploration)*:
-- 2–3 key charts: income vs budgeted vs executed; breakdown by category; period totals over time
-- Mostly frontend (Vue + chart library); backend may need aggregate query endpoints
-- May depend on `cut-record-totals-persistence` for historical snapshots
+**Delivered** (7-PR chain off `feat/dashboard`, PR7 = assembly/i18n/E2E, awaiting merge to `main`):
+- Lifetime `CutRecord` totals series (16 concepts, primary+alt) with a series-picker widget (DASH-1, DASH-7).
+- Lifetime average band (period-averaged MIN/MAX/AVG deviation), with an explicit insufficient-history empty state for 0-1 cuts (DASH-2, DASH-3, DASH-11).
+- BudgetLine per-period series: cross-cycle by `BudgetLineId` identity, period-vs-period within a cycle, and cycle-vs-cycle comparison, with a currency-mismatch guard (DASH-4, DASH-5, DASH-6, DASH-12).
+- Conversion-basis labeling (cut-frozen vs transaction-time, never blended), 4-role read access, ES/EN i18n, mobile-responsive layout (DASH-8, DASH-9, DASH-10).
+- Route `budgets/:budgetId/dashboard`, `BudgetTabs` entry, `DashboardView.vue` assembly.
+
+**Explicitly deferred** (not in this change, design.md Decision 1 — confirm before re-marking this entry fully complete at archive):
+- Last-cut summary KPI tiles (rejected as the default landing view in favor of the lifetime trend; may return later as an additional widget, not a replacement).
+- Chart export (PDF/CSV/image).
+- `projects` / `commitments` / `installments` / savings-goal analytics — none of those entities exist yet.
 
 ---
 
@@ -625,14 +632,6 @@ pnpm exec playwright test
 **What**: Data import/export for migration from Excel and backup.
 
 **Scope**: CSV/XLSX import for budget lines; full budget export; possibly Excel template generation matching the owner's current sheets.
-
----
-
-### `extended-charts` 🔮
-
-**What**: Advanced analytics beyond the MVP A dashboard.
-
-**Scope**: Projects chart, debts chart, cross-cycle/period comparisons, savings goal progress.
 
 ---
 

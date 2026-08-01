@@ -58,6 +58,15 @@
       >
         {{ t('currentSituation.tabTitle') }}
       </RouterLink>
+      <RouterLink
+        :to="{ name: 'Dashboard', params: { budgetId } }"
+        role="tab"
+        class="tab"
+        :class="{ 'tab-active': isActive('Dashboard') }"
+        :aria-selected="isActive('Dashboard')"
+      >
+        {{ t('dashboard.tabTitle') }}
+      </RouterLink>
     </div>
   </div>
 </template>
@@ -82,9 +91,17 @@ const BUDGET_LINES_ROUTE_NAMES = new Set(['BudgetLines', 'BudgetLineCustomizatio
 const MATRIX_ROUTE_NAMES = new Set(['BudgetMatrix'])
 const CURRENT_SITUATION_ROUTE_NAMES = new Set(['CurrentSituation'])
 const BANK_ACCOUNTS_ROUTE_NAMES = new Set(['BankAccounts'])
+const DASHBOARD_ROUTE_NAMES = new Set(['Dashboard'])
 
 function isActive(
-  tab: 'CycleList' | 'CategoryTree' | 'BudgetLines' | 'BudgetMatrix' | 'BankAccounts' | 'CurrentSituation',
+  tab:
+    | 'CycleList'
+    | 'CategoryTree'
+    | 'BudgetLines'
+    | 'BudgetMatrix'
+    | 'BankAccounts'
+    | 'CurrentSituation'
+    | 'Dashboard',
 ): boolean {
   const name = route.name as string | undefined
   if (!name) return false
@@ -93,6 +110,7 @@ function isActive(
   if (tab === 'BudgetLines') return BUDGET_LINES_ROUTE_NAMES.has(name)
   if (tab === 'BankAccounts') return BANK_ACCOUNTS_ROUTE_NAMES.has(name)
   if (tab === 'CurrentSituation') return CURRENT_SITUATION_ROUTE_NAMES.has(name)
+  if (tab === 'Dashboard') return DASHBOARD_ROUTE_NAMES.has(name)
   return MATRIX_ROUTE_NAMES.has(name)
 }
 </script>

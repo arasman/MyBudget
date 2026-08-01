@@ -256,3 +256,14 @@ describe('i18n locale keys — dashboard BudgetLine series + currency-mismatch g
     expect(es.dashboard.currencyMismatch.description.length).toBeGreaterThan(10)
   })
 })
+
+// dashboard (DASH-7/DASH-10, PR7): page-level assembly copy — the
+// DashboardView heading and the BudgetTabs nav entry label.
+describe('i18n locale keys — dashboard page assembly (DASH-7/10)', () => {
+  it('en.json and es.json contain dashboard.title/tabTitle', () => {
+    expect(en.dashboard.title.length).toBeGreaterThan(0)
+    expect(en.dashboard.tabTitle.length).toBeGreaterThan(0)
+    expect(es.dashboard.title.length).toBeGreaterThan(0)
+    expect(es.dashboard.tabTitle.length).toBeGreaterThan(0)
+  })
+})

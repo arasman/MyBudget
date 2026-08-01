@@ -70,12 +70,12 @@ Chain strategy: feature-branch-chain
 
 ## Phase 7 (PR7): Assembly, i18n, E2E (DASH-7,8,10)
 
-- [ ] 7.1 `DashboardView.vue` — lifetime view default on load (DASH-7)
-- [ ] 7.2 `router/index.ts` — lazy route `budgets/:budgetId/dashboard`
-- [ ] 7.3 `BudgetTabs.vue` — add Dashboard tab
-- [ ] 7.4 `i18n/locales/{en,es}.json` — `dashboard.*` keys; extend `locales.spec.ts` (DASH-10)
-- [ ] 7.5 Responsive layout: mobile-first single column, `lg:grid-cols-12`
-- [ ] 7.6 E2E: default load, series-picker updates chart, mode switch, insufficient-data state
-- [ ] 7.7 E2E: role matrix — 4 roles view, no-role denied (DASH-8)
-- [ ] 7.8 E2E: cycle-vs-cycle mismatched currency warns, no blended chart (DASH-12)
-- [ ] 7.9 Update `openspec/ROADMAP.md` — fuse `11. dashboard` + `extended-charts`
+- [x] 7.1 `DashboardView.vue` — lifetime view default on load (DASH-7)
+- [x] 7.2 `router/index.ts` — lazy route `budgets/:budgetId/dashboard`
+- [x] 7.3 `BudgetTabs.vue` — add Dashboard tab
+- [x] 7.4 `i18n/locales/{en,es}.json` — `dashboard.*` keys; extend `locales.spec.ts` (DASH-10)
+- [x] 7.5 Responsive layout: mobile-first single column, `lg:grid-cols-12`
+- [x] 7.6 E2E: default load, series-picker updates chart, mode switch, insufficient-data state
+- [x] 7.7 E2E: role matrix — 4 roles view, no-role denied (DASH-8)
+- [x] 7.8 E2E: cycle-vs-cycle mismatched currency warns, no blended chart (DASH-12)
+- [x] 7.9 Update `openspec/ROADMAP.md` — fuse `11. dashboard` + `extended-charts`

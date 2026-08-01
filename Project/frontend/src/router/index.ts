@@ -77,6 +77,12 @@ const routes: RouteRecordRaw[] = [
             component: () =>
               import('@/features/current-situation/views/CurrentSituationView.vue'),
           },
+          {
+            path: 'dashboard',
+            name: 'Dashboard',
+            component: () =>
+              import('@/features/dashboard/views/DashboardView.vue'),
+          },
         ],
       },
     ],

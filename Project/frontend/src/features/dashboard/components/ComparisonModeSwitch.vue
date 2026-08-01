@@ -139,4 +139,19 @@ watch(
     emitResolved()
   },
 )
+
+// The caller (BudgetLineSeriesChart.vue) mounts this component before its
+// `useCycleOptions().load()` resolves — `cycles` starts as `[]` and arrives
+// later. `selectedCycleId` is initialized once from `props.cycles[0]` at
+// setup time, which is empty on that first render, so it must be recovered
+// once real cycles arrive. Only auto-picks when nothing is selected yet, so
+// it never clobbers a cycle the user already chose from the dropdown.
+watch(
+  () => props.cycles,
+  (newCycles) => {
+    if (selectedCycleId.value === null && newCycles.length > 0) {
+      selectedCycleId.value = newCycles[0]!.id
+    }
+  },
+)
 </script>

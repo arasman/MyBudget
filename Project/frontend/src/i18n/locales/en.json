@@ -632,7 +632,9 @@
     "currencyMismatch": {
       "title": "Currency mismatch",
       "description": "These lines belong to Cycles with different currencies — they cannot be compared on the same chart."
-    }
+    },
+    "title": "Dashboard",
+    "tabTitle": "Dashboard"
   },
   "enums": {
     "periodStatus": {

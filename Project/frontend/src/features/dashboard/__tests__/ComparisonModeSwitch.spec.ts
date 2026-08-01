@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/vue'
+import { nextTick } from 'vue'
 import type { CycleOption } from '../composables/useCycleOptions'
 
 vi.mock('vue-i18n', () => ({
@@ -99,5 +100,23 @@ describe('ComparisonModeSwitch (DASH-5/DASH-6)', () => {
 
     const calls = emitted()['update:selectedPeriodIds'] as unknown as unknown[][]
     expect(calls.at(-1)![0]).toEqual(['p1', 'p2', 'p3'])
+  })
+
+  // BudgetLineSeriesChart.vue mounts ComparisonModeSwitch with `cycles={[]}`
+  // (useCycleOptions().load() is async, still in flight at mount) — the real
+  // app never renders this component with data already present at setup
+  // time like every test above. selectedCycleId must recover once the
+  // cycles prop actually arrives, or within-cycle mode is permanently
+  // unusable in production (no period list ever renders).
+  it('within-cycle mode: picks the first cycle once cycles arrive asynchronously after mount', async () => {
+    const { rerender } = render(ComparisonModeSwitch, { props: { cycles: [], mode: 'within-cycle' } })
+
+    expect(screen.queryByLabelText('Period 1')).toBeNull()
+
+    await rerender({ cycles: cycles(), mode: 'within-cycle' })
+    await nextTick()
+
+    expect(screen.getByLabelText('Period 1')).not.toBeNull()
+    expect(screen.getByLabelText('Period 2')).not.toBeNull()
   })
 })
