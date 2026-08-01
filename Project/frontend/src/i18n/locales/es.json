@@ -569,6 +569,16 @@
     "saveSuccess": "Corte guardado",
     "deleteSuccess": "Corte eliminado"
   },
+  "dashboard": {
+    "conversionBasis": {
+      "cutFrozen": "Tipo de cambio congelado al corte",
+      "transactionTime": "Tipo de cambio al momento de la transacción"
+    },
+    "chart": {
+      "loading": "Cargando gráfico...",
+      "empty": "No hay datos para mostrar"
+    }
+  },
   "enums": {
     "periodStatus": {
       "open": "Abierto",

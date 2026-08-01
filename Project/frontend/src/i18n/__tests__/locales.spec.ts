@@ -107,3 +107,35 @@ describe('i18n locale keys — current-situation totals snapshot notice (cut-rec
     expect(es.currentSituation.totals.snapshotNotice.length).toBeGreaterThan(0)
   })
 })
+
+// dashboard (DASH-9/DASH-10): conversion-basis captions and generic chart
+// loading/empty states must exist in both locales as soon as BaseChart.vue
+// introduces them (PR4), not deferred to the PR7 assembly i18n task.
+describe('i18n locale keys — dashboard conversion-basis captions and chart states (DASH-9/DASH-10)', () => {
+  const conversionBasisKeys = ['cutFrozen', 'transactionTime'] as const
+  const chartKeys = ['loading', 'empty'] as const
+
+  it.each(conversionBasisKeys)('en.json contains dashboard.conversionBasis.%s', (key) => {
+    expect(en.dashboard.conversionBasis).toHaveProperty(key)
+    expect(typeof en.dashboard.conversionBasis[key]).toBe('string')
+    expect(en.dashboard.conversionBasis[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(conversionBasisKeys)('es.json contains dashboard.conversionBasis.%s', (key) => {
+    expect(es.dashboard.conversionBasis).toHaveProperty(key)
+    expect(typeof es.dashboard.conversionBasis[key]).toBe('string')
+    expect(es.dashboard.conversionBasis[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(chartKeys)('en.json contains dashboard.chart.%s', (key) => {
+    expect(en.dashboard.chart).toHaveProperty(key)
+    expect(typeof en.dashboard.chart[key]).toBe('string')
+    expect(en.dashboard.chart[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(chartKeys)('es.json contains dashboard.chart.%s', (key) => {
+    expect(es.dashboard.chart).toHaveProperty(key)
+    expect(typeof es.dashboard.chart[key]).toBe('string')
+    expect(es.dashboard.chart[key].length).toBeGreaterThan(0)
+  })
+})

@@ -569,6 +569,16 @@
       "noActivePeriod": "No active budget period covers this cut date. Please check your cycle and period setup before saving."
     }
   },
+  "dashboard": {
+    "conversionBasis": {
+      "cutFrozen": "Cut-frozen rate",
+      "transactionTime": "Transaction-time rate"
+    },
+    "chart": {
+      "loading": "Loading chart...",
+      "empty": "No data to display"
+    }
+  },
   "enums": {
     "periodStatus": {
       "open": "Open",

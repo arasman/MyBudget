@@ -47,12 +47,12 @@ Chain strategy: feature-branch-chain
 
 ## Phase 4 (PR4): Frontend Foundation
 
-- [ ] 4.1 Add `chart.js` + `vue-chartjs` to `package.json`
-- [ ] 4.2 `types/dashboard.ts` + Zod schemas for 3 DTOs incl. `conversionBasis`, `defaultCurrencyId`
-- [ ] 4.3 `api/dashboardApi.ts` — 3 GET calls, `base(budgetId)` helper
-- [ ] 4.4 RED→GREEN: `useDashboardStore` actions, per-request loading/error
-- [ ] 4.5 RED→GREEN: `BaseChart.vue` prop→dataset mapping, mandatory `conversionBasis` caption (DASH-9)
-- [ ] 4.6 `useChartTheme` composable — DaisyUI vars → Chart.js colors
+- [x] 4.1 Add `chart.js` + `vue-chartjs` to `package.json`
+- [x] 4.2 `types/dashboard.ts` + Zod schemas for 3 DTOs incl. `conversionBasis`, `defaultCurrencyId`
+- [x] 4.3 `api/dashboardApi.ts` — 3 GET calls, `base(budgetId)` helper
+- [x] 4.4 RED→GREEN: `useDashboardStore` actions, per-request loading/error
+- [x] 4.5 RED→GREEN: `BaseChart.vue` prop→dataset mapping, mandatory `conversionBasis` caption (DASH-9)
+- [x] 4.6 `useChartTheme` composable — DaisyUI vars → Chart.js colors
 
 ## Phase 5 (PR5): Lifetime Widgets (DASH-2,3,7,9)
 
