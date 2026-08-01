@@ -187,4 +187,42 @@ public sealed class GetCutTotalsBandIntegrationTests : DashboardTestBase
         body!.PeriodCount.ShouldBe(1);
         body.Band.TotalPositive.Avg.ShouldBe(222m);
     }
+
+    // ── DASH-8: role-gating matrix (extends coverage from GetLifetimeCutTotals) ──
+
+    [Theory]
+    [InlineData("owner")]
+    [InlineData("admin")]
+    [InlineData("operator")]
+    [InlineData("read-only")]
+    public async Task GetCutTotalsBand_AllFourRoles_Return200(string role)
+    {
+        var (ownerToken, budgetId) = await SetupOwnerAsync($"dash-band-role-{role}-owner@example.com");
+
+        var token = role switch
+        {
+            "owner"     => ownerToken,
+            "admin"     => await SetupAdminAsync(budgetId, $"dash-band-role-{role}-member@example.com"),
+            "operator"  => await SetupOperatorAsync(budgetId, $"dash-band-role-{role}-member@example.com"),
+            "read-only" => await SetupViewerAsync(budgetId, $"dash-band-role-{role}-member@example.com"),
+            _           => throw new ArgumentOutOfRangeException(nameof(role)),
+        };
+        AuthorizeClient(token);
+
+        var response = await Client.GetAsync($"/api/budgets/{budgetId}/dashboard/cut-totals-band");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GetCutTotalsBand_NoRoleOnBudget_Returns403()
+    {
+        var (_, budgetId) = await SetupOwnerAsync("dash-band-role-noaccess-owner@example.com");
+        var outsiderLogin = await RegisterUserAsync("dash-band-role-noaccess-outsider@example.com");
+        AuthorizeClient(outsiderLogin.AccessToken);
+
+        var response = await Client.GetAsync($"/api/budgets/{budgetId}/dashboard/cut-totals-band");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
 }

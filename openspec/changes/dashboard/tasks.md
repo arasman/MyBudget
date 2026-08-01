@@ -41,9 +41,9 @@ Chain strategy: feature-branch-chain
 
 ## Phase 3 (PR3): Backend — BudgetLine Series (DASH-4,5,6,12)
 
-- [ ] 3.1 RED→GREEN: `GetBudgetLineSeries/{Query,Handler,Endpoint}.cs` — cross-cycle match by `BudgetLineId`, `ANY(@lineIds/@periodIds)`
-- [ ] 3.2 RED→GREEN: response includes `defaultCurrencyId` per period (DASH-12 contract)
-- [ ] 3.3 Integration: extend role matrix to all 3 endpoints (DASH-8)
+- [x] 3.1 RED→GREEN: `GetBudgetLineSeries/{Query,Handler,Endpoint}.cs` — cross-cycle match by `BudgetLineId`, `ANY(@lineIds/@periodIds)`
+- [x] 3.2 RED→GREEN: response includes `defaultCurrencyId` per period (DASH-12 contract)
+- [x] 3.3 Integration: extend role matrix to all 3 endpoints (DASH-8)
 
 ## Phase 4 (PR4): Frontend Foundation
 

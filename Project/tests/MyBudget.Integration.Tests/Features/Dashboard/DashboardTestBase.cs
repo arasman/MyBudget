@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MyBudget.Features.SharedKernel.Entities;
@@ -76,5 +77,44 @@ public abstract class DashboardTestBase : BudgetStructureTestBase
         await db.SaveChangesAsync();
 
         return cutRecord.Id;
+    }
+
+    // ── ExecutionRecord seeding (GetBudgetLineSeries — DASH-4/5/6/12 reads ExecutionRecords,
+    //    unlike the CutRecord-based lifetime/band slices above) ────────────────────────────
+
+    /// <summary>
+    /// Creates an ExecutionRecord of type Expense via the HTTP endpoint (same currency as
+    /// cycle default = no exchange rate unless overridden).
+    /// </summary>
+    protected async Task<Guid> CreateExecutionRecordAsync(
+        Guid      budgetId,
+        Guid      periodId,
+        Guid      lineId,
+        decimal   amount        = 100m,
+        int       entryType     = 1,    // 1=Expense, 2=CreditNote, 3=DebitNote
+        Guid?     currencyId    = null,
+        decimal?  exchangeRate  = null,
+        DateOnly? operationDate = null)
+    {
+        var opDate = operationDate ?? new DateOnly(2025, 1, 15);
+
+        var response = await Client.PostAsJsonAsync(
+            $"/api/budgets/{budgetId}/periods/{periodId}/budget-lines/{lineId}/executions",
+            new
+            {
+                entryType,
+                amount,
+                note            = "Dashboard test execution",
+                operationDate   = opDate,
+                currencyId      = currencyId ?? CurrencySeeds.GtqId,
+                exchangeRate,
+                exchangeRateTo  = (decimal?)null,
+                accountId       = (Guid?)null,
+                paymentMethodId = (Guid?)null,
+            });
+
+        response.EnsureSuccessStatusCode();
+        var body = await response.Content.ReadFromJsonAsync<IdResponse>(JsonOpts);
+        return body!.Id;
     }
 }

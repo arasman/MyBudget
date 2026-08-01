@@ -51,16 +51,17 @@ public abstract class BudgetStructureTestBase : IntegrationTestBase
 
     protected async Task<Guid> CreateCycleAsync(
         Guid     budgetId,
-        string   name      = "Cycle 2025",
-        DateOnly? start    = null,
-        DateOnly? end      = null)
+        string   name              = "Cycle 2025",
+        DateOnly? start            = null,
+        DateOnly? end              = null,
+        Guid?    defaultCurrencyId = null)
     {
         var s = start ?? new DateOnly(2025, 1, 1);
         var e = end   ?? new DateOnly(2025, 12, 31);
 
         var response = await Client.PostAsJsonAsync(
             $"/api/budgets/{budgetId}/cycles",
-            new { name, startDate = s, endDate = e, defaultCurrencyId = CurrencySeeds.GtqId });
+            new { name, startDate = s, endDate = e, defaultCurrencyId = defaultCurrencyId ?? CurrencySeeds.GtqId });
 
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadFromJsonAsync<IdResponse>(JsonOpts);
