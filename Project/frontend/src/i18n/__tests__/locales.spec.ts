@@ -139,3 +139,71 @@ describe('i18n locale keys — dashboard conversion-basis captions and chart sta
     expect(es.dashboard.chart[key].length).toBeGreaterThan(0)
   })
 })
+
+// dashboard (DASH-2/DASH-3/DASH-7/DASH-9/DASH-10, PR5): series-picker labels
+// for the 16 CutRecord total concepts, series-picker controls, and the
+// lifetime/band widget titles + insufficient-data empty state copy.
+describe('i18n locale keys — dashboard lifetime/band widgets (DASH-2/3/7/9)', () => {
+  const seriesKeys = [
+    'totalPositive',
+    'totalPositiveAlt',
+    'totalNegative',
+    'totalNegativeAlt',
+    'totalDeudaEnCurso',
+    'totalDeudaEnCursoAlt',
+    'totalBudgeted',
+    'totalBudgetedAlt',
+    'totalRegistered',
+    'totalRegisteredAlt',
+    'remaining',
+    'remainingAlt',
+    'totalAvailable',
+    'totalAvailableAlt',
+    'totalNet',
+    'totalNetAlt',
+  ] as const
+
+  it.each(seriesKeys)('en.json contains dashboard.series.%s', (key) => {
+    expect(en.dashboard.series).toHaveProperty(key)
+    expect(typeof en.dashboard.series[key]).toBe('string')
+    expect(en.dashboard.series[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(seriesKeys)('es.json contains dashboard.series.%s', (key) => {
+    expect(es.dashboard.series).toHaveProperty(key)
+    expect(typeof es.dashboard.series[key]).toBe('string')
+    expect(es.dashboard.series[key].length).toBeGreaterThan(0)
+  })
+
+  const seriesPickerKeys = ['title', 'selectAll', 'clearAll'] as const
+
+  it.each(seriesPickerKeys)('en.json contains dashboard.seriesPicker.%s', (key) => {
+    expect(en.dashboard.seriesPicker).toHaveProperty(key)
+    expect(typeof en.dashboard.seriesPicker[key]).toBe('string')
+    expect(en.dashboard.seriesPicker[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(seriesPickerKeys)('es.json contains dashboard.seriesPicker.%s', (key) => {
+    expect(es.dashboard.seriesPicker).toHaveProperty(key)
+    expect(typeof es.dashboard.seriesPicker[key]).toBe('string')
+    expect(es.dashboard.seriesPicker[key].length).toBeGreaterThan(0)
+  })
+
+  it('en.json and es.json contain dashboard.lifetime.title/axisLabel', () => {
+    expect(en.dashboard.lifetime.title.length).toBeGreaterThan(0)
+    expect(en.dashboard.lifetime.axisLabel.length).toBeGreaterThan(0)
+    expect(es.dashboard.lifetime.title.length).toBeGreaterThan(0)
+    expect(es.dashboard.lifetime.axisLabel.length).toBeGreaterThan(0)
+  })
+
+  it('en.json and es.json contain dashboard.band.title/axisLabel/insufficientData', () => {
+    expect(en.dashboard.band.title.length).toBeGreaterThan(0)
+    expect(en.dashboard.band.axisLabel.length).toBeGreaterThan(0)
+    expect(en.dashboard.band.insufficientData.title.length).toBeGreaterThan(0)
+    expect(en.dashboard.band.insufficientData.description.length).toBeGreaterThan(0)
+    expect(es.dashboard.band.title.length).toBeGreaterThan(0)
+    expect(es.dashboard.band.axisLabel.length).toBeGreaterThan(0)
+    expect(es.dashboard.band.insufficientData.title.length).toBeGreaterThan(0)
+    expect(es.dashboard.band.insufficientData.description.length).toBeGreaterThan(0)
+  })
+})

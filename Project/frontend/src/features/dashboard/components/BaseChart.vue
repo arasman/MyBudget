@@ -28,6 +28,14 @@ export interface ChartSeriesInput {
   label: string
   data: number[]
   color?: string
+  /** Overrides `color` for the line/point border specifically. */
+  borderColor?: string
+  /** Overrides `color` for the fill/point background specifically. */
+  backgroundColor?: string
+  /** Chart.js point radius override — e.g. `0` to hide points on a band's min/max edges. */
+  pointRadius?: number
+  /** Chart.js `fill` option — e.g. `'-1'` to shade the area toward the previous dataset (band charts). */
+  fill?: boolean | string
 }
 
 /** Subset of Chart.js chart types this dashboard's widgets need. */
@@ -104,8 +112,10 @@ const chartData = computed<ChartData>(() => ({
     return {
       label: s.label,
       data: s.data,
-      borderColor: color,
-      backgroundColor: color,
+      borderColor: s.borderColor ?? color,
+      backgroundColor: s.backgroundColor ?? color,
+      ...(s.pointRadius !== undefined ? { pointRadius: s.pointRadius } : {}),
+      ...(s.fill !== undefined ? { fill: s.fill } : {}),
     }
   }),
 }))

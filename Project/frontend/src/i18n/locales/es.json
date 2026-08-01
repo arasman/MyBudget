@@ -577,6 +577,41 @@
     "chart": {
       "loading": "Cargando gráfico...",
       "empty": "No hay datos para mostrar"
+    },
+    "series": {
+      "totalPositive": "Total de Activos",
+      "totalPositiveAlt": "Total de Activos (Alt)",
+      "totalNegative": "Total de Pasivos",
+      "totalNegativeAlt": "Total de Pasivos (Alt)",
+      "totalDeudaEnCurso": "Deuda Total",
+      "totalDeudaEnCursoAlt": "Deuda Total (Alt)",
+      "totalBudgeted": "Total Presupuestado",
+      "totalBudgetedAlt": "Total Presupuestado (Alt)",
+      "totalRegistered": "Total Registrado",
+      "totalRegisteredAlt": "Total Registrado (Alt)",
+      "remaining": "Restante",
+      "remainingAlt": "Restante (Alt)",
+      "totalAvailable": "Total Disponible",
+      "totalAvailableAlt": "Total Disponible (Alt)",
+      "totalNet": "Total Neto",
+      "totalNetAlt": "Total Neto (Alt)"
+    },
+    "seriesPicker": {
+      "title": "Series",
+      "selectAll": "Seleccionar todo",
+      "clearAll": "Deseleccionar todo"
+    },
+    "lifetime": {
+      "title": "Tendencia Histórica",
+      "axisLabel": "Monto"
+    },
+    "band": {
+      "title": "Comportamiento Promedio",
+      "axisLabel": "Monto",
+      "insufficientData": {
+        "title": "Aún no hay suficiente historial",
+        "description": "Se necesitan al menos 2 períodos con registros de corte para mostrar la banda de comportamiento promedio. Seguí registrando cortes para desbloquear este gráfico."
+      }
     }
   },
   "enums": {

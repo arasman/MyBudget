@@ -56,11 +56,11 @@ Chain strategy: feature-branch-chain
 
 ## Phase 5 (PR5): Lifetime Widgets (DASH-2,3,7,9)
 
-- [ ] 5.1 RED→GREEN: `SeriesPicker.vue` — 16 series listed, emits selection
-- [ ] 5.2 RED→GREEN: `useSeriesSelection` — default preselect, `localStorage` persistence
-- [ ] 5.3 RED→GREEN: `LifetimeTotalsChart.vue` — DASH-1 data, "cut-frozen rate" label (DASH-9)
-- [ ] 5.4 RED→GREEN: `TotalsBandChart.vue` — band render
-- [ ] 5.5 RED→GREEN: `InsufficientDataState.vue` — renders when `periodCount < 2` (DASH-3)
+- [x] 5.1 RED→GREEN: `SeriesPicker.vue` — 16 series listed, emits selection
+- [x] 5.2 RED→GREEN: `useSeriesSelection` — default preselect, `localStorage` persistence
+- [x] 5.3 RED→GREEN: `LifetimeTotalsChart.vue` — DASH-1 data, "cut-frozen rate" label (DASH-9)
+- [x] 5.4 RED→GREEN: `TotalsBandChart.vue` — band render
+- [x] 5.5 RED→GREEN: `InsufficientDataState.vue` — renders when `periodCount < 2` (DASH-3)
 
 ## Phase 6 (PR6): BudgetLine Widgets (DASH-4,5,6,12)
 

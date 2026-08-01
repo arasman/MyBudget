@@ -577,6 +577,41 @@
     "chart": {
       "loading": "Loading chart...",
       "empty": "No data to display"
+    },
+    "series": {
+      "totalPositive": "Total Assets",
+      "totalPositiveAlt": "Total Assets (Alt)",
+      "totalNegative": "Total Liabilities",
+      "totalNegativeAlt": "Total Liabilities (Alt)",
+      "totalDeudaEnCurso": "Total Debt",
+      "totalDeudaEnCursoAlt": "Total Debt (Alt)",
+      "totalBudgeted": "Total Budgeted",
+      "totalBudgetedAlt": "Total Budgeted (Alt)",
+      "totalRegistered": "Total Registered",
+      "totalRegisteredAlt": "Total Registered (Alt)",
+      "remaining": "Remaining",
+      "remainingAlt": "Remaining (Alt)",
+      "totalAvailable": "Total Available",
+      "totalAvailableAlt": "Total Available (Alt)",
+      "totalNet": "Total Net",
+      "totalNetAlt": "Total Net (Alt)"
+    },
+    "seriesPicker": {
+      "title": "Series",
+      "selectAll": "Select all",
+      "clearAll": "Clear all"
+    },
+    "lifetime": {
+      "title": "Lifetime Trend",
+      "axisLabel": "Amount"
+    },
+    "band": {
+      "title": "Average Behavior",
+      "axisLabel": "Amount",
+      "insufficientData": {
+        "title": "Not enough history yet",
+        "description": "At least 2 periods with cut records are needed to show the average behavior band. Keep recording cuts to unlock this chart."
+      }
     }
   },
   "enums": {
