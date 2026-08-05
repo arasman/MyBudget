@@ -581,21 +581,25 @@ pnpm exec playwright test
 
 ---
 
-### 11. `dashboard` 🚧 PR7/7 pending merge
+### 11. `dashboard` ✅ archived 2026-08-04
 
 **What**: Read-only trend and comparison views over persisted `CutRecord` totals and `ExecutionRecord`/`BudgetLine` data. Fuses this entry with the former `extended-charts` MVP B item — cross-cycle/period comparisons are delivered here, not deferred.
 
-**Delivered** (7-PR chain off `feat/dashboard`, PR7 = assembly/i18n/E2E, awaiting merge to `main`):
+**Delivered** (7-PR chain off `feat/dashboard`, PR7 = assembly/i18n/E2E):
 - Lifetime `CutRecord` totals series (16 concepts, primary+alt) with a series-picker widget (DASH-1, DASH-7).
 - Lifetime average band (period-averaged MIN/MAX/AVG deviation), with an explicit insufficient-history empty state for 0-1 cuts (DASH-2, DASH-3, DASH-11).
 - BudgetLine per-period series: cross-cycle by `BudgetLineId` identity, period-vs-period within a cycle, and cycle-vs-cycle comparison, with a currency-mismatch guard (DASH-4, DASH-5, DASH-6, DASH-12).
 - Conversion-basis labeling (cut-frozen vs transaction-time, never blended), 4-role read access, ES/EN i18n, mobile-responsive layout (DASH-8, DASH-9, DASH-10).
 - Route `budgets/:budgetId/dashboard`, `BudgetTabs` entry, `DashboardView.vue` assembly.
+- All 31/31 tasks complete; 0 CRITICAL issues in final verification; all 12 requirements (DASH-1..DASH-12) verified across 488/488 backend unit tests, 619/619 frontend unit tests, 275/278 integration tests (3 pre-existing skipped), 115/115 E2E tests (reviewed line-by-line against spec).
 
-**Explicitly deferred** (not in this change, design.md Decision 1 — confirm before re-marking this entry fully complete at archive):
+**Explicitly deferred** (design.md Decision 1, confirmed at archive):
 - Last-cut summary KPI tiles (rejected as the default landing view in favor of the lifetime trend; may return later as an additional widget, not a replacement).
 - Chart export (PDF/CSV/image).
 - `projects` / `commitments` / `installments` / savings-goal analytics — none of those entities exist yet.
+
+**SDD artifacts**: `openspec/changes/archive/2026-08-04-dashboard/`
+**Specs**: `openspec/specs/dashboard/spec.md`
 
 ---
 
