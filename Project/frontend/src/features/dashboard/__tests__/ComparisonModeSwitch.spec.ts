@@ -119,4 +119,67 @@ describe('ComparisonModeSwitch (DASH-5/DASH-6)', () => {
     expect(screen.getByLabelText('Period 1')).not.toBeNull()
     expect(screen.getByLabelText('Period 2')).not.toBeNull()
   })
+
+  // DASH-13: BudgetLineSeriesChart.vue restores this picker's own UI (which
+  // cycle/periods/cycles are checked) from a persistence composable via
+  // these `initial*` props, and listens to the `update:*` emits to persist
+  // subsequent changes — this is additive to the existing mode/periodIds
+  // contract proven above.
+  describe('restoring and reporting internal picker state (DASH-13)', () => {
+    it('seeds the cycle dropdown and checked periods from initial* props', () => {
+      render(ComparisonModeSwitch, {
+        props: {
+          cycles: cycles(),
+          mode: 'within-cycle',
+          initialSelectedCycleId: 'c2',
+          initialWithinPeriodIds: ['p3'],
+        },
+      })
+
+      expect((screen.getByLabelText('Cycle') as HTMLSelectElement).value).toBe('c2')
+      expect((screen.getByLabelText('Period 1') as HTMLInputElement).checked).toBe(true)
+    })
+
+    it('seeds checked cycles in cross-cycle mode from initialCrossCycleIds', () => {
+      render(ComparisonModeSwitch, {
+        props: { cycles: cycles(), mode: 'cross-cycle', initialCrossCycleIds: ['c2'] },
+      })
+
+      expect((screen.getByLabelText('Cycle 2') as HTMLInputElement).checked).toBe(true)
+      expect((screen.getByLabelText('Cycle 1') as HTMLInputElement).checked).toBe(false)
+    })
+
+    it('emits the resolved periodIds once at setup, reflecting the restored state', () => {
+      const { emitted } = render(ComparisonModeSwitch, {
+        props: {
+          cycles: cycles(),
+          mode: 'within-cycle',
+          initialSelectedCycleId: 'c1',
+          initialWithinPeriodIds: ['p1', 'p2'],
+        },
+      })
+
+      const calls = emitted()['update:selectedPeriodIds'] as unknown as unknown[][]
+      expect(calls[0]![0]).toEqual(['p1', 'p2'])
+    })
+
+    it('emits update:selectedCycleId and update:withinPeriodIds when the cycle changes', async () => {
+      const { emitted } = render(ComparisonModeSwitch, {
+        props: { cycles: cycles(), mode: 'within-cycle', initialWithinPeriodIds: ['p1'] },
+      })
+
+      await fireEvent.update(screen.getByLabelText('Cycle'), 'c2')
+
+      expect(emitted()['update:selectedCycleId']!.at(-1)).toEqual(['c2'])
+      expect(emitted()['update:withinPeriodIds']!.at(-1)).toEqual([[]])
+    })
+
+    it('emits update:crossCycleIds when a cycle checkbox is toggled', async () => {
+      const { emitted } = render(ComparisonModeSwitch, { props: { cycles: cycles(), mode: 'cross-cycle' } })
+
+      await fireEvent.click(screen.getByLabelText('Cycle 1'))
+
+      expect(emitted()['update:crossCycleIds']!.at(-1)).toEqual([['c1']])
+    })
+  })
 })

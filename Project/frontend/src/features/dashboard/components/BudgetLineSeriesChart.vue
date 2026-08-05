@@ -17,9 +17,16 @@
     <div class="lg:col-span-4 flex flex-col gap-4">
       <BudgetLinePicker :lines="structureStore.budgetLines" v-model="selectedLineIds" />
       <ComparisonModeSwitch
+        :key="props.budgetId"
         :cycles="cycles"
         :mode="mode"
+        :initial-selected-cycle-id="selectedCycleId"
+        :initial-within-period-ids="withinPeriodIds"
+        :initial-cross-cycle-ids="crossCycleIds"
         @update:mode="mode = $event"
+        @update:selected-cycle-id="selectedCycleId = $event"
+        @update:within-period-ids="withinPeriodIds = $event"
+        @update:cross-cycle-ids="crossCycleIds = $event"
         @update:selectedPeriodIds="selectedPeriodIds = $event"
       />
     </div>
@@ -37,9 +44,9 @@ import { useDashboardStore } from '../store/useDashboardStore'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useCycleOptions } from '../composables/useCycleOptions'
 import { useChartTheme } from '../composables/useChartTheme'
+import { useLineSeriesSelection } from '../composables/useLineSeriesSelection'
 import { detectCurrencyMismatch } from '../utils/currencyGuard'
 import { buildLineSeries } from '../utils/seriesMapping'
-import type { ComparisonMode } from '../utils/comparisonResolution'
 
 const props = defineProps<{ budgetId: string }>()
 
@@ -49,8 +56,11 @@ const structureStore = useBudgetStructureStore()
 const { cycles, load: loadCycleOptions } = useCycleOptions()
 const { theme } = useChartTheme()
 
-const selectedLineIds = ref<string[]>([])
-const mode = ref<ComparisonMode>('within-cycle')
+const { selectedLineIds, mode, selectedCycleId, withinPeriodIds, crossCycleIds } = useLineSeriesSelection(
+  () => props.budgetId,
+)
+// Derived fresh from ComparisonModeSwitch's resolved emit — not itself
+// persisted (see useLineSeriesSelection.ts doc comment).
 const selectedPeriodIds = ref<string[]>([])
 
 async function loadPickerData(): Promise<void> {

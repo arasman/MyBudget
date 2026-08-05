@@ -111,6 +111,7 @@ describe('BudgetLineSeriesChart (DASH-4/5/6/9/12)', () => {
     mockLoadCycles.mockClear()
     dashboardStoreState.lineSeries = null
     dashboardStoreState.lineSeriesLoading = false
+    window.localStorage.clear()
   })
 
   it('loads BudgetLines and Cycles on mount', () => {
@@ -196,5 +197,67 @@ describe('BudgetLineSeriesChart (DASH-4/5/6/9/12)', () => {
     render(BudgetLineSeriesChart, { props: { budgetId: 'budget-1' } })
 
     expect(screen.queryByText('Loading chart...')).not.toBeNull()
+  })
+
+  // DASH-13: this widget is the odd one out among the 3 dashboard charts —
+  // LifetimeTotalsChart/TotalsBandChart already persist their picker via
+  // useSeriesSelection; these prove BudgetLineSeriesChart's picker (lines +
+  // comparison mode + within/cross-cycle state) now does the same, scoped
+  // per budgetId so one budget's selection never leaks into another.
+  describe('picker persistence (DASH-13)', () => {
+    it('restores the selection and re-fetches on remount for the same budgetId', async () => {
+      const first = render(BudgetLineSeriesChart, { props: { budgetId: 'budget-1' } })
+
+      await fireEvent.click(screen.getByLabelText('Groceries'))
+      await fireEvent.click(screen.getByLabelText('Period 1'))
+      await fireEvent.click(screen.getByLabelText('Period 2'))
+
+      expect(mockFetchLineSeries).toHaveBeenCalledWith('budget-1', ['l1'], ['p1', 'p2'])
+      first.unmount()
+      mockFetchLineSeries.mockClear()
+
+      render(BudgetLineSeriesChart, { props: { budgetId: 'budget-1' } })
+
+      expect((screen.getByLabelText('Groceries') as HTMLInputElement).checked).toBe(true)
+      expect((screen.getByLabelText('Period 1') as HTMLInputElement).checked).toBe(true)
+      expect((screen.getByLabelText('Period 2') as HTMLInputElement).checked).toBe(true)
+      expect(mockFetchLineSeries).toHaveBeenCalledWith('budget-1', ['l1'], ['p1', 'p2'])
+    })
+
+    it('does not leak a selection made under one budgetId into a different budgetId', async () => {
+      const first = render(BudgetLineSeriesChart, { props: { budgetId: 'budget-1' } })
+
+      await fireEvent.click(screen.getByLabelText('Groceries'))
+      await fireEvent.click(screen.getByLabelText('Period 1'))
+      await fireEvent.click(screen.getByLabelText('Period 2'))
+      first.unmount()
+      mockFetchLineSeries.mockClear()
+
+      render(BudgetLineSeriesChart, { props: { budgetId: 'budget-2' } })
+
+      expect((screen.getByLabelText('Groceries') as HTMLInputElement).checked).toBe(false)
+      expect((screen.getByLabelText('Period 1') as HTMLInputElement).checked).toBe(false)
+      expect(mockFetchLineSeries).not.toHaveBeenCalled()
+    })
+
+    it('round-trips: remounting the original budgetId again still restores its own selection', async () => {
+      const first = render(BudgetLineSeriesChart, { props: { budgetId: 'budget-1' } })
+
+      await fireEvent.click(screen.getByLabelText('Groceries'))
+      await fireEvent.click(screen.getByLabelText('Period 1'))
+      await fireEvent.click(screen.getByLabelText('Period 2'))
+      first.unmount()
+
+      const second = render(BudgetLineSeriesChart, { props: { budgetId: 'budget-2' } })
+      second.unmount()
+      mockFetchLineSeries.mockClear()
+
+      render(BudgetLineSeriesChart, { props: { budgetId: 'budget-1' } })
+
+      expect((screen.getByLabelText('Groceries') as HTMLInputElement).checked).toBe(true)
+      expect((screen.getByLabelText('Period 1') as HTMLInputElement).checked).toBe(true)
+      expect((screen.getByLabelText('Period 2') as HTMLInputElement).checked).toBe(true)
+      expect(mockFetchLineSeries).toHaveBeenCalledWith('budget-1', ['l1'], ['p1', 'p2'])
+    })
   })
 })

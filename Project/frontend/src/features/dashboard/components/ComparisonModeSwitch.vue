@@ -78,20 +78,31 @@ import { useI18n } from 'vue-i18n'
 import { resolvePeriodIds, type ComparisonMode } from '../utils/comparisonResolution'
 import type { CycleOption } from '../composables/useCycleOptions'
 
-const props = defineProps<{ cycles: CycleOption[]; mode: ComparisonMode }>()
+const props = defineProps<{
+  cycles: CycleOption[]
+  mode: ComparisonMode
+  initialSelectedCycleId?: string | null
+  initialWithinPeriodIds?: string[]
+  initialCrossCycleIds?: string[]
+}>()
 const emit = defineEmits<{
   'update:mode': [value: ComparisonMode]
   'update:selectedPeriodIds': [value: string[]]
+  'update:selectedCycleId': [value: string | null]
+  'update:withinPeriodIds': [value: string[]]
+  'update:crossCycleIds': [value: string[]]
 }>()
 
 const { t } = useI18n()
 
-// within-cycle state
-const selectedCycleId = ref<string | null>(props.cycles[0]?.id ?? null)
-const withinPeriodIds = ref<string[]>([])
+// within-cycle state — seeded from `initial*` props so a caller (e.g. a
+// persistence composable) can restore a previous pick; every mutation below
+// also emits upward so that caller can persist it.
+const selectedCycleId = ref<string | null>(props.initialSelectedCycleId ?? props.cycles[0]?.id ?? null)
+const withinPeriodIds = ref<string[]>([...(props.initialWithinPeriodIds ?? [])])
 
 // cross-cycle state
-const crossCycleIds = ref<string[]>([])
+const crossCycleIds = ref<string[]>([...(props.initialCrossCycleIds ?? [])])
 
 const withinCyclePeriods = computed(() => props.cycles.find((c) => c.id === selectedCycleId.value)?.periods ?? [])
 
@@ -110,6 +121,8 @@ function setMode(next: ComparisonMode): void {
 function onCycleChange(cycleId: string): void {
   selectedCycleId.value = cycleId
   withinPeriodIds.value = []
+  emit('update:selectedCycleId', cycleId)
+  emit('update:withinPeriodIds', [])
   emitResolved()
 }
 
@@ -117,6 +130,7 @@ function togglePeriod(periodId: string): void {
   withinPeriodIds.value = withinPeriodIds.value.includes(periodId)
     ? withinPeriodIds.value.filter((id) => id !== periodId)
     : [...withinPeriodIds.value, periodId]
+  emit('update:withinPeriodIds', withinPeriodIds.value)
   emitResolved()
 }
 
@@ -124,6 +138,7 @@ function toggleCycle(cycleId: string): void {
   crossCycleIds.value = crossCycleIds.value.includes(cycleId)
     ? crossCycleIds.value.filter((id) => id !== cycleId)
     : [...crossCycleIds.value, cycleId]
+  emit('update:crossCycleIds', crossCycleIds.value)
   emitResolved()
 }
 
@@ -136,22 +151,35 @@ watch(
     withinPeriodIds.value = []
     crossCycleIds.value = []
     selectedCycleId.value = props.cycles[0]?.id ?? null
+    emit('update:selectedCycleId', selectedCycleId.value)
+    emit('update:withinPeriodIds', [])
+    emit('update:crossCycleIds', [])
     emitResolved()
   },
 )
 
 // The caller (BudgetLineSeriesChart.vue) mounts this component before its
 // `useCycleOptions().load()` resolves — `cycles` starts as `[]` and arrives
-// later. `selectedCycleId` is initialized once from `props.cycles[0]` at
-// setup time, which is empty on that first render, so it must be recovered
-// once real cycles arrive. Only auto-picks when nothing is selected yet, so
-// it never clobbers a cycle the user already chose from the dropdown.
+// later. `selectedCycleId` is initialized once from `initialSelectedCycleId`
+// or `props.cycles[0]` at setup time, both of which are empty on that first
+// render, so it must be recovered once real cycles arrive. Only auto-picks
+// when nothing is selected yet, so it never clobbers a cycle the user
+// already chose from the dropdown. Also re-resolves unconditionally: a
+// restored cross-cycle selection can't resolve to real periodIds until
+// `cycles` itself arrives.
 watch(
   () => props.cycles,
   (newCycles) => {
     if (selectedCycleId.value === null && newCycles.length > 0) {
       selectedCycleId.value = newCycles[0]!.id
+      emit('update:selectedCycleId', selectedCycleId.value)
     }
+    emitResolved()
   },
 )
+
+// Emit once at setup so a picker restored from persisted state (DASH-13)
+// immediately reports its resolved periodIds upward — otherwise the parent
+// only learns about them after the next user interaction.
+emitResolved()
 </script>
