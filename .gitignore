@@ -43,4 +43,10 @@ Thumbs.db
 .docker/
 
 # ATL / SDD tooling cache
-.atl/.skill-registry.cache.json
+.atl/
+
+# Claude Code project state (settings, session worktrees — machine-local)
+.claude/
+
+# CodeGraph index (local analysis only)
+.codegraph
