@@ -44,6 +44,9 @@ public sealed class EmailBackgroundService : BackgroundService
         var port = int.Parse(_configuration["Email:SmtpPort"] ?? "1025");
         var fromName = _configuration["Email:FromName"] ?? "MyBudget";
         var fromAddress = _configuration["Email:FromAddress"] ?? "noreply@mybudget.local";
+        var username = _configuration["Email:SmtpUsername"];
+        var password = _configuration["Email:SmtpPassword"];
+        var useStartTls = bool.Parse(_configuration["Email:SmtpUseStartTls"] ?? "false");
 
         var mimeMessage = new MimeMessage();
         mimeMessage.From.Add(new MailboxAddress(fromName, fromAddress));
@@ -51,8 +54,16 @@ public sealed class EmailBackgroundService : BackgroundService
         mimeMessage.Subject = message.Subject;
         mimeMessage.Body = new TextPart("html") { Text = message.Body };
 
+        // Mailpit (dev): no TLS, no auth — defaults preserve that.
+        // Real SMTP relays (e.g. Brevo): Email:SmtpUseStartTls=true + Email:SmtpUsername/SmtpPassword set.
+        var secureSocketOptions = useStartTls ? SecureSocketOptions.StartTls : SecureSocketOptions.None;
+
         using var client = new SmtpClient();
-        await client.ConnectAsync(host, port, SecureSocketOptions.None, ct);
+        await client.ConnectAsync(host, port, secureSocketOptions, ct);
+
+        if (!string.IsNullOrEmpty(username))
+            await client.AuthenticateAsync(username, password ?? string.Empty, ct);
+
         await client.SendAsync(mimeMessage, ct);
         await client.DisconnectAsync(true, ct);
 
