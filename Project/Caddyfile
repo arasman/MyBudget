@@ -1,0 +1,19 @@
+# Replace with your real domain (or DuckDNS subdomain) before deploying —
+# Caddy uses it both to route requests and to request a Let's Encrypt cert.
+# DNS must already point at this server's IP before Caddy will get a cert.
+your-domain.example.com {
+	encode gzip
+
+	# API — path kept as-is (backend routes are already prefixed with /api,
+	# e.g. POST /api/auth/login), so this must NOT be handle_path.
+	handle /api/* {
+		reverse_proxy api:8080
+	}
+
+	# Vue SPA (built into frontend/dist, bind-mounted read-only)
+	handle {
+		root * /srv/frontend
+		try_files {path} /index.html
+		file_server
+	}
+}

@@ -67,8 +67,8 @@ services:
 
   api:
     build:
-      context: ./src/MyBudget.Api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/MyBudget.Api/Dockerfile
     profiles: [full]
     networks: [mybudget-network]
     env_file: .env

@@ -1,0 +1,81 @@
+# Production deployment — single Hetzner VPS, all services on one host.
+#
+# Security posture: only Caddy publishes ports to the host (80/443). Postgres,
+# Redis, Seq, and Jaeger are reachable ONLY by other containers on
+# mybudget-network, via their service name — never exposed to the internet.
+# To inspect Seq/Jaeger remotely, use an SSH tunnel (see DEPLOYMENT.md),
+# don't add ports: mappings here.
+#
+# Usage:
+#   docker compose -f docker-compose.prod.yml up -d --build
+
+networks:
+  mybudget-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  seq-data:
+  caddy-data:
+  caddy-config:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    networks: [mybudget-network]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    env_file: .env
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    networks: [mybudget-network]
+    restart: unless-stopped
+
+  seq:
+    image: datalust/seq:latest
+    networks: [mybudget-network]
+    volumes:
+      - seq-data:/data
+    env_file: .env
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    networks: [mybudget-network]
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: src/MyBudget.Api/Dockerfile
+    networks: [mybudget-network]
+    env_file: .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Built from the POSTGRES_* vars already in .env — don't duplicate the password by hand.
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      # Standard OpenTelemetry SDK env var — AddOtlpExporter() picks this up with no code change.
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
+    depends_on:
+      - postgres
+      - redis
+      - seq
+      - jaeger
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    networks: [mybudget-network]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/dist:/srv/frontend:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - api
+    restart: unless-stopped

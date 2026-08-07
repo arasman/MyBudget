@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/.vs/
+**/.git
+**/*.user
+frontend/dist/
+frontend/e2e-results/
+frontend/playwright-report/
