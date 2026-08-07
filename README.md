@@ -25,6 +25,7 @@ MyBudget is a full-stack web application for planning, tracking, and comparing b
 - [Testing](#testing)
 - [EF Core Migrations](#ef-core-migrations)
 - [Configuration Reference](#configuration-reference)
+- [Deployment](#deployment)
 - [Project Status](#project-status)
 - [Known Limitations](#known-limitations)
 - [License](#license)
@@ -258,6 +259,10 @@ Other notable settings (`Project/src/MyBudget.Api/appsettings.json`):
 - Supported locales are `en`/`es`.
 - Audit log retention is 90 days.
 - Account lockout after 5 failed attempts for 30 minutes.
+
+## Deployment
+
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the full guide (Hetzner + Caddy + Brevo).
 
 ## Project Status
 
