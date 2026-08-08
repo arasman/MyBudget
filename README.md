@@ -35,27 +35,32 @@ MyBudget is a full-stack web application for planning, tracking, and comparing b
 ## Features
 
 **Accounts & access**
+
 - Registration, JWT login/refresh/logout, forgot/reset password, forced password change, account lockout after failed attempts
 - Multiple budgets per user; invite other users by email with a role per budget
 - Four roles per budget: Owner, Admin, Operator, Read-only
 
 **Budget structure**
+
 - Cycles (e.g. a year) and Periods (e.g. months) inside a cycle, with per-cycle exchange rates
 - Category groups and categories
 - Budget lines with date-range validity and a gapless revision history (change an amount mid-cycle without losing the audit trail)
 - Drag-and-drop reordering, inline editing, soft delete with restore everywhere
 
 **Execution (actual spending)**
+
 - Record expenses, credit notes, and debit notes against budget lines, in any currency with a per-entry exchange rate
 - Multi-period budget matrix view with inline CRUD and progressive per-period loading
 - Currency toggle and inline exchange-rate editing across the whole matrix
 
 **Current situation & dashboard**
+
 - Bank account catalog per budget
 - Daily "cut record" snapshots (bank balances vs. budgeted/executed totals), multi-currency
 - Read-only dashboard: lifetime trend charts, average-behavior bands, per-period and cross-cycle BudgetLine comparisons
 
 **Cross-cutting**
+
 - Full audit log (entity mutations) and a separate security event log with retention policy
 - Ephemeral toast notifications for every mutating action, with show-deleted/restore UX
 - Full English/Spanish localization, switchable at login and in-app
@@ -64,14 +69,14 @@ Planned next (MVP B, not yet built): projects, financial commitments, installmen
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Backend | .NET 10 · ASP.NET Core Minimal APIs · Mediator (source-generated) · Dapper + EF Core 10 (Npgsql) · FluentValidation · Mapster · BCrypt.Net · MailKit · Serilog + Seq · OpenTelemetry + Jaeger · Polly · StackExchange.Redis · YARP (API gateway) |
-| Frontend | Vue 3.5 (Composition API) · TypeScript · Vite · Pinia · vue-router · vue-i18n · Tailwind CSS v4 + daisyUI v5 · Chart.js (vue-chartjs) · Axios · Zod |
-| Database | PostgreSQL 16 |
-| Testing | xUnit + NSubstitute + Shouldly (backend unit) · WebApplicationFactory (backend integration, real Postgres) · Vitest + Testing Library (frontend unit) · Playwright (E2E) |
-| Infrastructure | Docker Compose (Postgres, Redis, Mailpit, Seq, Jaeger) |
-| Package managers | NuGet · pnpm (no npm/yarn) |
+| Layer            | Technology                                                                                                                                                                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Backend          | .NET 10 · ASP.NET Core Minimal APIs · Mediator (source-generated) · Dapper + EF Core 10 (Npgsql) · FluentValidation · Mapster · BCrypt.Net · MailKit · Serilog + Seq · OpenTelemetry + Jaeger · Polly · StackExchange.Redis · YARP (API gateway) |
+| Frontend         | Vue 3.5 (Composition API) · TypeScript · Vite · Pinia · vue-router · vue-i18n · Tailwind CSS v4 + daisyUI v5 · Chart.js (vue-chartjs) · Axios · Zod                                                                                              |
+| Database         | PostgreSQL 16                                                                                                                                                                                                                                    |
+| Testing          | xUnit + NSubstitute + Shouldly (backend unit) · WebApplicationFactory (backend integration, real Postgres) · Vitest + Testing Library (frontend unit) · Playwright (E2E)                                                                         |
+| Infrastructure   | Docker Compose (Postgres, Redis, Mailpit, Seq, Jaeger)                                                                                                                                                                                           |
+| Package managers | NuGet · pnpm (no npm/yarn)                                                                                                                                                                                                                       |
 
 ## Architecture
 
@@ -91,28 +96,31 @@ Mediator pipeline behaviours run in this order for every request: **ValidationBe
 
 ```
 MyBudget/
-├── openspec/                   # Spec-Driven Development artifacts
-│   ├── ROADMAP.md              # Full feature history (MVP A complete, MVP B planned)
-│   └── changes/archive/        # 23 archived proposal/spec/design/tasks sets
-└── Project/                    # Application source
+├── docs/                                # Deployment artifacts
+│   ├── DEPLOYMENT.md                    # Deployment guide (Hetzner + Caddy + Brevo)
+│   └── Deployment-LessonLearned.md      # Lesson learned 23 during deployment process.
+├── openspec/                            # Spec-Driven Development artifacts
+│   ├── ROADMAP.md                       # Full feature history (MVP A complete, MVP B planned)
+│   └── changes/archive/                 # 23 archived proposal/spec/design/tasks sets
+└── Project/                             # Application source
     ├── src/
-    │   ├── MyBudget.Api/            # ASP.NET Core host — Program.cs, middleware, appsettings
-    │   ├── MyBudget.Features/       # VSA business logic
-    │   │   ├── Features/            # Auth, BudgetStructure, BudgetExecution, CurrentSituation, Dashboard, ...
-    │   │   ├── SharedKernel/        # Entities, EF Core persistence, Auth, Caching, Email, Results
-    │   │   ├── Behaviours/          # Mediator pipeline (Validation, Logging, Caching)
-    │   │   └── Migrations/          # EF Core migrations
-    │   └── MyBudget.Gateway/        # YARP reverse-proxy gateway
+    │   ├── MyBudget.Api/                # ASP.NET Core host — Program.cs, middleware, appsettings
+    │   ├── MyBudget.Features/           # VSA business logic
+    │   │   ├── Features/                # Auth, BudgetStructure, BudgetExecution, CurrentSituation, Dashboard, ...
+    │   │   ├── SharedKernel/            # Entities, EF Core persistence, Auth, Caching, Email, Results
+    │   │   ├── Behaviours/              # Mediator pipeline (Validation, Logging, Caching)
+    │   │   └── Migrations/              # EF Core migrations
+    │   └── MyBudget.Gateway/            # YARP reverse-proxy gateway
     ├── tests/
     │   ├── MyBudget.Features.Tests/     # Unit tests (xUnit, SQLite in-memory)
     │   └── MyBudget.Integration.Tests/  # Integration tests (WebApplicationFactory, real Postgres)
     ├── frontend/
     │   ├── src/
-    │   │   ├── features/            # bank-accounts, budget-execution, budget-structure, current-situation, dashboard
+    │   │   ├── features/                # bank-accounts, budget-execution, budget-structure, current-situation, dashboard
     │   │   ├── components/, stores/, layouts/, views/, router/, i18n/, api/, utils/, types/
-    │   └── e2e/                     # Playwright specs (36 specs across 8 feature areas)
-    ├── docker-compose.yml           # Local infra: Postgres, Redis, Mailpit, Seq, Jaeger
-    └── scripts/db/                  # Seed & cleanup SQL for demo data
+    │   └── e2e/                         # Playwright specs (36 specs across 8 feature areas)
+    ├── docker-compose.yml               # Local infra: Postgres, Redis, Mailpit, Seq, Jaeger
+    └── scripts/db/                      # Seed & cleanup SQL for demo data
 ```
 
 ## Getting Started
@@ -178,6 +186,7 @@ docker compose --profile full up -d
 ```
 
 This builds and runs the API container alongside the infra services — skip step 3 above. Still run the frontend separately with `pnpm dev`.
+
 </details>
 
 ## Demo Credentials
@@ -189,12 +198,17 @@ docker exec -i -e PGPASSWORD=mybudget project-postgres-1 psql -U mybudget -d myb
   < scripts/db/seed_dashboard_demo.sql
 ```
 
-| | |
-|---|---|
-| Email | `seed-demo@mybudget.local` |
-| Password | `DemoPass123!` |
+|          |                            |
+| -------- | -------------------------- |
+| Email    | `seed-demo@mybudget.local` |
+| Password | `DemoPass123!`             |
+
+- _This email address is used solely as an application user, but it does not exist as a real email address, so the password recovery process would not work, as there would be no valid recipient to receive the password reset URL._
+- _This password is when the `seed_dashboard_demo.sql` script is executed, but the real user and password to access to the deployed version would be shared as part of [TFM Deliverable Form](#https://campus.thebigschool.com/cursos/master-en-desarrollo-con-ia-3/modulos/proyecto-final-3/leccion/proyecto-final-4/)_
 
 To remove the demo data: `scripts/db/cleanup_dashboard_demo.sql` (same invocation pattern).
+
+The published version can be found at [https://mybudget-aras.duckdns.org](#https://mybudget-aras.duckdns.org/login), where a user can sign-in with provided credentials or sign-up if want to use its own user.
 
 ## Testing
 
@@ -224,7 +238,7 @@ VITE_API_TARGET=http://localhost:5079 pnpm --dir frontend run dev
 cd frontend && pnpm exec playwright test
 ```
 
-*(Windows CMD: replace the Terminal 2 line with `set VITE_API_TARGET=http://localhost:5079 && pnpm --dir frontend run dev`.)*
+_(Windows CMD: replace the Terminal 2 line with `set VITE_API_TARGET=http://localhost:5079 && pnpm --dir frontend run dev`.)_
 
 ## EF Core Migrations
 
@@ -240,21 +254,22 @@ If two branches add migrations concurrently, on merge the second developer shoul
 
 ## Configuration Reference
 
-| Service | Default port | Notes |
-|---|---|---|
-| Frontend (Vite dev server) | `5173` | `VITE_API_TARGET` overrides the `/api` proxy target |
-| API — HTTP | `5184` | |
-| API — HTTPS | `7228` | |
-| API — E2E profile | `5079` | `ASPNETCORE_ENVIRONMENT=E2E` |
-| Gateway (YARP) | `5031` / `7093` (HTTPS) | Not required for local dev |
-| PostgreSQL | `5432` | `POSTGRES_PORT` in `.env` |
-| Redis | `6379` | `REDIS_PORT` in `.env` |
-| Mailpit (SMTP / UI) | `1025` / `8025` | dev email capture — no real email sent locally |
-| Seq (log UI) | `5341` | `SEQ_PORT` in `.env` |
-| Jaeger (trace UI) | `16686` | `JAEGER_UI_PORT` in `.env` |
+| Service                    | Default port            | Notes                                               |
+| -------------------------- | ----------------------- | --------------------------------------------------- |
+| Frontend (Vite dev server) | `5173`                  | `VITE_API_TARGET` overrides the `/api` proxy target |
+| API — HTTP                 | `5184`                  |                                                     |
+| API — HTTPS                | `7228`                  |                                                     |
+| API — E2E profile          | `5079`                  | `ASPNETCORE_ENVIRONMENT=E2E`                        |
+| Gateway (YARP)             | `5031` / `7093` (HTTPS) | Not required for local dev                          |
+| PostgreSQL                 | `5432`                  | `POSTGRES_PORT` in `.env`                           |
+| Redis                      | `6379`                  | `REDIS_PORT` in `.env`                              |
+| Mailpit (SMTP / UI)        | `1025` / `8025`         | dev email capture — no real email sent locally      |
+| Seq (log UI)               | `5341`                  | `SEQ_PORT` in `.env`                                |
+| Jaeger (trace UI)          | `16686`                 | `JAEGER_UI_PORT` in `.env`                          |
 
 All ports are overridable via `.env`.
-Other notable settings (`Project/src/MyBudget.Api/appsettings.json`): 
+Other notable settings (`Project/src/MyBudget.Api/appsettings.json`):
+
 - JWT access tokens expire in 15 minutes.
 - Supported locales are `en`/`es`.
 - Audit log retention is 90 days.
@@ -262,7 +277,7 @@ Other notable settings (`Project/src/MyBudget.Api/appsettings.json`):
 
 ## Deployment
 
-See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the full guide (Hetzner + Caddy + Brevo).
+See [`docs/Deployment.md`](docs/DEPLOYMENT.md) for the full guide (Hetzner + Caddy + Brevo).
 
 ## Project Status
 

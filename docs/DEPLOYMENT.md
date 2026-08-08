@@ -1,6 +1,6 @@
 # MyBudget — Deployment Guide
 
-Reference document for deploying MyBudget to a public URL for the TFM review period. Read this in full before touching any real infrastructure — it explains *why* each step exists, not just the command to run.
+Reference document for deploying MyBudget to a public URL for the TFM review period. Read this in full before touching any real infrastructure — it explains _why_ each step exists, not just the command to run.
 
 **Read this today. Execute tomorrow, one section at a time, in order.**
 
@@ -32,12 +32,12 @@ Trade-off, stated plainly: nothing here is managed. No automatic backups, no fai
 
 ## Cost
 
-| Item | Cost |
-|---|---|
-| Hetzner CX22 (2 vCPU / 4GB RAM / 40GB SSD) | ~€3.79/mo (~$4.1) |
-| Domain (if you don't already own one) | varies, or use a free DuckDNS subdomain — $0 |
-| Brevo SMTP | $0 (free tier, 300 emails/day) |
-| Let's Encrypt TLS cert (via Caddy, automatic) | $0 |
+| Item                                          | Cost                                         |
+| --------------------------------------------- | -------------------------------------------- |
+| Hetzner CX22 (2 vCPU / 4GB RAM / 40GB SSD)    | ~€3.79/mo (~$4.1)                            |
+| Domain (if you don't already own one)         | varies, or use a free DuckDNS subdomain — $0 |
+| Brevo SMTP                                    | $0 (free tier, 300 emails/day)               |
+| Let's Encrypt TLS cert (via Caddy, automatic) | $0                                           |
 
 Roughly $4-5/mo all-in. For a 2-3 month review window, that's the number to compare against your budget.
 
@@ -136,6 +136,7 @@ App__FrontendBaseUrl=https://mybudget.yourdomain.com
 ```
 
 Notes:
+
 - `POSTGRES_*` are the same variable names `Project/.env.example` already uses for local dev — just with a real generated password instead of `change_me`.
 - The double-underscore keys (`JWT__Key`, `Email__SmtpHost`, `App__FrontendBaseUrl`, ...) are ASP.NET Core's convention for environment variables mapping to nested `appsettings.json` sections (`JWT:Key`, `Email:SmtpHost`, `App:FrontendBaseUrl`). Get the underscore count right — `__` (double), not `_`.
 - You do **not** need to set `ConnectionStrings__DefaultConnection`, `ASPNETCORE_ENVIRONMENT`, or `OTEL_EXPORTER_OTLP_ENDPOINT` here — `docker-compose.prod.yml` builds those automatically from the `POSTGRES_*` values above and points them at the container network. One less place to make a typo.
@@ -187,6 +188,7 @@ If all four pass, the deployment matches the local architecture end-to-end.
 ## Part 9 — Ongoing operations
 
 **Redeploy after a code change:**
+
 ```bash
 git pull
 cd frontend && pnpm build && cd ..     # if frontend changed
@@ -196,6 +198,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 **View logs:** `docker compose -f docker-compose.prod.yml logs -f <service>` (`api`, `postgres`, `caddy`, ...).
 
 **Backup Postgres** (run periodically, download the file off-server):
+
 ```bash
 docker compose -f docker-compose.prod.yml exec postgres \
   pg_dump -U mybudget mybudget > backup-$(date +%F).sql
@@ -217,19 +220,20 @@ Then delete the Hetzner server from the console (stops billing immediately — H
 
 Found while preparing this guide — worth knowing what changed and why, since these weren't deploy-config-only changes:
 
-| File | Change | Why |
-|---|---|---|
-| `Project/src/MyBudget.Api/Dockerfile` | **New.** Multi-stage build (SDK → aspnet runtime), non-root user, port 8080. | Referenced by `docker-compose.yml` but never existed — `docker compose --profile full` would have failed to build. |
-| `Project/docker-compose.yml` | `api.build.context` changed from `./src/MyBudget.Api` to `.` (with `dockerfile: src/MyBudget.Api/Dockerfile`). | The API project references the sibling `MyBudget.Features` project — Docker build contexts can't reach outside themselves, so the old context couldn't have worked. |
-| `Project/.dockerignore` | **New.** Excludes `bin/`, `obj/`, `node_modules/`, etc. | Without it, local Windows build artifacts (with Windows-only NuGet fallback paths baked in) get copied into the Linux image and break the container's own restore. Hit this exact failure verifying the Dockerfile today. |
-| `Project/src/MyBudget.Features/SharedKernel/Email/EmailBackgroundService.cs` | Added SMTP authentication (`AuthenticateAsync`) and STARTTLS support (`Email:SmtpUseStartTls` config), both opt-in via new config keys. | Previously hardcoded `SecureSocketOptions.None` and never authenticated — works against Mailpit (no auth needed) but would silently fail against any real SMTP relay like Brevo. Defaults are unchanged, so local dev with Mailpit is unaffected. |
-| `Project/src/MyBudget.Api/appsettings.Production.json` | **New.** Overrides the Seq sink's `serverUrl` to `http://seq:80`. | `appsettings.json` hardcodes `http://localhost:5341` for Seq, which only resolves in local dev. Inside the container network, Seq is reachable at `seq:80` (its service name, internal port). Without this, structured logs would silently never reach Seq in production. |
+| File                                                                         | Change                                                                                                                                  | Why                                                                                                                                                                                                                                                                       |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Project/src/MyBudget.Api/Dockerfile`                                        | **New.** Multi-stage build (SDK → aspnet runtime), non-root user, port 8080.                                                            | Referenced by `docker-compose.yml` but never existed — `docker compose --profile full` would have failed to build.                                                                                                                                                        |
+| `Project/docker-compose.yml`                                                 | `api.build.context` changed from `./src/MyBudget.Api` to `.` (with `dockerfile: src/MyBudget.Api/Dockerfile`).                          | The API project references the sibling `MyBudget.Features` project — Docker build contexts can't reach outside themselves, so the old context couldn't have worked.                                                                                                       |
+| `Project/.dockerignore`                                                      | **New.** Excludes `bin/`, `obj/`, `node_modules/`, etc.                                                                                 | Without it, local Windows build artifacts (with Windows-only NuGet fallback paths baked in) get copied into the Linux image and break the container's own restore. Hit this exact failure verifying the Dockerfile today.                                                 |
+| `Project/src/MyBudget.Features/SharedKernel/Email/EmailBackgroundService.cs` | Added SMTP authentication (`AuthenticateAsync`) and STARTTLS support (`Email:SmtpUseStartTls` config), both opt-in via new config keys. | Previously hardcoded `SecureSocketOptions.None` and never authenticated — works against Mailpit (no auth needed) but would silently fail against any real SMTP relay like Brevo. Defaults are unchanged, so local dev with Mailpit is unaffected.                         |
+| `Project/src/MyBudget.Api/appsettings.Production.json`                       | **New.** Overrides the Seq sink's `serverUrl` to `http://seq:80`.                                                                       | `appsettings.json` hardcodes `http://localhost:5341` for Seq, which only resolves in local dev. Inside the container network, Seq is reachable at `seq:80` (its service name, internal port). Without this, structured logs would silently never reach Seq in production. |
 
 All five were verified today: `dotnet build` clean, `docker compose build api` succeeds, `Caddyfile` passes `caddy validate`. The full end-to-end run (Part 8) is still tomorrow's job — building the image is not the same as proving the whole stack works together.
 
 ## Troubleshooting
 
 - **Caddy won't get a certificate** — DNS hasn't propagated yet, or port 80/443 is blocked by the Hetzner firewall. Check `docker compose -f docker-compose.prod.yml logs caddy`.
-- **API container keeps restarting** — almost always a missing/wrong `.env` value. `docker compose -f docker-compose.prod.yml logs api` will show the startup guard's error (e.g. "JWT__Key is not configured") directly.
+- **API container keeps restarting** — almost always a missing/wrong `.env` value. `docker compose -f docker-compose.prod.yml logs api` will show the startup guard's error (e.g. "JWT\_\_Key is not configured") directly.
 - **Emails don't arrive** — check Brevo's dashboard under **Transactional** → **Logs** first; it'll show whether Brevo rejected the send (bad auth, unverified sender) before you go looking at the API. Also double check `Email__SmtpUseStartTls=true` is actually set — without it, the connection attempt to Brevo will fail outright.
 - **Seq/Jaeger show nothing** — confirm the SSH tunnel is actually up, and that you're hitting `localhost:5341`/`16686` (the tunnel's local end), not the server's public IP (those ports aren't published there by design).
+- **Deployment lesson learned** - During the deployment to Hetzner, some issues arose and have been documented in [`Deployment-LessonLearned.md`](Deployment-LessonLearned.md) where it can find details of lesson learned during [mybudget-aras.duckdns.org](https://mybudget-aras.duckdns.org) deployment process.
