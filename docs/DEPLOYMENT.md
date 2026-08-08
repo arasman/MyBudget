@@ -113,8 +113,11 @@ POSTGRES_PASSWORD=<generate: openssl rand -base64 24>
 POSTGRES_DB=mybudget
 
 # --- Seq ---
-SEQ_ACCEPT_EULA=Y
-SEQ_FIRSTRUN_ADMINPASSWORDHASH=
+# Seq is never exposed to the internet in this setup (only reachable via SSH
+# tunnel, see Part 8) — the tunnel is the access control, so Seq's own auth
+# is opted out here rather than generating an admin password hash.
+ACCEPT_EULA=Y
+SEQ_FIRSTRUN_NOAUTHENTICATION=True
 
 # --- JWT signing key (must be 32+ chars) ---
 JWT__Key=<generate: openssl rand -base64 48>
