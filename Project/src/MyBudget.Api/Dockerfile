@@ -20,6 +20,10 @@ RUN dotnet publish src/MyBudget.Api/MyBudget.Api.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN useradd --user-group --no-create-home appuser
 COPY --from=build /app/publish .
 USER appuser

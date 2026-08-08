@@ -39,11 +39,19 @@ services:
     volumes:
       - seq-data:/data
     env_file: .env
+    # Loopback-only — reachable solely via SSH tunnel (see DEPLOYMENT.md Part 8),
+    # never exposed on the public interface.
+    ports:
+      - "127.0.0.1:5341:80"
     restart: unless-stopped
 
   jaeger:
     image: jaegertracing/all-in-one:latest
     networks: [mybudget-network]
+    # Loopback-only — reachable solely via SSH tunnel (see DEPLOYMENT.md Part 8),
+    # never exposed on the public interface.
+    ports:
+      - "127.0.0.1:16686:16686"
     restart: unless-stopped
 
   api:
