@@ -28,8 +28,24 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: 'screenshots/**',
       use: {
         ...devices['Desktop Chrome'],
+        launchOptions: {
+          args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--disable-software-rasterizer'],
+        },
+      },
+    },
+    {
+      // Slide screenshots (e2e/screenshots/): capture.ts's shoot() resizes
+      // the viewport to each page's actual content height before capturing
+      // (see its comment for why) — this base size only matters before the
+      // first shoot() of a test.
+      name: 'screenshots',
+      testMatch: 'screenshots/**/*.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 800 },
         launchOptions: {
           args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--disable-software-rasterizer'],
         },

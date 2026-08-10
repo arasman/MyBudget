@@ -1,0 +1,98 @@
+[
+  {
+    "seq": 1,
+    "file": "01-period-list-empty.png",
+    "title": "Periods — empty list",
+    "description": "A cycle detail view before any period exists."
+  },
+  {
+    "seq": 2,
+    "file": "02-period-create-form.png",
+    "title": "Create period — form filled",
+    "description": "The new-period modal filled with a name and date range."
+  },
+  {
+    "seq": 3,
+    "file": "03-period-create-success.png",
+    "title": "Create period — success",
+    "description": "Success toast and the new period listed."
+  },
+  {
+    "seq": 4,
+    "file": "04-period-create-duplicate-error.png",
+    "title": "Create period — duplicate name error",
+    "description": "Reusing an existing period name in the same cycle is rejected with PERIOD_NAME_DUPLICATE."
+  },
+  {
+    "seq": 5,
+    "file": "05-period-status-form.png",
+    "title": "Change period status — form",
+    "description": "The status dropdown set to Closed, ready to save."
+  },
+  {
+    "seq": 6,
+    "file": "06-period-status-success.png",
+    "title": "Change period status — success",
+    "description": "Success toast and the Closed badge on the period."
+  },
+  {
+    "seq": 7,
+    "file": "07-period-delete-confirm.png",
+    "title": "Delete period — confirm dialog",
+    "description": "The destructive-action confirmation before a soft-delete."
+  },
+  {
+    "seq": 8,
+    "file": "08-period-delete-success.png",
+    "title": "Delete period — success",
+    "description": "Period soft-deleted; success toast shown."
+  },
+  {
+    "seq": 9,
+    "file": "09-line-list-empty.png",
+    "title": "Budget Lines — empty list",
+    "description": "The budget lines view before any line exists."
+  },
+  {
+    "seq": 10,
+    "file": "10-line-create-form.png",
+    "title": "Create budget line — form filled",
+    "description": "The new-line modal filled with name, type, group, amount, and start date."
+  },
+  {
+    "seq": 11,
+    "file": "11-line-create-success.png",
+    "title": "Create budget line — success",
+    "description": "Success toast and the new line listed."
+  },
+  {
+    "seq": 12,
+    "file": "12-line-create-duplicate-error.png",
+    "title": "Create budget line — duplicate name error",
+    "description": "Reusing an existing line name in the same budget is rejected with BUDGET_LINE_NAME_DUPLICATE."
+  },
+  {
+    "seq": 13,
+    "file": "13-line-edit-inline.png",
+    "title": "Edit budget line — inline",
+    "description": "Double-click opens inline edit directly in the row (no modal)."
+  },
+  {
+    "seq": 14,
+    "file": "14-line-edit-success.png",
+    "title": "Edit budget line — success",
+    "description": "Success toast and the updated name reflected in the row."
+  },
+  {
+    "seq": 15,
+    "file": "15-line-delete-confirm.png",
+    "title": "Delete budget line — confirm dialog",
+    "description": "The destructive-action confirmation before a soft-delete."
+  },
+  {
+    "seq": 16,
+    "file": "16-line-delete-success.png",
+    "title": "Delete budget line — success",
+    "description": "Soft-deleted line stays listed with a \"Deleted\" badge."
+  }
+]

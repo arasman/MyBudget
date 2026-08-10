@@ -1,0 +1,56 @@
+[
+  {
+    "seq": 1,
+    "file": "01-register-empty.png",
+    "title": "Register — empty form",
+    "description": "The registration form before any input."
+  },
+  {
+    "seq": 2,
+    "file": "02-register-filled.png",
+    "title": "Register — filled form",
+    "description": "The registration form filled with valid data, ready to submit."
+  },
+  {
+    "seq": 3,
+    "file": "03-register-success.png",
+    "title": "Register — success",
+    "description": "After submit: auto-login and redirect to the home/cycles view."
+  },
+  {
+    "seq": 4,
+    "file": "04-register-duplicate-error.png",
+    "title": "Register — duplicate email error",
+    "description": "Submitting an already-registered email stays on the form and shows a 409 error."
+  },
+  {
+    "seq": 5,
+    "file": "05-login-empty.png",
+    "title": "Login — empty form",
+    "description": "The login form before any input."
+  },
+  {
+    "seq": 6,
+    "file": "06-login-success.png",
+    "title": "Login — success",
+    "description": "Valid credentials redirect to the home/cycles view."
+  },
+  {
+    "seq": 7,
+    "file": "07-login-invalid-error.png",
+    "title": "Login — invalid credentials error",
+    "description": "Wrong password stays on /login and shows an error alert."
+  },
+  {
+    "seq": 8,
+    "file": "08-logout-menu.png",
+    "title": "Logout — user menu",
+    "description": "The account dropdown with the logout action, opened from the avatar."
+  },
+  {
+    "seq": 9,
+    "file": "09-logout-success.png",
+    "title": "Logout — success",
+    "description": "Session cleared, back on /login."
+  }
+]

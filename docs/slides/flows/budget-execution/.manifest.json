@@ -1,0 +1,68 @@
+[
+  {
+    "seq": 1,
+    "file": "01-matrix-view.png",
+    "title": "Budget Execution — matrix view",
+    "description": "Budget lines by category group, periods as columns, before any execution is recorded."
+  },
+  {
+    "seq": 2,
+    "file": "02-open-execution-modal.png",
+    "title": "Open execution modal",
+    "description": "Double-clicking an Ejecutado cell opens the execution list/create modal for that line and period."
+  },
+  {
+    "seq": 3,
+    "file": "03-create-validation-error.png",
+    "title": "Create execution — note required error",
+    "description": "Submitting without a note is rejected client-side — note is mandatory for every entry type."
+  },
+  {
+    "seq": 4,
+    "file": "04-create-form-filled.png",
+    "title": "Create execution — form filled",
+    "description": "Expense entry with amount and note, ready to submit."
+  },
+  {
+    "seq": 5,
+    "file": "05-create-success.png",
+    "title": "Create execution — success",
+    "description": "The new record appears in the modal list."
+  },
+  {
+    "seq": 6,
+    "file": "06-matrix-updated.png",
+    "title": "Matrix — updated Ejecutado total",
+    "description": "The Ejecutado cell reflects the new execution total after closing the modal."
+  },
+  {
+    "seq": 7,
+    "file": "07-currency-toggle-usd.png",
+    "title": "Currency toggle — USD",
+    "description": "Amounts convert to USD at the cycle's exchange rate."
+  },
+  {
+    "seq": 8,
+    "file": "08-currency-toggle-gtq.png",
+    "title": "Currency toggle — back to GTQ",
+    "description": "Toggling back restores the original GTQ amounts."
+  },
+  {
+    "seq": 9,
+    "file": "09-collapse-group.png",
+    "title": "Collapse group",
+    "description": "Collapsing a category group hides its category rows for a denser overview."
+  },
+  {
+    "seq": 10,
+    "file": "10-delete-confirm.png",
+    "title": "Delete execution — confirm",
+    "description": "A first click arms a two-step confirm before the destructive delete."
+  },
+  {
+    "seq": 11,
+    "file": "11-delete-success.png",
+    "title": "Delete execution — success",
+    "description": "The record list is empty again after delete."
+  }
+]

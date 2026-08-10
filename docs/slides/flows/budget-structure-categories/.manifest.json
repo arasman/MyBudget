@@ -1,0 +1,62 @@
+[
+  {
+    "seq": 1,
+    "file": "01-list-empty.png",
+    "title": "Categories — empty list",
+    "description": "The categories tab for a freshly created budget, before any group exists."
+  },
+  {
+    "seq": 2,
+    "file": "02-create-group-form.png",
+    "title": "Create group — form filled",
+    "description": "The new-group modal filled with a name."
+  },
+  {
+    "seq": 3,
+    "file": "03-create-group-success.png",
+    "title": "Create group — success",
+    "description": "Success toast and the new group listed."
+  },
+  {
+    "seq": 4,
+    "file": "04-create-group-duplicate-error.png",
+    "title": "Create group — duplicate name error",
+    "description": "Reusing an existing group name in the same budget is rejected with CATEGORY_GROUP_NAME_DUPLICATE."
+  },
+  {
+    "seq": 5,
+    "file": "05-create-category-form.png",
+    "title": "Create category — form filled",
+    "description": "The new-category modal, filled, nested under the Household group."
+  },
+  {
+    "seq": 6,
+    "file": "06-create-category-success.png",
+    "title": "Create category — success",
+    "description": "Success toast and the new category listed under its group."
+  },
+  {
+    "seq": 7,
+    "file": "07-create-category-duplicate-error.png",
+    "title": "Create category — duplicate name error",
+    "description": "Reusing an existing category name in the same group is rejected with CATEGORY_NAME_DUPLICATE."
+  },
+  {
+    "seq": 8,
+    "file": "08-delete-category-confirm.png",
+    "title": "Delete category — confirm dialog",
+    "description": "The destructive-action confirmation before a soft-delete."
+  },
+  {
+    "seq": 9,
+    "file": "09-delete-category-success.png",
+    "title": "Delete category — success",
+    "description": "Soft-deleted category stays listed with a \"Deleted\" badge and a Restore action."
+  },
+  {
+    "seq": 10,
+    "file": "10-restore-category-success.png",
+    "title": "Restore category — success",
+    "description": "The category is active again after restore."
+  }
+]

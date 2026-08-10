@@ -1,0 +1,44 @@
+[
+  {
+    "seq": 1,
+    "file": "01-lifetime-trend.png",
+    "title": "Dashboard — lifetime trend",
+    "description": "The default landing view: net-worth trend across all cut records."
+  },
+  {
+    "seq": 2,
+    "file": "02-series-picker-empty.png",
+    "title": "Dashboard — series picker empty state",
+    "description": "Clearing the series picker drives the chart to its empty state, proving the picker controls it."
+  },
+  {
+    "seq": 3,
+    "file": "03-budget-line-empty.png",
+    "title": "Dashboard — BudgetLine chart empty state",
+    "description": "No line or period selected yet."
+  },
+  {
+    "seq": 4,
+    "file": "04-budget-line-selected.png",
+    "title": "Dashboard — BudgetLine chart",
+    "description": "A line and two periods selected: within-cycle period-vs-period comparison."
+  },
+  {
+    "seq": 5,
+    "file": "05-cross-cycle-mode.png",
+    "title": "Dashboard — cross-cycle mode",
+    "description": "Switching modes swaps the within-cycle period picker for a cycle picker."
+  },
+  {
+    "seq": 6,
+    "file": "06-insufficient-history.png",
+    "title": "Dashboard — insufficient history",
+    "description": "Fewer than 2 cut records: an explicit empty state instead of a misleading computed band."
+  },
+  {
+    "seq": 7,
+    "file": "07-mobile-viewport.png",
+    "title": "Dashboard — mobile viewport",
+    "description": "The dashboard at a 375px-wide viewport, no horizontal overflow."
+  }
+]

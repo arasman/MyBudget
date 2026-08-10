@@ -1,0 +1,44 @@
+[
+  {
+    "seq": 1,
+    "file": "01-draft-form.png",
+    "title": "Current Situation — draft form",
+    "description": "A new cut, pre-populated with active bank accounts at balance 0 (Draft badge shown)."
+  },
+  {
+    "seq": 2,
+    "file": "02-form-filled.png",
+    "title": "Current Situation — form filled",
+    "description": "Balance and exchange rate entered, ready to save."
+  },
+  {
+    "seq": 3,
+    "file": "03-save-error.png",
+    "title": "Save — no active period error",
+    "description": "Saving fails with a 422 when no budget period covers the cut date yet."
+  },
+  {
+    "seq": 4,
+    "file": "04-save-success.png",
+    "title": "Save — success",
+    "description": "Success toast; the totals panel reflects the saved balances and exchange rate."
+  },
+  {
+    "seq": 5,
+    "file": "05-delete-confirm-empty.png",
+    "title": "Delete cut — confirm dialog",
+    "description": "Deletion requires typing the exact cut date to confirm — the button starts disabled."
+  },
+  {
+    "seq": 6,
+    "file": "06-delete-confirm-typed.png",
+    "title": "Delete cut — date typed",
+    "description": "Once the typed date matches, the delete button becomes enabled."
+  },
+  {
+    "seq": 7,
+    "file": "07-delete-success.png",
+    "title": "Delete cut — success",
+    "description": "Cut record deleted; success toast shown."
+  }
+]

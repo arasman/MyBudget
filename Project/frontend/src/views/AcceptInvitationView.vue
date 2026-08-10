@@ -56,32 +56,28 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-base-200 px-4">
-    <div class="card w-full max-w-md bg-base-100 shadow-xl">
-      <div class="card-body text-center">
-        <h1 class="card-title text-2xl justify-center mb-4">{{ t('invitation.accept.title') }}</h1>
+  <div class="text-center">
+    <h1 class="card-title text-2xl justify-center mb-4">{{ t('invitation.accept.title') }}</h1>
 
-        <!-- Loading -->
-        <div v-if="status === 'loading'" class="flex flex-col items-center gap-4">
-          <span class="loading loading-spinner loading-lg" />
-          <p class="text-base-content/70">{{ t('invitation.accept.loading') }}</p>
-        </div>
+    <!-- Loading -->
+    <div v-if="status === 'loading'" class="flex flex-col items-center gap-4">
+      <span class="loading loading-spinner loading-lg" />
+      <p class="text-base-content/70">{{ t('invitation.accept.loading') }}</p>
+    </div>
 
-        <!-- Success -->
-        <div v-else-if="status === 'success'" class="space-y-4">
-          <div class="alert alert-success">
-            <span>{{ t('invitation.accept.successMessage') }}</span>
-          </div>
-          <router-link to="/" class="btn btn-primary w-full">
-            Go to Dashboard
-          </router-link>
-        </div>
-
-        <!-- Error -->
-        <div v-else class="alert alert-error">
-          <span>{{ t(errorKey) }}</span>
-        </div>
+    <!-- Success -->
+    <div v-else-if="status === 'success'" class="space-y-4">
+      <div class="alert alert-success">
+        <span>{{ t('invitation.accept.successMessage') }}</span>
       </div>
+      <router-link to="/" class="btn btn-primary w-full">
+        Go to Dashboard
+      </router-link>
+    </div>
+
+    <!-- Error -->
+    <div v-else class="alert alert-error">
+      <span>{{ t(errorKey) }}</span>
     </div>
   </div>
 </template>

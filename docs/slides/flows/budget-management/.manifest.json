@@ -1,0 +1,62 @@
+[
+  {
+    "seq": 1,
+    "file": "01-budget-list.png",
+    "title": "Budget selection — list",
+    "description": "The budget switcher, listing every budget the user belongs to."
+  },
+  {
+    "seq": 2,
+    "file": "02-create-form.png",
+    "title": "Create budget — form filled",
+    "description": "The new-budget modal filled with a name."
+  },
+  {
+    "seq": 3,
+    "file": "03-create-duplicate-error.png",
+    "title": "Create budget — duplicate name error",
+    "description": "Reusing an existing budget name is rejected with BUDGET_NAME_DUPLICATE."
+  },
+  {
+    "seq": 4,
+    "file": "04-create-success.png",
+    "title": "Create budget — success",
+    "description": "Creating a budget navigates straight into it — an empty cycles list, name shown in the navbar."
+  },
+  {
+    "seq": 5,
+    "file": "05-delete-confirm.png",
+    "title": "Delete budget — confirm dialog",
+    "description": "The destructive-action confirmation before a soft-delete."
+  },
+  {
+    "seq": 6,
+    "file": "06-delete-success.png",
+    "title": "Delete budget — success",
+    "description": "The deleted budget drops out of the active list."
+  },
+  {
+    "seq": 7,
+    "file": "07-show-deleted-toggle.png",
+    "title": "Show deleted — toggle on",
+    "description": "Toggling \"Show deleted\" reveals the soft-deleted budget with a Restore action."
+  },
+  {
+    "seq": 8,
+    "file": "08-restore-success.png",
+    "title": "Restore budget — success",
+    "description": "The budget is active again after restore."
+  },
+  {
+    "seq": 9,
+    "file": "09-invite-accept-success.png",
+    "title": "Accept invitation — success",
+    "description": "A valid invite token grants membership and shows a success message."
+  },
+  {
+    "seq": 10,
+    "file": "10-invite-accept-error.png",
+    "title": "Accept invitation — unknown token error",
+    "description": "An invalid or expired token shows an error instead of a crash."
+  }
+]

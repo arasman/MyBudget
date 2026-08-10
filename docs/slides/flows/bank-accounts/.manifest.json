@@ -1,0 +1,62 @@
+[
+  {
+    "seq": 1,
+    "file": "01-list-empty.png",
+    "title": "Bank Accounts — empty list",
+    "description": "The bank accounts tab for a freshly created budget, before any account exists."
+  },
+  {
+    "seq": 2,
+    "file": "02-create-form.png",
+    "title": "Create account — form filled",
+    "description": "The new-account modal with alias and currency filled; positive-balance toggle defaults on."
+  },
+  {
+    "seq": 3,
+    "file": "03-create-success.png",
+    "title": "Create account — success",
+    "description": "Success toast and the new account listed."
+  },
+  {
+    "seq": 4,
+    "file": "04-create-duplicate-error.png",
+    "title": "Create account — duplicate alias error",
+    "description": "Reusing an existing alias in the same budget is rejected with ALIAS_DUPLICATE."
+  },
+  {
+    "seq": 5,
+    "file": "05-edit-form.png",
+    "title": "Edit account — form",
+    "description": "Edit modal with the alias changed (currency is locked once created)."
+  },
+  {
+    "seq": 6,
+    "file": "06-edit-success.png",
+    "title": "Edit account — success",
+    "description": "Success toast and the updated alias reflected in the list."
+  },
+  {
+    "seq": 7,
+    "file": "07-delete-confirm.png",
+    "title": "Delete account — confirm dialog",
+    "description": "The destructive-action confirmation, naming the account by alias."
+  },
+  {
+    "seq": 8,
+    "file": "08-delete-success.png",
+    "title": "Delete account — success",
+    "description": "Success toast; the deleted account drops out of the default (active-only) list."
+  },
+  {
+    "seq": 9,
+    "file": "09-show-deleted-toggle.png",
+    "title": "Show deleted — toggle on",
+    "description": "Toggling \"Show deleted\" reveals the soft-deleted account (dimmed, \"deleted\" badge) with a Restore action."
+  },
+  {
+    "seq": 10,
+    "file": "10-restore-success.png",
+    "title": "Restore account — success",
+    "description": "The account is active again after restore."
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "seq": 1,
+    "file": "01-list-empty.png",
+    "title": "Cycles — empty list",
+    "description": "The cycles list for a freshly created budget, before any cycle exists."
+  },
+  {
+    "seq": 2,
+    "file": "02-create-form.png",
+    "title": "Create cycle — form filled",
+    "description": "The new-cycle modal filled with a name and date range."
+  },
+  {
+    "seq": 3,
+    "file": "03-create-success.png",
+    "title": "Create cycle — success",
+    "description": "Success toast and the new cycle listed."
+  },
+  {
+    "seq": 4,
+    "file": "04-create-duplicate-error.png",
+    "title": "Create cycle — duplicate name error",
+    "description": "Reusing an existing cycle name in the same budget is rejected with CYCLE_NAME_DUPLICATE."
+  },
+  {
+    "seq": 5,
+    "file": "05-edit-form.png",
+    "title": "Edit cycle — form",
+    "description": "Inline edit form with the name changed."
+  },
+  {
+    "seq": 6,
+    "file": "06-edit-success.png",
+    "title": "Edit cycle — success",
+    "description": "Success toast and the updated name reflected in the list."
+  },
+  {
+    "seq": 7,
+    "file": "07-set-active-success.png",
+    "title": "Set active cycle — success",
+    "description": "The cycle marked Active, driving which cycle budget-execution defaults to."
+  },
+  {
+    "seq": 8,
+    "file": "08-delete-confirm.png",
+    "title": "Delete cycle — confirm dialog",
+    "description": "The destructive-action confirmation before a soft-delete."
+  },
+  {
+    "seq": 9,
+    "file": "09-delete-success.png",
+    "title": "Delete cycle — success",
+    "description": "Cycle soft-deleted; success toast shown."
+  }
+]
