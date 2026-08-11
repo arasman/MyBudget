@@ -10,7 +10,7 @@ Defines the full CRUD UI for budget structure entities: Cycles, Periods, Categor
 
 ### Requirement: REQ-NAV-1 — Budget Structure Navigation Tabs
 
-The budget detail view MUST render two tabs: "Cycles" and "Categories". The active tab MUST be reflected in the URL. Navigating between tabs MUST NOT lose the active budget context.
+The budget detail view MUST render three tabs when a `cycleId` prop is provided: "Cycles", "Categories", and "Matrix". When no `cycleId` prop is provided, only "Cycles" and "Categories" tabs are rendered. The "Matrix" tab MUST link to the `BudgetMatrix` named route using `{ budgetId, cycleId }` params. The "Matrix" tab MUST have its own active state tracking (not grouped with CYCLE_ROUTE_NAMES). Navigating between tabs MUST NOT lose the active budget context.
 
 #### Scenario: Default tab on budget entry
 
@@ -23,6 +23,24 @@ The budget detail view MUST render two tabs: "Cycles" and "Categories". The acti
 - GIVEN the user is on the Cycles tab
 - WHEN they click the "Categories" tab
 - THEN the URL reflects the Categories tab route
+
+#### Scenario: Matrix tab renders with cycleId
+
+- GIVEN `BudgetTabs` receives `cycleId="abc-123"`
+- WHEN it renders
+- THEN three tabs are visible: "Cycles", "Categories", "Matrix"
+
+#### Scenario: Matrix tab absent without cycleId
+
+- GIVEN `BudgetTabs` receives no `cycleId` prop
+- WHEN it renders
+- THEN only "Cycles" and "Categories" tabs are visible
+
+#### Scenario: Matrix tab active on matrix route
+
+- GIVEN the current route is `BudgetMatrix`
+- WHEN `BudgetTabs` renders
+- THEN the "Matrix" tab has the active CSS class
 
 ---
 
