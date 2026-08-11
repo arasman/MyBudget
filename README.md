@@ -26,6 +26,7 @@ MyBudget is a full-stack web application for planning, tracking, and comparing b
 - [EF Core Migrations](#ef-core-migrations)
 - [Configuration Reference](#configuration-reference)
 - [Deployment](#deployment)
+- [Presentation](#presentation)
 - [Project Status](#project-status)
 - [Known Limitations](#known-limitations)
 - [License](#license)
@@ -277,7 +278,11 @@ Other notable settings (`Project/src/MyBudget.Api/appsettings.json`):
 
 ## Deployment
 
-See [`docs/Deployment.md`](docs/DEPLOYMENT.md) for the full guide (Hetzner + Caddy + Brevo).
+Deployed to a Hetzner VPS running the app in Docker, fronted by Caddy for automatic HTTPS (Let's Encrypt), with Brevo as the transactional email provider (password reset, budget invites) in production. See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the full guide and [`docs/Deployment-LessonLearned.md`](docs/Deployment-LessonLearned.md) for lessons learned during the process.
+
+## Presentation
+
+Slide deck: [`docs/slides/presentation/MyBudget.pptx`](docs/slides/presentation/MyBudget.pptx) — value proposition, the problem it solves, architecture and development process, and a feature-by-feature walkthrough with real screenshots (89 captures across the app's flows).
 
 ## Project Status
 
