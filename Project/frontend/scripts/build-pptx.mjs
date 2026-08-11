@@ -354,6 +354,58 @@ addBulletSlide({
   ],
 })
 
+// Bloque 1bis — Funcionalidades y valor (complemento consolidado, antes del recorrido visual del Bloque 3)
+addDualBulletSlide({
+  kicker: 'Funcionalidades',
+  title: 'Qué hace MyBudget (1/3)',
+  sectionA: {
+    heading: 'Cuentas y acceso',
+    bullets: [
+      'Múltiples presupuestos por usuario, invitación de otros usuarios por email.',
+      '4 roles (Owner/Admin/Operator/Read-only) → colaboración familiar sin perder control de quién edita qué.',
+      'Login JWT, recuperación de contraseña, bloqueo tras intentos fallidos → seguridad sin fricción para uso diario.',
+    ],
+  },
+  sectionB: {
+    heading: 'Estructura de presupuesto',
+    bullets: [
+      'Ciclos y períodos con tipo de cambio propio por ciclo → refleja presupuestos anuales/mensuales reales, multi-moneda.',
+      'Rubros con historial de revisiones sin perder la auditoría → resuelve el dolor #1 de la hoja de cálculo.',
+      'Categorías y grupos reordenables → organización flexible, no columnas fijas como en Excel.',
+    ],
+  },
+})
+
+addDualBulletSlide({
+  kicker: 'Funcionalidades',
+  title: 'Qué hace MyBudget (2/3)',
+  sectionA: {
+    heading: 'Ejecución (gasto real)',
+    bullets: [
+      'Matriz multi-período con CRUD en línea → registrar gasto real sin salir de la vista comparativa.',
+      'Notas de crédito/débito, tipo de cambio por entrada → maneja casos reales que una hoja de cálculo no modela bien.',
+    ],
+  },
+  sectionB: {
+    heading: 'Situación actual',
+    bullets: [
+      'Catálogo de cuentas bancarias + "corte" diario de saldos → saldo real vs. presupuestado/ejecutado, de un vistazo.',
+      'Multi-moneda con tipo de cambio congelado (histórico) vs. transaccional (actual) → evita comparar cifras no comparables.',
+    ],
+  },
+})
+
+addBulletSlide({
+  kicker: 'Funcionalidades',
+  title: 'Qué hace MyBudget (3/3)',
+  bullets: [
+    'Dashboard analítico: tendencia histórica, banda de comportamiento promedio, comparación de rubros por período/ciclo → convierte datos crudos en decisión.',
+    'Auditoría completa de mutaciones + log de seguridad con retención de 90 días → trazabilidad total, no negociable al manejar dinero compartido.',
+    'Localización completa ES/EN → usable por toda la familia, no solo por quien lo construyó.',
+    'Fuera de alcance de este TFM (MVP B): proyectos, compromisos financieros, cuotas/deudas, import/export.',
+  ],
+})
+
 // Bloque 2
 addTableSlide({
   kicker: 'Arquitectura y proceso',
