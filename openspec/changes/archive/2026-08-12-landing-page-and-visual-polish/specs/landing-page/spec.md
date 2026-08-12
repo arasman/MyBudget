@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Public landing page at `/` presenting MyBudget's value proposition to anonymous visitors: a curated feature showcase, benefits-focused copy, and outbound links, before requiring signup. Renders inside the shared `PublicLayout`/`PublicBackdrop` visual shell (see `app-layout` LAYOUT-2/LAYOUT-3).
+Public landing page at `/` presenting MyBudget's value proposition to anonymous visitors: a curated feature showcase, benefits-focused copy, and outbound links, before requiring signup. Renders inside shared PublicLayout/PublicBackdrop shell (see `app-layout` LAYOUT-2/LAYOUT-3).
 
 ## Requirements
 

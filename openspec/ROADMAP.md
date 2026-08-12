@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-07-29 (bank-account-restore archived)
+**Last updated**: 2026-08-12 (landing-page-and-visual-polish archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -600,6 +600,32 @@ pnpm exec playwright test
 
 **SDD artifacts**: `openspec/changes/archive/2026-08-04-dashboard/`
 **Specs**: `openspec/specs/dashboard/spec.md`
+
+---
+
+### 11. `landing-page-and-visual-polish` ✅ archived 2026-08-12
+
+**What**: Public landing page at `/` with brand identity, visual shell, and footer. Enables product evaluation before signup.
+
+**Delivered** (5-PR feature-branch-chain):
+- Root-route gate: `/` renders landing for anonymous users, budget selection for authenticated users (no redirect to login)
+- Shared `PublicBackdrop` component: one source of truth for landing + auth pages visual identity
+- Brand tokens: additive Tailwind v4 `@theme` palette (no daisyUI override, no spec delta for frontend-scaffold)
+- Global `AppFooter`: "© {year} · Powered by ARAS Systems" in both shells (AppLayout + PublicLayout)
+- Curated 9-image showcase from `docs/slides/flows/*.png`; responsive layout (LANDING-7 verified end-to-end with Playwright mobile viewport test)
+- Browser-viewable deck: PDF export trial passed (docs/slides/presentation/MyBudget.pdf committed); `.pptx` fallback retained
+- i18n: `landing.*` + `footer.*` keys in EN and ES; `LanguageSwitcher` functional on landing
+- All 8/8 success criteria met; all 5 PRs merged; PASS WITH WARNINGS (0 CRITICAL, 1 known documented deviation)
+
+**Known residual / accepted deviation**:
+- LANDING-8 spec wording at archive reflects the intended/proposed behavior: "landing renders inside PublicLayout"
+- Actual shipped implementation: `RootGate` renders `LandingView` directly (bypassing PublicLayout entirely), with `PublicBackdrop` + `AppFooter` shell wrapper inside `LandingView` itself
+- This was a deliberate PR1 architecture decision (design.md Decision 1), confirmed as intentional across PR1, PR2, PR4 verify passes, and explicitly out-of-scope for PR4 fix; not a regression or deviation from spec at the time, but a refinement during implementation
+- Main specs in `openspec/specs/` have been reconciled to match the shipped behavior (LANDING-8 and LAYOUT-2/3 updated for clarity)
+
+**SDD artifacts**: `openspec/changes/archive/2026-08-12-landing-page-and-visual-polish/`
+**Specs**: `openspec/specs/landing-page/spec.md` (new), `openspec/specs/app-layout/spec.md` (LAYOUT-2/3/4 + BUDSEL-1/2 scoped)
+**Verify reports**: PR2 (PASS WITH WARNINGS, 0 CRITICAL), PR4 (PASS WITH WARNINGS, 0 CRITICAL)
 
 ---
 
