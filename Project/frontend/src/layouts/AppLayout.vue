@@ -88,7 +88,7 @@ function variantClass(action: PageAction): string {
 </script>
 
 <template>
-  <div class="min-h-screen bg-base-200">
+  <div class="min-h-screen bg-base-200 flex flex-col">
     <!-- Top Navbar -->
     <nav class="navbar bg-base-100 shadow px-4 sticky top-0 z-50">
       <!-- Left: App name / back home -->
@@ -265,7 +265,9 @@ function variantClass(action: PageAction): string {
 
     <!-- Main content -->
     <main>
-      <RouterView />
+      <slot>
+        <RouterView />
+      </slot>
     </main>
 
     <!-- Ephemeral toast overlay (bottom-right, above modals) -->

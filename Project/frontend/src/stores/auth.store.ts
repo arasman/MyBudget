@@ -130,6 +130,15 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('refreshToken')
   }
 
+  /**
+   * Clears the local session without a network call — unlike `logout()`, which
+   * POSTs with the (dead) access token and can loop through the refresh interceptor.
+   * Used when a stale/dead token is detected at `/` (see router guard).
+   */
+  function clearSession(): void {
+    _clearTokens()
+  }
+
   /** Best-effort JWT sub claim extraction for refresh calls when user not yet loaded. */
   function _tryDecodeUserId(token: string | null): string | null {
     if (!token) return null
@@ -163,6 +172,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     register,
     logout,
+    clearSession,
     refresh,
     fetchMe,
     requestPasswordReset,

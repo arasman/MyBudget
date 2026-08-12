@@ -9,7 +9,7 @@
 | Chained PRs recommended | Yes |
 | Suggested split | PR 0 → PR 1 → PR 2 → PR 3 → PR 4 |
 | Delivery strategy | ask-on-risk |
-| Chain strategy | stacked-to-main |
+| Chain strategy | feature-branch-chain |
 
 Decision needed before apply: Yes
 Chained PRs recommended: Yes
@@ -39,21 +39,21 @@ Chain strategy: stacked-to-main
 
 ## PR 1: Router Restructure + RootGate (behavioral-risk slice)
 
-- [ ] 1.1 RED: extend `Project/frontend/src/router/__tests__/` (create if absent) — anonymous visitor at `/` renders `RootGate`'s landing branch and issues zero `/api/*` calls; no redirect to `/login` (LANDING-1, LAYOUT-3)
-- [ ] 1.2 RED: same suite — authenticated single-membership user at `/` still auto-redirects to `/budgets/:budgetId` (BUDSEL-1 regression)
-- [ ] 1.3 RED: same suite — authenticated multi-membership user at `/` still sees the selection list (BUDSEL-2 regression)
-- [ ] 1.4 RED: same suite — `forcePasswordChange` still redirects to `/forgot-password?reason=force` ahead of the `/` gate
-- [ ] 1.5 RED: same suite — anonymous visit to each of the 7 `/budgets/:budgetId` children (`cycles`, `cycles/:cycleId`, `categories`, `lines`, `lines/:lineId/customizations`, `cycles/:cycleId/matrix`, `bank-accounts`, `current-situation`, `dashboard`) redirects to `/login` (threat matrix: Routing — anonymous surface)
-- [ ] 1.6 RED: same suite — `fetchMe()` failure at `/` calls `authStore.clearSession()` and renders the landing (not `/login`); `fetchMe()` failure at `/budgets/x/cycles` still redirects to `/login` (Decision 5 regression split)
-- [ ] 1.7 RED: same suite — deleted-budget redirect still lands on `/` (existing `router/index.ts:185` guard, regression)
-- [ ] 1.8 RED: extend `Project/frontend/src/layouts/__tests__/AppLayout.spec.ts` — default slot renders `<RouterView />` fallback when no slot content is passed (LAYOUT-3 slot regression, do not duplicate existing cases)
-- [ ] 1.9 GREEN: add `clearSession()` to `Project/frontend/src/stores/auth.store.ts` — thin wrapper over existing `_clearTokens()`, no network call
-- [ ] 1.10 GREEN: create `Project/frontend/src/layouts/RootGate.vue` — branches on `authStore.isAuthenticated`: renders `LandingView` (placeholder stub this PR) or `<AppLayout><BudgetSelectionView /></AppLayout>`
-- [ ] 1.11 GREEN: modify `Project/frontend/src/router/index.ts` — promote the budget subtree to its own top-level record `path: 'budgets/:budgetId'` with `meta: { requiresAuth: true }`; keep `/` as a sibling record with `component: RootGate`, `name: 'BudgetSelection'` preserved, `meta: { public: true }`
-- [ ] 1.12 GREEN: modify the guard in `router/index.ts` — compute `needsAuth = to.meta.requiresAuth === true || (to.name === 'BudgetSelection' && authStore.isAuthenticated)`; on `/` only, a `fetchMe()` failure calls `authStore.clearSession()` and `return true` instead of `/login`
-- [ ] 1.13 GREEN: modify `Project/frontend/src/layouts/AppLayout.vue` — `<main><slot><RouterView /></slot></main>`, add `flex flex-col` to the root element so `RootGate`'s `<AppLayout><BudgetSelectionView /></AppLayout>` usage works
-- [ ] 1.14 GREEN: create placeholder `Project/frontend/src/features/landing/views/LandingView.vue` stub (minimal markup, no showcase/CTA yet — full build in PR 4)
-- [ ] 1.15 REFACTOR: run `pnpm test`, `pnpm build`; confirm 1.1-1.8 pass and no other route/guard test regresses
+- [x] 1.1 RED: extend `Project/frontend/src/router/__tests__/` (create if absent) — anonymous visitor at `/` renders `RootGate`'s landing branch and issues zero `/api/*` calls; no redirect to `/login` (LANDING-1, LAYOUT-3)
+- [x] 1.2 RED: same suite — authenticated single-membership user at `/` still auto-redirects to `/budgets/:budgetId` (BUDSEL-1 regression)
+- [x] 1.3 RED: same suite — authenticated multi-membership user at `/` still sees the selection list (BUDSEL-2 regression)
+- [x] 1.4 RED: same suite — `forcePasswordChange` still redirects to `/forgot-password?reason=force` ahead of the `/` gate
+- [x] 1.5 RED: same suite — anonymous visit to each of the 7 `/budgets/:budgetId` children (`cycles`, `cycles/:cycleId`, `categories`, `lines`, `lines/:lineId/customizations`, `cycles/:cycleId/matrix`, `bank-accounts`, `current-situation`, `dashboard`) redirects to `/login` (threat matrix: Routing — anonymous surface)
+- [x] 1.6 RED: same suite — `fetchMe()` failure at `/` calls `authStore.clearSession()` and renders the landing (not `/login`); `fetchMe()` failure at `/budgets/x/cycles` still redirects to `/login` (Decision 5 regression split)
+- [x] 1.7 RED: same suite — deleted-budget redirect still lands on `/` (existing `router/index.ts:185` guard, regression)
+- [x] 1.8 RED: extend `Project/frontend/src/layouts/__tests__/AppLayout.spec.ts` — default slot renders `<RouterView />` fallback when no slot content is passed (LAYOUT-3 slot regression, do not duplicate existing cases)
+- [x] 1.9 GREEN: add `clearSession()` to `Project/frontend/src/stores/auth.store.ts` — thin wrapper over existing `_clearTokens()`, no network call
+- [x] 1.10 GREEN: create `Project/frontend/src/layouts/RootGate.vue` — branches on `authStore.isAuthenticated`: renders `LandingView` (placeholder stub this PR) or `<AppLayout><BudgetSelectionView /></AppLayout>`
+- [x] 1.11 GREEN: modify `Project/frontend/src/router/index.ts` — promote the budget subtree to its own top-level record `path: 'budgets/:budgetId'` with `meta: { requiresAuth: true }`; keep `/` as a sibling record with `component: RootGate`, `name: 'BudgetSelection'` preserved, `meta: { public: true }`
+- [x] 1.12 GREEN: modify the guard in `router/index.ts` — compute `needsAuth = to.meta.requiresAuth === true || (to.name === 'BudgetSelection' && authStore.isAuthenticated)`; on `/` only, a `fetchMe()` failure calls `authStore.clearSession()` and `return true` instead of `/login`
+- [x] 1.13 GREEN: modify `Project/frontend/src/layouts/AppLayout.vue` — `<main><slot><RouterView /></slot></main>`, add `flex flex-col` to the root element so `RootGate`'s `<AppLayout><BudgetSelectionView /></AppLayout>` usage works
+- [x] 1.14 GREEN: create placeholder `Project/frontend/src/features/landing/views/LandingView.vue` stub (minimal markup, no showcase/CTA yet — full build in PR 4)
+- [x] 1.15 REFACTOR: run `pnpm test`, `pnpm build`; confirm 1.1-1.8 pass and no other route/guard test regresses (fixed a `mockResolvedValue` type error found during this verification pass — not present in the original agent output)
 
 ## PR 2: Brand Tokens + Backdrop + Footer
 

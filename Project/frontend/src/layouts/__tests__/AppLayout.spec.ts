@@ -190,4 +190,14 @@ describe('AppLayout', () => {
       expect(screen.getByText('?')).toBeTruthy()
     })
   })
+
+  describe('default slot fallback (LAYOUT-3 regression)', () => {
+    it('renders <RouterView /> when no slot content is passed', async () => {
+      setupMocks()
+      await renderLayout()
+      // makeRouter()'s '/' route renders "Home" — proves the default slot fell back
+      // to <RouterView /> rather than rendering nothing.
+      expect(screen.getByText('Home')).toBeTruthy()
+    })
+  })
 })
