@@ -1,7 +1,13 @@
 <template>
   <PublicBackdrop>
     <div class="min-h-screen flex flex-col">
-      <header class="flex justify-end px-4 py-4">
+      <header class="flex justify-between items-center px-4 py-4">
+        <RouterLink
+          to="/"
+          class="btn btn-ghost text-lg font-bold"
+        >
+          {{ $t('common.appName') }}
+        </RouterLink>
         <LanguageSwitcher />
       </header>
       <div class="flex-1 flex items-center justify-center px-4">

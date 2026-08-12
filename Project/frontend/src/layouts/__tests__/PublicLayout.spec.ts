@@ -53,7 +53,7 @@ function makeI18n() {
     locale: 'en',
     messages: {
       en: {
-        common: { switchLanguage: 'Switch language' },
+        common: { switchLanguage: 'Switch language', appName: 'MyBudget' },
         footer: { poweredBy: 'Powered by ARAS Systems' },
       },
     },
@@ -97,6 +97,13 @@ describe('PublicLayout', () => {
     await renderLayout()
     expect(screen.getByText('EN')).toBeTruthy()
     expect(screen.getByText('ES')).toBeTruthy()
+  })
+
+  it('renders a MyBudget brand link in the header bar pointing to the landing page', async () => {
+    await renderLayout()
+    const brandLink = screen.getByRole('link', { name: 'MyBudget' })
+    expect(brandLink).toBeTruthy()
+    expect(brandLink.getAttribute('href')).toBe('/')
   })
 
   it('renders PublicBackdrop behind the content', async () => {
