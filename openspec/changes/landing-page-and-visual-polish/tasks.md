@@ -28,14 +28,14 @@ Chain strategy: stacked-to-main
 
 ## PR 0: PDF Export Trial (Windows-only, isolated)
 
-- [ ] 0.1 RED: write `Project/frontend/scripts/__tests__/export-pptx-pdf.spec.ts` — asserts the exported guard function returns failure on `process.platform !== 'win32'` and writes nothing (threat matrix: Subprocess — PowerPoint COM, case "non-Windows platform")
-- [ ] 0.2 RED: extend the same spec — asserts failure when the input `.pptx` path does not exist (threat matrix case "missing input")
-- [ ] 0.3 RED: extend the same spec — asserts failure when output is absent or zero-byte after the (mocked) COM call, never reported as success (threat matrix case "zero-byte/absent output")
-- [ ] 0.4 Add `scripts/**/*.{test,spec}.ts` to `include` in `Project/frontend/vitest.config.ts` so 0.1-0.3 run under `pnpm test`
-- [ ] 0.5 GREEN: implement `Project/frontend/scripts/export-pptx-pdf.mjs` — export a pure `checkPreconditions()`/`checkOutput()` pair (testable without spawning PowerShell) plus the `execFileSync('powershell', [...])` COM body (`Open(readOnly)` → `SaveAs(out, 32)` → `Close()`/`Quit()` in try/finally) reusing the `build-pptx.mjs`/`render-diagrams.mjs` script conventions
-- [ ] 0.6 Add `"export-pptx-pdf": "node scripts/export-pptx-pdf.mjs"` to `Project/frontend/package.json` scripts
-- [ ] 0.7 REFACTOR: run `pnpm test -- export-pptx-pdf`, confirm 0.1-0.3 pass; run `pnpm lint`
-- [ ] 0.8 Manual (gated, Windows-only, not part of `pnpm test`): run `pnpm build-pptx && pnpm export-pptx-pdf`, visually compare a screenshot-heavy slide, a diagram slide, and a text slide at 100% zoom against the `.pptx`; record pass/fail — this decides PDF vs `.pptx` fallback for PR 4's deck link (LANDING-5)
+- [x] 0.1 RED: write `Project/frontend/scripts/__tests__/export-pptx-pdf.spec.ts` — asserts the exported guard function returns failure on `process.platform !== 'win32'` and writes nothing (threat matrix: Subprocess — PowerPoint COM, case "non-Windows platform")
+- [x] 0.2 RED: extend the same spec — asserts failure when the input `.pptx` path does not exist (threat matrix case "missing input")
+- [x] 0.3 RED: extend the same spec — asserts failure when output is absent or zero-byte after the (mocked) COM call, never reported as success (threat matrix case "zero-byte/absent output")
+- [x] 0.4 Add `scripts/**/*.{test,spec}.ts` to `include` in `Project/frontend/vitest.config.ts` so 0.1-0.3 run under `pnpm test`
+- [x] 0.5 GREEN: implement `Project/frontend/scripts/export-pptx-pdf.mjs` — export a pure `checkPreconditions()`/`checkOutput()` pair (testable without spawning PowerShell) plus the `execFileSync('powershell', [...])` COM body (`Open(readOnly)` → `SaveAs(out, 32)` → `Close()`/`Quit()` in try/finally) reusing the `build-pptx.mjs`/`render-diagrams.mjs` script conventions
+- [x] 0.6 Add `"export-pptx-pdf": "node scripts/export-pptx-pdf.mjs"` to `Project/frontend/package.json` scripts
+- [x] 0.7 REFACTOR: run `pnpm test -- export-pptx-pdf`, confirm 0.1-0.3 pass; run `pnpm lint`
+- [x] 0.8 Manual (gated, Windows-only, not part of `pnpm test`): run `pnpm build-pptx && pnpm export-pptx-pdf`, visually compare a screenshot-heavy slide, a diagram slide, and a text slide at 100% zoom against the `.pptx`; record pass/fail — this decides PDF vs `.pptx` fallback for PR 4's deck link (LANDING-5)
 
 ## PR 1: Router Restructure + RootGate (behavioral-risk slice)
 

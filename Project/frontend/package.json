@@ -14,7 +14,8 @@
     "e2e:slides": "playwright test --project=screenshots",
     "slides:index": "node scripts/generate-slide-index.mjs",
     "render-diagrams": "node scripts/render-diagrams.mjs",
-    "build-pptx": "node scripts/build-pptx.mjs"
+    "build-pptx": "node scripts/build-pptx.mjs",
+    "export-pptx-pdf": "node scripts/export-pptx-pdf.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
