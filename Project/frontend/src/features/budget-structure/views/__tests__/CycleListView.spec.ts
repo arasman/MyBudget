@@ -6,7 +6,7 @@ import { createI18n } from 'vue-i18n'
 import { computed } from 'vue'
 
 import CycleListView from '../CycleListView.vue'
-import type { CycleListItem } from '../../types'
+import type { CycleListItem, DateString } from '../../types'
 
 // --- Mocks ---
 
@@ -159,8 +159,8 @@ describe('CycleListView', () => {
 
   describe('when cycles are present', () => {
     const cycles: CycleListItem[] = [
-      { id: 'c1', name: 'Cycle One', startDate: '2024-01-01' as any, endDate: '2024-12-31' as any, isActive: true, periodCount: 3 },
-      { id: 'c2', name: 'Cycle Two', startDate: '2025-01-01' as any, endDate: '2025-12-31' as any, isActive: false, periodCount: 0 },
+      { id: 'c1', name: 'Cycle One', startDate: '2024-01-01' as DateString, endDate: '2024-12-31' as DateString, isActive: true, periodCount: 3 },
+      { id: 'c2', name: 'Cycle Two', startDate: '2025-01-01' as DateString, endDate: '2025-12-31' as DateString, isActive: false, periodCount: 0 },
     ]
 
     it('renders 2 rows in the table', async () => {
@@ -207,8 +207,8 @@ describe('CycleListView', () => {
         {
           id: 'c1',
           name: 'Cycle With Alt',
-          startDate: '2024-01-01' as any,
-          endDate: '2024-12-31' as any,
+          startDate: '2024-01-01' as DateString,
+          endDate: '2024-12-31' as DateString,
           isActive: false,
           periodCount: 0,
           alternateCurrency: { id: '22222222-2222-2222-2222-222222222222', code: 'USD', name: 'US Dollar', symbol: '$' },
@@ -225,8 +225,8 @@ describe('CycleListView', () => {
         {
           id: 'c2',
           name: 'No Alt Cycle',
-          startDate: '2024-01-01' as any,
-          endDate: '2024-12-31' as any,
+          startDate: '2024-01-01' as DateString,
+          endDate: '2024-12-31' as DateString,
           isActive: false,
           periodCount: 0,
           alternateCurrency: null,

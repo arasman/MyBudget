@@ -52,7 +52,7 @@ vi.mock('../api/budgetLines.api', () => ({
 }))
 
 import * as budgetLinesApi from '../api/budgetLines.api'
-import type { BudgetLineResponse, BudgetLineRevisionResponse } from '../types'
+import type { BudgetLineResponse, BudgetLineRevisionResponse, DateString } from '../types'
 
 const BUDGET_ID = 'budget-1'
 
@@ -60,7 +60,7 @@ const mockLine: BudgetLineResponse = {
   id: 'l1',
   name: 'Salary',
   lineType: 'Expense',
-  startDate: '2025-01-01' as any,
+  startDate: '2025-01-01' as DateString,
   endDate: null,
   budgetedAmount: 1000,
   currencyId: 'currency-gtq',
@@ -189,7 +189,7 @@ describe('useBudgetStructureStore — revision actions (REQ-BLR-01, REQ-BLR-02, 
     id: 'rev-1',
     budgetedAmount: 1000,
     currencyId: 'currency-gtq',
-    validFrom: '2025-01-01' as any,
+    validFrom: '2025-01-01' as DateString,
     validTo: null,
   }
 
@@ -246,7 +246,7 @@ describe('useBudgetStructureStore — revision actions (REQ-BLR-01, REQ-BLR-02, 
         id: 'rev-1',
         budgetedAmount: 1500,
         currencyId: 'currency-gtq',
-        validFrom: '2025-01-01' as any,
+        validFrom: '2025-01-01' as DateString,
         validTo: null,
       }
       vi.mocked(budgetLinesApi.updateRevision).mockResolvedValueOnce(undefined)

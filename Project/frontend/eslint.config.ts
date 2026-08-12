@@ -22,6 +22,11 @@ export default tseslint.config(
       'vue/no-v-html': 'error',
       // Type safety: disallow explicit any
       '@typescript-eslint/no-explicit-any': 'error',
+      // Allow intentionally-unused params/vars/destructured slots prefixed with `_`
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' },
+      ],
     },
   },
 )

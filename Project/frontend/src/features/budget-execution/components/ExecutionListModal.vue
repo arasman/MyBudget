@@ -196,7 +196,7 @@ import type { ExecutionRecordDto } from '../types'
 import ExecutionRecordRow from './ExecutionRecordRow.vue'
 import ExecutionRecordForm from './ExecutionRecordForm.vue'
 
-const props = defineProps<{
+defineProps<{
   budgetId: string
 }>()
 

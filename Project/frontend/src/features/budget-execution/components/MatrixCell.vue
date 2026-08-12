@@ -19,7 +19,7 @@ import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useCurrencyDisplay } from '../composables/useCurrencyDisplay'
 
-const props = defineProps<{
+defineProps<{
   amount: number
   loading: boolean
   deleted?: boolean

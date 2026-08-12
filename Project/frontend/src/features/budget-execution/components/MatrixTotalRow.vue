@@ -33,7 +33,7 @@ import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useCurrencyDisplay } from '../composables/useCurrencyDisplay'
 import type { PeriodSummary } from '@/features/budget-structure/types'
 
-const props = defineProps<{
+defineProps<{
   /** i18n-resolved label for the total row */
   label: string
   visiblePeriods: PeriodSummary[]

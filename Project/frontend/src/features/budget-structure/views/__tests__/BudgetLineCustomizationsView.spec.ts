@@ -26,7 +26,7 @@ vi.mock('../../components/BudgetTabs.vue', () => ({
 import { useBudgetStructureStore } from '../../store'
 import { useToastStore } from '@/stores/toast.store'
 import { useLayoutStore } from '@/stores/layout.store'
-import type { BudgetLineRevisionResponse } from '../../types'
+import type { BudgetLineRevisionResponse, DateString } from '../../types'
 
 const BUDGET_ID = 'budget-1'
 const LINE_ID = 'line-1'
@@ -175,7 +175,7 @@ describe('BudgetLineCustomizationsView (REQ-BLR-05)', () => {
         budgetedAmount: 1000,
         currencyId: 'currency-gtq',
         currencyCode: 'GTQ',
-        validFrom: '2025-01-01' as any,
+        validFrom: '2025-01-01' as DateString,
         validTo: null,
       },
     ]

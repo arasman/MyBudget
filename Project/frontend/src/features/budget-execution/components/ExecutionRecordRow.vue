@@ -151,7 +151,7 @@ const props = defineProps<{
   lineId: string
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
   edit: [record: ExecutionRecordDto]
 }>()
 

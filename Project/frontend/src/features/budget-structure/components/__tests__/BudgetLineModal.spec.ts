@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor } from '@testing-library/vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { createI18n } from 'vue-i18n'
 import BudgetLineModal from '../BudgetLineModal.vue'
+import type { DateString } from '../../types'
 
 vi.mock('@/features/budget-structure/store', () => ({
   useBudgetStructureStore: () => ({
@@ -193,7 +194,7 @@ describe('BudgetLineModal — edit mode strips Amount Revision section (REQ-BLR-
       id: 'l1',
       name: 'Salary',
       lineType: 'Expense' as const,
-      startDate: '2025-01-01' as any,
+      startDate: '2025-01-01' as DateString,
       endDate: null,
       budgetedAmount: 1000,
       currencyId: 'currency-gtq',

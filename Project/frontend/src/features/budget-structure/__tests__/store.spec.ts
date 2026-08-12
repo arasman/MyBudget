@@ -46,6 +46,7 @@ vi.mock('../api/budgetLines.api', () => ({
 
 import * as cyclesApi from '../api/cycles.api'
 import * as budgetLinesApi from '../api/budgetLines.api'
+import type { CycleListItem, BudgetLineResponse, DateString } from '../types'
 
 const BUDGET_ID = 'budget-1'
 
@@ -61,11 +62,11 @@ describe('useBudgetStructureStore', () => {
 
   describe('loadCycles', () => {
     it('populates cycles from API', async () => {
-      const mockCycles = [
-        { id: 'c1', name: 'Cycle 1', startDate: '2024-01-01', endDate: '2024-12-31', isActive: true, periodCount: 3 },
-        { id: 'c2', name: 'Cycle 2', startDate: '2025-01-01', endDate: '2025-12-31', isActive: false, periodCount: 0 },
+      const mockCycles: CycleListItem[] = [
+        { id: 'c1', name: 'Cycle 1', startDate: '2024-01-01' as DateString, endDate: '2024-12-31' as DateString, isActive: true, periodCount: 3 },
+        { id: 'c2', name: 'Cycle 2', startDate: '2025-01-01' as DateString, endDate: '2025-12-31' as DateString, isActive: false, periodCount: 0 },
       ]
-      vi.mocked(cyclesApi.list).mockResolvedValueOnce(mockCycles as any)
+      vi.mocked(cyclesApi.list).mockResolvedValueOnce(mockCycles)
 
       const store = useBudgetStructureStore()
       await store.loadCycles(BUDGET_ID)
@@ -78,16 +79,16 @@ describe('useBudgetStructureStore', () => {
 
   describe('createCycle', () => {
     it('reloads the cycle list after creation', async () => {
-      vi.mocked(cyclesApi.create).mockResolvedValueOnce({ id: 'new-cycle' } as any)
+      vi.mocked(cyclesApi.create).mockResolvedValueOnce({ id: 'new-cycle' })
       vi.mocked(cyclesApi.list).mockResolvedValueOnce([
-        { id: 'new-cycle', name: 'New Cycle', startDate: '2024-01-01', endDate: '2024-12-31', isActive: false, periodCount: 0 },
-      ] as any)
+        { id: 'new-cycle', name: 'New Cycle', startDate: '2024-01-01' as DateString, endDate: '2024-12-31' as DateString, isActive: false, periodCount: 0 },
+      ])
 
       const store = useBudgetStructureStore()
       await store.createCycle(BUDGET_ID, {
         name: 'New Cycle',
-        startDate: '2024-01-01' as any,
-        endDate: '2024-12-31' as any,
+        startDate: '2024-01-01' as DateString,
+        endDate: '2024-12-31' as DateString,
         defaultCurrencyId: '11111111-1111-1111-1111-111111111111',
       })
 
@@ -102,9 +103,9 @@ describe('useBudgetStructureStore', () => {
     it('removes the cycle from the list', async () => {
       // Pre-populate
       vi.mocked(cyclesApi.list).mockResolvedValueOnce([
-        { id: 'c1', name: 'Cycle 1', startDate: '2024-01-01', endDate: '2024-12-31', isActive: false, periodCount: 0 },
-        { id: 'c2', name: 'Cycle 2', startDate: '2025-01-01', endDate: '2025-12-31', isActive: false, periodCount: 0 },
-      ] as any)
+        { id: 'c1', name: 'Cycle 1', startDate: '2024-01-01' as DateString, endDate: '2024-12-31' as DateString, isActive: false, periodCount: 0 },
+        { id: 'c2', name: 'Cycle 2', startDate: '2025-01-01' as DateString, endDate: '2025-12-31' as DateString, isActive: false, periodCount: 0 },
+      ])
       vi.mocked(cyclesApi.remove).mockResolvedValueOnce(undefined)
 
       const store = useBudgetStructureStore()
@@ -119,9 +120,9 @@ describe('useBudgetStructureStore', () => {
   describe('setActiveCycle', () => {
     it('marks only the target cycle as active', async () => {
       vi.mocked(cyclesApi.list).mockResolvedValueOnce([
-        { id: 'c1', name: 'Cycle 1', startDate: '2024-01-01', endDate: '2024-12-31', isActive: true, periodCount: 0 },
-        { id: 'c2', name: 'Cycle 2', startDate: '2025-01-01', endDate: '2025-12-31', isActive: false, periodCount: 0 },
-      ] as any)
+        { id: 'c1', name: 'Cycle 1', startDate: '2024-01-01' as DateString, endDate: '2024-12-31' as DateString, isActive: true, periodCount: 0 },
+        { id: 'c2', name: 'Cycle 2', startDate: '2025-01-01' as DateString, endDate: '2025-12-31' as DateString, isActive: false, periodCount: 0 },
+      ])
       vi.mocked(cyclesApi.setActive).mockResolvedValueOnce(undefined)
 
       const store = useBudgetStructureStore()
@@ -141,12 +142,12 @@ describe('useBudgetStructureStore', () => {
 
   describe('loadLines', () => {
     it('populates budgetLines from API', async () => {
-      const mockLines = [
-        { id: 'l1', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01', endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
-        { id: 'l2', name: 'Rent', lineType: 'Expense', startDate: '2025-01-01', endDate: null, budgetedAmount: 500, currencyId: 'gtq', categoryGroupId: 'g1' },
-        { id: 'l3', name: 'Groceries', lineType: 'Expense', startDate: '2025-01-01', endDate: null, budgetedAmount: 300, currencyId: 'gtq', categoryGroupId: 'g1' },
+      const mockLines: BudgetLineResponse[] = [
+        { id: 'l1', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01' as DateString, endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
+        { id: 'l2', name: 'Rent', lineType: 'Expense', startDate: '2025-01-01' as DateString, endDate: null, budgetedAmount: 500, currencyId: 'gtq', categoryGroupId: 'g1' },
+        { id: 'l3', name: 'Groceries', lineType: 'Expense', startDate: '2025-01-01' as DateString, endDate: null, budgetedAmount: 300, currencyId: 'gtq', categoryGroupId: 'g1' },
       ]
-      vi.mocked(budgetLinesApi.list).mockResolvedValueOnce(mockLines as any)
+      vi.mocked(budgetLinesApi.list).mockResolvedValueOnce(mockLines)
 
       const store = useBudgetStructureStore()
       await store.loadLines(BUDGET_ID)
@@ -158,10 +159,10 @@ describe('useBudgetStructureStore', () => {
 
   describe('createLine', () => {
     it('appends new line to budgetLines', async () => {
-      vi.mocked(budgetLinesApi.create).mockResolvedValueOnce({ id: 'new-line' } as any)
+      vi.mocked(budgetLinesApi.create).mockResolvedValueOnce({ id: 'new-line' })
       vi.mocked(budgetLinesApi.list).mockResolvedValueOnce([
-        { id: 'new-line', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01', endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
-      ] as any)
+        { id: 'new-line', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01' as DateString, endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
+      ])
 
       const store = useBudgetStructureStore()
       await store.createLine(BUDGET_ID, {
@@ -182,9 +183,9 @@ describe('useBudgetStructureStore', () => {
   describe('deleteLine', () => {
     it('marks the line as deleted in budgetLines (soft delete)', async () => {
       vi.mocked(budgetLinesApi.list).mockResolvedValueOnce([
-        { id: 'l1', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01', endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
-        { id: 'l2', name: 'Rent', lineType: 'Expense', startDate: '2025-01-01', endDate: null, budgetedAmount: 500, currencyId: 'gtq', categoryGroupId: 'g1' },
-      ] as any)
+        { id: 'l1', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01' as DateString, endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
+        { id: 'l2', name: 'Rent', lineType: 'Expense', startDate: '2025-01-01' as DateString, endDate: null, budgetedAmount: 500, currencyId: 'gtq', categoryGroupId: 'g1' },
+      ])
       vi.mocked(budgetLinesApi.remove).mockResolvedValueOnce(undefined)
 
       const store = useBudgetStructureStore()

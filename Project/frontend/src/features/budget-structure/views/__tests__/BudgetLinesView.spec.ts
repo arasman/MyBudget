@@ -6,7 +6,7 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 import { createI18n } from 'vue-i18n'
 import { computed, nextTick } from 'vue'
 import BudgetLinesView from '../BudgetLinesView.vue'
-import type { BudgetLineResponse } from '../../types'
+import type { BudgetLineResponse, DateString } from '../../types'
 
 // --- Mocks ---
 
@@ -60,9 +60,9 @@ import { useLayoutStore } from '@/stores/layout.store'
 const BUDGET_ID = 'budget-1'
 
 const mockLines: BudgetLineResponse[] = [
-  { id: 'l1', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01' as any, endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
-  { id: 'l2', name: 'Rent', lineType: 'Expense', startDate: '2025-01-01' as any, endDate: null, budgetedAmount: 500, currencyId: 'gtq', categoryGroupId: 'g1' },
-  { id: 'l3', name: 'Groceries', lineType: 'Expense', startDate: '2025-01-01' as any, endDate: null, budgetedAmount: 300, currencyId: 'gtq', categoryGroupId: 'g1' },
+  { id: 'l1', name: 'Salary', lineType: 'Expense', startDate: '2025-01-01' as DateString, endDate: null, budgetedAmount: 1000, currencyId: 'gtq', categoryGroupId: 'g1' },
+  { id: 'l2', name: 'Rent', lineType: 'Expense', startDate: '2025-01-01' as DateString, endDate: null, budgetedAmount: 500, currencyId: 'gtq', categoryGroupId: 'g1' },
+  { id: 'l3', name: 'Groceries', lineType: 'Expense', startDate: '2025-01-01' as DateString, endDate: null, budgetedAmount: 300, currencyId: 'gtq', categoryGroupId: 'g1' },
 ]
 
 function makeRouter() {
