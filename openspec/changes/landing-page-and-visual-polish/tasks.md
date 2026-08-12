@@ -57,16 +57,16 @@ Chain strategy: stacked-to-main
 
 ## PR 2: Brand Tokens + Backdrop + Footer
 
-- [ ] 2.1 RED: create `Project/frontend/src/components/__tests__/AppFooter.spec.ts` — renders `© {currentYear} · Powered by ARAS Systems`, no anchor/link elements (LAYOUT-4)
-- [ ] 2.2 RED: create `Project/frontend/src/components/__tests__/PublicBackdrop.spec.ts` — renders its default slot content
-- [ ] 2.3 RED: extend `Project/frontend/src/i18n/__tests__/locales.spec.ts` — add `footer.*` key coverage check for `en.json` and `es.json` (LANDING-6 scope, footer half)
-- [ ] 2.4 GREEN: add `@theme { --color-brand-* }` palette (seed `#7C3AED`/`#10B981` from `build-pptx.mjs`) plus semantic vars (`--brand-backdrop-from`, `--brand-footer-fg`) in `:root` and `[data-theme='dark']` to `Project/frontend/src/assets/main.css`
-- [ ] 2.5 GREEN: create `Project/frontend/src/components/PublicBackdrop.vue` — `fixed inset-0 -z-10` decorative layer + `relative` slot wrapper
-- [ ] 2.6 GREEN: create `Project/frontend/src/components/AppFooter.vue` — plain-text `© {year} · Powered by ARAS Systems`, no links, inherits shell background
-- [ ] 2.7 GREEN: modify `Project/frontend/src/layouts/PublicLayout.vue` — wrap content in `<PublicBackdrop>`, append `<AppFooter />`, keep the centered-card contract for `/login`/`/register`/`/forgot-password`/`/reset-password`/`/invitations/accept` (LAYOUT-2), add a header bar rendering `LanguageSwitcher`
-- [ ] 2.8 GREEN: modify `Project/frontend/src/layouts/AppLayout.vue` — append `<AppFooter />` after `<main>`
-- [ ] 2.9 GREEN: add `footer.*` i18n keys to `Project/frontend/src/i18n/locales/en.json` and `es.json`
-- [ ] 2.10 REFACTOR: run `pnpm test -- AppFooter PublicBackdrop locales`, `pnpm build`; visual smoke on `/login` and one authenticated route
+- [x] 2.1 RED: create `Project/frontend/src/components/__tests__/AppFooter.spec.ts` — renders `© {currentYear} · Powered by ARAS Systems`, no anchor/link elements (LAYOUT-4)
+- [x] 2.2 RED: create `Project/frontend/src/components/__tests__/PublicBackdrop.spec.ts` — renders its default slot content
+- [x] 2.3 RED: extend `Project/frontend/src/i18n/__tests__/locales.spec.ts` — add `footer.*` key coverage check for `en.json` and `es.json` (LANDING-6 scope, footer half)
+- [x] 2.4 GREEN: add `@theme { --color-brand-* }` palette (seed `#7C3AED`/`#10B981` from `build-pptx.mjs`) plus semantic vars (`--brand-backdrop-from`, `--brand-footer-fg`) in `:root` and `[data-theme='dark']` to `Project/frontend/src/assets/main.css`
+- [x] 2.5 GREEN: create `Project/frontend/src/components/PublicBackdrop.vue` — `fixed inset-0 -z-10` decorative layer + `relative` slot wrapper
+- [x] 2.6 GREEN: create `Project/frontend/src/components/AppFooter.vue` — plain-text `© {year} · Powered by ARAS Systems`, no links, inherits shell background
+- [x] 2.7 GREEN: modify `Project/frontend/src/layouts/PublicLayout.vue` — wrap content in `<PublicBackdrop>`, append `<AppFooter />`, keep the centered-card contract for `/login`/`/register`/`/forgot-password`/`/reset-password`/`/invitations/accept` (LAYOUT-2), add a header bar rendering `LanguageSwitcher`
+- [x] 2.8 GREEN: modify `Project/frontend/src/layouts/AppLayout.vue` — append `<AppFooter />` after `<main>`
+- [x] 2.9 GREEN: add `footer.*` i18n keys to `Project/frontend/src/i18n/locales/en.json` and `es.json`
+- [x] 2.10 REFACTOR: run `pnpm test -- AppFooter PublicBackdrop locales`, `pnpm build`; visual smoke on `/login` and one authenticated route
 
 ## PR 3: Showcase Asset Pipeline
 

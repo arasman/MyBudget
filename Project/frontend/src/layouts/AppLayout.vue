@@ -10,6 +10,7 @@ import { toRoleKey } from '@/utils/enum-key'
 import ChangePasswordModal from '@/components/auth/ChangePasswordModal.vue'
 import AppToast from '@/components/AppToast.vue'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
+import AppFooter from '@/components/AppFooter.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -264,11 +265,13 @@ function variantClass(action: PageAction): string {
     <ChangePasswordModal ref="changePasswordModal" />
 
     <!-- Main content -->
-    <main>
+    <main class="flex-1">
       <slot>
         <RouterView />
       </slot>
     </main>
+
+    <AppFooter />
 
     <!-- Ephemeral toast overlay (bottom-right, above modals) -->
     <AppToast />

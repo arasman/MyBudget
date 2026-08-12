@@ -672,5 +672,8 @@
         "mismatch": "This invitation was not sent to your email address."
       }
     }
+  },
+  "footer": {
+    "poweredBy": "Powered by ARAS Systems"
   }
 }

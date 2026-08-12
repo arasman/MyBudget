@@ -43,6 +43,7 @@ function makeI18n() {
         common: { appName: 'MyBudget' },
         nav: { backToHome: 'Back to Home' },
         auth: { logoutLabel: 'Logout' },
+        footer: { poweredBy: 'Powered by ARAS Systems' },
       },
     },
   })

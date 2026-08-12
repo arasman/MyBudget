@@ -267,3 +267,18 @@ describe('i18n locale keys — dashboard page assembly (DASH-7/10)', () => {
     expect(es.dashboard.tabTitle.length).toBeGreaterThan(0)
   })
 })
+
+// LAYOUT-4 / LANDING-6: AppFooter copy must exist in both locales
+describe('i18n locale keys — footer (LAYOUT-4/LANDING-6)', () => {
+  it('en.json contains footer.poweredBy', () => {
+    expect(en.footer).toHaveProperty('poweredBy')
+    expect(typeof en.footer.poweredBy).toBe('string')
+    expect(en.footer.poweredBy.length).toBeGreaterThan(0)
+  })
+
+  it('es.json contains footer.poweredBy', () => {
+    expect(es.footer).toHaveProperty('poweredBy')
+    expect(typeof es.footer.poweredBy).toBe('string')
+    expect(es.footer.poweredBy.length).toBeGreaterThan(0)
+  })
+})

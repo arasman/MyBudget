@@ -10,3 +10,36 @@
 @plugin "daisyui" {
   themes: light, dark;
 }
+
+/*
+ * Brand tokens (additive only — no daisyUI theme var is overridden here).
+ * Seeded from the deck palette (scripts/build-pptx.mjs COLOR.primary/accent)
+ * for visual continuity between the app and the presentation deck.
+ *
+ * Tier (a): raw @theme palette -> generates bg-brand-N / text-brand-N utilities.
+ * Tier (b): semantic vars that follow the daisyUI [data-theme] toggle -
+ * consumed by PublicBackdrop/AppFooter instead of the raw palette directly.
+ */
+@theme {
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #7c3aed;
+  --color-brand-600: #6d28d9;
+  --color-brand-700: #5b21b6;
+  --color-brand-800: #4c1d95;
+  --color-brand-900: #3b0764;
+  --color-brand-accent: #10b981;
+}
+
+:root {
+  --brand-backdrop-from: var(--color-brand-100);
+  --brand-footer-fg: var(--color-brand-700);
+}
+
+[data-theme='dark'] {
+  --brand-backdrop-from: var(--color-brand-900);
+  --brand-footer-fg: var(--color-brand-300);
+}
