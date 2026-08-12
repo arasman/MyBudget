@@ -7,6 +7,14 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
   {
+    files: ['**/*.vue'],
+    languageOptions: {
+      parserOptions: {
+        parser: tseslint.parser,
+      },
+    },
+  },
+  {
     rules: {
       // Allow single-word component names (common in Vue 3 composition patterns)
       'vue/multi-word-component-names': 'off',
