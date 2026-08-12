@@ -74,11 +74,11 @@ Chain strategy: stacked-to-main
 
 ## PR 3: Showcase Asset Pipeline
 
-- [ ] 3.1 GREEN: create `Project/frontend/scripts/build-showcase.mjs` — `sharp` resize/WebP of the 9 curated `docs/slides/flows/*` PNGs into `Project/frontend/public/showcase/{slug}-{640,1280}.webp`, following the manual-regenerate posture of `build-pptx.mjs`/`render-diagrams.mjs` (no vitest coverage — a generated-artifact script, per design's testing strategy)
-- [ ] 3.2 GREEN: add `"build-showcase": "node scripts/build-showcase.mjs"` to `Project/frontend/package.json` scripts
-- [ ] 3.3 GREEN: create `Project/frontend/src/features/landing/config/showcase.ts` — `ShowcaseItem[]` const, 9 entries (`slug`, `source`, `i18nKey`) covering `auth`, `bank-accounts`, `budget-execution`, `budget-management`, `budget-structure-categories`, `budget-structure-cycles`, `budget-structure-periods-lines`, `current-situation`, `dashboard`
-- [ ] 3.4 GREEN: create `Project/frontend/src/features/landing/config/links.ts` — GitHub repo/README/deck outbound URL consts (plain strings, not i18n keys)
-- [ ] 3.5 Run `pnpm build-showcase`, review the 9 generated WebP outputs for framing/quality, commit `Project/frontend/public/showcase/*.webp`
+- [x] 3.1 GREEN: create `Project/frontend/scripts/build-showcase.mjs` — `sharp` resize/WebP of the 9 curated `docs/slides/flows/*` PNGs into `Project/frontend/public/showcase/{slug}-{640,1280}.webp`, following the manual-regenerate posture of `build-pptx.mjs`/`render-diagrams.mjs` (no vitest coverage — a generated-artifact script, per design's testing strategy)
+- [x] 3.2 GREEN: add `"build-showcase": "node scripts/build-showcase.mjs"` to `Project/frontend/package.json` scripts
+- [x] 3.3 GREEN: create `Project/frontend/src/features/landing/config/showcase.ts` — `ShowcaseItem[]` const, 9 entries (`slug`, `source`, `i18nKey`) covering `auth`, `bank-accounts`, `budget-execution`, `budget-management`, `budget-structure-categories`, `budget-structure-cycles`, `budget-structure-periods-lines`, `current-situation`, `dashboard`
+- [x] 3.4 GREEN: create `Project/frontend/src/features/landing/config/links.ts` — GitHub repo/README/deck outbound URL consts (plain strings, not i18n keys)
+- [x] 3.5 Run `pnpm build-showcase`, review the 9 generated WebP outputs for framing/quality, commit `Project/frontend/public/showcase/*.webp`
 
 ## PR 4: Landing Page Components + Wiring
 
