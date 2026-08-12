@@ -35,6 +35,11 @@ MyBudget is a full-stack web application for planning, tracking, and comparing b
 
 ## Features
 
+**Public landing page**
+
+- Marketing landing page at `/` for anonymous visitors — value proposition, a curated 9-tile screenshot showcase (hover, focus, or tap a tile to enlarge it in place), and links to sign up, log in, the repo, and the presentation deck
+- Authenticated visitors are routed straight to their budget as before; the landing page never shows for a logged-in session
+
 **Accounts & access**
 
 - Registration, JWT login/refresh/logout, forgot/reset password, forced password change, account lockout after failed attempts
@@ -177,7 +182,7 @@ pnpm install
 pnpm dev
 ```
 
-Open **http://localhost:5173**. Register a new account, or use the [demo credentials](#demo-credentials) below.
+Open **http://localhost:5173** — the public landing page. Sign up or log in from there, or use the [demo credentials](#demo-credentials) below.
 
 <details>
 <summary>Alternative: run the API in Docker too</summary>
@@ -209,7 +214,7 @@ docker exec -i -e PGPASSWORD=mybudget project-postgres-1 psql -U mybudget -d myb
 
 To remove the demo data: `scripts/db/cleanup_dashboard_demo.sql` (same invocation pattern).
 
-The published version can be found at [https://mybudget-aras.duckdns.org](#https://mybudget-aras.duckdns.org/login), where a user can sign-in with provided credentials or sign-up if want to use its own user.
+The published version can be found at [https://mybudget-aras.duckdns.org](https://mybudget-aras.duckdns.org), which opens on the public landing page — sign in with the provided credentials, or sign up to use your own user.
 
 ## Testing
 
