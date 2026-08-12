@@ -1,6 +1,6 @@
 # MyBudget — Feature Roadmap
 
-**Last updated**: 2026-08-12 (landing-page-and-visual-polish archived)
+**Last updated**: 2026-08-13 (showcase-hover-zoom archived)
 **Source**: `AnalisisInicial/` domain analysis + SDD exploration artifacts
 
 ---
@@ -626,6 +626,30 @@ pnpm exec playwright test
 **SDD artifacts**: `openspec/changes/archive/2026-08-12-landing-page-and-visual-polish/`
 **Specs**: `openspec/specs/landing-page/spec.md` (new), `openspec/specs/app-layout/spec.md` (LAYOUT-2/3/4 + BUDSEL-1/2 scoped)
 **Verify reports**: PR2 (PASS WITH WARNINGS, 0 CRITICAL), PR4 (PASS WITH WARNINGS, 0 CRITICAL)
+
+---
+
+### 11b. `showcase-hover-zoom` ✅ archived 2026-08-13
+
+**What**: Interactive tile enlargement on the landing page showcase — hover/focus/click magnifies one tile at a time, displaying UI detail while maintaining responsive layout.
+
+**Delivered** (1 PR, single branch):
+- `FlowShowcase.vue` owns `activeSlug` state via `useShowcaseZoom()` composable (dwell timer on hover, zero-delay on focus/click/Enter/Space)
+- `ShowcaseTile.vue` root changed from `<figure>` to `<button><figure>` for native focus + keyboard access
+- Active tile expanded to full grid-container width via absolute positioning + CSS custom properties; no inline `px` widths (preserves LANDING-7 regression guard)
+- Non-active tiles dimmed via `aria-hidden` + `inert` and excluded from tab order
+- Desktop dwell delay (~175ms) prevents accidental pop-up on pointer sweep; keyboard activation immediate (WCAG 1.4.13 compliance)
+- Tap/click outside or Escape dismisses the active tile
+- Reduced motion respects `prefers-reduced-motion: reduce` by disabling the enlarge transition
+- Below `sm:` (640px) breakpoint, interaction fully disabled — tiles render static (mobile no-op)
+- New `main.css` transition tokens + first prefers-reduced-motion block in codebase
+- i18n: `landing.showcase.enlarge` + `landing.showcase.dismissHint` keys in EN and ES
+- LANDING-9 spec scenario: 9 scenarios all compliant (dwell hover, keyboard focus, click/tap, escape/tap-outside dismiss, sibling de-emphasis, mobile no-op, reduced-motion, no-overflow regression)
+- All 38/38 tasks complete; 1 post-verify fixup for untested reduced-motion scenario (RED→GREEN independently reproduced, circular citation removed from proposal.md)
+- 0 CRITICAL issues at archive; 2 non-blocking WARNINGs (Tab-traversal via `inert` proxy, standing side-effect fragility from unscoped Playwright runs)
+
+**SDD artifacts**: `openspec/changes/archive/2026-08-13-showcase-hover-zoom/`
+**Specs**: `openspec/specs/landing-page/spec.md` (LANDING-9 added)
 
 ---
 
