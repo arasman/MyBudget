@@ -6,8 +6,12 @@
 // PR 4 (tasks 4.2-4.4) extends this file with the real landing content:
 // LANDING-2 (9 showcase tiles), LANDING-3 (primary/secondary CTA),
 // LANDING-4 (secondary outbound links), and LANDING-7 (mobile responsive).
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/vue'
+//
+// LANDING-9 extends it further: FlowShowcase now mounts useShowcaseZoom(),
+// which calls window.matchMedia — jsdom ships none, so this file stubs it
+// itself (design.md Testing Strategy; no global vitest setup file exists).
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { createI18n } from 'vue-i18n'
@@ -31,6 +35,18 @@ vi.mock('@/stores/locale.store', () => ({
 vi.mock('@/stores/auth.store', () => ({
   useAuthStore: vi.fn(() => ({ isAuthenticated: false })),
 }))
+
+function stubMatchMedia(matches: boolean): void {
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn((query: string) => ({
+      matches,
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })),
+  )
+}
 
 function makeRouter() {
   const router = createRouter({
@@ -61,7 +77,11 @@ function makeI18n() {
         footer: { poweredBy: 'Powered by ARAS Systems' },
         landing: {
           hero: { title: 'Budget with clarity', subtitle: 'See your money story' },
-          showcase: showcaseMessages,
+          showcase: {
+            ...showcaseMessages,
+            enlarge: 'Enlarge {title}',
+            dismissHint: 'Press Escape or click outside to close',
+          },
           cta: { primary: 'Create your free account', secondary: 'Sign in' },
           links: { github: 'View source on GitHub', readme: 'Read the docs', deck: 'View the presentation' },
         },
@@ -82,6 +102,11 @@ describe('LandingView', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    stubMatchMedia(true)
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
   })
 
   it('renders AppFooter for anonymous visitors at "/"', async () => {
@@ -167,5 +192,26 @@ describe('LandingView', () => {
 
     const ctaSection = container.querySelector('[data-testid="landing-cta"]')
     expect(ctaSection?.querySelectorAll('a').length).toBeGreaterThanOrEqual(2)
+  })
+
+  // LANDING-9 regression guard (design's "Unit — regression" test-strategy
+  // row, task 3.7): the enlarge state must not duplicate a tile node, and
+  // the geometry calc() must never introduce an inline px width — even with
+  // a tile forced active, exactly matching the LANDING-7 guard above.
+  it('keeps exactly 9 showcase tiles and no inline px width > 375 with a tile forced active (LANDING-9/LANDING-7 regression)', async () => {
+    const { container } = await renderLandingView()
+
+    const tiles = container.querySelectorAll('[data-testid="showcase-tile"]')
+    await fireEvent.click(tiles[0] as HTMLElement)
+    await Promise.resolve()
+
+    expect(container.querySelectorAll('[data-testid="showcase-tile"]')).toHaveLength(9)
+    expect(tiles[0]?.className).toContain('showcase-zoom-card')
+
+    const overflowingFixedWidthEl = Array.from(container.querySelectorAll<HTMLElement>('*')).find((el) => {
+      const inlineWidth = el.style.width
+      return inlineWidth.endsWith('px') && parseFloat(inlineWidth) > 375
+    })
+    expect(overflowingFixedWidthEl).toBeUndefined()
   })
 })

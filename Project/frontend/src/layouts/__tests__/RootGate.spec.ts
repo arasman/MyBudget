@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
@@ -64,6 +64,19 @@ describe('RootGate', () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
 
+    // The anonymous branch mounts LandingView -> FlowShowcase, which now
+    // calls useShowcaseZoom() (LANDING-9) -> window.matchMedia. jsdom ships
+    // none — stub it here too (design.md Testing Strategy).
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn((query: string) => ({
+        matches: true,
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    )
+
     vi.mocked(useLayoutStore).mockReturnValue({
       activeBudgetId: null,
       activeBudgetName: null,
@@ -88,6 +101,10 @@ describe('RootGate', () => {
       push: vi.fn(),
       dismiss: vi.fn(),
     } as unknown as ReturnType<typeof useToastStore>)
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
   })
 
   async function renderRootGate() {

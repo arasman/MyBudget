@@ -714,7 +714,9 @@
       "dashboard": {
         "title": "See the trend, not just the number",
         "caption": "Lifetime trends, average behavior bands, and per-line charts turn raw numbers into a clear story."
-      }
+      },
+      "enlarge": "Enlarge {title}",
+      "dismissHint": "Press Escape or click outside to close"
     },
     "cta": {
       "primary": "Create your free account",

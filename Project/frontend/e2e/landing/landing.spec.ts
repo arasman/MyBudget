@@ -52,7 +52,11 @@ test.describe('Landing page (anonymous)', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     const englishTitle = await page.getByRole('heading', { level: 1 }).innerText()
 
-    await page.getByRole('button', { name: 'ES' }).click()
+    // exact: true — LANDING-9 gives showcase tiles accessible names like
+    // "Enlarge Plan in cycles", whose "...cycles" substring fuzzy-matches an
+    // un-exact { name: 'ES' } query too (Playwright name matching is
+    // substring/case-insensitive by default).
+    await page.getByRole('button', { name: 'ES', exact: true }).click()
 
     await expect(page.getByRole('heading', { level: 1 })).not.toHaveText(englishTitle)
     // Same document — LanguageSwitcher must not trigger navigation/reload.
@@ -113,5 +117,126 @@ test.describe('Landing page (anonymous)', () => {
     }))
 
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth)
+  })
+
+  test.describe('Showcase tile enlarge on interaction (LANDING-9)', () => {
+    test('hovering a tile past the dwell delay enlarges it to the grid-container width and dims the other 8 (dwell hover)', async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 800 })
+      await page.goto('/')
+      await page.evaluate(() => localStorage.clear())
+      await page.reload()
+
+      const tiles = page.getByTestId('showcase-tile')
+      await expect(tiles).toHaveCount(9)
+
+      const grid = page.getByTestId('flow-showcase-grid')
+      const gridBox = await grid.boundingBox()
+      expect(gridBox).not.toBeNull()
+
+      const first = tiles.first()
+      await first.hover()
+      // Past the ~175ms dwell delay AND the 180ms width/left CSS transition
+      // (main.css .showcase-zoom-card) — otherwise boundingBox() below reads
+      // a mid-transition frame, not the settled geometry.
+      await page.waitForTimeout(500)
+
+      await expect(first).toHaveClass(/showcase-zoom-card/)
+      const tileBox = await first.boundingBox()
+      expect(tileBox).not.toBeNull()
+      expect(Math.round(tileBox!.width)).toBeCloseTo(Math.round(gridBox!.width), -1)
+
+      const second = tiles.nth(1)
+      await expect(second).toHaveJSProperty('inert', true)
+      await expect(second).toHaveAttribute('aria-hidden', 'true')
+    })
+
+    test('a pointer sweep across tiles without dwelling on any single one enlarges none of them (sweep without dwell)', async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 800 })
+      await page.goto('/')
+      await page.evaluate(() => localStorage.clear())
+      await page.reload()
+
+      const tiles = page.getByTestId('showcase-tile')
+      for (let i = 0; i < 4; i++) {
+        await tiles.nth(i).hover()
+        await page.waitForTimeout(50) // well under the ~175ms dwell
+      }
+
+      for (let i = 0; i < 4; i++) {
+        await expect(tiles.nth(i)).not.toHaveClass(/showcase-zoom-card/)
+      }
+    })
+
+    test('Tab enlarges a tile immediately (no wait), synchronized with the focus ring; Escape dismisses it and focus stays reachable', async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 800 })
+      await page.goto('/')
+      await page.evaluate(() => localStorage.clear())
+      await page.reload()
+
+      const first = page.getByTestId('showcase-tile').first()
+      await first.focus()
+
+      await expect(first).toHaveClass(/showcase-zoom-card/)
+      await expect(first).toBeFocused()
+
+      await page.keyboard.press('Escape')
+
+      await expect(first).not.toHaveClass(/showcase-zoom-card/)
+      const activeTag = await page.evaluate(() => document.activeElement?.tagName ?? null)
+      expect(activeTag).not.toBeNull()
+    })
+
+    test('no horizontal overflow while a tile is active at 1280x800 (LANDING-7 regression, active state)', async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 800 })
+      await page.goto('/')
+      await page.evaluate(() => localStorage.clear())
+      await page.reload()
+
+      const first = page.getByTestId('showcase-tile').first()
+      await first.click()
+      await expect(first).toHaveClass(/showcase-zoom-card/)
+      await page.waitForTimeout(200) // past the 180ms width/left transition
+
+      const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+      }))
+
+      expect(scrollWidth).toBeLessThanOrEqual(clientWidth)
+    })
+
+    test('below the sm: breakpoint (375px) hovering/tapping a tile never enlarges it and LANDING-7 still holds', async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 375, height: 812 })
+      await page.goto('/')
+      await page.evaluate(() => localStorage.clear())
+      await page.reload()
+
+      const first = page.getByTestId('showcase-tile').first()
+      await first.hover()
+      await page.waitForTimeout(300)
+      // Touch is out of scope for the chromium project (no hasTouch context);
+      // a click stands in for "tap" here — both must be no-ops below sm:.
+      await first.click()
+      await page.waitForTimeout(100)
+
+      await expect(first).not.toHaveClass(/showcase-zoom-card/)
+
+      const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+      }))
+
+      expect(scrollWidth).toBeLessThanOrEqual(clientWidth)
+    })
   })
 })

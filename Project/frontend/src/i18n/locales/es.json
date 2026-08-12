@@ -714,7 +714,9 @@
       "dashboard": {
         "title": "Mirá la tendencia, no solo el número",
         "caption": "Tendencias históricas, bandas de comportamiento promedio y gráficos por línea convierten los números en una historia clara."
-      }
+      },
+      "enlarge": "Ampliar {title}",
+      "dismissHint": "Presioná Escape o hacé clic afuera para cerrar"
     },
     "cta": {
       "primary": "Creá tu cuenta gratis",

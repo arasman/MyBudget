@@ -333,3 +333,17 @@ describe('i18n locale keys — landing page (LANDING-2/LANDING-3/LANDING-4/LANDI
     expect(es.landing.links.deck.length).toBeGreaterThan(0)
   })
 })
+
+// LANDING-9: showcase tile enlarge-on-interaction copy (button aria-label +
+// visually-hidden dismiss hint) must exist in both locales.
+describe('i18n locale keys — showcase tile enlarge on interaction (LANDING-9)', () => {
+  it('en.json and es.json contain landing.showcase.enlarge', () => {
+    expect(en.landing.showcase.enlarge.length).toBeGreaterThan(0)
+    expect(es.landing.showcase.enlarge.length).toBeGreaterThan(0)
+  })
+
+  it('en.json and es.json contain landing.showcase.dismissHint', () => {
+    expect(en.landing.showcase.dismissHint.length).toBeGreaterThan(0)
+    expect(es.landing.showcase.dismissHint.length).toBeGreaterThan(0)
+  })
+})

@@ -43,3 +43,53 @@
   --brand-backdrop-from: var(--color-brand-900);
   --brand-footer-fg: var(--color-brand-300);
 }
+
+/*
+ * LANDING-9 showcase tile enlarge (design.md decisions #2/#3/#6/#7).
+ * Scoped inside `@media (min-width: 640px)` as defense in depth: even if the
+ * JS `matchMedia('(min-width: 640px)')` gate in useShowcaseZoom.ts regresses
+ * and applies these classes below sm:, this block still resolves to nothing.
+ *
+ * `.showcase-zoom-card` lifts the active tile out of flow, absolutely
+ * positioned inside its own `.showcase-cell` (a `relative` grid cell — see
+ * FlowShowcase.vue). `--zoom-col`/`--zoom-cols` are unitless integers set
+ * inline by useShowcaseZoom.ts's zoomVars(); no inline px width exists, so
+ * the LANDING-7 `el.style.width` unit guard stays untouched. `.showcase-cell
+ * .showcase-cell--active::before` reserves the vacated cell's box (the
+ * 16:10 image ratio) so sibling rows do not reflow while a tile is active.
+ */
+@media (min-width: 640px) {
+  .showcase-cell {
+    position: relative;
+  }
+
+  .showcase-cell--active::before {
+    content: '';
+    display: block;
+    aspect-ratio: 16 / 10;
+  }
+
+  .showcase-zoom-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 20;
+    --gap: 1.5rem; /* mirrors gap-6 on the showcase grid */
+    left: calc(-1 * var(--zoom-col, 0) * (100% + var(--gap)));
+    width: calc(var(--zoom-cols, 1) * 100% + (var(--zoom-cols, 1) - 1) * var(--gap));
+    transition:
+      opacity 180ms ease-out,
+      width 180ms ease-out,
+      left 180ms ease-out;
+  }
+}
+
+/* This is the first `prefers-reduced-motion` handling in the codebase
+   (proposal.md "New Conventions Introduced"). Positioning already uses
+   left/width, never transform, so reduced motion needs no scale to unwind
+   — the enlarged state simply appears. */
+@media (prefers-reduced-motion: reduce) {
+  .showcase-zoom-card {
+    transition: none;
+  }
+}
