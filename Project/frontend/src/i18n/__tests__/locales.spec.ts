@@ -282,3 +282,54 @@ describe('i18n locale keys — footer (LAYOUT-4/LANDING-6)', () => {
     expect(es.footer.poweredBy.length).toBeGreaterThan(0)
   })
 })
+
+// LANDING-2/LANDING-3/LANDING-4/LANDING-6: landing page copy (hero, 9 curated
+// showcase tiles per features/landing/config/showcase.ts's i18nKeys, CTA,
+// outbound links) must exist in both locales.
+describe('i18n locale keys — landing page (LANDING-2/LANDING-3/LANDING-4/LANDING-6)', () => {
+  it('en.json and es.json contain landing.hero.title/subtitle', () => {
+    expect(en.landing.hero.title.length).toBeGreaterThan(0)
+    expect(en.landing.hero.subtitle.length).toBeGreaterThan(0)
+    expect(es.landing.hero.title.length).toBeGreaterThan(0)
+    expect(es.landing.hero.subtitle.length).toBeGreaterThan(0)
+  })
+
+  // Mirrors the 9 i18nKey suffixes in features/landing/config/showcase.ts
+  const showcaseKeys = [
+    'auth',
+    'bankAccounts',
+    'budgetExecution',
+    'budgetManagement',
+    'budgetStructureCategories',
+    'budgetStructureCycles',
+    'budgetStructurePeriodsLines',
+    'currentSituation',
+    'dashboard',
+  ] as const
+
+  it.each(showcaseKeys)('en.json contains landing.showcase.%s.title/caption', (key) => {
+    expect(en.landing.showcase[key].title.length).toBeGreaterThan(0)
+    expect(en.landing.showcase[key].caption.length).toBeGreaterThan(0)
+  })
+
+  it.each(showcaseKeys)('es.json contains landing.showcase.%s.title/caption', (key) => {
+    expect(es.landing.showcase[key].title.length).toBeGreaterThan(0)
+    expect(es.landing.showcase[key].caption.length).toBeGreaterThan(0)
+  })
+
+  it('en.json and es.json contain landing.cta.primary/secondary', () => {
+    expect(en.landing.cta.primary.length).toBeGreaterThan(0)
+    expect(en.landing.cta.secondary.length).toBeGreaterThan(0)
+    expect(es.landing.cta.primary.length).toBeGreaterThan(0)
+    expect(es.landing.cta.secondary.length).toBeGreaterThan(0)
+  })
+
+  it('en.json and es.json contain landing.links.github/readme/deck', () => {
+    expect(en.landing.links.github.length).toBeGreaterThan(0)
+    expect(en.landing.links.readme.length).toBeGreaterThan(0)
+    expect(en.landing.links.deck.length).toBeGreaterThan(0)
+    expect(es.landing.links.github.length).toBeGreaterThan(0)
+    expect(es.landing.links.readme.length).toBeGreaterThan(0)
+    expect(es.landing.links.deck.length).toBeGreaterThan(0)
+  })
+})

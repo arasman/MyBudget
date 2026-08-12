@@ -282,7 +282,7 @@ Deployed to a Hetzner VPS running the app in Docker, fronted by Caddy for automa
 
 ## Presentation
 
-Slide deck: [`docs/slides/presentation/MyBudget.pptx`](docs/slides/presentation/MyBudget.pptx) — value proposition, the problem it solves, architecture and development process, and a feature-by-feature walkthrough with real screenshots (89 captures across the app's flows).
+Slide deck: [`docs/slides/presentation/MyBudget.pdf`](docs/slides/presentation/MyBudget.pdf) (browser-viewable; [`.pptx` source](docs/slides/presentation/MyBudget.pptx) also available) — value proposition, the problem it solves, architecture and development process, and a feature-by-feature walkthrough with real screenshots (89 captures across the app's flows).
 
 ## Project Status
 

@@ -82,18 +82,23 @@ Chain strategy: stacked-to-main
 
 ## PR 4: Landing Page Components + Wiring
 
-- [ ] 4.1 RED: extend `Project/frontend/src/i18n/__tests__/locales.spec.ts` — add `landing.*` key coverage check (hero, showcase captions per the 9 `i18nKey`s, CTA, links) for `en.json` and `es.json` (LANDING-6)
-- [ ] 4.2 RED: create `Project/frontend/src/features/landing/__tests__/LandingView.spec.ts` — renders exactly 9 showcase tiles (LANDING-2), primary `/register` CTA styled `btn-primary` and secondary `/login` styled `btn-ghost` (LANDING-3), GitHub/README/deck links present and visually secondary (LANDING-4)
-- [ ] 4.3 RED: extend the same spec — `ShowcaseTile` renders `<picture>` with srcset, `loading="lazy"`, explicit `width`/`height`
-- [ ] 4.4 RED: extend the same spec — mobile viewport (e.g. 375px) renders showcase and CTAs without horizontal overflow (LANDING-7)
-- [ ] 4.5 GREEN: build `Project/frontend/src/features/landing/components/LandingHero.vue`
-- [ ] 4.6 GREEN: build `Project/frontend/src/features/landing/components/FlowShowcase.vue` and `ShowcaseTile.vue` — `aspect-[16/10] object-cover object-top` frame, `<picture>` srcset from `showcase.ts`, `loading="lazy"`, explicit dimensions
-- [ ] 4.7 GREEN: build `Project/frontend/src/features/landing/components/LandingCta.vue` — primary `/register` `btn-primary`, secondary `/login` `btn-ghost`
-- [ ] 4.8 GREEN: build `Project/frontend/src/features/landing/components/LandingLinks.vue` — GitHub/README/deck links from `links.ts`, visually subordinate to the CTA
-- [ ] 4.9 GREEN: replace the PR 1 placeholder in `Project/frontend/src/features/landing/views/LandingView.vue` with `PublicBackdrop` + `LandingHero` + `FlowShowcase` + `LandingCta` + `LandingLinks`
-- [ ] 4.10 GREEN: add `landing.*` i18n keys (hero, per-showcase-item title+caption, CTA, links) to `en.json` and `es.json`
-- [ ] 4.11 GREEN: wire the deck link target per PR 0's trial result (0.8): PDF if the trial passed, `.pptx` fallback otherwise; update `README.md:285` accordingly
-- [ ] 4.12 RED: add a Playwright E2E case — anonymous `/` shows the landing with zero authenticated API calls in the network log, no `/login` bounce (threat matrix: Routing — anonymous surface, full-stack confirmation of 1.1)
-- [ ] 4.13 RED: extend the same E2E — `LanguageSwitcher` works on the landing without a page reload (LANDING-6); signup CTA navigates to `/register`; footer visible on both a public route and an authenticated route (LAYOUT-4)
-- [ ] 4.14 GREEN: implement whatever landing markup is still missing to satisfy 4.12-4.13
-- [ ] 4.15 REFACTOR: run `pnpm test`, `pnpm build`, `pnpm exec playwright test`; confirm all RED tests across PR 1-4 are GREEN; update `openspec/changes/landing-page-and-visual-polish/` success-criteria checklist in `proposal.md`
+- [x] 4.1 RED: extend `Project/frontend/src/i18n/__tests__/locales.spec.ts` — add `landing.*` key coverage check (hero, showcase captions per the 9 `i18nKey`s, CTA, links) for `en.json` and `es.json` (LANDING-6)
+- [x] 4.2 RED: create `Project/frontend/src/features/landing/__tests__/LandingView.spec.ts` — renders exactly 9 showcase tiles (LANDING-2), primary `/register` CTA styled `btn-primary` and secondary `/login` styled `btn-ghost` (LANDING-3), GitHub/README/deck links present and visually secondary (LANDING-4)
+- [x] 4.3 RED: extend the same spec — `ShowcaseTile` renders `<picture>` with srcset, `loading="lazy"`, explicit `width`/`height`
+- [x] 4.4 RED: extend the same spec — mobile viewport (e.g. 375px) renders showcase and CTAs without horizontal overflow (LANDING-7)
+- [x] 4.5 GREEN: build `Project/frontend/src/features/landing/components/LandingHero.vue`
+- [x] 4.6 GREEN: build `Project/frontend/src/features/landing/components/FlowShowcase.vue` and `ShowcaseTile.vue` — `aspect-[16/10] object-cover object-top` frame, `<picture>` srcset from `showcase.ts`, `loading="lazy"`, explicit dimensions
+- [x] 4.7 GREEN: build `Project/frontend/src/features/landing/components/LandingCta.vue` — primary `/register` `btn-primary`, secondary `/login` `btn-ghost`
+- [x] 4.8 GREEN: build `Project/frontend/src/features/landing/components/LandingLinks.vue` — GitHub/README/deck links from `links.ts`, visually subordinate to the CTA
+- [x] 4.9 GREEN: replace the PR 1 placeholder in `Project/frontend/src/features/landing/views/LandingView.vue` with `PublicBackdrop` + `LandingHero` + `FlowShowcase` + `LandingCta` + `LandingLinks`
+- [x] 4.10 GREEN: add `landing.*` i18n keys (hero, per-showcase-item title+caption, CTA, links) to `en.json` and `es.json`
+- [x] 4.11 GREEN: wire the deck link target per PR 0's trial result (0.8): PDF if the trial passed, `.pptx` fallback otherwise; update `README.md:285` accordingly
+- [x] 4.12 RED: add a Playwright E2E case — anonymous `/` shows the landing with zero authenticated API calls in the network log, no `/login` bounce (threat matrix: Routing — anonymous surface, full-stack confirmation of 1.1)
+- [x] 4.13 RED: extend the same E2E — `LanguageSwitcher` works on the landing without a page reload (LANDING-6); signup CTA navigates to `/register`; footer visible on both a public route and an authenticated route (LAYOUT-4)
+- [x] 4.14 GREEN: implement whatever landing markup is still missing to satisfy 4.12-4.13
+- [x] 4.15 REFACTOR: run `pnpm test`, `pnpm build`, `pnpm exec playwright test`; confirm all RED tests across PR 1-4 are GREEN; update `openspec/changes/landing-page-and-visual-polish/` success-criteria checklist in `proposal.md`
+
+**PR 4 evidence:** `pnpm test` → 84/84 files, 702/702 tests pass. `pnpm build` (`vue-tsc -b && vite build`) → clean, no type errors. `pnpm exec playwright test` (full suite, live Docker + dotnet E2E-profile API stack) → 137/137 tests pass, including the 5 new `e2e/landing/landing.spec.ts` cases. `README.md:285` updated to link the PDF (PR 0's trial passed — `docs/slides/presentation/MyBudget.pdf` is committed) with the `.pptx` kept as a secondary source link, matching `config/links.ts`'s `DECK_URL`.
+
+**Post-verify fixup (still PR 4 scope, no new task numbers):**
+- Verify flagged LANDING-7's vitest test (4.4) as a structural/class-presence proxy only — it never rendered at a real mobile viewport, so it couldn't have caught an actual horizontal-overflow regression. Added a real Playwright case to `Project/frontend/e2e/landing/landing.spec.ts` — sets a 375px viewport, navigates to `/`, and asserts `document.documentElement.scrollWidth <= clientWidth`. Proved the test is meaningful (not tautological): temporarily injected a `min-width: 900px` sibling into `LandingView.vue`, confirmed the new test goes RED (`scrollWidth` 900 > `clientWidth` 375), reverted, confirmed GREEN against the real implementation. Full `landing.spec.ts` re-run (`--project=chromium`, 6/6 pass) and `pnpm test` (84/84 files, 702/702 tests) both green afterward. The vitest structural-proxy test in `LandingView.spec.ts` was left in place as a fast unit-level sanity check; the new Playwright case is what actually closes the LANDING-7 gap end-to-end.

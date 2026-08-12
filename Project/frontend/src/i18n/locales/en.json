@@ -673,6 +673,59 @@
       }
     }
   },
+  "landing": {
+    "hero": {
+      "title": "Budget with clarity. See your money's whole story.",
+      "subtitle": "MyBudget turns budgeting cycles, real execution, and multi-currency accounts into one clear picture — from your first budget line to year-end trends."
+    },
+    "showcase": {
+      "auth": {
+        "title": "Secure sign-up in seconds",
+        "caption": "Create an account, verify your email, and get straight to budgeting — no clutter, no friction."
+      },
+      "bankAccounts": {
+        "title": "Track every account",
+        "caption": "Register bank accounts, cash, and cards in multiple currencies, each marked as an asset or a liability."
+      },
+      "budgetExecution": {
+        "title": "Log spending against the plan",
+        "caption": "Record expenses, credit notes, and debit notes, and watch the execution matrix update in real time."
+      },
+      "budgetManagement": {
+        "title": "One home for every budget",
+        "caption": "Create, rename, and switch between budgets — perfect for personal, family, or shared finances."
+      },
+      "budgetStructureCategories": {
+        "title": "Organize by category",
+        "caption": "Group related expenses into categories so your budget structure mirrors how you actually spend."
+      },
+      "budgetStructureCycles": {
+        "title": "Plan in cycles",
+        "caption": "Define budgeting cycles with their own currency and exchange rate, and mark the one that's active."
+      },
+      "budgetStructurePeriodsLines": {
+        "title": "Line-by-line control",
+        "caption": "Set budgeted amounts per line and period, with revisions that keep history intact as plans change."
+      },
+      "currentSituation": {
+        "title": "A snapshot you can trust",
+        "caption": "Save a cut record of balances and execution at any moment — a frozen snapshot that never silently drifts."
+      },
+      "dashboard": {
+        "title": "See the trend, not just the number",
+        "caption": "Lifetime trends, average behavior bands, and per-line charts turn raw numbers into a clear story."
+      }
+    },
+    "cta": {
+      "primary": "Create your free account",
+      "secondary": "Sign in"
+    },
+    "links": {
+      "github": "View source on GitHub",
+      "readme": "Read the docs",
+      "deck": "View the presentation"
+    }
+  },
   "footer": {
     "poweredBy": "Powered by ARAS Systems"
   }

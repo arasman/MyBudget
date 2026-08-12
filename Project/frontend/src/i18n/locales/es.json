@@ -673,6 +673,59 @@
       }
     }
   },
+  "landing": {
+    "hero": {
+      "title": "Presupuesta con claridad. Mirá toda la historia de tu dinero.",
+      "subtitle": "MyBudget convierte ciclos de presupuesto, ejecución real y cuentas multi-moneda en una sola imagen clara — desde tu primera línea de presupuesto hasta las tendencias de fin de año."
+    },
+    "showcase": {
+      "auth": {
+        "title": "Registrate en segundos, de forma segura",
+        "caption": "Creá una cuenta, verificá tu correo y empezá a presupuestar — sin fricción."
+      },
+      "bankAccounts": {
+        "title": "Controlá cada cuenta",
+        "caption": "Registrá cuentas bancarias, efectivo y tarjetas en varias monedas, cada una marcada como activo o pasivo."
+      },
+      "budgetExecution": {
+        "title": "Registrá el gasto contra el plan",
+        "caption": "Registrá gastos, notas de crédito y notas de débito, y mirá cómo se actualiza la matriz de ejecución en tiempo real."
+      },
+      "budgetManagement": {
+        "title": "Un solo lugar para cada presupuesto",
+        "caption": "Creá, renombrá y cambiá entre presupuestos — ideal para finanzas personales, familiares o compartidas."
+      },
+      "budgetStructureCategories": {
+        "title": "Organizá por categoría",
+        "caption": "Agrupá gastos relacionados en categorías para que la estructura del presupuesto refleje cómo gastás realmente."
+      },
+      "budgetStructureCycles": {
+        "title": "Planificá por ciclos",
+        "caption": "Definí ciclos de presupuesto con su propia moneda y tipo de cambio, y marcá cuál está activo."
+      },
+      "budgetStructurePeriodsLines": {
+        "title": "Control línea por línea",
+        "caption": "Establecé montos presupuestados por línea y período, con revisiones que conservan el historial al cambiar los planes."
+      },
+      "currentSituation": {
+        "title": "Una foto en la que podés confiar",
+        "caption": "Guardá un registro de corte de saldos y ejecución en cualquier momento — una instantánea congelada que nunca cambia sola."
+      },
+      "dashboard": {
+        "title": "Mirá la tendencia, no solo el número",
+        "caption": "Tendencias históricas, bandas de comportamiento promedio y gráficos por línea convierten los números en una historia clara."
+      }
+    },
+    "cta": {
+      "primary": "Creá tu cuenta gratis",
+      "secondary": "Iniciar sesión"
+    },
+    "links": {
+      "github": "Ver código en GitHub",
+      "readme": "Leer la documentación",
+      "deck": "Ver la presentación"
+    }
+  },
   "footer": {
     "poweredBy": "Desarrollado por ARAS Systems"
   }

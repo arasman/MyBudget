@@ -91,14 +91,14 @@ Additive and frontend-only — no migration, no backend, no data. Revert `feat/l
 
 ## Success Criteria
 
-- [ ] Anonymous visitor at `/` sees the landing; authenticated user at `/` sees budget selection/auto-redirect exactly as today.
-- [ ] The 9 feature flows are presented as a coherent showcase, readable on mobile and desktop.
-- [ ] GitHub repo, README, deck, sign in, and sign up links all resolve from the landing.
-- [ ] The 4 auth pages share the landing's visual language via one backdrop component.
-- [ ] Footer renders on every authenticated and public page.
-- [ ] Landing and footer copy render in EN and ES.
-- [ ] No unauthenticated data exposure; existing auth-guarded routes unchanged.
-- [ ] Deck opens in-browser, or the fallback download link is documented.
+- [x] Anonymous visitor at `/` sees the landing; authenticated user at `/` sees budget selection/auto-redirect exactly as today. (PR 1 router unit tests + PR 4 `e2e/landing/landing.spec.ts` full-stack confirmation, zero `/api/*` calls, no `/login` bounce)
+- [x] The 9 feature flows are presented as a coherent showcase, readable on mobile and desktop. (`FlowShowcase`/`ShowcaseTile`, responsive `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`, LANDING-2/LANDING-7 tests)
+- [x] GitHub repo, README, deck, sign in, and sign up links all resolve from the landing. (`LandingLinks` + `LandingCta`, `config/links.ts`)
+- [x] The 4 auth pages share the landing's visual language via one backdrop component. (PR 2 `PublicBackdrop`, reused by `PublicLayout` and `LandingView`)
+- [x] Footer renders on every authenticated and public page. (PR 2 `AppFooter` in `AppLayout`/`PublicLayout`/`LandingView`; confirmed public + authenticated in E2E)
+- [x] Landing and footer copy render in EN and ES. (`landing.*`/`footer.*` keys in `en.json`/`es.json`, `i18n/__tests__/locales.spec.ts`)
+- [x] No unauthenticated data exposure; existing auth-guarded routes unchanged. (LANDING-1 unit + E2E network-log assertion; PR 1 regression coverage for all `requiresAuth` routes)
+- [x] Deck opens in-browser, or the fallback download link is documented. (PR 0 PDF trial passed — `docs/slides/presentation/MyBudget.pdf` committed and linked from `README.md:285` and `config/links.ts`)
 
 ## Open Questions (need sign-off before spec)
 
