@@ -68,6 +68,10 @@ Chain strategy: stacked-to-main
 - [x] 2.9 GREEN: add `footer.*` i18n keys to `Project/frontend/src/i18n/locales/en.json` and `es.json`
 - [x] 2.10 REFACTOR: run `pnpm test -- AppFooter PublicBackdrop locales`, `pnpm build`; visual smoke on `/login` and one authenticated route
 
+**Post-verify fixups (still PR 2 scope, no new task numbers):**
+- Wired `PublicBackdrop` + `AppFooter` into `features/landing/views/LandingView.vue`'s own shell (RootGate renders `LandingView` directly for anonymous visitors, bypassing `PublicLayout`, so the footer had to be mounted at the `LandingView` level to satisfy LAYOUT-4 on `/`). Added `Project/frontend/src/features/landing/__tests__/LandingView.spec.ts` (RED confirmed, then GREEN). PR 4 task 4.9 replaces only the inner stub `<div data-testid="landing-view">` content — the `PublicBackdrop`/`AppFooter` shell wrapper added here stays as-is.
+- Added `Project/frontend/src/layouts/__tests__/PublicLayout.spec.ts` — confirming test (component already met LAYOUT-2/LAYOUT-4, no production change needed) covering the centered-card contract, header `LanguageSwitcher`, `PublicBackdrop`, and `AppFooter` — closes the gap where this contract previously rested on manual smoke only.
+
 ## PR 3: Showcase Asset Pipeline
 
 - [ ] 3.1 GREEN: create `Project/frontend/scripts/build-showcase.mjs` — `sharp` resize/WebP of the 9 curated `docs/slides/flows/*` PNGs into `Project/frontend/public/showcase/{slug}-{640,1280}.webp`, following the manual-regenerate posture of `build-pptx.mjs`/`render-diagrams.mjs` (no vitest coverage — a generated-artifact script, per design's testing strategy)
