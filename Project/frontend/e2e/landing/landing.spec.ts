@@ -238,5 +238,33 @@ test.describe('Landing page (anonymous)', () => {
 
       expect(scrollWidth).toBeLessThanOrEqual(clientWidth)
     })
+
+    test('respects prefers-reduced-motion: reduce by disabling the enlarge transition entirely', async ({
+      page,
+    }) => {
+      // Must be set before navigation — emulateMedia affects the page's media
+      // query evaluation for the whole session, including the initial load.
+      await page.emulateMedia({ reducedMotion: 'reduce' })
+      await page.setViewportSize({ width: 1280, height: 800 })
+      await page.goto('/')
+      await page.evaluate(() => localStorage.clear())
+      await page.reload()
+
+      const first = page.getByTestId('showcase-tile').first()
+      await first.click()
+      await expect(first).toHaveClass(/showcase-zoom-card/)
+
+      // main.css's @media (prefers-reduced-motion: reduce) block sets
+      // `.showcase-zoom-card { transition: none }`, which collapses the
+      // computed transition-duration list down to the single initial value
+      // '0s' (the non-reduced-motion rule declares three durations —
+      // opacity/width/left — each 180ms, so this genuinely distinguishes
+      // "no transition" from an unnoticed instant transition).
+      const transitionDuration = await first.evaluate((el) => getComputedStyle(el).transitionDuration)
+      expect(transitionDuration).toBe('0s')
+
+      const transitionProperty = await first.evaluate((el) => getComputedStyle(el).transitionProperty)
+      expect(transitionProperty).toBe('none')
+    })
   })
 })
