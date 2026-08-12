@@ -27,13 +27,23 @@ async function onSubmit() {
 </script>
 
 <template>
-  <h1 class="card-title text-2xl justify-center mb-4">{{ t('auth.login.title') }}</h1>
+  <h1 class="card-title text-2xl justify-center mb-4">
+    {{ t('auth.login.title') }}
+  </h1>
 
-  <div v-if="error" role="alert" class="alert alert-error mb-4">
+  <div
+    v-if="error"
+    role="alert"
+    class="alert alert-error mb-4"
+  >
     <span>{{ error }}</span>
   </div>
 
-  <form @submit.prevent="onSubmit" class="space-y-4" novalidate>
+  <form
+    class="space-y-4"
+    novalidate
+    @submit.prevent="onSubmit"
+  >
     <div class="form-control">
       <label class="label">
         <span class="label-text">{{ t('auth.emailLabel') }}</span>
@@ -45,7 +55,7 @@ async function onSubmit() {
         :placeholder="t('auth.login.emailPlaceholder')"
         autocomplete="email"
         required
-      />
+      >
     </div>
 
     <div class="form-control">
@@ -59,23 +69,36 @@ async function onSubmit() {
         :placeholder="t('auth.login.passwordPlaceholder')"
         autocomplete="current-password"
         required
-      />
+      >
     </div>
 
-    <button type="submit" class="btn btn-primary w-full" :disabled="isSubmitting">
-      <span v-if="isSubmitting" class="loading loading-spinner loading-sm" />
+    <button
+      type="submit"
+      class="btn btn-primary w-full"
+      :disabled="isSubmitting"
+    >
+      <span
+        v-if="isSubmitting"
+        class="loading loading-spinner loading-sm"
+      />
       {{ t('auth.login.submit') }}
     </button>
   </form>
 
   <p class="text-center text-sm mt-4">
-    <router-link to="/forgot-password" class="link link-neutral">
+    <router-link
+      to="/forgot-password"
+      class="link link-neutral"
+    >
       {{ t('auth.login.forgotLink') }}
     </router-link>
   </p>
 
   <p class="text-center text-sm mt-2">
-    <router-link to="/register" class="link link-primary">
+    <router-link
+      to="/register"
+      class="link link-primary"
+    >
       {{ t('auth.login.registerLink') }}
     </router-link>
   </p>

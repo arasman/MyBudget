@@ -21,14 +21,25 @@
         </div>
 
         <!-- Title -->
-        <h3 class="card-title text-base-content/70">{{ title }}</h3>
+        <h3 class="card-title text-base-content/70">
+          {{ title }}
+        </h3>
 
         <!-- Description -->
-        <p class="text-base-content/50 text-sm">{{ description }}</p>
+        <p class="text-base-content/50 text-sm">
+          {{ description }}
+        </p>
 
         <!-- Optional action button -->
-        <div v-if="actionLabel && action" class="card-actions mt-2">
-          <button type="button" class="btn btn-primary" @click="action">
+        <div
+          v-if="actionLabel && action"
+          class="card-actions mt-2"
+        >
+          <button
+            type="button"
+            class="btn btn-primary"
+            @click="action"
+          >
             {{ actionLabel }}
           </button>
         </div>

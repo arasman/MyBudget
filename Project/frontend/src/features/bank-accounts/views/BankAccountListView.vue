@@ -1,10 +1,18 @@
 <template>
   <div class="container mx-auto px-4 py-6">
-    <BudgetTabs :budget-id="budgetId" class="mb-6" />
+    <BudgetTabs
+      :budget-id="budgetId"
+      class="mb-6"
+    />
 
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-semibold">{{ t('bankAccount.title') }}</h2>
-      <button class="btn btn-primary btn-sm" @click="openCreate">
+      <h2 class="text-xl font-semibold">
+        {{ t('bankAccount.title') }}
+      </h2>
+      <button
+        class="btn btn-primary btn-sm"
+        @click="openCreate"
+      >
         + {{ t('bankAccount.create') }}
       </button>
     </div>
@@ -17,25 +25,40 @@
         type="checkbox"
         class="checkbox checkbox-sm"
         @change="store.fetchAccounts(budgetId)"
-      />
-      <label for="show-deleted-accounts" class="label-text cursor-pointer">
+      >
+      <label
+        for="show-deleted-accounts"
+        class="label-text cursor-pointer"
+      >
         {{ t('bankAccount.showDeleted') }}
       </label>
     </div>
 
-    <div v-if="store.loading" class="text-center py-8">
-      <span class="loading loading-spinner loading-md"></span>
+    <div
+      v-if="store.loading"
+      class="text-center py-8"
+    >
+      <span class="loading loading-spinner loading-md" />
     </div>
 
-    <div v-else-if="store.error" class="alert alert-error">
+    <div
+      v-else-if="store.error"
+      class="alert alert-error"
+    >
       {{ store.error }}
     </div>
 
-    <div v-else-if="store.accounts.length === 0" class="text-center py-8 text-base-content/50">
+    <div
+      v-else-if="store.accounts.length === 0"
+      class="text-center py-8 text-base-content/50"
+    >
       {{ t('bankAccount.empty') }}
     </div>
 
-    <div v-else class="overflow-x-auto select-none">
+    <div
+      v-else
+      class="overflow-x-auto select-none"
+    >
       <table class="table table-zebra w-full">
         <thead>
           <tr>
@@ -54,7 +77,10 @@
           >
             <td>
               {{ account.alias }}
-              <span v-if="account.deletedAt" class="badge badge-error badge-sm ml-2">
+              <span
+                v-if="account.deletedAt"
+                class="badge badge-error badge-sm ml-2"
+              >
                 {{ t('bankAccount.deleted') }}
               </span>
             </td>
@@ -110,7 +136,10 @@
     </div>
 
     <!-- Create / Edit Modal -->
-    <dialog v-if="showForm" class="modal modal-open">
+    <dialog
+      v-if="showForm"
+      class="modal modal-open"
+    >
       <div class="modal-box">
         <h3 class="font-bold text-lg mb-4">
           {{ editingAccount ? t('bankAccount.editTitle') : t('bankAccount.createTitle') }}
@@ -123,34 +152,62 @@
           @cancel="closeForm"
         />
       </div>
-      <form method="dialog" class="modal-backdrop" @click="closeForm">
+      <form
+        method="dialog"
+        class="modal-backdrop"
+        @click="closeForm"
+      >
         <button>close</button>
       </form>
     </dialog>
 
     <!-- Delete Confirm Modal -->
-    <dialog v-if="deletingAccount" class="modal modal-open">
+    <dialog
+      v-if="deletingAccount"
+      class="modal modal-open"
+    >
       <div class="modal-box">
-        <h3 class="font-bold text-lg mb-2">{{ t('bankAccount.deleteTitle') }}</h3>
+        <h3 class="font-bold text-lg mb-2">
+          {{ t('bankAccount.deleteTitle') }}
+        </h3>
         <p class="mb-4">
           {{ t('bankAccount.deleteConfirm', { alias: deletingAccount.alias }) }}
         </p>
         <div class="flex justify-end gap-2">
-          <button class="btn btn-ghost" @click="deletingAccount = null">
+          <button
+            class="btn btn-ghost"
+            @click="deletingAccount = null"
+          >
             {{ t('common.cancel') }}
           </button>
-          <button class="btn btn-error" :disabled="deleteLoading" @click="confirmDelete">
-            <span v-if="deleteLoading" class="loading loading-spinner loading-xs"></span>
+          <button
+            class="btn btn-error"
+            :disabled="deleteLoading"
+            @click="confirmDelete"
+          >
+            <span
+              v-if="deleteLoading"
+              class="loading loading-spinner loading-xs"
+            />
             {{ t('bankAccount.delete') }}
           </button>
         </div>
       </div>
-      <form method="dialog" class="modal-backdrop" @click="deletingAccount = null">
+      <form
+        method="dialog"
+        class="modal-backdrop"
+        @click="deletingAccount = null"
+      >
         <button>close</button>
       </form>
     </dialog>
 
-    <div v-if="formError" class="alert alert-error mt-2">{{ formError }}</div>
+    <div
+      v-if="formError"
+      class="alert alert-error mt-2"
+    >
+      {{ formError }}
+    </div>
   </div>
 </template>
 

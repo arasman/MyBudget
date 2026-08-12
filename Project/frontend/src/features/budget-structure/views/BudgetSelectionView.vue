@@ -2,8 +2,14 @@
   <div class="container mx-auto max-w-2xl px-4 py-8">
     <!-- Header row: title + New Budget button -->
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-semibold">{{ t('budgetStructure.selection.title') }}</h1>
-      <button type="button" class="btn btn-primary btn-sm" @click="openCreateModal">
+      <h1 class="text-2xl font-semibold">
+        {{ t('budgetStructure.selection.title') }}
+      </h1>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        @click="openCreateModal"
+      >
         {{ t('budgetStructure.selection.createBudget') }}
       </button>
     </div>
@@ -15,22 +21,34 @@
         v-model="showDeleted"
         type="checkbox"
         class="checkbox checkbox-sm"
-      />
-      <label for="show-deleted" class="label-text cursor-pointer">
+      >
+      <label
+        for="show-deleted"
+        class="label-text cursor-pointer"
+      >
         {{ t('budgetStructure.selection.showDeleted') }}
       </label>
     </div>
 
     <!-- No budgets -->
-    <div v-if="visibleMemberships.length === 0" class="text-center py-16">
+    <div
+      v-if="visibleMemberships.length === 0"
+      class="text-center py-16"
+    >
       <p class="text-base-content/60 text-lg">
         {{ t('budgetStructure.selection.noBudgets') }}
       </p>
     </div>
 
     <!-- Budget list -->
-    <ul v-else class="space-y-3">
-      <li v-for="m in visibleMemberships" :key="m.budgetId">
+    <ul
+      v-else
+      class="space-y-3"
+    >
+      <li
+        v-for="m in visibleMemberships"
+        :key="m.budgetId"
+      >
         <div
           class="card card-border w-full select-none"
           :class="[m.isDeleted ? 'opacity-60' : '', !m.isDeleted && inlineEditingBudgetId !== m.budgetId ? 'cursor-pointer' : '']"
@@ -49,11 +67,14 @@
                   autocomplete="off"
                   @keyup.enter="saveInlineEdit(m.budgetId)"
                   @keyup.escape="cancelInlineEdit"
-                />
+                >
               </template>
               <template v-else>
                 <span class="font-medium text-base truncate">{{ m.budgetName }}</span>
-                <span v-if="m.isDeleted" class="badge badge-error badge-sm shrink-0">
+                <span
+                  v-if="m.isDeleted"
+                  class="badge badge-error badge-sm shrink-0"
+                >
                   {{ t('budgetStructure.selection.deletedBadge') }}
                 </span>
               </template>
@@ -72,8 +93,14 @@
                   :title="t('budgetStructure.common.save')"
                   @click.stop="saveInlineEdit(m.budgetId)"
                 >
-                  <span v-if="actionInProgress === m.budgetId" class="loading loading-spinner loading-xs" />
-                  <Check v-else :size="14" />
+                  <span
+                    v-if="actionInProgress === m.budgetId"
+                    class="loading loading-spinner loading-xs"
+                  />
+                  <Check
+                    v-else
+                    :size="14"
+                  />
                 </button>
                 <button
                   type="button"
@@ -130,7 +157,10 @@
                   :disabled="actionInProgress === m.budgetId"
                   @click.stop="onRestore(m.budgetId)"
                 >
-                  <span v-if="actionInProgress === m.budgetId" class="loading loading-spinner loading-xs" />
+                  <span
+                    v-if="actionInProgress === m.budgetId"
+                    class="loading loading-spinner loading-xs"
+                  />
                   {{ t('budgetStructure.selection.restoreBudget') }}
                 </button>
               </template>
@@ -140,15 +170,30 @@
       </li>
     </ul>
 
-    <CreateBudgetModal ref="createModal" @created="onBudgetCreated" />
+    <CreateBudgetModal
+      ref="createModal"
+      @created="onBudgetCreated"
+    />
 
     <!-- Delete confirmation modal -->
-    <dialog v-if="pendingDeleteId" class="modal modal-open">
+    <dialog
+      v-if="pendingDeleteId"
+      class="modal modal-open"
+    >
       <div class="modal-box">
-        <h3 class="font-bold text-lg mb-2">{{ t('budgetStructure.selection.confirmDeleteTitle') }}</h3>
-        <p class="text-base-content/70">{{ t('budgetStructure.selection.confirmDelete') }}</p>
+        <h3 class="font-bold text-lg mb-2">
+          {{ t('budgetStructure.selection.confirmDeleteTitle') }}
+        </h3>
+        <p class="text-base-content/70">
+          {{ t('budgetStructure.selection.confirmDelete') }}
+        </p>
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" :disabled="!!actionInProgress" @click="cancelDelete">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            :disabled="!!actionInProgress"
+            @click="cancelDelete"
+          >
             {{ t('common.cancel') }}
           </button>
           <button
@@ -157,12 +202,18 @@
             :disabled="!!actionInProgress"
             @click="confirmDelete"
           >
-            <span v-if="actionInProgress" class="loading loading-spinner loading-sm" />
+            <span
+              v-if="actionInProgress"
+              class="loading loading-spinner loading-sm"
+            />
             {{ t('budgetStructure.selection.deleteBudget') }}
           </button>
         </div>
       </div>
-      <div class="modal-backdrop" @click="cancelDelete" />
+      <div
+        class="modal-backdrop"
+        @click="cancelDelete"
+      />
     </dialog>
   </div>
 </template>

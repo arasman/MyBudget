@@ -1,14 +1,27 @@
 <template>
   <div class="card bg-base-200 p-4 h-[18rem] md:h-[24rem] flex flex-col">
-    <div v-if="loading" class="flex flex-1 items-center justify-center gap-2 text-base-content/50 text-sm">
+    <div
+      v-if="loading"
+      class="flex flex-1 items-center justify-center gap-2 text-base-content/50 text-sm"
+    >
       <span class="loading loading-spinner loading-md" />
       {{ t('dashboard.chart.loading') }}
     </div>
-    <div v-else-if="empty" class="flex flex-1 items-center justify-center text-base-content/50 text-sm">
+    <div
+      v-else-if="empty"
+      class="flex flex-1 items-center justify-center text-base-content/50 text-sm"
+    >
       {{ t('dashboard.chart.empty') }}
     </div>
-    <div v-else class="relative flex-1 min-h-0">
-      <Chart :type="type" :data="chartData" :options="chartOptions" />
+    <div
+      v-else
+      class="relative flex-1 min-h-0"
+    >
+      <Chart
+        :type="type"
+        :data="chartData"
+        :options="chartOptions"
+      />
     </div>
 
     <!-- DASH-9: mandatory conversion-basis caption on every dashboard chart -->

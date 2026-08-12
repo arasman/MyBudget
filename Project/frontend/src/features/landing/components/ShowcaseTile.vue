@@ -35,7 +35,7 @@
           type="image/webp"
           :srcset="`/showcase/${item.slug}-640.webp 640w, /showcase/${item.slug}-1280.webp 1280w`"
           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-        />
+        >
         <img
           :src="`/showcase/${item.slug}-1280.webp`"
           :alt="$t(`${item.i18nKey}.title`)"
@@ -43,12 +43,19 @@
           width="1280"
           height="800"
           class="aspect-[16/10] w-full object-cover object-top rounded-lg border border-base-300 shadow"
-        />
+        >
       </picture>
       <figcaption>
-        <h3 class="font-semibold">{{ $t(`${item.i18nKey}.title`) }}</h3>
-        <p class="text-sm text-base-content/70">{{ $t(`${item.i18nKey}.caption`) }}</p>
-        <span v-if="active" class="sr-only">{{ $t('landing.showcase.dismissHint') }}</span>
+        <h3 class="font-semibold">
+          {{ $t(`${item.i18nKey}.title`) }}
+        </h3>
+        <p class="text-sm text-base-content/70">
+          {{ $t(`${item.i18nKey}.caption`) }}
+        </p>
+        <span
+          v-if="active"
+          class="sr-only"
+        >{{ $t('landing.showcase.dismissHint') }}</span>
       </figcaption>
     </figure>
   </button>

@@ -1,6 +1,9 @@
 <template>
   <div class="container mx-auto px-4 py-6">
-    <BudgetTabs :budget-id="budgetId" class="mb-6" />
+    <BudgetTabs
+      :budget-id="budgetId"
+      class="mb-6"
+    />
 
     <!-- Show-deleted toggle -->
     <div class="flex items-center gap-2 mb-4">
@@ -9,14 +12,20 @@
         v-model="store.showDeletedCategoryGroups"
         type="checkbox"
         class="checkbox checkbox-sm"
-      />
-      <label for="show-deleted-groups" class="label-text cursor-pointer">
+      >
+      <label
+        for="show-deleted-groups"
+        class="label-text cursor-pointer"
+      >
         {{ t('budgetStructure.categoryGroups.showDeleted') }}
       </label>
     </div>
 
     <!-- Loading indicator -->
-    <div v-if="store.loading" class="flex justify-center py-8">
+    <div
+      v-if="store.loading"
+      class="flex justify-center py-8"
+    >
       <span class="loading loading-spinner loading-md" />
     </div>
 
@@ -61,11 +70,18 @@
                   class="input input-xs input-bordered flex-1"
                   @keyup.enter="handleGroupInlineSave(group.id)"
                   @keyup.escape="inlineEditingGroupId = null"
-                />
+                >
               </template>
-              <h3 v-else class="font-semibold text-base flex-1 cursor-pointer select-none" @dblclick="isAdmin && !group.deletedAt ? startGroupEdit(group) : undefined">
+              <h3
+                v-else
+                class="font-semibold text-base flex-1 cursor-pointer select-none"
+                @dblclick="isAdmin && !group.deletedAt ? startGroupEdit(group) : undefined"
+              >
                 {{ group.name }}
-                <span v-if="group.deletedAt" class="badge badge-error badge-sm ml-2">{{ t('budgetStructure.common.deleted') }}</span>
+                <span
+                  v-if="group.deletedAt"
+                  class="badge badge-error badge-sm ml-2"
+                >{{ t('budgetStructure.common.deleted') }}</span>
               </h3>
               <template v-if="inlineEditingGroupId === group.id">
                 <button
@@ -141,11 +157,18 @@
                     class="input input-xs input-bordered flex-1"
                     @keyup.enter="handleCategoryInlineSave(group.id, category.id)"
                     @keyup.escape="inlineEditingCategoryId = null"
-                  />
+                  >
                 </template>
-                <span v-else class="flex-1 text-sm cursor-pointer select-none" @dblclick="isAdmin && !category.deletedAt ? startCategoryEdit(category) : undefined">
+                <span
+                  v-else
+                  class="flex-1 text-sm cursor-pointer select-none"
+                  @dblclick="isAdmin && !category.deletedAt ? startCategoryEdit(category) : undefined"
+                >
                   {{ category.name }}
-                  <span v-if="category.deletedAt" class="badge badge-error badge-xs ml-1">{{ t('budgetStructure.common.deleted') }}</span>
+                  <span
+                    v-if="category.deletedAt"
+                    class="badge badge-error badge-xs ml-1"
+                  >{{ t('budgetStructure.common.deleted') }}</span>
                 </span>
                 <template v-if="inlineEditingCategoryId === category.id">
                   <button
@@ -199,7 +222,10 @@
             </VueDraggable>
 
             <!-- Add category button — only for non-deleted groups -->
-            <div v-if="!group.deletedAt" class="mt-2">
+            <div
+              v-if="!group.deletedAt"
+              class="mt-2"
+            >
               <button
                 type="button"
                 class="btn btn-xs btn-ghost text-primary"
@@ -220,7 +246,9 @@
           class="card bg-base-200 mb-4 shadow-sm"
         >
           <div class="card-body p-4">
-            <h3 class="font-semibold text-base mb-3">{{ group.name }}</h3>
+            <h3 class="font-semibold text-base mb-3">
+              {{ group.name }}
+            </h3>
             <div
               v-for="category in group.categories"
               :key="category.id"
@@ -251,37 +279,69 @@
     />
 
     <!-- Delete group confirmation -->
-    <dialog v-if="showDeleteGroupConfirm" class="modal modal-open">
+    <dialog
+      v-if="showDeleteGroupConfirm"
+      class="modal modal-open"
+    >
       <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">{{ t('budgetStructure.categoryGroups.delete') }}</h3>
+        <h3 class="font-bold text-lg mb-4">
+          {{ t('budgetStructure.categoryGroups.delete') }}
+        </h3>
         <p>{{ t('budgetStructure.categoryGroups.confirmDelete') }}</p>
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="showDeleteGroupConfirm = false">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="showDeleteGroupConfirm = false"
+          >
             {{ t('budgetStructure.common.cancel') }}
           </button>
-          <button type="button" class="btn btn-error" @click="handleDeleteGroup">
+          <button
+            type="button"
+            class="btn btn-error"
+            @click="handleDeleteGroup"
+          >
             {{ t('budgetStructure.common.confirm') }}
           </button>
         </div>
       </div>
-      <div class="modal-backdrop" @click="showDeleteGroupConfirm = false" />
+      <div
+        class="modal-backdrop"
+        @click="showDeleteGroupConfirm = false"
+      />
     </dialog>
 
     <!-- Delete category confirmation -->
-    <dialog v-if="showDeleteCategoryConfirm" class="modal modal-open">
+    <dialog
+      v-if="showDeleteCategoryConfirm"
+      class="modal modal-open"
+    >
       <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">{{ t('budgetStructure.categories.delete') }}</h3>
+        <h3 class="font-bold text-lg mb-4">
+          {{ t('budgetStructure.categories.delete') }}
+        </h3>
         <p>{{ t('budgetStructure.categories.confirmDelete') }}</p>
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="showDeleteCategoryConfirm = false">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="showDeleteCategoryConfirm = false"
+          >
             {{ t('budgetStructure.common.cancel') }}
           </button>
-          <button type="button" class="btn btn-error" @click="handleDeleteCategory">
+          <button
+            type="button"
+            class="btn btn-error"
+            @click="handleDeleteCategory"
+          >
             {{ t('budgetStructure.common.confirm') }}
           </button>
         </div>
       </div>
-      <div class="modal-backdrop" @click="showDeleteCategoryConfirm = false" />
+      <div
+        class="modal-backdrop"
+        @click="showDeleteCategoryConfirm = false"
+      />
     </dialog>
   </div>
 </template>

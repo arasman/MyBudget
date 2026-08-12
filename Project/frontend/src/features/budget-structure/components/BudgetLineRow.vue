@@ -15,31 +15,66 @@
           class="select select-xs select-bordered w-full"
           @change="form.categoryId = undefined"
         >
-          <option value="" disabled>—</option>
-          <option v-for="g in props.categoryGroups" :key="g.id" :value="g.id">{{ g.name }}</option>
+          <option
+            value=""
+            disabled
+          >
+            —
+          </option>
+          <option
+            v-for="g in props.categoryGroups"
+            :key="g.id"
+            :value="g.id"
+          >
+            {{ g.name }}
+          </option>
         </select>
       </template>
-      <template v-else>{{ groupName }}</template>
+      <template v-else>
+        {{ groupName }}
+      </template>
     </td>
 
     <!-- Category cell -->
     <td>
       <template v-if="editing">
-        <select v-model="form.categoryId" class="select select-xs select-bordered w-full">
-          <option :value="undefined">—</option>
-          <option v-for="cat in filteredCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+        <select
+          v-model="form.categoryId"
+          class="select select-xs select-bordered w-full"
+        >
+          <option :value="undefined">
+            —
+          </option>
+          <option
+            v-for="cat in filteredCategories"
+            :key="cat.id"
+            :value="cat.id"
+          >
+            {{ cat.name }}
+          </option>
         </select>
       </template>
-      <template v-else>{{ categoryName }}</template>
+      <template v-else>
+        {{ categoryName }}
+      </template>
     </td>
 
     <!-- Line type cell -->
     <td>
       <template v-if="editing">
-        <select v-model="form.lineType" class="select select-xs select-bordered w-full">
-          <option value="Expense">{{ t('budgetStructure.budgetLines.types.expense') }}</option>
-          <option value="LongTermSavings">{{ t('budgetStructure.budgetLines.types.longTermSavings') }}</option>
-          <option value="PreventiveSavings">{{ t('budgetStructure.budgetLines.types.preventiveSavings') }}</option>
+        <select
+          v-model="form.lineType"
+          class="select select-xs select-bordered w-full"
+        >
+          <option value="Expense">
+            {{ t('budgetStructure.budgetLines.types.expense') }}
+          </option>
+          <option value="LongTermSavings">
+            {{ t('budgetStructure.budgetLines.types.longTermSavings') }}
+          </option>
+          <option value="PreventiveSavings">
+            {{ t('budgetStructure.budgetLines.types.preventiveSavings') }}
+          </option>
         </select>
       </template>
       <template v-else>
@@ -57,11 +92,14 @@
           type="text"
           class="input input-xs input-bordered w-full"
           :placeholder="t('budgetStructure.budgetLines.name')"
-        />
+        >
       </template>
       <template v-else>
         {{ line.name }}
-        <span v-if="line.deletedAt" class="badge badge-error badge-xs ml-1">{{ t('budgetStructure.common.deleted') }}</span>
+        <span
+          v-if="line.deletedAt"
+          class="badge badge-error badge-xs ml-1"
+        >{{ t('budgetStructure.common.deleted') }}</span>
       </template>
     </td>
 
@@ -78,8 +116,13 @@
     <!-- Currency cell -->
     <td>
       <template v-if="editing">
-        <select v-model="form.currencyId" class="select select-xs select-bordered">
-          <option :value="undefined">—</option>
+        <select
+          v-model="form.currencyId"
+          class="select select-xs select-bordered"
+        >
+          <option :value="undefined">
+            —
+          </option>
           <option
             v-for="currency in availableCurrencies"
             :key="currency.id"
@@ -89,7 +132,9 @@
           </option>
         </select>
       </template>
-      <template v-else>{{ line.currencyCode ?? '—' }}</template>
+      <template v-else>
+        {{ line.currencyCode ?? '—' }}
+      </template>
     </td>
 
     <!-- Budgeted amount cell — always read-only; amount changes require a revision (use modal) -->
@@ -98,7 +143,10 @@
     </td>
 
     <!-- Description cell -->
-    <td class="max-w-xs truncate text-sm text-base-content/60" :title="editing ? '' : (line.description ?? '')">
+    <td
+      class="max-w-xs truncate text-sm text-base-content/60"
+      :title="editing ? '' : (line.description ?? '')"
+    >
       <template v-if="editing">
         <input
           v-model="form.description"
@@ -106,9 +154,11 @@
           class="input input-xs input-bordered w-full"
           :placeholder="t('budgetStructure.budgetLines.description')"
           maxlength="500"
-        />
+        >
       </template>
-      <template v-else>{{ line.description ? truncate(line.description, 80) : '—' }}</template>
+      <template v-else>
+        {{ line.description ? truncate(line.description, 80) : '—' }}
+      </template>
     </td>
 
     <!-- Actions cell -->

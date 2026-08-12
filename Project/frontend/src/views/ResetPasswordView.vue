@@ -54,24 +54,40 @@ async function onSubmit() {
 </script>
 
 <template>
-  <h1 class="card-title text-2xl justify-center mb-4">{{ t('auth.password.resetTitle') }}</h1>
+  <h1 class="card-title text-2xl justify-center mb-4">
+    {{ t('auth.password.resetTitle') }}
+  </h1>
 
-  <div v-if="submitted" role="status" class="alert alert-success mb-4">
+  <div
+    v-if="submitted"
+    role="status"
+    class="alert alert-success mb-4"
+  >
     <div>
       <span>{{ t('auth.password.resetSuccess') }}</span>
       <p class="mt-2">
-        <router-link to="/login" class="link link-primary">
+        <router-link
+          to="/login"
+          class="link link-primary"
+        >
           {{ t('auth.login.submit') }}
         </router-link>
       </p>
     </div>
   </div>
 
-  <div v-else-if="tokenError" role="alert" class="alert alert-error mb-4">
+  <div
+    v-else-if="tokenError"
+    role="alert"
+    class="alert alert-error mb-4"
+  >
     <div>
       <span>{{ t('auth.password.tokenInvalid') }}</span>
       <p class="mt-2">
-        <router-link to="/forgot-password" class="link">
+        <router-link
+          to="/forgot-password"
+          class="link"
+        >
           {{ t('auth.password.sendLink') }}
         </router-link>
       </p>
@@ -79,11 +95,19 @@ async function onSubmit() {
   </div>
 
   <template v-else>
-    <div v-if="validationError" role="alert" class="alert alert-error mb-4">
+    <div
+      v-if="validationError"
+      role="alert"
+      class="alert alert-error mb-4"
+    >
       <span>{{ validationError }}</span>
     </div>
 
-    <form @submit.prevent="onSubmit" class="space-y-4" novalidate>
+    <form
+      class="space-y-4"
+      novalidate
+      @submit.prevent="onSubmit"
+    >
       <div class="form-control">
         <label class="label">
           <span class="label-text">{{ t('auth.password.newPasswordLabel') }}</span>
@@ -94,7 +118,7 @@ async function onSubmit() {
           class="input input-bordered w-full"
           autocomplete="new-password"
           required
-        />
+        >
       </div>
 
       <div class="form-control">
@@ -107,11 +131,18 @@ async function onSubmit() {
           class="input input-bordered w-full"
           autocomplete="new-password"
           required
-        />
+        >
       </div>
 
-      <button type="submit" class="btn btn-primary w-full" :disabled="isSubmitting">
-        <span v-if="isSubmitting" class="loading loading-spinner loading-sm" />
+      <button
+        type="submit"
+        class="btn btn-primary w-full"
+        :disabled="isSubmitting"
+      >
+        <span
+          v-if="isSubmitting"
+          class="loading loading-spinner loading-sm"
+        />
         {{ t('auth.password.resetSubmit') }}
       </button>
     </form>

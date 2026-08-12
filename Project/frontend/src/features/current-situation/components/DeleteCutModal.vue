@@ -1,7 +1,12 @@
 <template>
-  <dialog open class="modal modal-open">
+  <dialog
+    open
+    class="modal modal-open"
+  >
     <div class="modal-box">
-      <h3 class="font-bold text-lg mb-2">{{ t('currentSituation.deleteModal.title') }}</h3>
+      <h3 class="font-bold text-lg mb-2">
+        {{ t('currentSituation.deleteModal.title') }}
+      </h3>
       <p class="text-sm text-base-content/70 mb-4">
         {{ t('currentSituation.deleteModal.instruction', { date: cutDate }) }}
       </p>
@@ -14,11 +19,14 @@
           class="input input-bordered w-full"
           :placeholder="cutDate"
           autocomplete="off"
-        />
+        >
       </div>
 
       <div class="flex justify-end gap-2">
-        <button class="btn btn-ghost" @click="emit('cancel')">
+        <button
+          class="btn btn-ghost"
+          @click="emit('cancel')"
+        >
           {{ t('common.cancel') }}
         </button>
         <button
@@ -26,12 +34,19 @@
           :disabled="!isConfirmed || loading"
           @click="emit('confirm')"
         >
-          <span v-if="loading" class="loading loading-spinner loading-xs"></span>
+          <span
+            v-if="loading"
+            class="loading loading-spinner loading-xs"
+          />
           {{ t('currentSituation.deleteModal.confirm') }}
         </button>
       </div>
     </div>
-    <form method="dialog" class="modal-backdrop" @click="emit('cancel')">
+    <form
+      method="dialog"
+      class="modal-backdrop"
+      @click="emit('cancel')"
+    >
       <button>close</button>
     </form>
   </dialog>

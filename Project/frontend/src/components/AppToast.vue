@@ -27,7 +27,11 @@ function alertClass(type: ToastType): string {
     aria-atomic="false"
     class="toast toast-end z-[1000] fixed bottom-4 right-4 flex flex-col gap-2"
   >
-    <TransitionGroup name="toast" tag="div" class="flex flex-col gap-2">
+    <TransitionGroup
+      name="toast"
+      tag="div"
+      class="flex flex-col gap-2"
+    >
       <div
         v-for="toast in toastStore.toasts"
         :key="toast.id"
@@ -36,7 +40,10 @@ function alertClass(type: ToastType): string {
       >
         <span class="flex-1">
           <span class="font-semibold">{{ toast.title }}</span>
-          <span v-if="toast.message" class="block text-sm opacity-80">{{ toast.message }}</span>
+          <span
+            v-if="toast.message"
+            class="block text-sm opacity-80"
+          >{{ toast.message }}</span>
         </span>
         <button
           type="button"

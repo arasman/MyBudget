@@ -20,8 +20,14 @@
     </div>
 
     <!-- DASH-5: within-cycle — pick one Cycle, then 2+ Periods inside it. -->
-    <div v-if="mode === 'within-cycle'" class="flex flex-col gap-2">
-      <label class="label-text text-xs" for="comparison-cycle-select">{{ t('dashboard.comparisonMode.cycleLabel') }}</label>
+    <div
+      v-if="mode === 'within-cycle'"
+      class="flex flex-col gap-2"
+    >
+      <label
+        class="label-text text-xs"
+        for="comparison-cycle-select"
+      >{{ t('dashboard.comparisonMode.cycleLabel') }}</label>
       <select
         id="comparison-cycle-select"
         class="select select-sm"
@@ -29,7 +35,13 @@
         :value="selectedCycleId ?? ''"
         @change="onCycleChange(($event.target as HTMLSelectElement).value)"
       >
-        <option v-for="cycle in cycles" :key="cycle.id" :value="cycle.id">{{ cycle.name }}</option>
+        <option
+          v-for="cycle in cycles"
+          :key="cycle.id"
+          :value="cycle.id"
+        >
+          {{ cycle.name }}
+        </option>
       </select>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 max-h-40 overflow-y-auto pr-1">
         <label
@@ -43,14 +55,17 @@
             :aria-label="period.name"
             :checked="withinPeriodIds.includes(period.id)"
             @change="togglePeriod(period.id)"
-          />
+          >
           <span class="label-text text-sm">{{ period.name }}</span>
         </label>
       </div>
     </div>
 
     <!-- DASH-6: cross-cycle — pick 2+ Cycles; every Period of each is compared. -->
-    <div v-else class="flex flex-col gap-2">
+    <div
+      v-else
+      class="flex flex-col gap-2"
+    >
       <span class="label-text text-xs">{{ t('dashboard.comparisonMode.cyclesLabel') }}</span>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 max-h-40 overflow-y-auto pr-1">
         <label
@@ -64,7 +79,7 @@
             :aria-label="cycle.name"
             :checked="crossCycleIds.includes(cycle.id)"
             @change="toggleCycle(cycle.id)"
-          />
+          >
           <span class="label-text text-sm">{{ cycle.name }}</span>
         </label>
       </div>

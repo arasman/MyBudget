@@ -9,14 +9,26 @@
     </th>
 
     <!-- Per-period totals (Budgeted + Executed + Difference per period) -->
-    <template v-for="period in visiblePeriods" :key="period.id">
-      <td class="px-2 py-2 text-right text-xs" :class="rowClass">
+    <template
+      v-for="period in visiblePeriods"
+      :key="period.id"
+    >
+      <td
+        class="px-2 py-2 text-right text-xs"
+        :class="rowClass"
+      >
         {{ formatAmount(budgetedForPeriod(period.id), currencySymbol) }}
       </td>
-      <td class="px-2 py-2 text-right text-xs" :class="rowClass">
+      <td
+        class="px-2 py-2 text-right text-xs"
+        :class="rowClass"
+      >
         {{ formatAmount(executedForPeriod(period.id), currencySymbol) }}
       </td>
-      <td class="px-2 py-2 text-right text-xs" :class="rowClass">
+      <td
+        class="px-2 py-2 text-right text-xs"
+        :class="rowClass"
+      >
         {{ formatAmount(budgetedForPeriod(period.id) - executedForPeriod(period.id), currencySymbol) }}
       </td>
     </template>

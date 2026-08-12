@@ -5,10 +5,18 @@
         {{ t('dashboard.linePicker.title') }}
       </h3>
       <div class="flex gap-1 shrink-0">
-        <button type="button" class="btn btn-ghost btn-xs" @click="selectAll">
+        <button
+          type="button"
+          class="btn btn-ghost btn-xs"
+          @click="selectAll"
+        >
           {{ t('dashboard.linePicker.selectAll') }}
         </button>
-        <button type="button" class="btn btn-ghost btn-xs" @click="clearAll">
+        <button
+          type="button"
+          class="btn btn-ghost btn-xs"
+          @click="clearAll"
+        >
           {{ t('dashboard.linePicker.clearAll') }}
         </button>
       </div>
@@ -25,7 +33,7 @@
           :aria-label="line.name"
           :checked="isSelected(line.id)"
           @change="toggle(line.id)"
-        />
+        >
         <span class="label-text text-sm truncate">{{ line.name }}</span>
       </label>
     </div>

@@ -1,6 +1,9 @@
 <template>
   <div class="container mx-auto px-4 py-6">
-    <BudgetTabs :budget-id="budgetId" class="mb-6" />
+    <BudgetTabs
+      :budget-id="budgetId"
+      class="mb-6"
+    />
 
     <!-- Show-deleted toggle -->
     <div class="flex items-center gap-2 mb-4">
@@ -9,8 +12,11 @@
         v-model="store.showDeletedCycles"
         type="checkbox"
         class="checkbox checkbox-sm"
-      />
-      <label for="show-deleted-cycles" class="label-text cursor-pointer">
+      >
+      <label
+        for="show-deleted-cycles"
+        class="label-text cursor-pointer"
+      >
         {{ t('budgetStructure.cycles.showDeleted') }}
       </label>
     </div>
@@ -25,7 +31,10 @@
     />
 
     <!-- Cycles table -->
-    <div v-else class="overflow-x-auto select-none">
+    <div
+      v-else
+      class="overflow-x-auto select-none"
+    >
       <table class="table table-zebra w-full">
         <thead>
           <tr>
@@ -52,11 +61,18 @@
             <!-- Name -->
             <td class="font-medium">
               <template v-if="inlineEditingCycleId === cycle.id">
-                <input v-model="inlineEditForm.name" type="text" class="input input-xs input-bordered w-full" />
+                <input
+                  v-model="inlineEditForm.name"
+                  type="text"
+                  class="input input-xs input-bordered w-full"
+                >
               </template>
               <template v-else>
                 <span>{{ cycle.name }}</span>
-                <span v-if="cycle.deletedAt" class="badge badge-error badge-sm ml-2">
+                <span
+                  v-if="cycle.deletedAt"
+                  class="badge badge-error badge-sm ml-2"
+                >
                   {{ t('budgetStructure.common.deleted') }}
                 </span>
               </template>
@@ -65,17 +81,29 @@
             <!-- startDate -->
             <td>
               <template v-if="inlineEditingCycleId === cycle.id">
-                <input v-model="inlineEditForm.startDate" type="date" class="input input-xs input-bordered" />
+                <input
+                  v-model="inlineEditForm.startDate"
+                  type="date"
+                  class="input input-xs input-bordered"
+                >
               </template>
-              <template v-else>{{ cycle.startDate }}</template>
+              <template v-else>
+                {{ cycle.startDate }}
+              </template>
             </td>
 
             <!-- endDate -->
             <td>
               <template v-if="inlineEditingCycleId === cycle.id">
-                <input v-model="inlineEditForm.endDate" type="date" class="input input-xs input-bordered" />
+                <input
+                  v-model="inlineEditForm.endDate"
+                  type="date"
+                  class="input input-xs input-bordered"
+                >
               </template>
-              <template v-else>{{ cycle.endDate }}</template>
+              <template v-else>
+                {{ cycle.endDate }}
+              </template>
             </td>
 
             <!-- periodCount — no inline edit -->
@@ -83,14 +111,20 @@
 
             <!-- isActive badge — no inline edit -->
             <td>
-              <span v-if="cycle.isActive" class="badge badge-success badge-sm">
+              <span
+                v-if="cycle.isActive"
+                class="badge badge-success badge-sm"
+              >
                 {{ t('budgetStructure.cycles.active') }}
               </span>
             </td>
 
             <!-- Alternate currency — show symbol/code when present -->
             <td>
-              <span v-if="cycle.alternateCurrency" class="text-sm text-base-content/70">
+              <span
+                v-if="cycle.alternateCurrency"
+                class="text-sm text-base-content/70"
+              >
                 {{ cycle.alternateCurrency.symbol }} {{ cycle.alternateCurrency.code }}
               </span>
             </td>
@@ -166,7 +200,10 @@
                     :title="t('budgetStructure.cycles.setActive')"
                     @click="handleSetActive(cycle.id)"
                   >
-                    <Star :size="14" :fill="cycle.isActive ? 'currentColor' : 'none'" />
+                    <Star
+                      :size="14"
+                      :fill="cycle.isActive ? 'currentColor' : 'none'"
+                    />
                   </button>
                   <button
                     v-if="canWriteStructure"
@@ -186,7 +223,10 @@
     </div>
 
     <!-- Loading indicator -->
-    <div v-if="store.loading" class="flex justify-center py-8">
+    <div
+      v-if="store.loading"
+      class="flex justify-center py-8"
+    >
       <span class="loading loading-spinner loading-md" />
     </div>
 
@@ -200,20 +240,36 @@
     />
 
     <!-- Delete confirmation dialog -->
-    <dialog v-if="showDeleteConfirm" class="modal modal-open">
+    <dialog
+      v-if="showDeleteConfirm"
+      class="modal modal-open"
+    >
       <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">{{ t('budgetStructure.cycles.delete') }}</h3>
+        <h3 class="font-bold text-lg mb-4">
+          {{ t('budgetStructure.cycles.delete') }}
+        </h3>
         <p>{{ t('budgetStructure.cycles.confirmDelete') }}</p>
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="showDeleteConfirm = false">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="showDeleteConfirm = false"
+          >
             {{ t('budgetStructure.common.cancel') }}
           </button>
-          <button type="button" class="btn btn-error" @click="handleDelete">
+          <button
+            type="button"
+            class="btn btn-error"
+            @click="handleDelete"
+          >
             {{ t('budgetStructure.common.confirm') }}
           </button>
         </div>
       </div>
-      <div class="modal-backdrop" @click="showDeleteConfirm = false" />
+      <div
+        class="modal-backdrop"
+        @click="showDeleteConfirm = false"
+      />
     </dialog>
   </div>
 </template>

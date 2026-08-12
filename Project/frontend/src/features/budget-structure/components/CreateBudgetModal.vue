@@ -72,14 +72,26 @@ async function onSubmit() {
 </script>
 
 <template>
-  <dialog ref="modal" class="modal">
+  <dialog
+    ref="modal"
+    class="modal"
+  >
     <div class="modal-box">
-      <h3 class="font-bold text-lg mb-4">{{ t('budgetStructure.selection.createBudgetTitle') }}</h3>
+      <h3 class="font-bold text-lg mb-4">
+        {{ t('budgetStructure.selection.createBudgetTitle') }}
+      </h3>
 
-      <form @submit.prevent="onSubmit" class="space-y-4" novalidate>
+      <form
+        class="space-y-4"
+        novalidate
+        @submit.prevent="onSubmit"
+      >
         <!-- Budget name -->
         <div class="form-control">
-          <label class="label" for="budget-name">
+          <label
+            class="label"
+            for="budget-name"
+          >
             <span class="label-text">{{ t('budgetStructure.selection.budgetNameLabel') }}</span>
           </label>
           <input
@@ -92,24 +104,41 @@ async function onSubmit() {
             maxlength="200"
             autocomplete="off"
             required
-          />
-          <label v-if="nameError" class="label">
+          >
+          <label
+            v-if="nameError"
+            class="label"
+          >
             <span class="label-text-alt text-error">{{ nameError }}</span>
           </label>
         </div>
 
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="close">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="close"
+          >
             {{ t('common.cancel') }}
           </button>
-          <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-            <span v-if="isSubmitting" class="loading loading-spinner loading-sm" />
+          <button
+            type="submit"
+            class="btn btn-primary"
+            :disabled="isSubmitting"
+          >
+            <span
+              v-if="isSubmitting"
+              class="loading loading-spinner loading-sm"
+            />
             {{ t('budgetStructure.selection.createBudget') }}
           </button>
         </div>
       </form>
     </div>
-    <form method="dialog" class="modal-backdrop">
+    <form
+      method="dialog"
+      class="modal-backdrop"
+    >
       <button>close</button>
     </form>
   </dialog>

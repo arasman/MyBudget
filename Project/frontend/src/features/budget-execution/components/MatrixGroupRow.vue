@@ -22,8 +22,14 @@
           :title="collapsed ? t('budgetMatrix.rows.expandGroup') : t('budgetMatrix.rows.collapseGroup')"
           @click="$emit('toggle-collapse')"
         >
-          <ChevronDown v-if="!collapsed" :size="14" />
-          <ChevronRight v-else :size="14" />
+          <ChevronDown
+            v-if="!collapsed"
+            :size="14"
+          />
+          <ChevronRight
+            v-else
+            :size="14"
+          />
         </button>
 
         <!-- Inline edit mode -->
@@ -35,11 +41,19 @@
             class="input input-xs input-bordered flex-1 min-w-0"
             @keydown.enter="saveEdit"
             @keydown.escape="cancelEdit"
-          />
-          <button type="button" class="btn btn-xs btn-ghost btn-square text-success" @click="saveEdit">
+          >
+          <button
+            type="button"
+            class="btn btn-xs btn-ghost btn-square text-success"
+            @click="saveEdit"
+          >
             <Check :size="12" />
           </button>
-          <button type="button" class="btn btn-xs btn-ghost btn-square" @click="cancelEdit">
+          <button
+            type="button"
+            class="btn btn-xs btn-ghost btn-square"
+            @click="cancelEdit"
+          >
             <X :size="12" />
           </button>
         </template>
@@ -47,22 +61,57 @@
         <!-- Delete confirmation mode -->
         <template v-else-if="confirmingDelete">
           <span class="text-xs text-error flex-1">{{ t('budgetMatrix.rows.confirmDelete') }}</span>
-          <button type="button" class="btn btn-xs btn-error" :disabled="acting" @click="doDelete">
-            <span v-if="acting" class="loading loading-spinner loading-xs" />
+          <button
+            type="button"
+            class="btn btn-xs btn-error"
+            :disabled="acting"
+            @click="doDelete"
+          >
+            <span
+              v-if="acting"
+              class="loading loading-spinner loading-xs"
+            />
             <span v-else>{{ t('budgetMatrix.rows.delete') }}</span>
           </button>
-          <button type="button" class="btn btn-xs btn-ghost" @click="confirmingDelete = false">{{ t('common.cancel') }}</button>
+          <button
+            type="button"
+            class="btn btn-xs btn-ghost"
+            @click="confirmingDelete = false"
+          >
+            {{ t('common.cancel') }}
+          </button>
         </template>
 
         <!-- Restore confirmation mode -->
         <template v-else-if="confirmingRestore">
           <span class="text-xs flex-1">{{ t('budgetMatrix.rows.confirmRestore') }}</span>
-          <button type="button" class="btn btn-xs btn-success btn-outline" :disabled="acting" @click="doRestore(true)">
-            <span v-if="acting" class="loading loading-spinner loading-xs" />
+          <button
+            type="button"
+            class="btn btn-xs btn-success btn-outline"
+            :disabled="acting"
+            @click="doRestore(true)"
+          >
+            <span
+              v-if="acting"
+              class="loading loading-spinner loading-xs"
+            />
             <span v-else>{{ t('budgetMatrix.rows.restoreWithExecutions') }}</span>
           </button>
-          <button type="button" class="btn btn-xs btn-ghost" :disabled="acting" @click="doRestore(false)">{{ t('budgetMatrix.rows.restoreStructureOnly') }}</button>
-          <button type="button" class="btn btn-xs btn-ghost" @click="confirmingRestore = false">{{ t('common.cancel') }}</button>
+          <button
+            type="button"
+            class="btn btn-xs btn-ghost"
+            :disabled="acting"
+            @click="doRestore(false)"
+          >
+            {{ t('budgetMatrix.rows.restoreStructureOnly') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-xs btn-ghost"
+            @click="confirmingRestore = false"
+          >
+            {{ t('common.cancel') }}
+          </button>
         </template>
 
         <!-- Normal display mode -->
@@ -75,18 +124,40 @@
 
           <!-- Reorder buttons (only non-deleted) -->
           <template v-if="!group.deletedAt">
-            <button type="button" class="btn btn-xs btn-ghost btn-square" :disabled="isFirst" :title="t('budgetMatrix.rows.moveUp')" @click="$emit('move-up')">
+            <button
+              type="button"
+              class="btn btn-xs btn-ghost btn-square"
+              :disabled="isFirst"
+              :title="t('budgetMatrix.rows.moveUp')"
+              @click="$emit('move-up')"
+            >
               <ArrowUp :size="12" />
             </button>
-            <button type="button" class="btn btn-xs btn-ghost btn-square" :disabled="isLast" :title="t('budgetMatrix.rows.moveDown')" @click="$emit('move-down')">
+            <button
+              type="button"
+              class="btn btn-xs btn-ghost btn-square"
+              :disabled="isLast"
+              :title="t('budgetMatrix.rows.moveDown')"
+              @click="$emit('move-down')"
+            >
               <ArrowDown :size="12" />
             </button>
             <!-- Add category button -->
-            <button type="button" class="btn btn-xs btn-ghost btn-square" :title="t('budgetMatrix.rows.addCategory')" @click="$emit('add-category')">
+            <button
+              type="button"
+              class="btn btn-xs btn-ghost btn-square"
+              :title="t('budgetMatrix.rows.addCategory')"
+              @click="$emit('add-category')"
+            >
               <Plus :size="12" />
             </button>
             <!-- Delete button -->
-            <button type="button" class="btn btn-xs btn-ghost btn-square text-error" :title="t('budgetMatrix.rows.delete')" @click="confirmingDelete = true">
+            <button
+              type="button"
+              class="btn btn-xs btn-ghost btn-square text-error"
+              :title="t('budgetMatrix.rows.delete')"
+              @click="confirmingDelete = true"
+            >
               <Trash2 :size="12" />
             </button>
           </template>
@@ -106,18 +177,33 @@
     </td>
 
     <!-- Aggregated totals per visible period -->
-    <template v-for="period in visiblePeriods" :key="period.id">
+    <template
+      v-for="period in visiblePeriods"
+      :key="period.id"
+    >
       <td class="text-right px-3 py-2 border-b border-base-300">
-        <div v-if="matrixStore.loadingPeriods[period.id]" class="skeleton h-4 w-16 ml-auto" />
+        <div
+          v-if="matrixStore.loadingPeriods[period.id]"
+          class="skeleton h-4 w-16 ml-auto"
+        />
         <span v-else>{{ formatGroupTotal(period.id, 'budgeted') }}</span>
       </td>
       <td class="text-right px-3 py-2 border-b border-base-300">
-        <div v-if="matrixStore.loadingPeriods[period.id]" class="skeleton h-4 w-16 ml-auto" />
+        <div
+          v-if="matrixStore.loadingPeriods[period.id]"
+          class="skeleton h-4 w-16 ml-auto"
+        />
         <span v-else>{{ formatGroupTotal(period.id, 'executed') }}</span>
       </td>
       <td class="text-right px-3 py-2 border-b border-base-300">
-        <div v-if="matrixStore.loadingPeriods[period.id]" class="skeleton h-4 w-16 ml-auto" />
-        <span v-else :class="differenceClass(period.id)">{{ formatGroupDifference(period.id) }}</span>
+        <div
+          v-if="matrixStore.loadingPeriods[period.id]"
+          class="skeleton h-4 w-16 ml-auto"
+        />
+        <span
+          v-else
+          :class="differenceClass(period.id)"
+        >{{ formatGroupDifference(period.id) }}</span>
       </td>
     </template>
   </tr>

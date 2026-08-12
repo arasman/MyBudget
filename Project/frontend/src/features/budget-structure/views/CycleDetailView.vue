@@ -12,7 +12,10 @@
       </ul>
     </div>
 
-    <BudgetTabs :budget-id="budgetId" class="mb-6" />
+    <BudgetTabs
+      :budget-id="budgetId"
+      class="mb-6"
+    />
 
     <!-- Cycle currency info — only shown when alternate currency is set -->
     <div
@@ -36,16 +39,26 @@
         v-model="store.showDeletedPeriods"
         type="checkbox"
         class="checkbox checkbox-sm"
-      />
-      <label for="show-deleted-periods" class="label-text cursor-pointer">
+      >
+      <label
+        for="show-deleted-periods"
+        class="label-text cursor-pointer"
+      >
         {{ t('budgetStructure.periods.showDeleted') }}
       </label>
     </div>
 
     <!-- Empty state -->
-    <div v-if="!store.loading && store.periods.length === 0" class="text-center py-16">
-      <p class="text-base-content/60 text-lg mb-2">{{ t('budgetStructure.periods.empty.title') }}</p>
-      <p class="text-base-content/40 text-sm mb-6">{{ t('budgetStructure.periods.empty.description') }}</p>
+    <div
+      v-if="!store.loading && store.periods.length === 0"
+      class="text-center py-16"
+    >
+      <p class="text-base-content/60 text-lg mb-2">
+        {{ t('budgetStructure.periods.empty.title') }}
+      </p>
+      <p class="text-base-content/40 text-sm mb-6">
+        {{ t('budgetStructure.periods.empty.description') }}
+      </p>
       <button
         v-if="canWriteStructure"
         type="button"
@@ -57,7 +70,10 @@
     </div>
 
     <!-- Periods table -->
-    <div v-else class="overflow-x-auto select-none">
+    <div
+      v-else
+      class="overflow-x-auto select-none"
+    >
       <table class="table table-zebra w-full">
         <thead>
           <tr>
@@ -82,11 +98,18 @@
             <!-- Name -->
             <td class="font-medium">
               <template v-if="inlineEditingPeriodId === period.id">
-                <input v-model="inlineEditForm.name" type="text" class="input input-xs input-bordered w-full" />
+                <input
+                  v-model="inlineEditForm.name"
+                  type="text"
+                  class="input input-xs input-bordered w-full"
+                >
               </template>
               <template v-else>
                 <span>{{ period.name }}</span>
-                <span v-if="period.deletedAt" class="badge badge-error badge-sm ml-2">
+                <span
+                  v-if="period.deletedAt"
+                  class="badge badge-error badge-sm ml-2"
+                >
                   {{ t('budgetStructure.common.deleted') }}
                 </span>
               </template>
@@ -95,22 +118,37 @@
             <!-- startDate -->
             <td>
               <template v-if="inlineEditingPeriodId === period.id">
-                <input v-model="inlineEditForm.startDate" type="date" class="input input-xs input-bordered" />
+                <input
+                  v-model="inlineEditForm.startDate"
+                  type="date"
+                  class="input input-xs input-bordered"
+                >
               </template>
-              <template v-else>{{ period.startDate }}</template>
+              <template v-else>
+                {{ period.startDate }}
+              </template>
             </td>
 
             <!-- endDate -->
             <td>
               <template v-if="inlineEditingPeriodId === period.id">
-                <input v-model="inlineEditForm.endDate" type="date" class="input input-xs input-bordered" />
+                <input
+                  v-model="inlineEditForm.endDate"
+                  type="date"
+                  class="input input-xs input-bordered"
+                >
               </template>
-              <template v-else>{{ period.endDate }}</template>
+              <template v-else>
+                {{ period.endDate }}
+              </template>
             </td>
 
             <!-- status badge — no inline edit -->
             <td>
-              <span class="badge badge-sm" :class="statusBadgeClass(period.isClosed ? 'Closed' : 'Open')">
+              <span
+                class="badge badge-sm"
+                :class="statusBadgeClass(period.isClosed ? 'Closed' : 'Open')"
+              >
                 {{ $t('enums.periodStatus.' + (period.isClosed ? 'closed' : 'open')) }}
               </span>
             </td>
@@ -145,8 +183,14 @@
                     :disabled="restoreLoading && restoringPeriodId === period.id"
                     @click="startRestore(period.id)"
                   >
-                    <span v-if="restoreLoading && restoringPeriodId === period.id" class="loading loading-spinner loading-xs" />
-                    <RotateCcw v-else :size="14" />
+                    <span
+                      v-if="restoreLoading && restoringPeriodId === period.id"
+                      class="loading loading-spinner loading-xs"
+                    />
+                    <RotateCcw
+                      v-else
+                      :size="14"
+                    />
                     {{ t('budgetStructure.common.restore') }}
                   </button>
                 </template>
@@ -189,7 +233,10 @@
     </div>
 
     <!-- Loading indicator -->
-    <div v-if="store.loading" class="flex justify-center py-8">
+    <div
+      v-if="store.loading"
+      class="flex justify-center py-8"
+    >
       <span class="loading loading-spinner loading-md" />
     </div>
 
@@ -202,66 +249,132 @@
     />
 
     <!-- Change status dialog -->
-    <dialog v-if="showStatusDialog" class="modal modal-open">
+    <dialog
+      v-if="showStatusDialog"
+      class="modal modal-open"
+    >
       <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">{{ t('budgetStructure.periods.changeStatus') }}</h3>
+        <h3 class="font-bold text-lg mb-4">
+          {{ t('budgetStructure.periods.changeStatus') }}
+        </h3>
         <div class="form-control">
-          <label class="label" for="status-select">
+          <label
+            class="label"
+            for="status-select"
+          >
             <span class="label-text">{{ t('budgetStructure.periods.status') }}</span>
           </label>
-          <select id="status-select" v-model="newStatus" class="select select-bordered w-full">
-            <option value="Open">{{ t('enums.periodStatus.open') }}</option>
-            <option value="Closed">{{ t('enums.periodStatus.closed') }}</option>
-            <option value="Locked">{{ t('enums.periodStatus.locked') }}</option>
+          <select
+            id="status-select"
+            v-model="newStatus"
+            class="select select-bordered w-full"
+          >
+            <option value="Open">
+              {{ t('enums.periodStatus.open') }}
+            </option>
+            <option value="Closed">
+              {{ t('enums.periodStatus.closed') }}
+            </option>
+            <option value="Locked">
+              {{ t('enums.periodStatus.locked') }}
+            </option>
           </select>
         </div>
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="showStatusDialog = false">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="showStatusDialog = false"
+          >
             {{ t('budgetStructure.common.cancel') }}
           </button>
-          <button type="button" class="btn btn-primary" @click="handleStatusChange">
+          <button
+            type="button"
+            class="btn btn-primary"
+            @click="handleStatusChange"
+          >
             {{ t('budgetStructure.common.save') }}
           </button>
         </div>
       </div>
-      <div class="modal-backdrop" @click="showStatusDialog = false" />
+      <div
+        class="modal-backdrop"
+        @click="showStatusDialog = false"
+      />
     </dialog>
 
     <!-- Delete confirmation dialog -->
-    <dialog v-if="showDeleteConfirm" class="modal modal-open">
+    <dialog
+      v-if="showDeleteConfirm"
+      class="modal modal-open"
+    >
       <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">{{ t('budgetStructure.periods.delete') }}</h3>
+        <h3 class="font-bold text-lg mb-4">
+          {{ t('budgetStructure.periods.delete') }}
+        </h3>
         <p>{{ t('budgetStructure.periods.confirmDelete') }}</p>
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="showDeleteConfirm = false">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="showDeleteConfirm = false"
+          >
             {{ t('budgetStructure.common.cancel') }}
           </button>
-          <button type="button" class="btn btn-error" @click="handleDelete">
+          <button
+            type="button"
+            class="btn btn-error"
+            @click="handleDelete"
+          >
             {{ t('budgetStructure.common.confirm') }}
           </button>
         </div>
       </div>
-      <div class="modal-backdrop" @click="showDeleteConfirm = false" />
+      <div
+        class="modal-backdrop"
+        @click="showDeleteConfirm = false"
+      />
     </dialog>
 
     <!-- Restore cascade disclosure dialog -->
-    <dialog v-if="restoreConfirmStep === 'disclosure'" class="modal modal-open">
+    <dialog
+      v-if="restoreConfirmStep === 'disclosure'"
+      class="modal modal-open"
+    >
       <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">{{ t('budgetStructure.common.restore') }}</h3>
-        <p class="mb-3">{{ t('budgetStructure.periods.confirmRestore') }}</p>
-        <div v-if="restoreDeletedLineCount > 0" class="alert alert-warning text-sm mb-4">
+        <h3 class="font-bold text-lg mb-4">
+          {{ t('budgetStructure.common.restore') }}
+        </h3>
+        <p class="mb-3">
+          {{ t('budgetStructure.periods.confirmRestore') }}
+        </p>
+        <div
+          v-if="restoreDeletedLineCount > 0"
+          class="alert alert-warning text-sm mb-4"
+        >
           <span>{{ t('budgetStructure.periods.restoreCascadeWarning', { count: restoreDeletedLineCount }) }}</span>
         </div>
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="cancelRestore">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="cancelRestore"
+          >
             {{ t('budgetStructure.common.cancel') }}
           </button>
-          <button type="button" class="btn btn-success" @click="confirmRestore">
+          <button
+            type="button"
+            class="btn btn-success"
+            @click="confirmRestore"
+          >
             {{ t('budgetStructure.common.confirm') }}
           </button>
         </div>
       </div>
-      <div class="modal-backdrop" @click="cancelRestore" />
+      <div
+        class="modal-backdrop"
+        @click="cancelRestore"
+      />
     </dialog>
   </div>
 </template>

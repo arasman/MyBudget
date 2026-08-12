@@ -9,10 +9,16 @@
         }}
       </h3>
 
-      <form novalidate @submit.prevent="handleSubmit">
+      <form
+        novalidate
+        @submit.prevent="handleSubmit"
+      >
         <!-- Name -->
         <div class="form-control mb-3">
-          <label class="label" for="line-name">
+          <label
+            class="label"
+            for="line-name"
+          >
             <span class="label-text">{{ t('budgetStructure.budgetLines.name') }} *</span>
           </label>
           <input
@@ -22,27 +28,47 @@
             class="input input-bordered w-full"
             :class="{ 'input-error': errors.name }"
             maxlength="200"
-          />
-          <div v-if="errors.name" class="label">
+          >
+          <div
+            v-if="errors.name"
+            class="label"
+          >
             <span class="label-text-alt text-error">{{ errors.name }}</span>
           </div>
         </div>
 
         <!-- Line type -->
         <div class="form-control mb-3">
-          <label class="label" for="line-type">
+          <label
+            class="label"
+            for="line-type"
+          >
             <span class="label-text">{{ t('budgetStructure.budgetLines.lineType') }} *</span>
           </label>
-          <select id="line-type" v-model="form.lineType" class="select select-bordered w-full" required>
-            <option value="Expense">{{ t('budgetStructure.budgetLines.types.expense') }}</option>
-            <option value="LongTermSavings">{{ t('budgetStructure.budgetLines.types.longTermSavings') }}</option>
-            <option value="PreventiveSavings">{{ t('budgetStructure.budgetLines.types.preventiveSavings') }}</option>
+          <select
+            id="line-type"
+            v-model="form.lineType"
+            class="select select-bordered w-full"
+            required
+          >
+            <option value="Expense">
+              {{ t('budgetStructure.budgetLines.types.expense') }}
+            </option>
+            <option value="LongTermSavings">
+              {{ t('budgetStructure.budgetLines.types.longTermSavings') }}
+            </option>
+            <option value="PreventiveSavings">
+              {{ t('budgetStructure.budgetLines.types.preventiveSavings') }}
+            </option>
           </select>
         </div>
 
         <!-- Start date (required in create; read-only in edit) -->
         <div class="form-control mb-3">
-          <label class="label" for="line-startDate">
+          <label
+            class="label"
+            for="line-startDate"
+          >
             <span class="label-text">{{ t('budgetStructure.budgetLines.startDate') }} *</span>
           </label>
           <template v-if="isEditMode">
@@ -57,8 +83,11 @@
               type="date"
               class="input input-bordered w-full"
               :class="{ 'input-error': errors.startDate }"
-            />
-            <div v-if="errors.startDate" class="label">
+            >
+            <div
+              v-if="errors.startDate"
+              class="label"
+            >
               <span class="label-text-alt text-error">{{ errors.startDate }}</span>
             </div>
           </template>
@@ -66,7 +95,10 @@
 
         <!-- End date (optional — null means perpetual; read-only in edit) -->
         <div class="form-control mb-3">
-          <label class="label" for="line-endDate">
+          <label
+            class="label"
+            for="line-endDate"
+          >
             <span class="label-text">{{ t('budgetStructure.budgetLines.endDate') }}</span>
           </label>
           <template v-if="isEditMode">
@@ -82,8 +114,11 @@
               class="input input-bordered w-full"
               :class="{ 'input-error': errors.endDate }"
               :placeholder="t('budgetStructure.budgetLines.endDatePlaceholder', 'Perpetual / No expiry')"
-            />
-            <div v-if="errors.endDate" class="label">
+            >
+            <div
+              v-if="errors.endDate"
+              class="label"
+            >
               <span class="label-text-alt text-error">{{ errors.endDate }}</span>
             </div>
           </template>
@@ -91,7 +126,10 @@
 
         <!-- Category group -->
         <div class="form-control mb-3">
-          <label class="label" for="line-group">
+          <label
+            class="label"
+            for="line-group"
+          >
             <span class="label-text">{{ t('budgetStructure.categoryGroups.title') }} *</span>
           </label>
           <select
@@ -100,8 +138,17 @@
             class="select select-bordered w-full"
             @change="form.categoryId = undefined"
           >
-            <option value="" disabled>— select —</option>
-            <option v-for="group in categoryGroups" :key="group.id" :value="group.id">
+            <option
+              value=""
+              disabled
+            >
+              — select —
+            </option>
+            <option
+              v-for="group in categoryGroups"
+              :key="group.id"
+              :value="group.id"
+            >
               {{ group.name }}
             </option>
           </select>
@@ -109,11 +156,20 @@
 
         <!-- Category (filtered by selected group) -->
         <div class="form-control mb-3">
-          <label class="label" for="line-category">
+          <label
+            class="label"
+            for="line-category"
+          >
             <span class="label-text">{{ t('budgetStructure.categories.edit') }}</span>
           </label>
-          <select id="line-category" v-model="form.categoryId" class="select select-bordered w-full">
-            <option :value="undefined">— none —</option>
+          <select
+            id="line-category"
+            v-model="form.categoryId"
+            class="select select-bordered w-full"
+          >
+            <option :value="undefined">
+              — none —
+            </option>
             <option
               v-for="cat in filteredCategories"
               :key="cat.id"
@@ -126,7 +182,10 @@
 
         <!-- Initial / Budgeted amount (read-only in edit — changes require a revision) -->
         <div class="form-control mb-3">
-          <label class="label" for="line-initialAmount">
+          <label
+            class="label"
+            for="line-initialAmount"
+          >
             <span class="label-text">{{ t('budgetStructure.budgetLines.budgetedAmount') }}</span>
           </label>
           <template v-if="isEditMode">
@@ -146,8 +205,11 @@
               min="0"
               class="input input-bordered w-full"
               :class="{ 'input-error': errors.initialAmount }"
-            />
-            <div v-if="errors.initialAmount" class="label">
+            >
+            <div
+              v-if="errors.initialAmount"
+              class="label"
+            >
               <span class="label-text-alt text-error">{{ errors.initialAmount }}</span>
             </div>
           </template>
@@ -155,7 +217,10 @@
 
         <!-- Currency (read-only in edit mode) -->
         <div class="form-control mb-3">
-          <label class="label" for="line-currency">
+          <label
+            class="label"
+            for="line-currency"
+          >
             <span class="label-text">{{ t('budgetStructure.budgetLines.currency') }}</span>
           </label>
           <template v-if="isEditMode">
@@ -164,8 +229,14 @@
             </div>
           </template>
           <template v-else>
-            <select id="line-currency" v-model="form.currencyId" class="select select-bordered w-full">
-              <option :value="undefined">— none —</option>
+            <select
+              id="line-currency"
+              v-model="form.currencyId"
+              class="select select-bordered w-full"
+            >
+              <option :value="undefined">
+                — none —
+              </option>
               <option
                 v-for="currency in availableCurrencies"
                 :key="currency.id"
@@ -179,7 +250,10 @@
 
         <!-- Description -->
         <div class="form-control mb-4">
-          <label class="label" for="line-description">
+          <label
+            class="label"
+            for="line-description"
+          >
             <span class="label-text">{{ t('budgetStructure.budgetLines.description') }}</span>
           </label>
           <textarea
@@ -192,16 +266,26 @@
         </div>
 
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="emit('cancel')">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="emit('cancel')"
+          >
             {{ t('budgetStructure.common.cancel') }}
           </button>
-          <button type="submit" class="btn btn-primary">
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
             {{ t('budgetStructure.common.save') }}
           </button>
         </div>
       </form>
     </div>
-    <div class="modal-backdrop" @click="emit('cancel')" />
+    <div
+      class="modal-backdrop"
+      @click="emit('cancel')"
+    />
   </dialog>
 </template>
 

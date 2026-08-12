@@ -1,9 +1,14 @@
 <template>
   <div class="container mx-auto px-4 py-6">
-    <BudgetTabs :budget-id="budgetId" class="mb-6" />
+    <BudgetTabs
+      :budget-id="budgetId"
+      class="mb-6"
+    />
     <!-- Page header with navigation -->
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-semibold">{{ t('currentSituation.title') }}</h2>
+      <h2 class="text-xl font-semibold">
+        {{ t('currentSituation.title') }}
+      </h2>
       <div class="flex items-center gap-3">
         <CutDateNavigator
           :current-date="store.currentDate"
@@ -22,22 +27,34 @@
     </div>
 
     <!-- Loading state -->
-    <div v-if="store.loading" class="text-center py-12">
-      <span class="loading loading-spinner loading-lg"></span>
+    <div
+      v-if="store.loading"
+      class="text-center py-12"
+    >
+      <span class="loading loading-spinner loading-lg" />
     </div>
 
     <!-- Error state -->
-    <div v-else-if="store.error" class="alert alert-error">
+    <div
+      v-else-if="store.error"
+      class="alert alert-error"
+    >
       {{ store.error }}
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="!store.currentRecord" class="text-center py-12 text-base-content/50">
+    <div
+      v-else-if="!store.currentRecord"
+      class="text-center py-12 text-base-content/50"
+    >
       {{ t('currentSituation.noData') }}
     </div>
 
     <!-- Main content -->
-    <div v-else class="flex flex-col gap-4 select-none">
+    <div
+      v-else
+      class="flex flex-col gap-4 select-none"
+    >
       <!-- Cut form: date + exchange rate + accounts -->
       <CutRecordForm
         ref="formRef"
@@ -62,7 +79,10 @@
       />
 
       <!-- Save error + action -->
-      <div v-if="store.saveError" class="alert alert-error text-sm">
+      <div
+        v-if="store.saveError"
+        class="alert alert-error text-sm"
+      >
         {{
           store.saveError === 'noActivePeriod'
             ? t('currentSituation.errors.noActivePeriod')
@@ -75,7 +95,10 @@
           :disabled="store.saveLoading"
           @click="formRef?.triggerSave()"
         >
-          <span v-if="store.saveLoading" class="loading loading-spinner loading-xs"></span>
+          <span
+            v-if="store.saveLoading"
+            class="loading loading-spinner loading-xs"
+          />
           {{ t('common.save') }}
         </button>
       </div>

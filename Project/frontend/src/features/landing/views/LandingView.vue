@@ -8,7 +8,10 @@
       renders LandingView directly, bypassing PublicLayout (design.md Decision 1) — LANDING-6
       still requires it to work on the landing.
     -->
-    <div data-testid="landing-view" class="min-h-screen flex flex-col">
+    <div
+      data-testid="landing-view"
+      class="min-h-screen flex flex-col"
+    >
       <header class="flex justify-end px-4 py-4">
         <LanguageSwitcher />
       </header>

@@ -1,7 +1,12 @@
 <template>
-  <dialog open class="modal modal-open">
+  <dialog
+    open
+    class="modal modal-open"
+  >
     <div class="modal-box">
-      <h3 class="font-bold text-lg mb-2">{{ t('currentSituation.loadStrategy.title') }}</h3>
+      <h3 class="font-bold text-lg mb-2">
+        {{ t('currentSituation.loadStrategy.title') }}
+      </h3>
       <p class="text-sm text-base-content/70 mb-4">
         {{ t('currentSituation.loadStrategy.subtitle', { date: targetDate }) }}
       </p>
@@ -18,7 +23,7 @@
             type="radio"
             value="blank"
             class="radio radio-primary mt-0.5"
-          />
+          >
           <div>
             <div class="font-medium text-sm">{{ t('currentSituation.loadStrategy.blank') }}</div>
             <div class="text-xs text-base-content/60">
@@ -37,7 +42,7 @@
             type="radio"
             value="clone"
             class="radio radio-primary mt-0.5"
-          />
+          >
           <div>
             <div class="font-medium text-sm">{{ t('currentSituation.loadStrategy.clone') }}</div>
             <div class="text-xs text-base-content/60">
@@ -60,7 +65,7 @@
             value="from-date"
             class="radio radio-primary mt-0.5"
             :disabled="cutDates.length === 0"
-          />
+          >
           <div class="flex-1">
             <div class="font-medium text-sm">
               {{ t('currentSituation.loadStrategy.fromDate') }}
@@ -74,12 +79,22 @@
               class="select select-bordered select-sm w-full"
               :disabled="cutDates.length === 0"
             >
-              <option value="" disabled>
+              <option
+                value=""
+                disabled
+              >
                 {{ t('currentSituation.loadStrategy.selectDate') }}
               </option>
-              <option v-for="d in sortedDates" :key="d" :value="d">{{ d }}</option>
+              <option
+                v-for="d in sortedDates"
+                :key="d"
+                :value="d"
+              >{{ d }}</option>
             </select>
-            <span v-if="cutDates.length === 0" class="text-xs text-base-content/50">
+            <span
+              v-if="cutDates.length === 0"
+              class="text-xs text-base-content/50"
+            >
               {{ t('currentSituation.loadStrategy.noExistingDates') }}
             </span>
           </div>
@@ -87,7 +102,10 @@
       </div>
 
       <div class="flex justify-end gap-2">
-        <button class="btn btn-ghost" @click="emit('cancel')">
+        <button
+          class="btn btn-ghost"
+          @click="emit('cancel')"
+        >
           {{ t('common.cancel') }}
         </button>
         <button
@@ -95,12 +113,19 @@
           :disabled="!canConfirm || loading"
           @click="handleConfirm"
         >
-          <span v-if="loading" class="loading loading-spinner loading-xs"></span>
+          <span
+            v-if="loading"
+            class="loading loading-spinner loading-xs"
+          />
           {{ t('currentSituation.loadStrategy.load') }}
         </button>
       </div>
     </div>
-    <form method="dialog" class="modal-backdrop" @click="emit('cancel')">
+    <form
+      method="dialog"
+      class="modal-backdrop"
+      @click="emit('cancel')"
+    >
       <button>close</button>
     </form>
   </dialog>

@@ -5,10 +5,16 @@
         {{ modelValue ? t('budgetStructure.cycles.edit') : t('budgetStructure.cycles.create') }}
       </h3>
 
-      <form novalidate @submit.prevent="handleSubmit">
+      <form
+        novalidate
+        @submit.prevent="handleSubmit"
+      >
         <!-- Name -->
         <div class="form-control mb-4">
-          <label class="label" for="cycle-name">
+          <label
+            class="label"
+            for="cycle-name"
+          >
             <span class="label-text">{{ t('budgetStructure.cycles.name') }}</span>
           </label>
           <input
@@ -19,15 +25,21 @@
             :class="{ 'input-error': errors.name }"
             maxlength="200"
             required
-          />
-          <div v-if="errors.name" class="label">
+          >
+          <div
+            v-if="errors.name"
+            class="label"
+          >
             <span class="label-text-alt text-error">{{ errors.name }}</span>
           </div>
         </div>
 
         <!-- Start Date -->
         <div class="form-control mb-4">
-          <label class="label" for="cycle-start">
+          <label
+            class="label"
+            for="cycle-start"
+          >
             <span class="label-text">{{ t('budgetStructure.cycles.startDate') }}</span>
           </label>
           <input
@@ -37,15 +49,21 @@
             class="input input-bordered w-full"
             :class="{ 'input-error': errors.startDate }"
             required
-          />
-          <div v-if="errors.startDate" class="label">
+          >
+          <div
+            v-if="errors.startDate"
+            class="label"
+          >
             <span class="label-text-alt text-error">{{ errors.startDate }}</span>
           </div>
         </div>
 
         <!-- End Date -->
         <div class="form-control mb-4">
-          <label class="label" for="cycle-end">
+          <label
+            class="label"
+            for="cycle-end"
+          >
             <span class="label-text">{{ t('budgetStructure.cycles.endDate') }}</span>
           </label>
           <input
@@ -55,15 +73,21 @@
             class="input input-bordered w-full"
             :class="{ 'input-error': errors.endDate }"
             required
-          />
-          <div v-if="errors.endDate" class="label">
+          >
+          <div
+            v-if="errors.endDate"
+            class="label"
+          >
             <span class="label-text-alt text-error">{{ errors.endDate }}</span>
           </div>
         </div>
 
         <!-- Default Currency -->
         <div class="form-control mb-4">
-          <label class="label" for="cycle-currency">
+          <label
+            class="label"
+            for="cycle-currency"
+          >
             <span class="label-text">{{ t('budgetStructure.cycles.defaultCurrency') }}</span>
           </label>
           <select
@@ -72,7 +96,11 @@
             class="select select-bordered w-full"
             required
           >
-            <option v-for="c in currencies" :key="c.id" :value="c.id">
+            <option
+              v-for="c in currencies"
+              :key="c.id"
+              :value="c.id"
+            >
               {{ c.symbol }} {{ c.name }} ({{ c.code }})
             </option>
           </select>
@@ -80,7 +108,10 @@
 
         <!-- Alternate Currency -->
         <div class="form-control mb-4">
-          <label class="label" for="cycle-alt-currency">
+          <label
+            class="label"
+            for="cycle-alt-currency"
+          >
             <span class="label-text">{{ t('budgetStructure.cycles.alternateCurrency') }}</span>
           </label>
           <select
@@ -88,16 +119,28 @@
             v-model="form.alternateCurrencyId"
             class="select select-bordered w-full"
           >
-            <option value="">{{ t('budgetStructure.cycles.noneSelected') }}</option>
-            <option v-for="c in currencies" :key="c.id" :value="c.id">
+            <option value="">
+              {{ t('budgetStructure.cycles.noneSelected') }}
+            </option>
+            <option
+              v-for="c in currencies"
+              :key="c.id"
+              :value="c.id"
+            >
               {{ c.symbol }} {{ c.name }} ({{ c.code }})
             </option>
           </select>
         </div>
 
         <!-- Exchange Rate — only shown when alternate currency is selected -->
-        <div v-if="form.alternateCurrencyId" class="form-control mb-4">
-          <label class="label" for="cycle-exchange-rate">
+        <div
+          v-if="form.alternateCurrencyId"
+          class="form-control mb-4"
+        >
+          <label
+            class="label"
+            for="cycle-exchange-rate"
+          >
             <span class="label-text">{{ exchangeRateLabel }}</span>
           </label>
           <input
@@ -108,25 +151,38 @@
             step="0.0001"
             class="input input-bordered w-full"
             :class="{ 'input-error': errors.pairValidation }"
-          />
+          >
         </div>
 
         <!-- Pair validation error -->
-        <div v-if="errors.pairValidation" class="label mb-4">
+        <div
+          v-if="errors.pairValidation"
+          class="label mb-4"
+        >
           <span class="label-text-alt text-error">{{ errors.pairValidation }}</span>
         </div>
 
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="emit('cancel')">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="emit('cancel')"
+          >
             {{ t('budgetStructure.common.cancel') }}
           </button>
-          <button type="submit" class="btn btn-primary">
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
             {{ t('budgetStructure.common.save') }}
           </button>
         </div>
       </form>
     </div>
-    <div class="modal-backdrop" @click="emit('cancel')" />
+    <div
+      class="modal-backdrop"
+      @click="emit('cancel')"
+    />
   </dialog>
 </template>
 

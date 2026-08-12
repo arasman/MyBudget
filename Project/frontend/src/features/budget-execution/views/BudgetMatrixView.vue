@@ -1,24 +1,42 @@
 <template>
   <div class="container mx-auto px-4 py-6">
     <!-- Navigation tabs -->
-    <BudgetTabs :budget-id="budgetId" class="mb-6" />
+    <BudgetTabs
+      :budget-id="budgetId"
+      class="mb-6"
+    />
 
     <!-- Controls bar (T-5.2) -->
     <MatrixControls />
 
     <!-- Non-blocking reorder error (dismissible) -->
-    <div v-if="reorderError" class="alert alert-warning mb-2 flex justify-between items-center">
+    <div
+      v-if="reorderError"
+      class="alert alert-warning mb-2 flex justify-between items-center"
+    >
       <span>{{ reorderError }}</span>
-      <button type="button" class="btn btn-xs btn-ghost" @click="reorderError = null">✕</button>
+      <button
+        type="button"
+        class="btn btn-xs btn-ghost"
+        @click="reorderError = null"
+      >
+        ✕
+      </button>
     </div>
 
     <!-- Loading state -->
-    <div v-if="structureStore.loading || matrixStore.loading" class="flex justify-center py-8">
+    <div
+      v-if="structureStore.loading || matrixStore.loading"
+      class="flex justify-center py-8"
+    >
       <span class="loading loading-spinner loading-md" />
     </div>
 
     <!-- Critical error state (init failures only) -->
-    <div v-else-if="structureStore.error || matrixStore.error" class="alert alert-error mb-4">
+    <div
+      v-else-if="structureStore.error || matrixStore.error"
+      class="alert alert-error mb-4"
+    >
       <span>{{ structureStore.error ?? matrixStore.error }}</span>
     </div>
 
@@ -27,8 +45,12 @@
       v-else-if="structureStore.categoryGroups.length === 0"
       class="flex flex-col items-center gap-4 py-16 text-base-content/60"
     >
-      <p class="text-lg font-semibold">{{ t('budgetMatrix.empty.title') }}</p>
-      <p class="text-sm">{{ t('budgetMatrix.empty.description') }}</p>
+      <p class="text-lg font-semibold">
+        {{ t('budgetMatrix.empty.title') }}
+      </p>
+      <p class="text-sm">
+        {{ t('budgetMatrix.empty.description') }}
+      </p>
       <RouterLink
         :to="{ name: 'CategoryTree', params: { budgetId } }"
         class="btn btn-primary btn-sm"
@@ -92,8 +114,14 @@
               />
 
               <!-- Inline add-category row -->
-              <tr v-if="addingCategoryForGroup === group.id" data-testid="add-category-row">
-                <td class="sticky left-0 z-10 bg-base-200 px-3 py-2 border-b border-base-300" :colspan="1 + visiblePeriods.length * 3">
+              <tr
+                v-if="addingCategoryForGroup === group.id"
+                data-testid="add-category-row"
+              >
+                <td
+                  class="sticky left-0 z-10 bg-base-200 px-3 py-2 border-b border-base-300"
+                  :colspan="1 + visiblePeriods.length * 3"
+                >
                   <div class="flex items-center gap-1 pl-10">
                     <input
                       ref="addCategoryInput"
@@ -103,12 +131,26 @@
                       class="input input-xs input-bordered flex-1 min-w-0"
                       @keydown.enter="confirmAddCategory(group.id)"
                       @keydown.escape="cancelAdd"
-                    />
-                    <button type="button" class="btn btn-xs btn-success" :disabled="addActing" @click="confirmAddCategory(group.id)">
-                      <span v-if="addActing" class="loading loading-spinner loading-xs" />
+                    >
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-success"
+                      :disabled="addActing"
+                      @click="confirmAddCategory(group.id)"
+                    >
+                      <span
+                        v-if="addActing"
+                        class="loading loading-spinner loading-xs"
+                      />
                       <span v-else>{{ t('common.save') }}</span>
                     </button>
-                    <button type="button" class="btn btn-xs btn-ghost" @click="cancelAdd">{{ t('common.cancel') }}</button>
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-ghost"
+                      @click="cancelAdd"
+                    >
+                      {{ t('common.cancel') }}
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -139,7 +181,10 @@
                   v-if="addingLineForCategory === category.id && !matrixStore.collapsedGroupIds.has(group.id)"
                   data-testid="add-line-row"
                 >
-                  <td class="sticky left-0 z-10 bg-base-100 px-3 py-2 border-b border-base-300" :colspan="1 + visiblePeriods.length * 3">
+                  <td
+                    class="sticky left-0 z-10 bg-base-100 px-3 py-2 border-b border-base-300"
+                    :colspan="1 + visiblePeriods.length * 3"
+                  >
                     <div class="flex items-center gap-1 pl-14">
                       <input
                         ref="addLineInput"
@@ -149,7 +194,7 @@
                         class="input input-xs input-bordered flex-1 min-w-0"
                         @keydown.enter="confirmAddLine(category.id, group.id)"
                         @keydown.escape="cancelAdd"
-                      />
+                      >
                       <!-- Category selector filtered by parent group -->
                       <select
                         v-model="newLineCategoryId"
@@ -163,11 +208,25 @@
                           {{ cat.name }}
                         </option>
                       </select>
-                      <button type="button" class="btn btn-xs btn-success" :disabled="addActing" @click="confirmAddLine(category.id, group.id)">
-                        <span v-if="addActing" class="loading loading-spinner loading-xs" />
+                      <button
+                        type="button"
+                        class="btn btn-xs btn-success"
+                        :disabled="addActing"
+                        @click="confirmAddLine(category.id, group.id)"
+                      >
+                        <span
+                          v-if="addActing"
+                          class="loading loading-spinner loading-xs"
+                        />
                         <span v-else>{{ t('common.save') }}</span>
                       </button>
-                      <button type="button" class="btn btn-xs btn-ghost" @click="cancelAdd">{{ t('common.cancel') }}</button>
+                      <button
+                        type="button"
+                        class="btn btn-xs btn-ghost"
+                        @click="cancelAdd"
+                      >
+                        {{ t('common.cancel') }}
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -199,8 +258,14 @@
 
           <tbody>
             <!-- Inline add-group row -->
-            <tr v-if="addingGroup" data-testid="add-group-row">
-              <td class="sticky left-0 z-10 bg-base-200 px-3 py-2 border-b border-base-300" :colspan="1 + visiblePeriods.length * 3">
+            <tr
+              v-if="addingGroup"
+              data-testid="add-group-row"
+            >
+              <td
+                class="sticky left-0 z-10 bg-base-200 px-3 py-2 border-b border-base-300"
+                :colspan="1 + visiblePeriods.length * 3"
+              >
                 <div class="flex items-center gap-1">
                   <input
                     ref="addGroupInput"
@@ -210,19 +275,36 @@
                     class="input input-xs input-bordered flex-1 min-w-0"
                     @keydown.enter="confirmAddGroup"
                     @keydown.escape="cancelAdd"
-                  />
-                  <button type="button" class="btn btn-xs btn-success" :disabled="addActing" @click="confirmAddGroup">
-                    <span v-if="addActing" class="loading loading-spinner loading-xs" />
+                  >
+                  <button
+                    type="button"
+                    class="btn btn-xs btn-success"
+                    :disabled="addActing"
+                    @click="confirmAddGroup"
+                  >
+                    <span
+                      v-if="addActing"
+                      class="loading loading-spinner loading-xs"
+                    />
                     <span v-else>{{ t('common.save') }}</span>
                   </button>
-                  <button type="button" class="btn btn-xs btn-ghost" @click="cancelAdd">{{ t('common.cancel') }}</button>
+                  <button
+                    type="button"
+                    class="btn btn-xs btn-ghost"
+                    @click="cancelAdd"
+                  >
+                    {{ t('common.cancel') }}
+                  </button>
                 </div>
               </td>
             </tr>
 
             <!-- Add group trigger row -->
             <tr v-else>
-              <td class="sticky left-0 z-10 bg-base-100 px-3 py-2" :colspan="1 + visiblePeriods.length * 3">
+              <td
+                class="sticky left-0 z-10 bg-base-100 px-3 py-2"
+                :colspan="1 + visiblePeriods.length * 3"
+              >
                 <button
                   type="button"
                   class="btn btn-xs btn-ghost gap-1 text-base-content/50"

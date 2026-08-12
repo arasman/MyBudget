@@ -5,7 +5,10 @@
     :class="{ 'opacity-60': record.deletedAt }"
   >
     <!-- Entry type badge -->
-    <span class="badge badge-sm shrink-0 mt-0.5" :class="entryTypeBadgeClass">
+    <span
+      class="badge badge-sm shrink-0 mt-0.5"
+      :class="entryTypeBadgeClass"
+    >
       {{ entryTypeLabel }}
     </span>
 
@@ -18,10 +21,16 @@
     </span>
 
     <!-- Note -->
-    <span v-if="record.note" class="text-sm text-base-content/70 flex-1 truncate">
+    <span
+      v-if="record.note"
+      class="text-sm text-base-content/70 flex-1 truncate"
+    >
       {{ record.note }}
     </span>
-    <span v-else class="flex-1" />
+    <span
+      v-else
+      class="flex-1"
+    />
 
     <!-- Date -->
     <span class="text-xs text-base-content/50 shrink-0">
@@ -29,7 +38,10 @@
     </span>
 
     <!-- Actions -->
-    <div v-if="!periodClosed && canWrite" class="flex items-center gap-1 shrink-0">
+    <div
+      v-if="!periodClosed && canWrite"
+      class="flex items-center gap-1 shrink-0"
+    >
       <!-- Edit button (not shown for deleted records or confirm mode) -->
       <button
         v-if="!record.deletedAt && !confirmingDelete"
@@ -53,7 +65,10 @@
             :disabled="deleting"
             @click="handleDelete"
           >
-            <span v-if="deleting" class="loading loading-spinner loading-xs" />
+            <span
+              v-if="deleting"
+              class="loading loading-spinner loading-xs"
+            />
             <span v-else>{{ t('budgetExecution.row.delete') }}</span>
           </button>
           <button
@@ -88,13 +103,19 @@
         :disabled="restoring"
         @click="handleRestore"
       >
-        <span v-if="restoring" class="loading loading-spinner loading-xs" />
+        <span
+          v-if="restoring"
+          class="loading loading-spinner loading-xs"
+        />
         <span v-else>{{ t('budgetExecution.row.restore') }}</span>
       </button>
     </div>
 
     <!-- Restore button even when period is closed (for admins who can still restore) -->
-    <div v-else-if="record.deletedAt && canWrite" class="shrink-0">
+    <div
+      v-else-if="record.deletedAt && canWrite"
+      class="shrink-0"
+    >
       <button
         type="button"
         class="btn btn-xs btn-ghost text-success"
@@ -102,7 +123,10 @@
         :disabled="restoring"
         @click="handleRestore"
       >
-        <span v-if="restoring" class="loading loading-spinner loading-xs" />
+        <span
+          v-if="restoring"
+          class="loading loading-spinner loading-xs"
+        />
         <span v-else>{{ t('budgetExecution.row.restore') }}</span>
       </button>
     </div>

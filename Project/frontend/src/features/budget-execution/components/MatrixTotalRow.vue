@@ -6,14 +6,20 @@
     </th>
 
     <!-- Per-period totals -->
-    <template v-for="period in visiblePeriods" :key="period.id">
+    <template
+      v-for="period in visiblePeriods"
+      :key="period.id"
+    >
       <td class="px-2 py-2 text-right text-xs">
         {{ formatAmount(totalBudgeted(period.id), currencySymbol) }}
       </td>
       <td class="px-2 py-2 text-right text-xs">
         {{ formatAmount(totalExecuted(period.id), currencySymbol) }}
       </td>
-      <td class="px-2 py-2 text-right text-xs" :class="differenceClass(period.id)">
+      <td
+        class="px-2 py-2 text-right text-xs"
+        :class="differenceClass(period.id)"
+      >
         {{ formatAmount(totalBudgeted(period.id) - totalExecuted(period.id), currencySymbol) }}
       </td>
     </template>

@@ -1,7 +1,10 @@
 <template>
   <div class="card bg-base-200 p-4">
     <!-- Date + exchange rate row -->
-    <div v-if="isDraft" class="badge badge-warning mb-3">
+    <div
+      v-if="isDraft"
+      class="badge badge-warning mb-3"
+    >
       {{ t('currentSituation.draft') }}
     </div>
     <div class="flex flex-col sm:flex-row sm:items-end gap-4 mb-4">
@@ -12,7 +15,7 @@
           type="date"
           class="input input-bordered input-sm w-full sm:w-40"
           @change="emit('date-change', localDate)"
-        />
+        >
       </div>
       <div class="flex flex-col gap-1">
         <span class="label-text text-sm">{{ t('currentSituation.form.exchangeRate') }}</span>
@@ -23,12 +26,15 @@
           min="0.000001"
           step="0.000001"
           :placeholder="t('currentSituation.form.exchangeRatePlaceholder')"
-        />
+        >
       </div>
     </div>
 
     <!-- Unified accounts list -->
-    <div v-if="positiveAccounts.length > 0 || negativeAccounts.length > 0" class="mb-4 flex flex-col gap-1">
+    <div
+      v-if="positiveAccounts.length > 0 || negativeAccounts.length > 0"
+      class="mb-4 flex flex-col gap-1"
+    >
       <!-- Assets section -->
       <template v-if="positiveAccounts.length > 0">
         <div class="text-xs font-semibold text-success bg-success/5 py-1 px-2 rounded">
@@ -49,7 +55,7 @@
               class="grow text-right bg-transparent outline-none min-w-0"
               @focus="onBalanceFocus(acc.bankAccountId, $event)"
               @blur="onBalanceBlur(acc.bankAccountId, $event)"
-            />
+            >
           </label>
         </div>
       </template>
@@ -74,12 +80,11 @@
               class="grow text-right bg-transparent outline-none min-w-0"
               @focus="onBalanceFocus(acc.bankAccountId, $event)"
               @blur="onBalanceBlur(acc.bankAccountId, $event)"
-            />
+            >
           </label>
         </div>
       </template>
     </div>
-
   </div>
 </template>
 

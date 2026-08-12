@@ -11,22 +11,57 @@
         <!-- Delete confirmation mode -->
         <template v-if="confirmingDelete">
           <span class="text-xs text-error flex-1">{{ t('budgetMatrix.rows.confirmDelete') }}</span>
-          <button type="button" class="btn btn-xs btn-error" :disabled="acting" @click="doDelete">
-            <span v-if="acting" class="loading loading-spinner loading-xs" />
+          <button
+            type="button"
+            class="btn btn-xs btn-error"
+            :disabled="acting"
+            @click="doDelete"
+          >
+            <span
+              v-if="acting"
+              class="loading loading-spinner loading-xs"
+            />
             <span v-else>{{ t('budgetMatrix.rows.delete') }}</span>
           </button>
-          <button type="button" class="btn btn-xs btn-ghost" @click="confirmingDelete = false">{{ t('common.cancel') }}</button>
+          <button
+            type="button"
+            class="btn btn-xs btn-ghost"
+            @click="confirmingDelete = false"
+          >
+            {{ t('common.cancel') }}
+          </button>
         </template>
 
         <!-- Restore confirmation mode -->
         <template v-else-if="confirmingRestore">
           <span class="text-xs flex-1">{{ t('budgetMatrix.rows.confirmRestore') }}</span>
-          <button type="button" class="btn btn-xs btn-success btn-outline" :disabled="acting" @click="doRestore(true)">
-            <span v-if="acting" class="loading loading-spinner loading-xs" />
+          <button
+            type="button"
+            class="btn btn-xs btn-success btn-outline"
+            :disabled="acting"
+            @click="doRestore(true)"
+          >
+            <span
+              v-if="acting"
+              class="loading loading-spinner loading-xs"
+            />
             <span v-else>{{ t('budgetMatrix.rows.restoreWithExecutions') }}</span>
           </button>
-          <button type="button" class="btn btn-xs btn-ghost" :disabled="acting" @click="doRestore(false)">{{ t('budgetMatrix.rows.restoreStructureOnly') }}</button>
-          <button type="button" class="btn btn-xs btn-ghost" @click="confirmingRestore = false">{{ t('common.cancel') }}</button>
+          <button
+            type="button"
+            class="btn btn-xs btn-ghost"
+            :disabled="acting"
+            @click="doRestore(false)"
+          >
+            {{ t('budgetMatrix.rows.restoreStructureOnly') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-xs btn-ghost"
+            @click="confirmingRestore = false"
+          >
+            {{ t('common.cancel') }}
+          </button>
         </template>
 
         <!-- Normal display mode -->
@@ -39,13 +74,30 @@
 
           <!-- Reorder + delete (only non-deleted) -->
           <template v-if="!line.deletedAt">
-            <button type="button" class="btn btn-xs btn-ghost btn-square" :disabled="isFirst" :title="t('budgetMatrix.rows.moveUp')" @click="$emit('move-up')">
+            <button
+              type="button"
+              class="btn btn-xs btn-ghost btn-square"
+              :disabled="isFirst"
+              :title="t('budgetMatrix.rows.moveUp')"
+              @click="$emit('move-up')"
+            >
               <ArrowUp :size="12" />
             </button>
-            <button type="button" class="btn btn-xs btn-ghost btn-square" :disabled="isLast" :title="t('budgetMatrix.rows.moveDown')" @click="$emit('move-down')">
+            <button
+              type="button"
+              class="btn btn-xs btn-ghost btn-square"
+              :disabled="isLast"
+              :title="t('budgetMatrix.rows.moveDown')"
+              @click="$emit('move-down')"
+            >
               <ArrowDown :size="12" />
             </button>
-            <button type="button" class="btn btn-xs btn-ghost btn-square text-error" :title="t('budgetMatrix.rows.delete')" @click="confirmingDelete = true">
+            <button
+              type="button"
+              class="btn btn-xs btn-ghost btn-square text-error"
+              :title="t('budgetMatrix.rows.delete')"
+              @click="confirmingDelete = true"
+            >
               <Trash2 :size="12" />
             </button>
           </template>
@@ -65,10 +117,16 @@
     </td>
 
     <!-- Budgeted + Executed + Difference cells per visible period -->
-    <template v-for="period in visiblePeriods" :key="period.id">
+    <template
+      v-for="period in visiblePeriods"
+      :key="period.id"
+    >
       <!-- Budgeted — read-only display cell -->
       <td class="text-right px-3 py-2 border-b border-base-300 text-sm">
-        <div v-if="matrixStore.loadingPeriods[period.id]" class="skeleton h-4 w-16 ml-auto" />
+        <div
+          v-if="matrixStore.loadingPeriods[period.id]"
+          class="skeleton h-4 w-16 ml-auto"
+        />
         <span v-else>{{ formatLineAmount() }}</span>
       </td>
 
@@ -81,8 +139,14 @@
 
       <!-- Difference = Budgeted - Executed -->
       <td class="text-right px-3 py-2 border-b border-base-300 text-sm">
-        <div v-if="matrixStore.loadingPeriods[period.id]" class="skeleton h-4 w-16 ml-auto" />
-        <span v-else :class="differenceClass(period.id)">{{ formatDifference(period.id) }}</span>
+        <div
+          v-if="matrixStore.loadingPeriods[period.id]"
+          class="skeleton h-4 w-16 ml-auto"
+        />
+        <span
+          v-else
+          :class="differenceClass(period.id)"
+        >{{ formatDifference(period.id) }}</span>
       </td>
     </template>
   </tr>

@@ -72,15 +72,28 @@ async function onSubmit() {
 </script>
 
 <template>
-  <dialog ref="modal" class="modal">
+  <dialog
+    ref="modal"
+    class="modal"
+  >
     <div class="modal-box">
-      <h3 class="font-bold text-lg mb-4">{{ t('auth.password.changeTitle') }}</h3>
+      <h3 class="font-bold text-lg mb-4">
+        {{ t('auth.password.changeTitle') }}
+      </h3>
 
-      <div v-if="validationError" role="alert" class="alert alert-error mb-4">
+      <div
+        v-if="validationError"
+        role="alert"
+        class="alert alert-error mb-4"
+      >
         <span>{{ validationError }}</span>
       </div>
 
-      <form @submit.prevent="onSubmit" class="space-y-4" novalidate>
+      <form
+        class="space-y-4"
+        novalidate
+        @submit.prevent="onSubmit"
+      >
         <!-- Current password -->
         <div class="form-control">
           <label class="label">
@@ -93,8 +106,11 @@ async function onSubmit() {
             :class="{ 'input-error': currentPasswordError }"
             autocomplete="current-password"
             required
-          />
-          <label v-if="currentPasswordError" class="label">
+          >
+          <label
+            v-if="currentPasswordError"
+            class="label"
+          >
             <span class="label-text-alt text-error">{{ currentPasswordError }}</span>
           </label>
         </div>
@@ -110,7 +126,7 @@ async function onSubmit() {
             class="input input-bordered w-full"
             autocomplete="new-password"
             required
-          />
+          >
         </div>
 
         <!-- Confirm new password -->
@@ -124,19 +140,35 @@ async function onSubmit() {
             class="input input-bordered w-full"
             autocomplete="new-password"
             required
-          />
+          >
         </div>
 
         <div class="modal-action">
-          <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-            <span v-if="isSubmitting" class="loading loading-spinner loading-sm" />
+          <button
+            type="submit"
+            class="btn btn-primary"
+            :disabled="isSubmitting"
+          >
+            <span
+              v-if="isSubmitting"
+              class="loading loading-spinner loading-sm"
+            />
             {{ t('auth.password.changeSubmit') }}
           </button>
-          <button type="button" class="btn" @click="close">{{ t('common.cancel') }}</button>
+          <button
+            type="button"
+            class="btn"
+            @click="close"
+          >
+            {{ t('common.cancel') }}
+          </button>
         </div>
       </form>
     </div>
-    <form method="dialog" class="modal-backdrop">
+    <form
+      method="dialog"
+      class="modal-backdrop"
+    >
       <button>close</button>
     </form>
   </dialog>

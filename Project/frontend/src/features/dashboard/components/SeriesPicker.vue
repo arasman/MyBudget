@@ -5,10 +5,18 @@
         {{ t('dashboard.seriesPicker.title') }}
       </h3>
       <div class="flex gap-1 shrink-0">
-        <button type="button" class="btn btn-ghost btn-xs" @click="selectAll">
+        <button
+          type="button"
+          class="btn btn-ghost btn-xs"
+          @click="selectAll"
+        >
           {{ t('dashboard.seriesPicker.selectAll') }}
         </button>
-        <button type="button" class="btn btn-ghost btn-xs" @click="clearAll">
+        <button
+          type="button"
+          class="btn btn-ghost btn-xs"
+          @click="clearAll"
+        >
           {{ t('dashboard.seriesPicker.clearAll') }}
         </button>
       </div>
@@ -25,7 +33,7 @@
           :aria-label="t(`dashboard.series.${key}`)"
           :checked="isSelected(key)"
           @change="toggle(key)"
-        />
+        >
         <span class="label-text text-sm">{{ t(`dashboard.series.${key}`) }}</span>
       </label>
     </div>

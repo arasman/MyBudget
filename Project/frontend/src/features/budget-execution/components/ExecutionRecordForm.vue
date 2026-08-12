@@ -1,8 +1,16 @@
 <template>
-  <form data-testid="execution-record-form" class="space-y-3" novalidate @submit.prevent="handleSubmit">
+  <form
+    data-testid="execution-record-form"
+    class="space-y-3"
+    novalidate
+    @submit.prevent="handleSubmit"
+  >
     <!-- Operation date -->
     <div class="form-control">
-      <label class="label" for="exec-operation-date">
+      <label
+        class="label"
+        for="exec-operation-date"
+      >
         <span class="label-text">{{ t('budgetExecution.form.operationDate') }}</span>
       </label>
       <input
@@ -11,33 +19,52 @@
         type="date"
         class="input input-bordered input-sm w-full"
         :class="{ 'input-error': errors.operationDate }"
-      />
-      <span v-if="errors.operationDate" class="label-text-alt text-error mt-1">{{ errors.operationDate }}</span>
+      >
+      <span
+        v-if="errors.operationDate"
+        class="label-text-alt text-error mt-1"
+      >{{ errors.operationDate }}</span>
     </div>
 
     <!-- Entry type -->
     <div class="form-control">
-      <label class="label" for="exec-entry-type">
+      <label
+        class="label"
+        for="exec-entry-type"
+      >
         <span class="label-text">{{ t('budgetExecution.form.entryType') }} *</span>
       </label>
       <select
         id="exec-entry-type"
-        data-testid="entry-type-select"
         v-model.number="form.entryType"
+        data-testid="entry-type-select"
         class="select select-bordered select-sm w-full"
       >
-        <option :value="EntryType.Expense">{{ t('budgetExecution.form.entryTypes.expense') }}</option>
-        <option :value="EntryType.CreditNote">{{ t('budgetExecution.form.entryTypes.creditNote') }}</option>
-        <option :value="EntryType.DebitNote">{{ t('budgetExecution.form.entryTypes.debitNote') }}</option>
+        <option :value="EntryType.Expense">
+          {{ t('budgetExecution.form.entryTypes.expense') }}
+        </option>
+        <option :value="EntryType.CreditNote">
+          {{ t('budgetExecution.form.entryTypes.creditNote') }}
+        </option>
+        <option :value="EntryType.DebitNote">
+          {{ t('budgetExecution.form.entryTypes.debitNote') }}
+        </option>
       </select>
     </div>
 
     <!-- Currency -->
     <div class="form-control">
-      <label class="label" for="exec-currency">
+      <label
+        class="label"
+        for="exec-currency"
+      >
         <span class="label-text">{{ t('budgetExecution.form.currency') }}</span>
       </label>
-      <select id="exec-currency" v-model="form.currencyId" class="select select-bordered select-sm w-full">
+      <select
+        id="exec-currency"
+        v-model="form.currencyId"
+        class="select select-bordered select-sm w-full"
+      >
         <option
           v-for="currency in availableCurrencies"
           :key="currency.id"
@@ -50,25 +77,37 @@
 
     <!-- Amount -->
     <div class="form-control">
-      <label class="label" for="exec-amount">
+      <label
+        class="label"
+        for="exec-amount"
+      >
         <span class="label-text">{{ t('budgetExecution.form.amount') }} *</span>
       </label>
       <input
         id="exec-amount"
-        data-testid="amount-input"
         v-model.number="form.amount"
+        data-testid="amount-input"
         type="number"
         step="0.01"
         min="0.01"
         class="input input-bordered input-sm w-full"
         :class="{ 'input-error': errors.amount }"
-      />
-      <span v-if="errors.amount" class="label-text-alt text-error mt-1">{{ errors.amount }}</span>
+      >
+      <span
+        v-if="errors.amount"
+        class="label-text-alt text-error mt-1"
+      >{{ errors.amount }}</span>
     </div>
 
     <!-- Exchange rate (only when currency differs from default) -->
-    <div v-if="showExchangeRate" class="form-control">
-      <label class="label" for="exec-exchange-rate">
+    <div
+      v-if="showExchangeRate"
+      class="form-control"
+    >
+      <label
+        class="label"
+        for="exec-exchange-rate"
+      >
         <span class="label-text">{{ t('budgetExecution.form.exchangeRate') }} *</span>
       </label>
       <input
@@ -79,12 +118,18 @@
         min="0.000001"
         class="input input-bordered input-sm w-full"
         :class="{ 'input-error': errors.exchangeRate }"
-      />
-      <span v-if="errors.exchangeRate" class="label-text-alt text-error mt-1">{{ errors.exchangeRate }}</span>
+      >
+      <span
+        v-if="errors.exchangeRate"
+        class="label-text-alt text-error mt-1"
+      >{{ errors.exchangeRate }}</span>
     </div>
 
     <!-- Calculated amount (read-only, shown when exchange rate is set) -->
-    <div v-if="showExchangeRate && form.amount && form.exchangeRate" class="form-control">
+    <div
+      v-if="showExchangeRate && form.amount && form.exchangeRate"
+      class="form-control"
+    >
       <label class="label">
         <span class="label-text text-base-content/60">{{ t('budgetExecution.form.calculatedAmount') }}</span>
       </label>
@@ -94,12 +139,15 @@
         :value="calculatedAmount"
         readonly
         tabindex="-1"
-      />
+      >
     </div>
 
     <!-- Note (always required) -->
     <div class="form-control">
-      <label class="label" for="exec-note">
+      <label
+        class="label"
+        for="exec-note"
+      >
         <span class="label-text">{{ t('budgetExecution.form.note') }} *</span>
       </label>
       <input
@@ -109,8 +157,12 @@
         maxlength="500"
         class="input input-bordered input-sm w-full"
         :class="{ 'input-error': errors.note }"
-      />
-      <span v-if="errors.note" data-testid="note-error" class="label-text-alt text-error mt-1">{{ errors.note }}</span>
+      >
+      <span
+        v-if="errors.note"
+        data-testid="note-error"
+        class="label-text-alt text-error mt-1"
+      >{{ errors.note }}</span>
     </div>
 
     <!-- Actions -->
@@ -123,8 +175,16 @@
       >
         {{ t('budgetExecution.form.cancel') }}
       </button>
-      <button type="submit" data-testid="execution-form-submit" class="btn btn-primary btn-sm" :disabled="submitting">
-        <span v-if="submitting" class="loading loading-spinner loading-xs" />
+      <button
+        type="submit"
+        data-testid="execution-form-submit"
+        class="btn btn-primary btn-sm"
+        :disabled="submitting"
+      >
+        <span
+          v-if="submitting"
+          class="loading loading-spinner loading-xs"
+        />
         {{ t('budgetExecution.form.save') }}
       </button>
     </div>

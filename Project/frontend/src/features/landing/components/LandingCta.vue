@@ -7,10 +7,16 @@
     data-testid="landing-cta"
     class="px-4 py-8 flex flex-col sm:flex-row items-center justify-center gap-3"
   >
-    <RouterLink to="/register" class="btn btn-primary btn-lg">
+    <RouterLink
+      to="/register"
+      class="btn btn-primary btn-lg"
+    >
       {{ $t('landing.cta.primary') }}
     </RouterLink>
-    <RouterLink to="/login" class="btn btn-ghost">
+    <RouterLink
+      to="/login"
+      class="btn btn-ghost"
+    >
       {{ $t('landing.cta.secondary') }}
     </RouterLink>
   </section>

@@ -8,7 +8,10 @@
         ← {{ t('nav.budgets') }}
       </RouterLink>
     </div>
-    <div role="tablist" class="tabs tabs-border">
+    <div
+      role="tablist"
+      class="tabs tabs-border"
+    >
       <RouterLink
         :to="{ name: 'CycleList', params: { budgetId } }"
         role="tab"

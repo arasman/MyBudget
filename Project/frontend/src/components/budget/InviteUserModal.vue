@@ -84,21 +84,36 @@ defineExpose({ open })
 </script>
 
 <template>
-  <dialog ref="modal" class="modal">
+  <dialog
+    ref="modal"
+    class="modal"
+  >
     <div class="modal-box">
-      <h3 class="font-bold text-lg mb-4">{{ t('invitation.modal.title') }}</h3>
+      <h3 class="font-bold text-lg mb-4">
+        {{ t('invitation.modal.title') }}
+      </h3>
 
       <!-- Success message -->
-      <div v-if="successMessage" class="alert alert-success mb-4">
+      <div
+        v-if="successMessage"
+        class="alert alert-success mb-4"
+      >
         <span>{{ successMessage }}</span>
       </div>
 
       <!-- Server error -->
-      <div v-if="serverError" class="alert alert-error mb-4">
+      <div
+        v-if="serverError"
+        class="alert alert-error mb-4"
+      >
         <span>{{ serverError }}</span>
       </div>
 
-      <form @submit.prevent="onSubmit" class="space-y-4" novalidate>
+      <form
+        class="space-y-4"
+        novalidate
+        @submit.prevent="onSubmit"
+      >
         <!-- Email -->
         <div class="form-control">
           <label class="label">
@@ -111,8 +126,11 @@ defineExpose({ open })
             :class="{ 'input-error': fieldErrors['email'] }"
             placeholder="invitee@example.com"
             required
-          />
-          <label v-if="fieldErrors['email']" class="label">
+          >
+          <label
+            v-if="fieldErrors['email']"
+            class="label"
+          >
             <span class="label-text-alt text-error">{{ fieldErrors['email'] }}</span>
           </label>
         </div>
@@ -122,26 +140,49 @@ defineExpose({ open })
           <label class="label">
             <span class="label-text">{{ t('invitation.modal.roleLabel') }}</span>
           </label>
-          <select v-model="form.role" class="select select-bordered">
-            <option value="admin">{{ t('enums.role.admin') }}</option>
-            <option value="operator">{{ t('enums.role.operator') }}</option>
-            <option value="read-only">{{ t('enums.role.readOnly') }}</option>
+          <select
+            v-model="form.role"
+            class="select select-bordered"
+          >
+            <option value="admin">
+              {{ t('enums.role.admin') }}
+            </option>
+            <option value="operator">
+              {{ t('enums.role.operator') }}
+            </option>
+            <option value="read-only">
+              {{ t('enums.role.readOnly') }}
+            </option>
           </select>
         </div>
 
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="close">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="close"
+          >
             {{ t('common.cancel') }}
           </button>
-          <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-            <span v-if="isSubmitting" class="loading loading-spinner loading-sm" />
+          <button
+            type="submit"
+            class="btn btn-primary"
+            :disabled="isSubmitting"
+          >
+            <span
+              v-if="isSubmitting"
+              class="loading loading-spinner loading-sm"
+            />
             {{ t('invitation.modal.submit') }}
           </button>
         </div>
       </form>
     </div>
 
-    <form method="dialog" class="modal-backdrop">
+    <form
+      method="dialog"
+      class="modal-backdrop"
+    >
       <button>close</button>
     </form>
   </dialog>

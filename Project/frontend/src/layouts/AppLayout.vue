@@ -94,15 +94,24 @@ function variantClass(action: PageAction): string {
     <nav class="navbar bg-base-100 shadow px-4 sticky top-0 z-50">
       <!-- Left: App name / back home -->
       <div class="flex-none">
-        <button class="btn btn-ghost text-lg font-bold" @click="goHome">
+        <button
+          class="btn btn-ghost text-lg font-bold"
+          @click="goHome"
+        >
           {{ $t('common.appName') }}
         </button>
       </div>
 
       <!-- Center: Budget switcher -->
       <div class="flex-1 px-2">
-        <div v-if="memberships.length > 0 && route.name !== 'BudgetSelection'" class="dropdown">
-          <label tabindex="0" class="btn btn-ghost gap-1">
+        <div
+          v-if="memberships.length > 0 && route.name !== 'BudgetSelection'"
+          class="dropdown"
+        >
+          <label
+            tabindex="0"
+            class="btn btn-ghost gap-1"
+          >
             <span class="font-medium">
               {{ layoutStore.activeBudgetName ?? $t('common.appName') }}
             </span>
@@ -125,17 +134,22 @@ function variantClass(action: PageAction): string {
             tabindex="0"
             class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
           >
-            <li v-for="membership in memberships" :key="membership.budgetId">
+            <li
+              v-for="membership in memberships"
+              :key="membership.budgetId"
+            >
               <button
-                @click="switchBudget(membership.budgetId, membership.budgetName)"
                 :class="{ active: membership.budgetId === layoutStore.activeBudgetId }"
+                @click="switchBudget(membership.budgetId, membership.budgetName)"
               >
                 {{ membership.budgetName }}
               </button>
             </li>
             <li class="divider" />
             <li>
-              <button @click="goHome">{{ $t('nav.backToHome') }}</button>
+              <button @click="goHome">
+                {{ $t('nav.backToHome') }}
+              </button>
             </li>
           </ul>
         </div>
@@ -157,14 +171,26 @@ function variantClass(action: PageAction): string {
         </div>
 
         <!-- Page actions — collapsed to ⋮ dropdown on mobile -->
-        <div v-if="layoutStore.pageActions.length > 0" class="dropdown dropdown-end sm:hidden">
-          <label tabindex="0" class="btn btn-ghost btn-sm">⋮</label>
+        <div
+          v-if="layoutStore.pageActions.length > 0"
+          class="dropdown dropdown-end sm:hidden"
+        >
+          <label
+            tabindex="0"
+            class="btn btn-ghost btn-sm"
+          >⋮</label>
           <ul
             tabindex="0"
             class="dropdown-content menu bg-base-100 rounded-box z-[1] w-40 p-2 shadow"
           >
-            <li v-for="action in layoutStore.pageActions" :key="action.key">
-              <button :disabled="action.disabled" @click="action.action()">
+            <li
+              v-for="action in layoutStore.pageActions"
+              :key="action.key"
+            >
+              <button
+                :disabled="action.disabled"
+                @click="action.action()"
+              >
                 {{ action.label }}
               </button>
             </li>
@@ -173,7 +199,10 @@ function variantClass(action: PageAction): string {
 
         <!-- Notification bell -->
         <div class="dropdown dropdown-end">
-          <label tabindex="0" class="btn btn-ghost btn-circle">
+          <label
+            tabindex="0"
+            class="btn btn-ghost btn-circle"
+          >
             <div class="indicator">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -202,10 +231,16 @@ function variantClass(action: PageAction): string {
             class="dropdown-content card card-compact bg-base-100 z-[1] w-64 p-2 shadow"
           >
             <div class="card-body">
-              <p v-if="notificationStore.notifications.length === 0" class="text-sm text-base-content/60">
+              <p
+                v-if="notificationStore.notifications.length === 0"
+                class="text-sm text-base-content/60"
+              >
                 {{ $t('common.noNotifications') }}
               </p>
-              <ul v-else class="space-y-1">
+              <ul
+                v-else
+                class="space-y-1"
+              >
                 <li
                   v-for="notification in notificationStore.notifications.slice(0, 5)"
                   :key="notification.id"
@@ -227,7 +262,10 @@ function variantClass(action: PageAction): string {
 
         <!-- User dropdown -->
         <div class="dropdown dropdown-end">
-          <label tabindex="0" class="btn btn-ghost btn-circle avatar placeholder">
+          <label
+            tabindex="0"
+            class="btn btn-ghost btn-circle avatar placeholder"
+          >
             <div class="bg-neutral text-neutral-content rounded-full w-8">
               <span class="text-xs">{{ userInitials }}</span>
             </div>
@@ -241,21 +279,30 @@ function variantClass(action: PageAction): string {
                 <p class="font-medium text-sm">
                   {{ authStore.user?.firstName }} {{ authStore.user?.lastName }}
                 </p>
-                <p class="text-xs text-base-content/60">{{ authStore.user?.email }}</p>
-                <span v-if="activeRoleBadge" class="badge badge-outline badge-sm mt-1">
+                <p class="text-xs text-base-content/60">
+                  {{ authStore.user?.email }}
+                </p>
+                <span
+                  v-if="activeRoleBadge"
+                  class="badge badge-outline badge-sm mt-1"
+                >
                   {{ activeRoleBadge }}
                 </span>
               </div>
             </li>
             <li class="divider" />
             <li>
-              <button @click="changePasswordModal?.open()">{{ $t('auth.password.changePassword') }}</button>
+              <button @click="changePasswordModal?.open()">
+                {{ $t('auth.password.changePassword') }}
+              </button>
             </li>
             <li class="px-4 py-2">
               <LanguageSwitcher />
             </li>
             <li>
-              <button @click="onLogout">{{ $t('auth.logoutLabel') }}</button>
+              <button @click="onLogout">
+                {{ $t('auth.logoutLabel') }}
+              </button>
             </li>
           </ul>
         </div>

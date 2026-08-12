@@ -8,13 +8,17 @@
         <div class="text-xs text-base-content/50 mb-1">
           {{ t('currentSituation.executionSummary.totalBudgeted') }}
         </div>
-        <div class="font-mono font-semibold">{{ formatAmount(summary.totalBudgeted) }}</div>
+        <div class="font-mono font-semibold">
+          {{ formatAmount(summary.totalBudgeted) }}
+        </div>
       </div>
       <div class="text-center">
         <div class="text-xs text-base-content/50 mb-1">
           {{ t('currentSituation.executionSummary.totalRegistered') }}
         </div>
-        <div class="font-mono font-semibold">{{ formatAmount(summary.totalRegistered) }}</div>
+        <div class="font-mono font-semibold">
+          {{ formatAmount(summary.totalRegistered) }}
+        </div>
       </div>
       <div class="text-center">
         <div class="text-xs text-base-content/50 mb-1">

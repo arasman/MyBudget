@@ -44,7 +44,7 @@
           @input="localExchangeRate = ($event.target as HTMLInputElement).value"
           @blur="saveExchangeRate"
           @keydown.enter="saveExchangeRate"
-        />
+        >
         <span class="text-xs text-base-content/60">GTQ = 1 USD</span>
       </template>
     </div>
@@ -57,7 +57,7 @@
         class="checkbox checkbox-sm"
         :checked="matrixStore.showDeleted"
         @change="matrixStore.setShowDeleted(($event.target as HTMLInputElement).checked)"
-      />
+      >
       <span class="text-sm">{{ t('budgetMatrix.controls.includeDeleted') }}</span>
     </label>
   </div>

@@ -1,7 +1,13 @@
 <template>
-  <form novalidate @submit.prevent="handleSubmit">
+  <form
+    novalidate
+    @submit.prevent="handleSubmit"
+  >
     <div class="form-control mb-4">
-      <label class="label" for="ba-alias">
+      <label
+        class="label"
+        for="ba-alias"
+      >
         <span class="label-text">{{ t('bankAccount.form.alias') }}</span>
       </label>
       <input
@@ -12,14 +18,20 @@
         :class="{ 'input-error': errors.alias }"
         :placeholder="t('bankAccount.form.aliasPlaceholder')"
         maxlength="100"
-      />
-      <div v-if="errors.alias" class="label">
+      >
+      <div
+        v-if="errors.alias"
+        class="label"
+      >
         <span class="label-text-alt text-error">{{ errors.alias }}</span>
       </div>
     </div>
 
     <div class="form-control mb-4">
-      <label class="label" for="ba-currency">
+      <label
+        class="label"
+        for="ba-currency"
+      >
         <span class="label-text">{{ t('bankAccount.form.currency') }}</span>
       </label>
       <select
@@ -29,23 +41,37 @@
         :class="{ 'select-error': errors.currencyId }"
         :disabled="isEdit"
       >
-        <option value="">{{ t('bankAccount.form.selectCurrency') }}</option>
-        <option v-for="c in currencies" :key="c.id" :value="c.id">{{ c.code }}</option>
+        <option value="">
+          {{ t('bankAccount.form.selectCurrency') }}
+        </option>
+        <option
+          v-for="c in currencies"
+          :key="c.id"
+          :value="c.id"
+        >
+          {{ c.code }}
+        </option>
       </select>
-      <div v-if="errors.currencyId" class="label">
+      <div
+        v-if="errors.currencyId"
+        class="label"
+      >
         <span class="label-text-alt text-error">{{ errors.currencyId }}</span>
       </div>
     </div>
 
     <div class="form-control mb-4">
-      <label class="label cursor-pointer" for="ba-ispositive">
+      <label
+        class="label cursor-pointer"
+        for="ba-ispositive"
+      >
         <span class="label-text">{{ t('bankAccount.form.isPositive') }}</span>
         <input
           id="ba-ispositive"
           v-model="form.isPositive"
           type="checkbox"
           class="toggle toggle-primary"
-        />
+        >
       </label>
       <p class="text-xs text-base-content/60 px-1">
         {{ form.isPositive ? t('bankAccount.form.isPositiveHint') : t('bankAccount.form.isNegativeHint') }}
@@ -53,7 +79,10 @@
     </div>
 
     <div class="form-control mb-4">
-      <label class="label" for="ba-order">
+      <label
+        class="label"
+        for="ba-order"
+      >
         <span class="label-text">{{ t('bankAccount.form.displayOrder') }}</span>
       </label>
       <input
@@ -64,17 +93,27 @@
         :class="{ 'input-error': errors.displayOrder }"
         min="0"
         step="1"
-      />
-      <div v-if="errors.displayOrder" class="label">
+      >
+      <div
+        v-if="errors.displayOrder"
+        class="label"
+      >
         <span class="label-text-alt text-error">{{ errors.displayOrder }}</span>
       </div>
     </div>
 
     <div class="modal-action">
-      <button type="button" class="btn btn-ghost" @click="emit('cancel')">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        @click="emit('cancel')"
+      >
         {{ t('common.cancel') }}
       </button>
-      <button type="submit" class="btn btn-primary">
+      <button
+        type="submit"
+        class="btn btn-primary"
+      >
         {{ t('common.save') }}
       </button>
     </div>

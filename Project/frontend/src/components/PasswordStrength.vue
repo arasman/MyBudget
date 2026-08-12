@@ -1,5 +1,8 @@
 <template>
-  <div v-if="password.length > 0" class="mt-2 space-y-2">
+  <div
+    v-if="password.length > 0"
+    class="mt-2 space-y-2"
+  >
     <!-- Progress bar -->
     <progress
       class="progress w-full h-2 transition-all duration-300"
@@ -16,7 +19,10 @@
         class="flex items-center gap-2 text-xs transition-colors duration-200"
         :class="rule.met ? 'text-success' : 'text-base-content/50'"
       >
-        <span class="text-sm leading-none" aria-hidden="true">{{ rule.met ? '✓' : '○' }}</span>
+        <span
+          class="text-sm leading-none"
+          aria-hidden="true"
+        >{{ rule.met ? '✓' : '○' }}</span>
         <span>{{ rule.label }}</span>
       </li>
     </ul>

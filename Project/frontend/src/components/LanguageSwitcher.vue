@@ -1,5 +1,9 @@
 <template>
-  <div class="flex gap-2" role="group" :aria-label="$t('common.switchLanguage')">
+  <div
+    class="flex gap-2"
+    role="group"
+    :aria-label="$t('common.switchLanguage')"
+  >
     <button
       class="btn btn-sm"
       :class="localeStore.locale === 'en' ? 'btn-primary' : 'btn-ghost'"

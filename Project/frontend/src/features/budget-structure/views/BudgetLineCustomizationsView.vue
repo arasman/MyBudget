@@ -1,9 +1,15 @@
 <template>
   <div class="container mx-auto px-4 py-6">
-    <BudgetTabs :budget-id="budgetId" class="mb-6" />
+    <BudgetTabs
+      :budget-id="budgetId"
+      class="mb-6"
+    />
 
     <!-- Loading -->
-    <div v-if="store.loading" class="flex justify-center py-8">
+    <div
+      v-if="store.loading"
+      class="flex justify-center py-8"
+    >
       <span class="loading loading-spinner loading-md" />
     </div>
 
@@ -14,12 +20,18 @@
       </h2>
 
       <!-- Empty state -->
-      <div v-if="store.revisions.length === 0 && !showInlineAdd" class="py-8 text-center text-base-content/60">
+      <div
+        v-if="store.revisions.length === 0 && !showInlineAdd"
+        class="py-8 text-center text-base-content/60"
+      >
         {{ t('budgetStructure.budgetLines.customizations.noRevisions') }}
       </div>
 
       <!-- Revisions table -->
-      <div v-if="store.revisions.length > 0 || showInlineAdd" class="overflow-x-auto select-none">
+      <div
+        v-if="store.revisions.length > 0 || showInlineAdd"
+        class="overflow-x-auto select-none"
+      >
         <table class="table table-zebra w-full">
           <thead>
             <tr>
@@ -32,7 +44,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="revision in store.revisions" :key="revision.id">
+            <tr
+              v-for="revision in store.revisions"
+              :key="revision.id"
+            >
               <td>{{ revision.validFrom }}</td>
               <td>{{ revision.validTo ?? (currentLine?.endDate ?? '—') }}</td>
               <td>
@@ -43,9 +58,11 @@
                     step="0.01"
                     min="0"
                     class="input input-xs input-bordered w-24"
-                  />
+                  >
                 </template>
-                <template v-else>{{ revision.budgetedAmount }}</template>
+                <template v-else>
+                  {{ revision.budgetedAmount }}
+                </template>
               </td>
               <td>{{ revision.currencyCode ?? revision.currencyId }}</td>
               <td class="text-sm text-base-content/60">
@@ -54,37 +71,51 @@
                     v-model="editingNote"
                     type="text"
                     class="input input-xs input-bordered w-full"
-                  />
+                  >
                 </template>
-                <template v-else>{{ revision.note ?? '—' }}</template>
+                <template v-else>
+                  {{ revision.note ?? '—' }}
+                </template>
               </td>
               <td>
                 <template v-if="editingRevisionId === revision.id">
                   <div class="flex gap-1">
-                    <button type="button" class="btn btn-xs btn-ghost btn-square text-success"
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-ghost btn-square text-success"
                       :title="t('budgetStructure.common.save')"
-                      @click="handleSaveRevision(revision.id)">
+                      @click="handleSaveRevision(revision.id)"
+                    >
                       <Check :size="14" />
                     </button>
-                    <button type="button" class="btn btn-xs btn-ghost btn-square"
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-ghost btn-square"
                       :title="t('budgetStructure.common.cancel')"
-                      @click="editingRevisionId = null">
+                      @click="editingRevisionId = null"
+                    >
                       <X :size="14" />
                     </button>
                   </div>
                 </template>
                 <template v-else>
                   <div class="flex gap-1">
-                    <button v-if="isAdmin" type="button"
+                    <button
+                      v-if="isAdmin"
+                      type="button"
                       class="btn btn-xs btn-ghost btn-square"
                       :title="t('budgetStructure.budgetLines.customizations.editRevision')"
-                      @click="startEditRevision(revision.id, revision.budgetedAmount, revision.note)">
+                      @click="startEditRevision(revision.id, revision.budgetedAmount, revision.note)"
+                    >
                       <Pencil :size="14" />
                     </button>
-                    <button v-if="isAdmin" type="button"
+                    <button
+                      v-if="isAdmin"
+                      type="button"
                       class="btn btn-xs btn-ghost btn-square text-error"
                       :title="t('budgetStructure.budgetLines.customizations.deleteRevision')"
-                      @click="confirmDelete(revision.id)">
+                      @click="confirmDelete(revision.id)"
+                    >
                       <Trash2 :size="14" />
                     </button>
                   </div>
@@ -93,20 +124,23 @@
             </tr>
 
             <!-- Inline add row -->
-            <tr v-if="showInlineAdd" class="bg-base-200">
+            <tr
+              v-if="showInlineAdd"
+              class="bg-base-200"
+            >
               <td>
                 <input
                   v-model="inlineAddForm.validFrom"
                   type="date"
                   class="input input-xs input-bordered w-full"
-                />
+                >
               </td>
               <td>
                 <input
                   v-model="inlineAddForm.validTo"
                   type="date"
                   class="input input-xs input-bordered w-full"
-                />
+                >
               </td>
               <td>
                 <input
@@ -115,7 +149,7 @@
                   step="0.01"
                   min="0"
                   class="input input-xs input-bordered w-24"
-                />
+                >
               </td>
               <td>—</td>
               <td>
@@ -124,7 +158,7 @@
                   type="text"
                   class="input input-xs input-bordered w-full"
                   :placeholder="t('budgetStructure.budgetLines.customizations.note')"
-                />
+                >
               </td>
               <td>
                 <div class="flex gap-1">
@@ -151,8 +185,15 @@
         </table>
 
         <!-- Inline add trigger -->
-        <div v-if="isAdmin && !showInlineAdd" class="mt-3">
-          <button type="button" class="btn btn-sm btn-ghost" @click="openInlineAdd">
+        <div
+          v-if="isAdmin && !showInlineAdd"
+          class="mt-3"
+        >
+          <button
+            type="button"
+            class="btn btn-sm btn-ghost"
+            @click="openInlineAdd"
+          >
             + {{ t('budgetStructure.budgetLines.customizations.createRevision') }}
           </button>
         </div>
@@ -160,22 +201,36 @@
     </template>
 
     <!-- Delete confirmation dialog -->
-    <dialog v-if="showDeleteConfirm" class="modal modal-open">
+    <dialog
+      v-if="showDeleteConfirm"
+      class="modal modal-open"
+    >
       <div class="modal-box">
         <h3 class="font-bold text-lg mb-4">
           {{ t('budgetStructure.budgetLines.customizations.deleteRevision') }}
         </h3>
         <p>{{ t('budgetStructure.budgetLines.customizations.confirmDeleteRevision') }}</p>
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="showDeleteConfirm = false">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="showDeleteConfirm = false"
+          >
             {{ t('budgetStructure.common.cancel') }}
           </button>
-          <button type="button" class="btn btn-error" @click="handleDelete">
+          <button
+            type="button"
+            class="btn btn-error"
+            @click="handleDelete"
+          >
             {{ t('budgetStructure.common.confirm') }}
           </button>
         </div>
       </div>
-      <div class="modal-backdrop" @click="showDeleteConfirm = false" />
+      <div
+        class="modal-backdrop"
+        @click="showDeleteConfirm = false"
+      />
     </dialog>
   </div>
 </template>

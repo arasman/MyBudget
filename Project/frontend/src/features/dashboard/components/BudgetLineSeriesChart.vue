@@ -15,7 +15,10 @@
       />
     </div>
     <div class="lg:col-span-4 flex flex-col gap-4">
-      <BudgetLinePicker :lines="structureStore.budgetLines" v-model="selectedLineIds" />
+      <BudgetLinePicker
+        v-model="selectedLineIds"
+        :lines="structureStore.budgetLines"
+      />
       <ComparisonModeSwitch
         :key="props.budgetId"
         :cycles="cycles"
@@ -27,7 +30,7 @@
         @update:selected-cycle-id="selectedCycleId = $event"
         @update:within-period-ids="withinPeriodIds = $event"
         @update:cross-cycle-ids="crossCycleIds = $event"
-        @update:selectedPeriodIds="selectedPeriodIds = $event"
+        @update:selected-period-ids="selectedPeriodIds = $event"
       />
     </div>
   </div>

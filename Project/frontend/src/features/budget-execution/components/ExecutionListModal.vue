@@ -18,14 +18,17 @@
         </h3>
         <div class="flex items-center gap-2">
           <!-- Include deleted toggle (only in list mode) -->
-          <label v-if="mode === 'list'" class="flex items-center gap-1.5 text-sm cursor-pointer select-none">
+          <label
+            v-if="mode === 'list'"
+            class="flex items-center gap-1.5 text-sm cursor-pointer select-none"
+          >
             <input
               type="checkbox"
               data-testid="modal-include-deleted-toggle"
               class="checkbox checkbox-xs"
               :checked="matrixStore.showDeletedInModal"
               @change="matrixStore.toggleShowDeletedInModal()"
-            />
+            >
             {{ t('budgetExecution.modal.includeDeleted') }}
           </label>
           <!-- Fullscreen toggle -->
@@ -35,8 +38,14 @@
             :title="isFullscreen ? t('budgetExecution.modal.exitFullscreen') : t('budgetExecution.modal.fullscreen')"
             @click="isFullscreen = !isFullscreen"
           >
-            <Maximize2 v-if="!isFullscreen" :size="16" />
-            <Minimize2 v-else :size="16" />
+            <Maximize2
+              v-if="!isFullscreen"
+              :size="16"
+            />
+            <Minimize2
+              v-else
+              :size="16"
+            />
           </button>
           <!-- Close -->
           <button
@@ -68,7 +77,11 @@
         <div class="flex-1 overflow-y-auto min-h-0">
           <!-- Loading state -->
           <template v-if="loadingKey">
-            <div v-for="i in 3" :key="i" class="skeleton h-12 w-full mb-2" />
+            <div
+              v-for="i in 3"
+              :key="i"
+              class="skeleton h-12 w-full mb-2"
+            />
           </template>
 
           <!-- Modal-scoped fetch error -->
@@ -103,7 +116,10 @@
         </div>
 
         <!-- Pagination (only if totalPages > 1) -->
-        <div v-if="totalPages > 1" class="flex items-center justify-between py-2 text-sm">
+        <div
+          v-if="totalPages > 1"
+          class="flex items-center justify-between py-2 text-sm"
+        >
           <button
             :disabled="currentPage === 1"
             class="btn btn-xs btn-ghost"
@@ -122,20 +138,33 @@
         </div>
 
         <!-- Closed-period notice -->
-        <div v-if="periodClosed" data-testid="closed-period-banner" class="alert alert-info text-sm mt-4">
+        <div
+          v-if="periodClosed"
+          data-testid="closed-period-banner"
+          class="alert alert-info text-sm mt-4"
+        >
           {{ t('budgetExecution.modal.periodClosed') }}
         </div>
 
         <!-- Add form (collapsible, hidden when period closed) -->
-        <div v-if="!periodClosed" class="border-t border-base-300 mt-2">
+        <div
+          v-if="!periodClosed"
+          class="border-t border-base-300 mt-2"
+        >
           <button
             type="button"
             class="w-full flex items-center justify-between py-2 text-sm font-semibold"
             @click="addFormOpen = !addFormOpen"
           >
             <span>{{ t('budgetExecution.modal.addEntry') }}</span>
-            <ChevronUp v-if="addFormOpen" :size="16" />
-            <ChevronDown v-else :size="16" />
+            <ChevronUp
+              v-if="addFormOpen"
+              :size="16"
+            />
+            <ChevronDown
+              v-else
+              :size="16"
+            />
           </button>
           <div v-if="addFormOpen">
             <ExecutionRecordForm
@@ -150,7 +179,10 @@
     </div>
 
     <!-- Backdrop -->
-    <div class="modal-backdrop" @click="matrixStore.closeExecutionModal()" />
+    <div
+      class="modal-backdrop"
+      @click="matrixStore.closeExecutionModal()"
+    />
   </dialog>
 </template>
 

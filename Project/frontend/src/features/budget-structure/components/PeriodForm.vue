@@ -5,10 +5,16 @@
         {{ modelValue ? t('budgetStructure.periods.edit') : t('budgetStructure.periods.create') }}
       </h3>
 
-      <form novalidate @submit.prevent="handleSubmit">
+      <form
+        novalidate
+        @submit.prevent="handleSubmit"
+      >
         <!-- Name -->
         <div class="form-control mb-4">
-          <label class="label" for="period-name">
+          <label
+            class="label"
+            for="period-name"
+          >
             <span class="label-text">{{ t('budgetStructure.periods.name') }}</span>
           </label>
           <input
@@ -19,15 +25,21 @@
             :class="{ 'input-error': errors.name }"
             maxlength="200"
             required
-          />
-          <div v-if="errors.name" class="label">
+          >
+          <div
+            v-if="errors.name"
+            class="label"
+          >
             <span class="label-text-alt text-error">{{ errors.name }}</span>
           </div>
         </div>
 
         <!-- Start Date -->
         <div class="form-control mb-4">
-          <label class="label" for="period-start">
+          <label
+            class="label"
+            for="period-start"
+          >
             <span class="label-text">{{ t('budgetStructure.periods.startDate') }}</span>
           </label>
           <input
@@ -37,15 +49,21 @@
             class="input input-bordered w-full"
             :class="{ 'input-error': errors.startDate }"
             required
-          />
-          <div v-if="errors.startDate" class="label">
+          >
+          <div
+            v-if="errors.startDate"
+            class="label"
+          >
             <span class="label-text-alt text-error">{{ errors.startDate }}</span>
           </div>
         </div>
 
         <!-- End Date -->
         <div class="form-control mb-4">
-          <label class="label" for="period-end">
+          <label
+            class="label"
+            for="period-end"
+          >
             <span class="label-text">{{ t('budgetStructure.periods.endDate') }}</span>
           </label>
           <input
@@ -55,15 +73,24 @@
             class="input input-bordered w-full"
             :class="{ 'input-error': errors.endDate }"
             required
-          />
-          <div v-if="errors.endDate" class="label">
+          >
+          <div
+            v-if="errors.endDate"
+            class="label"
+          >
             <span class="label-text-alt text-error">{{ errors.endDate }}</span>
           </div>
         </div>
 
         <!-- Status (edit mode only) -->
-        <div v-if="modelValue" class="form-control mb-6">
-          <label class="label" for="period-status">
+        <div
+          v-if="modelValue"
+          class="form-control mb-6"
+        >
+          <label
+            class="label"
+            for="period-status"
+          >
             <span class="label-text">{{ t('budgetStructure.periods.status') }}</span>
           </label>
           <select
@@ -71,23 +98,39 @@
             v-model="form.status"
             class="select select-bordered w-full"
           >
-            <option value="Open">{{ t('enums.periodStatus.open') }}</option>
-            <option value="Closed">{{ t('enums.periodStatus.closed') }}</option>
-            <option value="Locked">{{ t('enums.periodStatus.locked') }}</option>
+            <option value="Open">
+              {{ t('enums.periodStatus.open') }}
+            </option>
+            <option value="Closed">
+              {{ t('enums.periodStatus.closed') }}
+            </option>
+            <option value="Locked">
+              {{ t('enums.periodStatus.locked') }}
+            </option>
           </select>
         </div>
 
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="emit('cancel')">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="emit('cancel')"
+          >
             {{ t('budgetStructure.common.cancel') }}
           </button>
-          <button type="submit" class="btn btn-primary">
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
             {{ t('budgetStructure.common.save') }}
           </button>
         </div>
       </form>
     </div>
-    <div class="modal-backdrop" @click="emit('cancel')" />
+    <div
+      class="modal-backdrop"
+      @click="emit('cancel')"
+    />
   </dialog>
 </template>
 

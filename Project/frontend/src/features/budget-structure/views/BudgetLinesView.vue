@@ -1,6 +1,9 @@
 <template>
   <div class="container mx-auto px-4 py-6">
-    <BudgetTabs :budget-id="budgetId" class="mb-6" />
+    <BudgetTabs
+      :budget-id="budgetId"
+      class="mb-6"
+    />
 
     <!-- Show-deleted toggle -->
     <div class="flex items-center gap-2 mb-4">
@@ -9,14 +12,20 @@
         v-model="store.showDeletedBudgetLines"
         type="checkbox"
         class="checkbox checkbox-sm"
-      />
-      <label for="show-deleted-lines" class="label-text cursor-pointer">
+      >
+      <label
+        for="show-deleted-lines"
+        class="label-text cursor-pointer"
+      >
         {{ t('budgetStructure.budgetLines.showDeleted') }}
       </label>
     </div>
 
     <!-- Loading indicator -->
-    <div v-if="store.loading" class="flex justify-center py-8">
+    <div
+      v-if="store.loading"
+      class="flex justify-center py-8"
+    >
       <span class="loading loading-spinner loading-md" />
     </div>
 
@@ -30,33 +39,54 @@
     />
 
     <!-- Lines table -->
-    <div v-else class="overflow-x-auto select-none">
+    <div
+      v-else
+      class="overflow-x-auto select-none"
+    >
       <table class="table table-zebra w-full">
         <thead>
           <tr>
-            <th class="cursor-pointer select-none" @click="toggleSort('group')">
+            <th
+              class="cursor-pointer select-none"
+              @click="toggleSort('group')"
+            >
               {{ t('budgetStructure.categoryGroups.column') }}
               <span v-if="sortColumn === 'group'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th class="cursor-pointer select-none" @click="toggleSort('category')">
+            <th
+              class="cursor-pointer select-none"
+              @click="toggleSort('category')"
+            >
               {{ t('budgetStructure.categories.title') }}
               <span v-if="sortColumn === 'category'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th class="cursor-pointer select-none" @click="toggleSort('type')">
+            <th
+              class="cursor-pointer select-none"
+              @click="toggleSort('type')"
+            >
               {{ t('budgetStructure.budgetLines.lineType') }}
               <span v-if="sortColumn === 'type'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th class="cursor-pointer select-none" @click="toggleSort('name')">
+            <th
+              class="cursor-pointer select-none"
+              @click="toggleSort('name')"
+            >
               {{ t('budgetStructure.budgetLines.name') }}
               <span v-if="sortColumn === 'name'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
             </th>
             <th>{{ t('budgetStructure.budgetLines.startDate') }}</th>
             <th>{{ t('budgetStructure.budgetLines.endDate') }}</th>
-            <th class="cursor-pointer select-none" @click="toggleSort('currency')">
+            <th
+              class="cursor-pointer select-none"
+              @click="toggleSort('currency')"
+            >
               {{ t('budgetStructure.budgetLines.currency') }}
               <span v-if="sortColumn === 'currency'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th class="cursor-pointer select-none" @click="toggleSort('budgetedAmount')">
+            <th
+              class="cursor-pointer select-none"
+              @click="toggleSort('budgetedAmount')"
+            >
               {{ t('budgetStructure.budgetLines.budgetedAmount') }}
               <span v-if="sortColumn === 'budgetedAmount'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
             </th>
@@ -82,15 +112,27 @@
           />
 
           <!-- Inline add row -->
-          <tr v-if="showInlineAdd" class="bg-base-200">
+          <tr
+            v-if="showInlineAdd"
+            class="bg-base-200"
+          >
             <td>
               <select
                 v-model="inlineAddForm.categoryGroupId"
                 class="select select-xs select-bordered w-full"
                 @change="inlineAddForm.categoryId = undefined"
               >
-                <option value="" disabled>—</option>
-                <option v-for="g in store.categoryGroups" :key="g.id" :value="g.id">
+                <option
+                  value=""
+                  disabled
+                >
+                  —
+                </option>
+                <option
+                  v-for="g in store.categoryGroups"
+                  :key="g.id"
+                  :value="g.id"
+                >
                   {{ g.name }}
                 </option>
               </select>
@@ -100,7 +142,9 @@
                 v-model="inlineAddForm.categoryId"
                 class="select select-xs select-bordered w-full"
               >
-                <option :value="undefined">—</option>
+                <option :value="undefined">
+                  —
+                </option>
                 <option
                   v-for="cat in (store.categoryGroups.find(g => g.id === inlineAddForm.categoryGroupId)?.categories ?? []).filter(c => !c.deletedAt)"
                   :key="cat.id"
@@ -111,10 +155,19 @@
               </select>
             </td>
             <td>
-              <select v-model="inlineAddForm.lineType" class="select select-xs select-bordered w-full">
-                <option value="Expense">{{ t('budgetStructure.budgetLines.types.expense') }}</option>
-                <option value="LongTermSavings">{{ t('budgetStructure.budgetLines.types.longTermSavings') }}</option>
-                <option value="PreventiveSavings">{{ t('budgetStructure.budgetLines.types.preventiveSavings') }}</option>
+              <select
+                v-model="inlineAddForm.lineType"
+                class="select select-xs select-bordered w-full"
+              >
+                <option value="Expense">
+                  {{ t('budgetStructure.budgetLines.types.expense') }}
+                </option>
+                <option value="LongTermSavings">
+                  {{ t('budgetStructure.budgetLines.types.longTermSavings') }}
+                </option>
+                <option value="PreventiveSavings">
+                  {{ t('budgetStructure.budgetLines.types.preventiveSavings') }}
+                </option>
               </select>
             </td>
             <td>
@@ -123,7 +176,7 @@
                 type="text"
                 class="input input-xs input-bordered w-full"
                 :placeholder="t('budgetStructure.budgetLines.name')"
-              />
+              >
             </td>
             <td>
               <input
@@ -131,7 +184,7 @@
                 type="date"
                 class="input input-xs input-bordered w-full"
                 :placeholder="t('budgetStructure.budgetLines.startDate')"
-              />
+              >
             </td>
             <td>
               <input
@@ -139,11 +192,16 @@
                 type="date"
                 class="input input-xs input-bordered w-full"
                 :placeholder="t('budgetStructure.budgetLines.endDatePlaceholder')"
-              />
+              >
             </td>
             <td>
-              <select v-model="inlineAddForm.currencyId" class="select select-xs select-bordered">
-                <option :value="undefined">—</option>
+              <select
+                v-model="inlineAddForm.currencyId"
+                class="select select-xs select-bordered"
+              >
+                <option :value="undefined">
+                  —
+                </option>
                 <option
                   v-for="currency in availableCurrencies"
                   :key="currency.id"
@@ -159,7 +217,7 @@
                 type="number"
                 step="0.01"
                 class="input input-xs input-bordered w-24"
-              />
+              >
             </td>
             <td>
               <input
@@ -168,7 +226,7 @@
                 class="input input-xs input-bordered w-full"
                 :placeholder="t('budgetStructure.budgetLines.description')"
                 maxlength="500"
-              />
+              >
             </td>
             <td>
               <div class="flex gap-1">
@@ -195,8 +253,15 @@
       </table>
 
       <!-- Inline add row trigger -->
-      <div v-if="canWriteLines" class="mt-3">
-        <button type="button" class="btn btn-sm btn-ghost" @click="openInlineAdd">
+      <div
+        v-if="canWriteLines"
+        class="mt-3"
+      >
+        <button
+          type="button"
+          class="btn btn-sm btn-ghost"
+          @click="openInlineAdd"
+        >
           + {{ t('budgetStructure.budgetLines.create') }}
         </button>
       </div>
@@ -212,20 +277,36 @@
     />
 
     <!-- Delete confirmation dialog -->
-    <dialog v-if="showDeleteConfirm" class="modal modal-open">
+    <dialog
+      v-if="showDeleteConfirm"
+      class="modal modal-open"
+    >
       <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">{{ t('budgetStructure.budgetLines.delete') }}</h3>
+        <h3 class="font-bold text-lg mb-4">
+          {{ t('budgetStructure.budgetLines.delete') }}
+        </h3>
         <p>{{ t('budgetStructure.budgetLines.confirmDelete') }}</p>
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" @click="showDeleteConfirm = false">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="showDeleteConfirm = false"
+          >
             {{ t('budgetStructure.common.cancel') }}
           </button>
-          <button type="button" class="btn btn-error" @click="handleDelete">
+          <button
+            type="button"
+            class="btn btn-error"
+            @click="handleDelete"
+          >
             {{ t('budgetStructure.common.confirm') }}
           </button>
         </div>
       </div>
-      <div class="modal-backdrop" @click="showDeleteConfirm = false" />
+      <div
+        class="modal-backdrop"
+        @click="showDeleteConfirm = false"
+      />
     </dialog>
   </div>
 </template>

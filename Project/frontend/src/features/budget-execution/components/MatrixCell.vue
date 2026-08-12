@@ -5,7 +5,10 @@
     :class="{ 'opacity-50 line-through': deleted }"
     @dblclick="onDblClick"
   >
-    <div v-if="loading" class="skeleton h-4 w-16 ml-auto" />
+    <div
+      v-if="loading"
+      class="skeleton h-4 w-16 ml-auto"
+    />
     <span v-else>{{ formatAmount(amount, currencySymbol) }}</span>
   </td>
 </template>
