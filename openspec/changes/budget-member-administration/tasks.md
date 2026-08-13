@@ -97,31 +97,31 @@ without re-asking.
 
 ### Phase 1: `MemberActionPolicy` — pure permission matrix
 
-- [ ] 6.1 RED: create `tests/MyBudget.Features.Tests/SharedKernel/Auth/MemberActionPolicyTests.cs` — every actor role × target role × `newRole?` matrix cell from design's 5-rule table, asserted in rule order: (1) `targetUserId == actorId` → `MEMBERS_CANNOT_ACT_ON_SELF`; (2) `targetRole == Owner` → `MEMBERS_CANNOT_ACT_ON_OWNER`; (3) `actorRole == Admin && targetRole == Admin` → `MEMBERS_CANNOT_ACT_ON_ADMIN`; (4) `newRole == Owner` → `MEMBERS_CANNOT_PROMOTE_TO_OWNER`; (5) no matching row → `MEMBERS_NOT_FOUND`; plus every allowed combination returns `null`.
-- [ ] 6.2 RED: same file — self-check fires before all other checks (an Owner acting on themselves as the "Owner target" gets `MEMBERS_CANNOT_ACT_ON_SELF`, not `MEMBERS_CANNOT_ACT_ON_OWNER`).
-- [ ] 6.3 GREEN: create `Project/src/MyBudget.Features/SharedKernel/Auth/Authorization/MemberActionPolicy.cs` — `Evaluate(actorId, actorRole, targetUserId, targetRole, newRole?) → string? errorCode`, implementing the 5 checks in order.
-- [ ] 6.4 REFACTOR: `dotnet test --filter MemberActionPolicy`, confirm all matrix cells green.
+- [x] 6.1 RED: create `tests/MyBudget.Features.Tests/SharedKernel/Auth/MemberActionPolicyTests.cs` — every actor role × target role × `newRole?` matrix cell from design's 5-rule table, asserted in rule order: (1) `targetUserId == actorId` → `MEMBERS_CANNOT_ACT_ON_SELF`; (2) `targetRole == Owner` → `MEMBERS_CANNOT_ACT_ON_OWNER`; (3) `actorRole == Admin && targetRole == Admin` → `MEMBERS_CANNOT_ACT_ON_ADMIN`; (4) `newRole == Owner` → `MEMBERS_CANNOT_PROMOTE_TO_OWNER`; (5) no matching row → `MEMBERS_NOT_FOUND`; plus every allowed combination returns `null`.
+- [x] 6.2 RED: same file — self-check fires before all other checks (an Owner acting on themselves as the "Owner target" gets `MEMBERS_CANNOT_ACT_ON_SELF`, not `MEMBERS_CANNOT_ACT_ON_OWNER`).
+- [x] 6.3 GREEN: create `Project/src/MyBudget.Features/SharedKernel/Auth/Authorization/MemberActionPolicy.cs` — `Evaluate(actorId, actorRole, targetUserId, targetRole, newRole?) → string? errorCode`, implementing the 5 checks in order. (Signature uses `BudgetRole? targetRole` so rule 5's "no membership row" is representable by the pure function itself, per the ambiguity flagged in the orchestrator prompt.)
+- [x] 6.4 REFACTOR: `dotnet test --filter MemberActionPolicy`, confirm all matrix cells green. (29/29 passed.)
 
 ### Phase 2: `ListBudgetMembers` slice (MEMBERS-LIST-1, WU1 scope)
 
-- [ ] 7.1 RED: create `tests/MyBudget.Integration.Tests/Features/Budgets/ListBudgetMembersTests.cs` — Admin lists 3 active memberships including Owner, gets `200 OK` with `userId/name/email/role/joinedAt` per row (Active members listed scenario).
-- [ ] 7.2 RED: same file — caller with `operator` role gets `403 AUTH_INSUFFICIENT_ROLE` (Insufficient role scenario).
-- [ ] 7.3 GREEN: create `Project/src/MyBudget.Features/Features/Budgets/ListBudgetMembers/{ListBudgetMembersQuery,ListBudgetMembersHandler,ListBudgetMembersEndpoint}.cs` — Dapper read slice (no Validator), `GET /api/budgets/{id}/members`, `budget:admin` policy.
-- [ ] 7.4 REFACTOR: `dotnet test --filter ListBudgetMembers`, confirm green.
+- [x] 7.1 RED: create `tests/MyBudget.Integration.Tests/Features/Budgets/ListBudgetMembersTests.cs` — Admin lists 3 active memberships including Owner, gets `200 OK` with `userId/name/email/role/joinedAt` per row (Active members listed scenario). (Actual shape per design's Contracts section: `userId/email/firstName/lastName/role/joinedAt`, no combined `name` field — matches WU0's `BudgetRoleStrings` convention.)
+- [x] 7.2 RED: same file — caller with `operator` role gets `403` (Insufficient role scenario). (Asserted via status code only, matching the existing convention for plain `budget:admin` policy failures — see `RenameBudgetTests.OperatorRole_Returns403`; the `AUTH_INSUFFICIENT_ROLE` body is only emitted by handlers with a manual Dapper-based policy bypass, e.g. `RestoreBudget`, not by the standard `[Authorize("budget:admin")]` 403 path.)
+- [x] 7.3 GREEN: create `Project/src/MyBudget.Features/Features/Budgets/ListBudgetMembers/{ListBudgetMembersQuery,ListBudgetMembersHandler,ListBudgetMembersEndpoint}.cs` — Dapper read slice (no Validator), `GET /api/budgets/{id}/members`, `budget:admin` policy.
+- [x] 7.4 REFACTOR: `dotnet test --filter ListBudgetMembers`, confirm green. (2/2 passed.)
 
 ### Phase 3: `UpdateMemberRole` slice (MEMBERS-ROLE-1)
 
-- [ ] 8.1 RED: create `tests/MyBudget.Integration.Tests/Features/Budgets/UpdateMemberRoleTests.cs` — Owner promotes Operator→Admin: `200 OK`, role updated.
-- [ ] 8.2 RED: same file — Owner demotes Admin→Operator: `200 OK`.
-- [ ] 8.3 RED: same file — Admin changes ReadOnly→Operator: `200 OK`.
-- [ ] 8.4 RED: same file — Admin targets Admin: `403 MEMBERS_CANNOT_ACT_ON_ADMIN`, no change persisted.
-- [ ] 8.5 RED: same file — caller targets own `userId` (Owner or Admin): `403 MEMBERS_CANNOT_ACT_ON_SELF`, role unchanged.
-- [ ] 8.6 RED: same file — target is the Owner row: `403 MEMBERS_CANNOT_ACT_ON_OWNER`, Owner role unchanged.
-- [ ] 8.7 RED: same file — `role: "owner"` on any non-Owner target: `422 MEMBERS_CANNOT_PROMOTE_TO_OWNER`.
-- [ ] 8.8 RED: same file — unknown `userId` for the budget: `404 MEMBERS_NOT_FOUND`.
-- [ ] 8.9 RED: same file — cache-eviction-via-second-request pattern: after a successful role change, a second immediate request by the affected user against a `budget:*`-gated endpoint reflects the new role (not a stale cached one).
-- [ ] 8.10 GREEN: create `Project/src/MyBudget.Features/Features/Budgets/UpdateMemberRole/{UpdateMemberRoleCommand,UpdateMemberRoleHandler,UpdateMemberRoleEndpoint,UpdateMemberRoleValidator}.cs` — `PATCH /api/budgets/{id}/members/{userId}/role`, `budget:admin` policy; handler does one Dapper read for actor role + target row, calls `MemberActionPolicy.Evaluate`, applies via EF, evicts `budget-membership:{userId}:{budgetId}` before returning (MEM-SC-3).
-- [ ] 8.11 REFACTOR: `dotnet test --filter UpdateMemberRole`, confirm all of 8.1–8.9 green.
+- [x] 8.1 RED: create `tests/MyBudget.Integration.Tests/Features/Budgets/UpdateMemberRoleTests.cs` — Owner promotes Operator→Admin: `200 OK`, role updated.
+- [x] 8.2 RED: same file — Owner demotes Admin→Operator: `200 OK`.
+- [x] 8.3 RED: same file — Admin changes ReadOnly→Operator: `200 OK`.
+- [x] 8.4 RED: same file — Admin targets Admin: `403 MEMBERS_CANNOT_ACT_ON_ADMIN`, no change persisted.
+- [x] 8.5 RED: same file — caller targets own `userId` (Owner or Admin): `403 MEMBERS_CANNOT_ACT_ON_SELF`, role unchanged.
+- [x] 8.6 RED: same file — target is the Owner row: `403 MEMBERS_CANNOT_ACT_ON_OWNER`, Owner role unchanged.
+- [x] 8.7 RED: same file — `role: "owner"` on any non-Owner target: `422 MEMBERS_CANNOT_PROMOTE_TO_OWNER`.
+- [x] 8.8 RED: same file — unknown `userId` for the budget: `404 MEMBERS_NOT_FOUND`.
+- [x] 8.9 RED: same file — cache-eviction-via-second-request pattern: after a successful role change, a second immediate request by the affected user against a `budget:*`-gated endpoint reflects the new role (not a stale cached one). (Warms the cache via a `budget:read`-gated call under the target's old role, promotes via the Owner, then asserts the target's immediate `budget:admin`-gated call succeeds.)
+- [x] 8.10 GREEN: create `Project/src/MyBudget.Features/Features/Budgets/UpdateMemberRole/{UpdateMemberRoleCommand,UpdateMemberRoleHandler,UpdateMemberRoleEndpoint,UpdateMemberRoleValidator}.cs` — `PATCH /api/budgets/{id}/members/{userId}/role`, `budget:admin` policy; handler does one Dapper read for actor role + target row, calls `MemberActionPolicy.Evaluate`, applies via EF, evicts `budget-membership:{userId}:{budgetId}` before returning (MEM-SC-3). (Role mutation uses `_db.Entry(membership).Property(m => m.Role).CurrentValue = cmd.NewRole` — `BudgetMembership` has no public role-change method yet; that method [`ChangeRole`] is explicitly PR3/WU2 Phase 1 scope per task 14.2, so this handler intentionally does not touch `BudgetMembership.cs`.)
+- [x] 8.11 REFACTOR: `dotnet test --filter UpdateMemberRole`, confirm all of 8.1–8.9 green. (9/9 passed.)
 
 ---
 
@@ -178,6 +178,7 @@ without re-asking.
 - [ ] 14.1 RED: extend the entity's unit test file (mirror `Budget.cs`'s existing soft-delete tests) — `SoftDelete()` sets `IsDeleted = true`, `DeletedAt = now`, bumps `UpdatedAt`; `Restore()` clears both, bumps `UpdatedAt`, leaves `JoinedAt` untouched; `ChangeRole(BudgetRole)` updates `Role`, bumps `UpdatedAt`.
 - [ ] 14.2 GREEN: modify `Project/src/MyBudget.Features/SharedKernel/Entities/BudgetMembership.cs` — add `IsDeleted`, `DeletedAt`, `SoftDelete()`, `Restore()` (copied verbatim from `Budget.cs`'s shape) plus a separate `ChangeRole(BudgetRole)` (design decision 8).
 - [ ] 14.3 REFACTOR: `dotnet test --filter BudgetMembership`, confirm green.
+- [ ] 14.4 REFACTOR (retrofit, flagged by `sdd-verify` on PR2a): `Project/src/MyBudget.Features/Features/Budgets/UpdateMemberRole/UpdateMemberRoleHandler.cs` currently mutates the role via `_db.Entry(membership).Property(m => m.Role).CurrentValue = cmd.NewRole` (raw EF change-tracker write, since `ChangeRole()` didn't exist yet in PR2a) — this silently skips the `UpdatedAt` bump that every other mutating handler gets via its domain method (`Rename`/`SoftDelete`/`Restore`). Now that `ChangeRole(BudgetRole)` exists (task 14.2), replace the raw EF write with `membership.ChangeRole(cmd.NewRole)`, matching `RenameBudgetHandler`'s `budget.Rename(...)` convention. Extend `UpdateMemberRoleTests.cs` with an assertion that `UpdatedAt` advances on a successful role change (RED first, then GREEN).
 
 ### Phase 2: EF migration
 
