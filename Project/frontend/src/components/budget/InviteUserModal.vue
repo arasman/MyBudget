@@ -122,7 +122,7 @@ defineExpose({ open })
           <input
             v-model="form.email"
             type="email"
-            class="input input-bordered"
+            class="input input-bordered w-full"
             :class="{ 'input-error': fieldErrors['email'] }"
             placeholder="invitee@example.com"
             required
@@ -142,7 +142,7 @@ defineExpose({ open })
           </label>
           <select
             v-model="form.role"
-            class="select select-bordered"
+            class="select select-bordered w-full"
           >
             <option value="admin">
               {{ t('enums.role.admin') }}

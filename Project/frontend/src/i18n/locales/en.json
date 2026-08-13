@@ -301,6 +301,8 @@
       "renameSuccess": "Budget renamed successfully",
       "renameBudget": "Rename budget",
       "viewCycles": "View cycles",
+      "inviteUser": "Invite user",
+      "inviteSuccess": "Invitation sent successfully",
       "deleteBudget": "Delete",
       "confirmDeleteTitle": "Delete Budget",
       "confirmDelete": "Are you sure you want to delete this budget?",

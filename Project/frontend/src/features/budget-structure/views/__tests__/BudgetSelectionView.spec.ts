@@ -50,6 +50,21 @@ vi.mock('../../components/CreateBudgetModal.vue', () => ({
   },
 }))
 
+const { mockInviteOpen } = vi.hoisted(() => ({ mockInviteOpen: vi.fn() }))
+
+// Stub InviteUserModal so it doesn't interfere
+vi.mock('@/components/budget/InviteUserModal.vue', () => ({
+  default: {
+    name: 'InviteUserModal',
+    props: ['budgetId'],
+    template: '<div data-testid="invite-modal-stub" :data-budget-id="budgetId" />',
+    expose: ['open'],
+    setup() {
+      return { open: mockInviteOpen }
+    },
+  },
+}))
+
 import { useAuthStore } from '@/stores/auth.store'
 import { useLayoutStore } from '@/stores/layout.store'
 
@@ -82,6 +97,8 @@ function makeI18n() {
             renameBudget: 'Rename budget',
             viewCycles: 'View cycles',
             confirmDeleteTitle: 'Delete Budget',
+            inviteUser: 'Invite user',
+            inviteSuccess: 'Invitation sent successfully',
           },
           common: {
             save: 'Save',
@@ -368,5 +385,65 @@ describe('BudgetSelectionView — toast on create and rename', () => {
     )
 
     process.off('unhandledRejection', noop)
+  })
+})
+
+describe('BudgetSelectionView — invite action', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('shows invite button only for owner/admin roles on active budgets', async () => {
+    renderView([
+      { budgetId: 'b-1', budgetName: 'Owner Budget', role: 'owner', isDeleted: false },
+      { budgetId: 'b-2', budgetName: 'Admin Budget', role: 'admin', isDeleted: false },
+      { budgetId: 'b-3', budgetName: 'ReadOnly Budget', role: 'read-only', isDeleted: false },
+    ])
+
+    await waitFor(() => {
+      expect(screen.getByText('Owner Budget')).toBeTruthy()
+    })
+
+    const inviteButtons = screen.queryAllByRole('button', { name: 'Invite user' })
+    expect(inviteButtons).toHaveLength(2)
+  })
+
+  it('opens InviteUserModal for the clicked budget', async () => {
+    renderView([
+      { budgetId: 'b-1', budgetName: 'My Budget', role: 'owner', isDeleted: false },
+    ])
+
+    await waitFor(() => expect(screen.getByText('My Budget')).toBeTruthy())
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Invite user' }))
+
+    await waitFor(() => {
+      const stub = screen.getByTestId('invite-modal-stub')
+      expect(stub.getAttribute('data-budget-id')).toBe('b-1')
+      expect(mockInviteOpen).toHaveBeenCalled()
+    })
+  })
+
+  it('shows toast on invited event', async () => {
+    renderView([
+      { budgetId: 'b-1', budgetName: 'My Budget', role: 'owner', isDeleted: false },
+    ])
+
+    await waitFor(() => expect(screen.getByText('My Budget')).toBeTruthy())
+    await fireEvent.click(screen.getByRole('button', { name: 'Invite user' }))
+
+    await waitFor(() => expect(screen.getByTestId('invite-modal-stub')).toBeTruthy())
+
+    const stub = screen.getByTestId('invite-modal-stub')
+    const instance = (stub as unknown as { __vueParentComponent?: { attrs?: Record<string, unknown> } }).__vueParentComponent
+    const onInvited = instance?.attrs?.['onInvited'] as (() => void) | undefined
+    onInvited?.()
+
+    await waitFor(() => {
+      expect(mockToastPush).toHaveBeenCalledWith({
+        type: 'success',
+        title: 'Invitation sent successfully',
+      })
+    })
   })
 })

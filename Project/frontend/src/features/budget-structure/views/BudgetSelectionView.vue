@@ -135,6 +135,17 @@
                   <Pencil :size="14" />
                 </button>
 
+                <!-- Invite user (owner or admin only) -->
+                <button
+                  v-if="canEdit(m)"
+                  type="button"
+                  class="btn btn-xs btn-ghost btn-square"
+                  :title="t('budgetStructure.selection.inviteUser')"
+                  @click.stop="openInviteModal(m.budgetId)"
+                >
+                  <UserPlus :size="14" />
+                </button>
+
                 <!-- Delete (owner only) -->
                 <button
                   v-if="m.role === 'owner'"
@@ -173,6 +184,13 @@
     <CreateBudgetModal
       ref="createModal"
       @created="onBudgetCreated"
+    />
+
+    <InviteUserModal
+      v-if="inviteBudgetId"
+      ref="inviteModal"
+      :budget-id="inviteBudgetId"
+      @invited="onInvited"
     />
 
     <!-- Delete confirmation modal -->
@@ -219,16 +237,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Check, List, Pencil, Trash2, X } from 'lucide-vue-next'
+import { Check, List, Pencil, Trash2, UserPlus, X } from 'lucide-vue-next'
 import { toRoleKey } from '@/utils/enum-key'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLayoutStore } from '@/stores/layout.store'
 import { useToastStore } from '@/stores/toast.store'
 import { deleteBudget, renameBudget, restoreBudget } from '../api/budgets.api'
 import CreateBudgetModal from '../components/CreateBudgetModal.vue'
+import InviteUserModal from '@/components/budget/InviteUserModal.vue'
 import type { BudgetMembershipDto } from '@/stores/auth.store'
 
 const { t } = useI18n()
@@ -242,6 +261,8 @@ const showDeleted = ref(false)
 const actionInProgress = ref<string | null>(null)
 const pendingDeleteId = ref<string | null>(null)
 const createModal = ref<InstanceType<typeof CreateBudgetModal>>()
+const inviteModal = ref<InstanceType<typeof InviteUserModal>>()
+const inviteBudgetId = ref<string | null>(null)
 
 // Inline edit state
 const inlineEditingBudgetId = ref<string | null>(null)
@@ -273,6 +294,16 @@ async function onBudgetCreated(budget: { id: string; name: string }): Promise<vo
   await authStore.fetchMe()
   selectBudget(budget.id, budget.name)
   toastStore.push({ type: 'success', title: t('budgetStructure.selection.createSuccess') })
+}
+
+async function openInviteModal(budgetId: string): Promise<void> {
+  inviteBudgetId.value = budgetId
+  await nextTick()
+  inviteModal.value?.open()
+}
+
+function onInvited(): void {
+  toastStore.push({ type: 'success', title: t('budgetStructure.selection.inviteSuccess') })
 }
 
 // ── Inline rename ──────────────────────────────────────────────────────────
