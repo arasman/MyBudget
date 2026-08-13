@@ -117,6 +117,7 @@ function setupStoreMocks({
     isOperator: computed(() => isAdmin),
     canWriteStructure: computed(() => canWriteStructure),
     canWriteLines: computed(() => isAdmin),
+    isOwner: computed(() => false),
   })
 
   vi.mocked(useLayoutStore).mockReturnValue(layoutStoreMock as unknown as ReturnType<typeof useLayoutStore>)

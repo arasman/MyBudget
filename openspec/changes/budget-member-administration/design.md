@@ -43,7 +43,7 @@ Self is checked first so an Owner acting on themselves gets the accurate message
 ## Data Flow
 
     Role change / removal
-    BudgetMembersView ─→ budgetMembers.api ─→ PUT|DELETE /api/budgets/{id}/members/{userId}
+    BudgetMembersView ─→ budgetMembers.api ─→ PATCH .../role | DELETE /api/budgets/{id}/members/{userId}
           │                                        │
           │                          budget:admin policy (BudgetAuthorizationHandler)
           │                                        ▼
@@ -91,7 +91,7 @@ Self is checked first so an Owner acting on themselves gets the accurate message
 GET    /api/budgets/{id}/members?includeDeleted=false     budget:admin
        → { members: [{ userId, email, firstName, lastName, role, joinedAt }] }   # WU1
        # WU2 adds: isDeleted, deletedAt, and honours includeDeleted (additive)
-PUT    /api/budgets/{id}/members/{userId}   { role: "admin"|"operator"|"read-only" }
+PATCH  /api/budgets/{id}/members/{userId}/role   { role: "admin"|"operator"|"read-only" }
        → { userId, role }
 DELETE /api/budgets/{id}/members/{userId}                 → 204
 POST   /api/budgets/{id}/members/{userId}/restore         → { userId, role }

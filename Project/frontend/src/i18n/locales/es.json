@@ -320,6 +320,23 @@
       "restore": "Restaurar",
       "deleted": "Eliminado",
       "noPermission": "No tienes permiso para realizar esta acción."
+    },
+    "members": {
+      "title": "Miembros",
+      "tabTitle": "Miembros",
+      "columns": {
+        "name": "Nombre",
+        "email": "Correo electrónico",
+        "role": "Rol",
+        "joinedAt": "Fecha de ingreso"
+      },
+      "actions": {
+        "changeRole": "Cambiar rol"
+      },
+      "confirmations": {
+        "roleChangeSuccess": "Rol del miembro actualizado correctamente",
+        "roleChangeError": "No se pudo actualizar el rol del miembro"
+      }
     }
   },
   "budgetMatrix": {

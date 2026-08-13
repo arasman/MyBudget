@@ -320,6 +320,23 @@
       "restore": "Restore",
       "deleted": "Deleted",
       "noPermission": "You don't have permission to perform this action."
+    },
+    "members": {
+      "title": "Members",
+      "tabTitle": "Members",
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "joinedAt": "Joined"
+      },
+      "actions": {
+        "changeRole": "Change role"
+      },
+      "confirmations": {
+        "roleChangeSuccess": "Member role updated successfully",
+        "roleChangeError": "Could not update member role"
+      }
     }
   },
   "budgetMatrix": {

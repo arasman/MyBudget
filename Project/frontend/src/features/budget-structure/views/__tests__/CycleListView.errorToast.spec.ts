@@ -134,6 +134,7 @@ function setupStoreMocks({
     isOperator: computed(() => canWriteStructure),
     canWriteStructure: computed(() => canWriteStructure),
     canWriteLines: computed(() => canWriteStructure),
+    isOwner: computed(() => false),
   })
 
   vi.mocked(useLayoutStore).mockReturnValue({

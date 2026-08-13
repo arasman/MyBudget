@@ -70,6 +70,16 @@
       >
         {{ t('dashboard.tabTitle') }}
       </RouterLink>
+      <RouterLink
+        v-if="isAdmin"
+        :to="{ name: 'BudgetMembers', params: { budgetId } }"
+        role="tab"
+        class="tab"
+        :class="{ 'tab-active': isActive('BudgetMembers') }"
+        :aria-selected="isActive('BudgetMembers')"
+      >
+        {{ t('budgetStructure.members.tabTitle') }}
+      </RouterLink>
     </div>
   </div>
 </template>
@@ -77,14 +87,16 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useRoleGate } from '../composables/useRoleGate'
 
-defineProps<{
+const props = defineProps<{
   budgetId: string
   cycleId?: string
 }>()
 
 const route = useRoute()
 const { t } = useI18n()
+const { isAdmin } = useRoleGate(props.budgetId)
 
 // A tab is active when the current route name matches or is a descendant.
 // CycleList tab covers CycleList and CycleDetail routes.
@@ -95,6 +107,7 @@ const MATRIX_ROUTE_NAMES = new Set(['BudgetMatrix'])
 const CURRENT_SITUATION_ROUTE_NAMES = new Set(['CurrentSituation'])
 const BANK_ACCOUNTS_ROUTE_NAMES = new Set(['BankAccounts'])
 const DASHBOARD_ROUTE_NAMES = new Set(['Dashboard'])
+const MEMBERS_ROUTE_NAMES = new Set(['BudgetMembers'])
 
 function isActive(
   tab:
@@ -104,7 +117,8 @@ function isActive(
     | 'BudgetMatrix'
     | 'BankAccounts'
     | 'CurrentSituation'
-    | 'Dashboard',
+    | 'Dashboard'
+    | 'BudgetMembers',
 ): boolean {
   const name = route.name as string | undefined
   if (!name) return false
@@ -114,6 +128,7 @@ function isActive(
   if (tab === 'BankAccounts') return BANK_ACCOUNTS_ROUTE_NAMES.has(name)
   if (tab === 'CurrentSituation') return CURRENT_SITUATION_ROUTE_NAMES.has(name)
   if (tab === 'Dashboard') return DASHBOARD_ROUTE_NAMES.has(name)
+  if (tab === 'BudgetMembers') return MEMBERS_ROUTE_NAMES.has(name)
   return MATRIX_ROUTE_NAMES.has(name)
 }
 </script>

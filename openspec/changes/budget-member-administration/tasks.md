@@ -131,40 +131,41 @@ without re-asking.
 
 ### Phase 1: `useRoleGate` — add `isOwner`
 
-- [ ] 9.1 RED: extend `Project/frontend/src/features/budget-structure/composables/__tests__/useRoleGate.spec.ts` — `isOwner` is `true` only when the resolved role is `owner`.
-- [ ] 9.2 GREEN: modify `Project/frontend/src/features/budget-structure/composables/useRoleGate.ts` — add `isOwner` computed, additive to existing `isAdmin`/etc.
-- [ ] 9.3 REFACTOR: `pnpm test -- useRoleGate`, confirm green.
+- [x] 9.1 RED: extend `Project/frontend/src/features/budget-structure/composables/__tests__/useRoleGate.spec.ts` — `isOwner` is `true` only when the resolved role is `owner`.
+- [x] 9.2 GREEN: modify `Project/frontend/src/features/budget-structure/composables/useRoleGate.ts` — add `isOwner` computed, additive to existing `isAdmin`/etc.
+- [x] 9.3 REFACTOR: `pnpm test -- useRoleGate`, confirm green.
 
 ### Phase 2: `budgetMembers.api.ts`
 
-- [ ] 10.1 RED: create `Project/frontend/src/features/budget-structure/__tests__/budgetMembers.api.spec.ts` — `listMembers(budgetId)` calls `GET /api/budgets/{id}/members`; `updateMemberRole(budgetId, userId, role)` calls `PATCH /api/budgets/{id}/members/{userId}/role` with `{ role }` body, `role` values round-trip as `admin|operator|read-only`.
-- [ ] 10.2 GREEN: create `Project/frontend/src/features/budget-structure/api/budgetMembers.api.ts` with `listMembers`/`updateMemberRole`.
-- [ ] 10.3 REFACTOR: `pnpm test -- budgetMembers.api`, confirm green.
+- [x] 10.1 RED: create `Project/frontend/src/features/budget-structure/__tests__/budgetMembers.api.spec.ts` — `listMembers(budgetId)` calls `GET /api/budgets/{id}/members`; `updateMemberRole(budgetId, userId, role)` calls `PATCH /api/budgets/{id}/members/{userId}/role` with `{ role }` body, `role` values round-trip as `admin|operator|read-only`.
+- [x] 10.2 GREEN: create `Project/frontend/src/features/budget-structure/api/budgetMembers.api.ts` with `listMembers`/`updateMemberRole`.
+- [x] 10.3 REFACTOR: `pnpm test -- budgetMembers.api`, confirm green.
 
 ### Phase 3: `BudgetMembersView.vue`
 
-- [ ] 11.1 RED: create `Project/frontend/src/features/budget-structure/views/__tests__/BudgetMembersView.spec.ts` — Owner row excluded entirely from the table (no role `<select>`, no action control ever rendered for it).
-- [ ] 11.2 RED: same file — caller's own row renders neither a role `<select>` nor a remove button.
-- [ ] 11.3 RED: same file — Admin caller sees no controls on another Admin's row.
-- [ ] 11.4 RED: same file — `canActOn(m)` truth table: not admin → false; self → false; Owner target → false; non-owner caller + Admin target → false; otherwise → true (mirrors design's `canActOn` contract).
-- [ ] 11.5 RED: same file — role `<select>` reads and writes `read-only` (not `readonly`), matching `BudgetRoleStrings`.
-- [ ] 11.6 GREEN: create `Project/frontend/src/features/budget-structure/views/BudgetMembersView.vue` — renders `listMembers` rows, local `canActOn(m)` per design's Interfaces/Contracts snippet, calls `updateMemberRole` on select change, reuses `useRoleGate(budgetId).isAdmin`/`isOwner`.
-- [ ] 11.7 REFACTOR: `pnpm test -- BudgetMembersView`, confirm 11.1–11.5 green.
+- [x] 11.1 RED: create `Project/frontend/src/features/budget-structure/views/__tests__/BudgetMembersView.spec.ts` — Owner row excluded entirely from the table (no role `<select>`, no action control ever rendered for it).
+- [x] 11.2 RED: same file — caller's own row renders neither a role `<select>` nor a remove button.
+- [x] 11.3 RED: same file — Admin caller sees no controls on another Admin's row.
+- [x] 11.4 RED: same file — `canActOn(m)` truth table: not admin → false; self → false; Owner target → false; non-owner caller + Admin target → false; otherwise → true (mirrors design's `canActOn` contract).
+- [x] 11.5 RED: same file — role `<select>` reads and writes `read-only` (not `readonly`), matching `BudgetRoleStrings`.
+- [x] 11.6 GREEN: create `Project/frontend/src/features/budget-structure/views/BudgetMembersView.vue` — renders `listMembers` rows, local `canActOn(m)` per design's Interfaces/Contracts snippet, calls `updateMemberRole` on select change, reuses `useRoleGate(budgetId).isAdmin`/`isOwner`.
+- [x] 11.7 REFACTOR: `pnpm test -- BudgetMembersView`, confirm 11.1–11.5 green.
 
 ### Phase 4: Members tab, route, i18n
 
-- [ ] 12.1 RED: extend `Project/frontend/src/features/budget-structure/__tests__/BudgetTabs.spec.ts` — Members tab visible to Owner and Admin, positioned immediately after "Dashboard" and before "Cycles"; hidden entirely from the DOM (not just disabled) for Operator and ReadOnly; has the active CSS class on the `BudgetMembers` route.
-- [ ] 12.2 GREEN: modify `Project/frontend/src/features/budget-structure/components/BudgetTabs.vue` — add the Members tab mirroring the Dashboard `RouterLink` + `isActive()` block, `MEMBERS_ROUTE_NAMES` + union entry, `v-if="isAdmin"`.
-- [ ] 12.3 GREEN: modify `Project/frontend/src/router/index.ts` — add `path: 'members'`, `name: 'BudgetMembers'` under `/budgets/:budgetId`, lazy-loaded `BudgetMembersView.vue`, `requiresAuth` only (no per-role guard, per design decision 11).
-- [ ] 12.4 RED: extend `locales.spec.ts` — assert `budgetStructure.members.*` keys (title, columns, actions, confirmations) exist in `en.json` and `es.json`.
-- [ ] 12.5 GREEN: add the `budgetStructure.members.*` keys to `en.json`/`es.json`.
-- [ ] 12.6 REFACTOR: `pnpm test -- BudgetTabs locales`, confirm green.
+- [x] 12.1 RED: extend `Project/frontend/src/features/budget-structure/__tests__/BudgetTabs.spec.ts` — Members tab visible to Owner and Admin, positioned as the last tab, after "Dashboard"; hidden entirely from the DOM (not just disabled) for Operator and ReadOnly; has the active CSS class on the `BudgetMembers` route.
+- [x] 12.2 GREEN: modify `Project/frontend/src/features/budget-structure/components/BudgetTabs.vue` — add the Members tab mirroring the Dashboard `RouterLink` + `isActive()` block, `MEMBERS_ROUTE_NAMES` + union entry, `v-if="isAdmin"`.
+- [x] 12.2b CORRECTION (post-apply, user-directed): initial apply satisfied "immediately after Dashboard, before Cycles" literally by moving Dashboard from last to first tab position — a visible change for every user, not just admins. User reviewed and preferred minimal diff: reverted Dashboard to its original (last) position, Members now appended after it as the final tab. `specs/budget-structure-ui/spec.md` REQ-NAV-1 and its scenario updated to match; `BudgetTabs.spec.ts` position assertion rewritten (`membersIndex === labels.length - 1`) plus a new non-admin regression test asserting Dashboard stays last.
+- [x] 12.3 GREEN: modify `Project/frontend/src/router/index.ts` — add `path: 'members'`, `name: 'BudgetMembers'` under `/budgets/:budgetId`, lazy-loaded `BudgetMembersView.vue`, `requiresAuth` only (no per-role guard, per design decision 11).
+- [x] 12.4 RED: extend `locales.spec.ts` — assert `budgetStructure.members.*` keys (title, columns, actions, confirmations) exist in `en.json` and `es.json`.
+- [x] 12.5 GREEN: add the `budgetStructure.members.*` keys to `en.json`/`es.json`.
+- [x] 12.6 REFACTOR: `pnpm test -- BudgetTabs locales`, confirm green.
 
 ### Phase 5: E2E — open tab, demote (WU1 slice)
 
-- [ ] 13.1 RED: create `Project/frontend/e2e/budget-structure/budget-structure-members.spec.ts` — Owner opens the Members tab from a budget, sees the member list; demotes an Admin to Operator via the role select, sees it reflected after refresh.
-- [ ] 13.2 GREEN: fix any implementation gap surfaced only under real browser timing/routing.
-- [ ] 13.3 REFACTOR: `pnpm exec playwright test -- budget-structure-members`, confirm 13.1 green.
+- [x] 13.1 RED: create `Project/frontend/e2e/budget-structure/budget-structure-members.spec.ts` — Owner opens the Members tab from a budget, sees the member list; demotes an Admin to Operator via the role select, sees it reflected after refresh.
+- [x] 13.2 GREEN: executed by user against the full Docker/E2E stack — full Playwright suite (129 tests, including this spec) passed.
+- [x] 13.3 REFACTOR: confirmed green by user, alongside the full UI/unit/integration layers.
 
 ---
 

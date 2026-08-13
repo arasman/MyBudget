@@ -71,6 +71,12 @@ describe('useRoleGate', () => {
       const { canWriteLines } = useRoleGate(BUDGET_ID)
       expect(canWriteLines.value).toBe(true)
     })
+
+    it('isOwner = true', () => {
+      setUserRole('owner')
+      const { isOwner } = useRoleGate(BUDGET_ID)
+      expect(isOwner.value).toBe(true)
+    })
   })
 
   describe('admin role', () => {
@@ -96,6 +102,12 @@ describe('useRoleGate', () => {
       setUserRole('admin')
       const { canWriteLines } = useRoleGate(BUDGET_ID)
       expect(canWriteLines.value).toBe(true)
+    })
+
+    it('isOwner = false', () => {
+      setUserRole('admin')
+      const { isOwner } = useRoleGate(BUDGET_ID)
+      expect(isOwner.value).toBe(false)
     })
   })
 
@@ -123,6 +135,12 @@ describe('useRoleGate', () => {
       const { canWriteLines } = useRoleGate(BUDGET_ID)
       expect(canWriteLines.value).toBe(true)
     })
+
+    it('isOwner = false', () => {
+      setUserRole('operator')
+      const { isOwner } = useRoleGate(BUDGET_ID)
+      expect(isOwner.value).toBe(false)
+    })
   })
 
   describe('read-only role (no matching membership)', () => {
@@ -149,27 +167,35 @@ describe('useRoleGate', () => {
       const { canWriteLines } = useRoleGate(BUDGET_ID)
       expect(canWriteLines.value).toBe(false)
     })
+
+    it('isOwner = false', () => {
+      setUserRole(undefined)
+      const { isOwner } = useRoleGate(BUDGET_ID)
+      expect(isOwner.value).toBe(false)
+    })
   })
 
   describe('null user (unauthenticated)', () => {
     it('all flags are false', () => {
       setNullUser()
-      const { isAdmin, isOperator, canWriteStructure, canWriteLines } = useRoleGate(BUDGET_ID)
+      const { isAdmin, isOperator, canWriteStructure, canWriteLines, isOwner } = useRoleGate(BUDGET_ID)
       expect(isAdmin.value).toBe(false)
       expect(isOperator.value).toBe(false)
       expect(canWriteStructure.value).toBe(false)
       expect(canWriteLines.value).toBe(false)
+      expect(isOwner.value).toBe(false)
     })
   })
 
   describe('unknown budgetId', () => {
     it('all flags are false when budgetId does not match any membership', () => {
       setUserRole('admin')
-      const { isAdmin, isOperator, canWriteStructure, canWriteLines } = useRoleGate('unknown-budget')
+      const { isAdmin, isOperator, canWriteStructure, canWriteLines, isOwner } = useRoleGate('unknown-budget')
       expect(isAdmin.value).toBe(false)
       expect(isOperator.value).toBe(false)
       expect(canWriteStructure.value).toBe(false)
       expect(canWriteLines.value).toBe(false)
+      expect(isOwner.value).toBe(false)
     })
   })
 })

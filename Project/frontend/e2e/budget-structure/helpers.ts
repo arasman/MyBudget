@@ -15,6 +15,7 @@ export async function seedOwnerAndLogin(page: Page, prefix = 'bs'): Promise<{
   email: string
   budgetId: string
   budgetName: string
+  accessToken: string
 }> {
   const email = `e2e-${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`
 
@@ -53,6 +54,7 @@ export async function seedOwnerAndLogin(page: Page, prefix = 'bs'): Promise<{
     email,
     budgetId: membership.budgetId,
     budgetName: membership.budgetName,
+    accessToken: regBody.accessToken,
   }
 }
 

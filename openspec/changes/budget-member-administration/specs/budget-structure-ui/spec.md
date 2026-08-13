@@ -11,11 +11,12 @@ are rendered. The "Matrix" tab MUST link to the `BudgetMatrix` named route using
 grouped with `CYCLE_ROUTE_NAMES`). Navigating between tabs MUST NOT lose the active budget context.
 
 When the current user's role for the active budget is `owner` or `admin`
-(`useRoleGate(budgetId).isAdmin`), a "Members" tab MUST also be rendered, placed immediately after
-"Dashboard" (before "Cycles"), following the same `RouterLink` + `isActive()` pattern as the
-existing tabs, and linking to the `BudgetMembers` named route under `/budgets/:budgetId/members`.
-When the current user's role is `operator` or `read-only`, the "Members" tab MUST NOT be rendered
-at all — entirely absent from the DOM, not merely disabled.
+(`useRoleGate(budgetId).isAdmin`), a "Members" tab MUST also be rendered, placed after "Dashboard"
+as the LAST tab in the bar — "Dashboard"'s own existing position MUST NOT change, so non-admin
+users see zero difference in their tab bar — following the same `RouterLink` + `isActive()` pattern
+as the existing tabs, and linking to the `BudgetMembers` named route under
+`/budgets/:budgetId/members`. When the current user's role is `operator` or `read-only`, the
+"Members" tab MUST NOT be rendered at all — entirely absent from the DOM, not merely disabled.
 
 (Previously: `BudgetTabs` rendered "Cycles" / "Categories" / optionally "Matrix" with no
 member-role-based tab gating.)
@@ -54,7 +55,8 @@ member-role-based tab gating.)
 
 - GIVEN the caller has `owner` role for the active budget
 - WHEN `BudgetTabs` renders
-- THEN a "Members" tab is visible, positioned immediately after "Dashboard"
+- THEN a "Members" tab is visible as the last tab, after "Dashboard"
+- AND "Dashboard" remains at its existing position (not moved)
 
 #### Scenario: Members tab visible to Admin (WU1)
 

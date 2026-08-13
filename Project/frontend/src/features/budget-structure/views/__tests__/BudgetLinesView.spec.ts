@@ -152,6 +152,7 @@ function setupMocks({
     isOperator: computed(() => canWriteLines),
     canWriteStructure: computed(() => canWriteLines),
     canWriteLines: computed(() => canWriteLines),
+    isOwner: computed(() => false),
   })
 
   vi.mocked(useLayoutStore).mockReturnValue(layoutStoreMock as unknown as ReturnType<typeof useLayoutStore>)

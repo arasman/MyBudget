@@ -284,6 +284,46 @@ describe('i18n locale keys — accept invitation already-member error (WU0)', ()
   })
 })
 
+// budget-member-administration (MEMBERS-UI-1/REQ-NAV-1, WU1): Members tab/view copy
+// must exist in both locales — title, tabTitle, columns, actions, confirmations.
+describe('i18n locale keys — budget members view (MEMBERS-UI-1, WU1)', () => {
+  it('en.json and es.json contain budgetStructure.members.title/tabTitle', () => {
+    expect(en.budgetStructure.members.title.length).toBeGreaterThan(0)
+    expect(en.budgetStructure.members.tabTitle.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.title.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.tabTitle.length).toBeGreaterThan(0)
+  })
+
+  const columnKeys = ['name', 'email', 'role', 'joinedAt'] as const
+
+  it.each(columnKeys)('en.json contains budgetStructure.members.columns.%s', (key) => {
+    expect(en.budgetStructure.members.columns).toHaveProperty(key)
+    expect(en.budgetStructure.members.columns[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(columnKeys)('es.json contains budgetStructure.members.columns.%s', (key) => {
+    expect(es.budgetStructure.members.columns).toHaveProperty(key)
+    expect(es.budgetStructure.members.columns[key].length).toBeGreaterThan(0)
+  })
+
+  it('en.json and es.json contain budgetStructure.members.actions.changeRole', () => {
+    expect(en.budgetStructure.members.actions.changeRole.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.actions.changeRole.length).toBeGreaterThan(0)
+  })
+
+  const confirmationKeys = ['roleChangeSuccess', 'roleChangeError'] as const
+
+  it.each(confirmationKeys)('en.json contains budgetStructure.members.confirmations.%s', (key) => {
+    expect(en.budgetStructure.members.confirmations).toHaveProperty(key)
+    expect(en.budgetStructure.members.confirmations[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(confirmationKeys)('es.json contains budgetStructure.members.confirmations.%s', (key) => {
+    expect(es.budgetStructure.members.confirmations).toHaveProperty(key)
+    expect(es.budgetStructure.members.confirmations[key].length).toBeGreaterThan(0)
+  })
+})
+
 // LAYOUT-4 / LANDING-6: AppFooter copy must exist in both locales
 describe('i18n locale keys — footer (LAYOUT-4/LANDING-6)', () => {
   it('en.json contains footer.poweredBy', () => {
