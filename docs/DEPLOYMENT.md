@@ -133,11 +133,15 @@ Email__FromName=MyBudget
 
 # --- Frontend URL (used to build links inside emails — invites, password reset) ---
 App__FrontendBaseUrl=https://mybudget.yourdomain.com
+
+# --- Caddy (reverse proxy domain — see Part 7) ---
+SITE_DOMAIN=mybudget.yourdomain.com
 ```
 
 Notes:
 
 - `POSTGRES_*` are the same variable names `Project/.env.example` already uses for local dev — just with a real generated password instead of `change_me`.
+- `SITE_DOMAIN` is read directly by `Caddyfile` (`{$SITE_DOMAIN} { ... }`, Caddy's native env-var substitution) via the `caddy` service's `env_file: .env` in `docker-compose.prod.yml`. This is the **only** place you set the domain — `Caddyfile` itself stays generic and never needs manual editing, so `git pull` never conflicts with it.
 - The double-underscore keys (`JWT__Key`, `Email__SmtpHost`, `App__FrontendBaseUrl`, ...) are ASP.NET Core's convention for environment variables mapping to nested `appsettings.json` sections (`JWT:Key`, `Email:SmtpHost`, `App:FrontendBaseUrl`). Get the underscore count right — `__` (double), not `_`.
 - You do **not** need to set `ConnectionStrings__DefaultConnection`, `ASPNETCORE_ENVIRONMENT`, or `OTEL_EXPORTER_OTLP_ENDPOINT` here — `docker-compose.prod.yml` builds those automatically from the `POSTGRES_*` values above and points them at the container network. One less place to make a typo.
 
@@ -157,7 +161,7 @@ This produces `frontend/dist/`. Re-run this (and restart Caddy — Part 9) any t
 
 ## Part 7 — Build and start everything
 
-Before starting: open `Caddyfile` and replace `your-domain.example.com` on line 4 with your actual domain from Part 2.
+Domain comes from `SITE_DOMAIN` in `.env` (Part 5) — `Caddyfile` reads it automatically, nothing to edit here.
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
@@ -189,11 +193,52 @@ If all four pass, the deployment matches the local architecture end-to-end.
 
 **Redeploy after a code change:**
 
+The server may carry local-only overrides that never got committed to `main` (config tweaks discovered only in production — e.g. a pnpm build-script setting). `git pull` alone can conflict with those. Use the stash-aware sequence below every time, not the bare `git pull`.
+
 ```bash
+# 1. Connect and go to the repo.
+ssh -i <your-key> deploy@<server-ip>
+cd ~/MyBudget
+
+# 2. Check for drift before touching anything. Expect either a clean tree,
+#    or only known server-only overrides (check git log / prior notes for
+#    which files those are — currently: Project/frontend/pnpm-workspace.yaml).
+git status
+
+# 3. Stash local overrides, pull, restore them.
+git stash
 git pull
-cd frontend && pnpm build && cd ..     # if frontend changed
+git stash pop
+
+# 4. If step 3's pop reports a conflict:
+#    - Inspect: git status / git diff <file>
+#    - If main's incoming version already supersedes the local override
+#      (the same fix landed upstream since): keep HEAD's version —
+#        git checkout --ours <file>
+#        git add <file>
+#    - If it's a genuine divergence: merge by hand, then git add <file>
+git status
+git stash drop   # only after confirming the resolution is correct
+
+# 5. Rebuild frontend (skip if only backend changed).
+cd Project/frontend
+pnpm install
+pnpm build
+cd ..
+
+# 6. Rebuild/refresh containers — named volumes (postgres-data, seq-data,
+#    caddy-data, caddy-config) persist; only `api` has a build context so
+#    only that image actually rebuilds.
 docker compose -f docker-compose.prod.yml up -d --build
+
+# 7. Verify Caddy came up clean — look for TLS cert issuance for the right
+#    domain, no parse/ACME errors.
+docker compose -f docker-compose.prod.yml logs caddy
 ```
+
+Then smoke test: load the live URL and confirm whatever changed this cycle is actually there.
+
+If a local override turns out to be a real, still-needed fix (not something already merged upstream), consider committing it properly to `main` instead of carrying it forever — see the `SITE_DOMAIN`/`Caddyfile` entry in the codebase-changes table below for an example of retiring one this way.
 
 **View logs:** `docker compose -f docker-compose.prod.yml logs -f <service>` (`api`, `postgres`, `caddy`, ...).
 
@@ -227,6 +272,7 @@ Found while preparing this guide — worth knowing what changed and why, since t
 | `Project/.dockerignore`                                                      | **New.** Excludes `bin/`, `obj/`, `node_modules/`, etc.                                                                                 | Without it, local Windows build artifacts (with Windows-only NuGet fallback paths baked in) get copied into the Linux image and break the container's own restore. Hit this exact failure verifying the Dockerfile today.                                                 |
 | `Project/src/MyBudget.Features/SharedKernel/Email/EmailBackgroundService.cs` | Added SMTP authentication (`AuthenticateAsync`) and STARTTLS support (`Email:SmtpUseStartTls` config), both opt-in via new config keys. | Previously hardcoded `SecureSocketOptions.None` and never authenticated — works against Mailpit (no auth needed) but would silently fail against any real SMTP relay like Brevo. Defaults are unchanged, so local dev with Mailpit is unaffected.                         |
 | `Project/src/MyBudget.Api/appsettings.Production.json`                       | **New.** Overrides the Seq sink's `serverUrl` to `http://seq:80`.                                                                       | `appsettings.json` hardcodes `http://localhost:5341` for Seq, which only resolves in local dev. Inside the container network, Seq is reachable at `seq:80` (its service name, internal port). Without this, structured logs would silently never reach Seq in production. |
+| `Project/Caddyfile`, `Project/docker-compose.prod.yml`                       | `Caddyfile` domain line changed to `{$SITE_DOMAIN}` (Caddy's native env-var substitution); `caddy` service in `docker-compose.prod.yml` gained `env_file: .env`. | The domain used to be hardcoded directly in `Caddyfile`, which meant every server had an uncommitted local edit that conflicted with `git pull` on every redeploy. Moving it into `.env` (Part 5) keeps `Caddyfile` generic and commit-clean. |
 
 All five were verified today: `dotnet build` clean, `docker compose build api` succeeds, `Caddyfile` passes `caddy validate`. The full end-to-end run (Part 8) is still tomorrow's job — building the image is not the same as proving the whole stack works together.
 
