@@ -59,18 +59,9 @@ public static class InviteUserToBudgetEndpoint
         return Results.Created($"/api/budgets/{id}/invitations", result.Value);
     }
 
-    private static bool TryParseRole(string role, out BudgetRole parsed)
-    {
-        (parsed, var ok) = role?.ToLowerInvariant() switch
-        {
-            "admin"     => (BudgetRole.Admin,    true),
-            "operator"  => (BudgetRole.Operator, true),
-            "read-only" => (BudgetRole.ReadOnly, true),
-            "owner"     => (BudgetRole.Owner,    true),   // validator will reject this
-            _           => (default,             false),
-        };
-        return ok;
-    }
+    private static bool TryParseRole(string role, out BudgetRole parsed) =>
+        // "owner" is a valid parse here — the validator is what rejects inviting as Owner.
+        BudgetRoleStrings.TryParse(role, out parsed);
 
     private sealed record InviteRequest(string Email, string Role);
 }

@@ -671,7 +671,8 @@
       "error": {
         "expired": "Esta invitación ha expirado. Solicita una nueva.",
         "alreadyUsed": "Esta invitación ya fue utilizada.",
-        "mismatch": "Esta invitación no fue enviada a tu dirección de correo."
+        "mismatch": "Esta invitación no fue enviada a tu dirección de correo.",
+        "alreadyMember": "Ya eres miembro de este presupuesto."
       }
     }
   },

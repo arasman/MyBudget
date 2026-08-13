@@ -1,5 +1,6 @@
 using Dapper;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using MyBudget.Features.SharedKernel.Entities;
@@ -78,7 +79,15 @@ public sealed class AcceptInvitationHandler
         if (!string.Equals(matched.InviteeEmail, userEmail, StringComparison.OrdinalIgnoreCase))
             return Result<AcceptInvitationResponse>.Failure("AUTH_INVITATION_EMAIL_MISMATCH");
 
-        // 6. Mark invitation used + create BudgetMembership via EF
+        // 6. Duplicate-membership guard — must run BEFORE MarkUsed() so a duplicate click never
+        // burns the token, and BEFORE the insert so the unique index never fires (design decision 1).
+        var existing = await _db.BudgetMemberships.FirstOrDefaultAsync(
+            m => m.BudgetId == matched.BudgetId && m.UserId == cmd.UserId, ct);
+
+        if (existing is not null)
+            return Result<AcceptInvitationResponse>.Failure("AUTH_ALREADY_MEMBER");
+
+        // 7. Mark invitation used + create BudgetMembership via EF
         var invitation = await _db.Invitations.FindAsync([matched.Id], ct)
                          ?? throw new InvalidOperationException("Invitation not found in EF context.");
         invitation.MarkUsed();
@@ -102,7 +111,7 @@ public sealed class AcceptInvitationHandler
             matched.Id, cmd.UserId, matched.BudgetId);
 
         return Result<AcceptInvitationResponse>.Success(
-            new AcceptInvitationResponse(matched.BudgetId, ((BudgetRole)matched.Role).ToString()));
+            new AcceptInvitationResponse(matched.BudgetId, ((BudgetRole)matched.Role).ToApiString()));
     }
 
     private sealed record InvitationRow(

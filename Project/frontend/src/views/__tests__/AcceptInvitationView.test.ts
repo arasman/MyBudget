@@ -30,6 +30,7 @@ const i18nMessages = {
     'invitation.accept.error.expired':     'This invitation has expired. Please request a new one.',
     'invitation.accept.error.alreadyUsed': 'This invitation has already been used.',
     'invitation.accept.error.mismatch':    'This invitation was not sent to your email address.',
+    'invitation.accept.error.alreadyMember': 'You are already a member of this budget.',
     'common.error':                        'An error occurred',
   },
 }
@@ -120,6 +121,21 @@ describe('AcceptInvitationView', () => {
     await waitFor(() => {
       expect(
         screen.getByText('This invitation was not sent to your email address.'),
+      ).toBeTruthy()
+    })
+  })
+
+  it('shows already-member error when server returns AUTH_ALREADY_MEMBER', async () => {
+    mockPost.mockRejectedValue({
+      response: { status: 409, data: { detail: 'AUTH_ALREADY_MEMBER' } },
+    })
+
+    const { globals } = await setup('/invitations/accept?token=already-member-token')
+    render(AcceptInvitationView, globals)
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('You are already a member of this budget.'),
       ).toBeTruthy()
     })
   })

@@ -130,6 +130,36 @@ public sealed class LogoutAndMeTests : IntegrationTestBase
         body.Memberships.ShouldContain(m => m.BudgetId == budgetId && m.IsDeleted == true);
     }
 
+    // --- GetCurrentUser role serialization (ME-1) ---
+
+    [Fact]
+    public async Task Me_ReadOnlyMembership_SerializesRoleWithHyphen()
+    {
+        var owner = await RegisterUserAsync("me-role-owner@example.com");
+        AuthorizeClient(owner.AccessToken);
+        var ownerMe = await Client.GetAsync("/api/auth/me");
+        var ownerBody = await ownerMe.Content.ReadFromJsonAsync<MeResponse>(JsonOpts);
+        var budgetId = ownerBody!.Memberships[0].BudgetId;
+
+        var readOnlyUser = await RegisterUserAsync("me-role-readonly@example.com");
+
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var membership = BudgetMembership.Create(budgetId, readOnlyUser.User.Id, BudgetRole.ReadOnly);
+            db.BudgetMemberships.Add(membership);
+            await db.SaveChangesAsync();
+        }
+
+        AuthorizeClient(readOnlyUser.AccessToken);
+        var response = await Client.GetAsync("/api/auth/me");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var body = await response.Content.ReadFromJsonAsync<MeResponse>(JsonOpts);
+        body.ShouldNotBeNull();
+        body.Memberships.ShouldContain(m => m.BudgetId == budgetId && m.Role == "read-only");
+    }
+
     private sealed record MeResponse(
         Guid   Id,
         string Email,

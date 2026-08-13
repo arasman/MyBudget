@@ -32,7 +32,8 @@ public sealed class AcceptInvitationTests : IntegrationTestBase
         Guid invitedByUserId,
         string inviteeEmail,
         DateTime expiresAt,
-        bool markUsed = false)
+        bool markUsed = false,
+        BudgetRole role = BudgetRole.Operator)
     {
         const string rawToken = "known-raw-token-for-testing-12345";
         var tokenHash = BCrypt.Net.BCrypt.HashPassword(rawToken, workFactor: 4);
@@ -43,7 +44,7 @@ public sealed class AcceptInvitationTests : IntegrationTestBase
         var invitation = Invitation.Create(
             budgetId:        budgetId,
             inviteeEmail:    inviteeEmail,
-            role:            BudgetRole.Operator,
+            role:            role,
             tokenHash:       tokenHash,
             expiresAt:       expiresAt,
             invitedByUserId: invitedByUserId);
@@ -182,6 +183,79 @@ public sealed class AcceptInvitationTests : IntegrationTestBase
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
+    // --- Duplicate-membership guard (ACCEPT-1, WU0) ---
+
+    [Fact]
+    public async Task ActiveMembershipAlreadyExists_SecondValidToken_Returns409_NoWrites()
+    {
+        var (_, budgetId, adminUserId) = await SetupAdminAsync("admin-acc-dup@example.com");
+        var invitee = await RegisterUserAsync("invitee-acc-dup@example.com");
+
+        // Invitee already has an ACTIVE membership for this budget (simulates a prior accept)
+        Guid membershipId;
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var membership = BudgetMembership.Create(budgetId, invitee.User.Id, BudgetRole.Operator);
+            db.BudgetMemberships.Add(membership);
+            await db.SaveChangesAsync();
+            membershipId = membership.Id;
+        }
+
+        // A second, still-valid invitation exists for the same email/budget
+        var rawToken = await SeedInvitationAsync(
+            budgetId:        budgetId,
+            invitedByUserId: adminUserId,
+            inviteeEmail:    "invitee-acc-dup@example.com",
+            expiresAt:       DateTime.UtcNow.AddDays(7));
+
+        AuthorizeClient(invitee.AccessToken);
+        var response = await Client.PostAsJsonAsync("/api/auth/invitations/accept", new
+        {
+            token = rawToken,
+        });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        var problem = await response.Content.ReadFromJsonAsync<ProblemResponse>(JsonOpts);
+        problem!.Detail.ShouldBe("AUTH_ALREADY_MEMBER");
+
+        using var verifyScope = Factory.Services.CreateScope();
+        var verifyDb = verifyScope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var membershipRow = await verifyDb.BudgetMemberships.FindAsync(membershipId);
+        membershipRow.ShouldNotBeNull();
+        membershipRow!.Role.ShouldBe(BudgetRole.Operator); // pre-existing row untouched
+
+        var invitationRow = verifyDb.Invitations.Single(i => i.InviteeEmail == "invitee-acc-dup@example.com");
+        invitationRow.UsedAt.ShouldBeNull(); // duplicate click must not burn the token
+    }
+
+    [Fact]
+    public async Task NoExistingMembership_ReadOnlyRoleInvitation_ResponseRoleSerializedHyphenated()
+    {
+        var (_, budgetId, adminUserId) = await SetupAdminAsync("admin-acc-role@example.com");
+        var invitee = await RegisterUserAsync("invitee-acc-role@example.com");
+
+        var rawToken = await SeedInvitationAsync(
+            budgetId:        budgetId,
+            invitedByUserId: adminUserId,
+            inviteeEmail:    "invitee-acc-role@example.com",
+            expiresAt:       DateTime.UtcNow.AddDays(7),
+            role:            BudgetRole.ReadOnly);
+
+        AuthorizeClient(invitee.AccessToken);
+        var response = await Client.PostAsJsonAsync("/api/auth/invitations/accept", new
+        {
+            token = rawToken,
+        });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<AcceptResponse>(JsonOpts);
+        body!.Role.ShouldBe("read-only");
+    }
+
     private sealed record MeResponse(Guid Id, string Email, MembershipEntry[] Memberships);
     private sealed record MembershipEntry(Guid BudgetId, string BudgetName, string Role);
+    private sealed record AcceptResponse(Guid BudgetId, string Role);
+    private sealed record ProblemResponse(string? Detail);
 }

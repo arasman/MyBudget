@@ -268,6 +268,22 @@ describe('i18n locale keys — dashboard page assembly (DASH-7/10)', () => {
   })
 })
 
+// budget-member-administration (WU0/ACCEPT-1): duplicate-membership guard error copy
+// must exist in both locales for AcceptInvitationView's AUTH_ALREADY_MEMBER branch.
+describe('i18n locale keys — accept invitation already-member error (WU0)', () => {
+  it('en.json contains invitation.accept.error.alreadyMember', () => {
+    expect(en.invitation.accept.error).toHaveProperty('alreadyMember')
+    expect(typeof en.invitation.accept.error.alreadyMember).toBe('string')
+    expect(en.invitation.accept.error.alreadyMember.length).toBeGreaterThan(0)
+  })
+
+  it('es.json contains invitation.accept.error.alreadyMember', () => {
+    expect(es.invitation.accept.error).toHaveProperty('alreadyMember')
+    expect(typeof es.invitation.accept.error.alreadyMember).toBe('string')
+    expect(es.invitation.accept.error.alreadyMember.length).toBeGreaterThan(0)
+  })
+})
+
 // LAYOUT-4 / LANDING-6: AppFooter copy must exist in both locales
 describe('i18n locale keys — footer (LAYOUT-4/LANDING-6)', () => {
   it('en.json contains footer.poweredBy', () => {

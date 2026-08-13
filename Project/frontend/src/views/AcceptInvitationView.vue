@@ -47,6 +47,8 @@ onMounted(async () => {
       errorKey.value = 'invitation.accept.error.alreadyUsed'
     } else if (detail === 'AUTH_INVITATION_EMAIL_MISMATCH') {
       errorKey.value = 'invitation.accept.error.mismatch'
+    } else if (detail === 'AUTH_ALREADY_MEMBER') {
+      errorKey.value = 'invitation.accept.error.alreadyMember'
     } else {
       errorKey.value = 'common.error'
     }

@@ -671,7 +671,8 @@
       "error": {
         "expired": "This invitation has expired. Please request a new one.",
         "alreadyUsed": "This invitation has already been used.",
-        "mismatch": "This invitation was not sent to your email address."
+        "mismatch": "This invitation was not sent to your email address.",
+        "alreadyMember": "You are already a member of this budget."
       }
     }
   },
