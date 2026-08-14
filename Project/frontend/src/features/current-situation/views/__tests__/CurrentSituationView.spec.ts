@@ -169,6 +169,7 @@ function setupToastMock() {
 function setupRoleGateMock({ isOperator = true } = {}) {
   vi.mocked(useRoleGate).mockReturnValue({
     isAdmin: computed(() => isOperator),
+    isOwner: computed(() => false),
     isOperator: computed(() => isOperator),
     canWriteStructure: computed(() => isOperator),
     canWriteLines: computed(() => isOperator),
