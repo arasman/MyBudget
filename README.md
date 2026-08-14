@@ -43,7 +43,7 @@ MyBudget is a full-stack web application for planning, tracking, and comparing b
 **Accounts & access**
 
 - Registration, JWT login/refresh/logout, forgot/reset password, forced password change, account lockout after failed attempts
-- Multiple budgets per user; invite other users by email with a role per budget
+- Multiple budgets per user; invite other users by email with a role per budget; view member list with roles, change a member's role, revoke/restore access
 - Four roles per budget: Owner, Admin, Operator, Read-only
 
 **Budget structure**
@@ -96,7 +96,7 @@ Mediator pipeline behaviours run in this order for every request: **ValidationBe
 
 **Gateway.** `MyBudget.Gateway` is a thin YARP reverse proxy in front of the API — not required for local development, relevant for deployment topology.
 
-**Delivery process.** The whole feature set was built via Spec-Driven Development — every change has a proposal, spec, design, and task breakdown under [`openspec/`](openspec/ROADMAP.md), archived on completion. 23 changes shipped to date; see the [Project Status](#project-status) section.
+**Delivery process.** The whole feature set was built via Spec-Driven Development — every change has a proposal, spec, design, and task breakdown under [`openspec/`](openspec/ROADMAP.md), archived on completion. 31 changes shipped to date; see the [Project Status](#project-status) section.
 
 ## Project Structure
 
@@ -107,7 +107,7 @@ MyBudget/
 │   └── Deployment-LessonLearned.md      # Lesson learned 23 during deployment process.
 ├── openspec/                            # Spec-Driven Development artifacts
 │   ├── ROADMAP.md                       # Full feature history (MVP A complete, MVP B planned)
-│   └── changes/archive/                 # 23 archived proposal/spec/design/tasks sets
+│   └── changes/archive/                 # 31 archived proposal/spec/design/tasks sets
 └── Project/                             # Application source
     ├── src/
     │   ├── MyBudget.Api/                # ASP.NET Core host — Program.cs, middleware, appsettings
@@ -291,7 +291,7 @@ Slide deck: [`docs/slides/presentation/MyBudget.pdf`](docs/slides/presentation/M
 
 ## Project Status
 
-**MVP A — complete.** 22 feature changes shipped and archived, from initial scaffold through the analytics dashboard (2026-07-07 → 2026-08-04). Full history in [`openspec/ROADMAP.md`](openspec/ROADMAP.md).
+**MVP A — complete.** 31 feature changes shipped and archived, from initial scaffold through budget member administration (2026-07-07 → 2026-08-13). Full history in [`openspec/ROADMAP.md`](openspec/ROADMAP.md).
 
 **MVP B — planned, not started.** Projects, financial commitments, installment/debt tracking, import/export.
 
