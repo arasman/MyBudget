@@ -16,7 +16,9 @@
     "render-diagrams": "node scripts/render-diagrams.mjs",
     "build-pptx": "node scripts/build-pptx.mjs",
     "export-pptx-pdf": "node scripts/export-pptx-pdf.mjs",
-    "build-showcase": "node scripts/build-showcase.mjs"
+    "build-showcase": "node scripts/build-showcase.mjs",
+    "guide:build": "node scripts/build-guide.mjs",
+    "guide:check": "node scripts/build-guide.mjs --check"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cuenta e inicio de sesión · Guía de usuario de MyBudget</title>
+    <link rel="stylesheet" href="../assets/guide.css" />
+    <link rel="alternate" hreflang="en" href="../en/auth.html" />
+  </head>
+  <body>
+    <a class="skip" href="#content">Saltar al contenido</a>
+    <div class="layout">
+      <nav class="sidebar" aria-label="Navegación de la guía">
+        <a class="brand" href="./index.html">Guía de usuario de MyBudget</a>
+        <p class="locale-toggle">
+          <a href="../en/auth.html" hreflang="en" lang="en">English</a>
+        </p>
+        <ol>
+      <li><span aria-current="page">Cuenta e inicio de sesión</span></li>
+      <li><span class="disabled">Presupuestos</span></li>
+      <li><span class="disabled">Ciclos</span></li>
+      <li><span class="disabled">Categorías</span></li>
+      <li><span class="disabled">Periodos y líneas de presupuesto</span></li>
+      <li><span class="disabled">Matriz y ejecución</span></li>
+      <li><span class="disabled">Cuentas bancarias</span></li>
+      <li><span class="disabled">Situación actual</span></li>
+      <li><span class="disabled">Panel</span></li>
+      <li><span class="disabled">Miembros</span></li>
+        </ol>
+        <p class="back"><a href="/">Volver a la app</a></p>
+      </nav>
+      <main id="content" class="content">
+        <h1>Cuenta e inicio de sesión</h1>
+
+<p>
+  MyBudget requiere una cuenta antes de poder crear o unirte a un presupuesto. Este capítulo
+  cubre la creación de una cuenta, el inicio de sesión, la recuperación de una contraseña
+  olvidada y el cierre de sesión.
+</p>
+
+<h2>Creando una cuenta</h2>
+<p>
+  Abrí <code>/register</code> y completá tu nombre, apellido, email y una contraseña. El
+  medidor de fortaleza aplica la misma regla que valida el servidor: al menos 8 caracteres, con
+  una mayúscula, una minúscula y un dígito. Elegí tu idioma preferido (inglés o español) —
+  controla el idioma de los emails que te envía MyBudget, y podés cambiarlo después desde tu
+  perfil.
+</p>
+<figure>
+  <img src="../assets/auth/01-register-empty.png" alt="Formulario de registro vacío" width="960" height="600">
+  <figcaption>El formulario de registro antes de completar ningún dato.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/auth/02-register-filled.png" alt="Formulario de registro completo con datos válidos" width="960" height="600">
+  <figcaption>El formulario de registro completo con datos válidos, listo para enviar.</figcaption>
+</figure>
+<p>
+  Al enviar un formulario válido iniciás sesión automáticamente y vas directo a la lista de
+  ciclos de tu primer presupuesto — no hay un paso separado de verificación de email.
+</p>
+<figure>
+  <img src="../assets/auth/03-register-success.png" alt="El registro exitoso te lleva directo a la app" width="960" height="600">
+  <figcaption>Después de enviar: inicio de sesión automático y redirección a la vista de inicio/ciclos.</figcaption>
+</figure>
+<p>
+  Si el email ya está registrado, el formulario permanece en pantalla y muestra un error en vez
+  de crear una cuenta duplicada.
+</p>
+
+<h2>Iniciando sesión</h2>
+<p>
+  Quienes ya tienen cuenta inician sesión en <code>/login</code> con su email y contraseña.
+</p>
+<figure>
+  <img src="../assets/auth/06-login-success.png" alt="El inicio de sesión exitoso te lleva a la app" width="960" height="600">
+  <figcaption>Con credenciales válidas te redirige a la vista de inicio/ciclos.</figcaption>
+</figure>
+<p>
+  Las credenciales incorrectas te mantienen en la página de inicio de sesión y muestran un error
+  en línea — MyBudget nunca revela si el problema fue el email o la contraseña.
+</p>
+<figure>
+  <img src="../assets/auth/07-login-invalid-error.png" alt="Error de inicio de sesión por credenciales inválidas" width="960" height="600">
+  <figcaption>Una contraseña incorrecta te mantiene en /login y muestra una alerta de error.</figcaption>
+</figure>
+
+<h2>¿Olvidaste tu contraseña?</h2>
+<p>
+  Desde la página de inicio de sesión, usá "¿Olvidaste tu contraseña?" para abrir
+  <code>/forgot-password</code> e ingresar tu email. MyBudget siempre muestra la misma
+  confirmación de "revisá tu bandeja de entrada", exista o no esa cuenta, así que el formulario
+  no se puede usar para descubrir qué direcciones tienen cuenta. Si la cuenta existe, el email
+  contiene un enlace a <code>/reset-password</code> donde definís una nueva contraseña. Los
+  enlaces de restablecimiento vencen, y MyBudget no te va a dejar reutilizar una de tus últimas
+  contraseñas.
+</p>
+
+<h2>Cerrando sesión</h2>
+<p>
+  Abrí el menú de cuenta desde el avatar en la barra superior y elegí "Cerrar sesión". Volvés a
+  la página de inicio de sesión y tu sesión se borra de inmediato.
+</p>
+<figure>
+  <img src="../assets/auth/09-logout-success.png" alt="Sesión cerrada, de vuelta en la página de inicio de sesión" width="960" height="600">
+  <figcaption>Sesión finalizada, de vuelta en /login.</figcaption>
+</figure>
+
+      </main>
+    </div>
+  </body>
+</html>

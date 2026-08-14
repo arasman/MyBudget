@@ -1,0 +1,243 @@
+/* Standalone stylesheet for the static user guide (public/guide/**).
+   Hand-written on purpose (design.md ADR-UGD-02/03): Tailwind/DaisyUI do not
+   process public/, so this file cannot use utility classes or app tokens.
+   Plain CSS, light theme close to the app's base-100/base-content palette,
+   zero JavaScript, one responsive breakpoint. */
+
+:root {
+  --guide-bg: #ffffff;
+  --guide-surface: #f8fafc;
+  --guide-border: #e2e8f0;
+  --guide-text: #1f2937;
+  --guide-text-muted: #6b7280;
+  --guide-accent: #7c3aed;
+  --guide-accent-contrast: #ffffff;
+  --guide-sidebar-width: 16rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--guide-bg);
+  color: var(--guide-text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  line-height: 1.6;
+}
+
+.skip {
+  position: absolute;
+  left: -999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.skip:focus {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 1rem;
+  background: var(--guide-accent);
+  color: var(--guide-accent-contrast);
+  border-radius: 0.375rem;
+  z-index: 10;
+}
+
+.layout {
+  display: flex;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.sidebar {
+  flex: 0 0 var(--guide-sidebar-width);
+  width: var(--guide-sidebar-width);
+  padding: 1.5rem 1rem;
+  border-right: 1px solid var(--guide-border);
+  background: var(--guide-surface);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar .brand {
+  display: block;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--guide-text);
+  text-decoration: none;
+  margin-bottom: 0.75rem;
+}
+
+.sidebar .brand:hover {
+  color: var(--guide-accent);
+}
+
+.locale-toggle {
+  margin: 0 0 1rem;
+}
+
+.locale-toggle a {
+  font-size: 0.85rem;
+  color: var(--guide-text-muted);
+  text-decoration: none;
+  border: 1px solid var(--guide-border);
+  border-radius: 999px;
+  padding: 0.15rem 0.65rem;
+}
+
+.locale-toggle a:hover {
+  color: var(--guide-accent);
+  border-color: var(--guide-accent);
+}
+
+.sidebar ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sidebar ol li a,
+.sidebar ol li span,
+.chapter-list li a,
+.chapter-list li span {
+  display: block;
+  text-decoration: none;
+  color: var(--guide-text);
+}
+
+.sidebar ol li a,
+.sidebar ol li span {
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+}
+
+.sidebar ol li a:hover {
+  background: #ede9fe;
+  color: var(--guide-accent);
+}
+
+.sidebar ol li span[aria-current='page'] {
+  background: var(--guide-accent);
+  color: var(--guide-accent-contrast);
+  font-weight: 600;
+}
+
+.sidebar ol li span.disabled,
+.chapter-list li span.disabled {
+  color: #cbd5e1;
+  cursor: default;
+}
+
+.sidebar .back {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--guide-border);
+}
+
+.sidebar .back a {
+  font-size: 0.85rem;
+  color: var(--guide-text-muted);
+  text-decoration: none;
+}
+
+.sidebar .back a:hover {
+  color: var(--guide-accent);
+}
+
+.content {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 2.5rem 3rem;
+  max-width: 52rem;
+}
+
+.content h1 {
+  font-size: 1.75rem;
+  margin-top: 0;
+}
+
+.content h2 {
+  font-size: 1.3rem;
+  margin-top: 2rem;
+  border-bottom: 1px solid var(--guide-border);
+  padding-bottom: 0.35rem;
+}
+
+.content code {
+  background: var(--guide-surface);
+  border: 1px solid var(--guide-border);
+  border-radius: 0.25rem;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.9em;
+}
+
+.content figure {
+  margin: 1.5rem 0;
+}
+
+.content figure img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--guide-border);
+  border-radius: 0.5rem;
+  display: block;
+}
+
+.content figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--guide-text-muted);
+}
+
+.chapter-list {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.chapter-list li a,
+.chapter-list li span {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--guide-border);
+  border-radius: 0.5rem;
+}
+
+.chapter-list li a:hover {
+  border-color: var(--guide-accent);
+  color: var(--guide-accent);
+}
+
+@media (max-width: 48rem) {
+  .layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--guide-border);
+  }
+  .sidebar ol {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .content {
+    padding: 1.5rem;
+    max-width: none;
+  }
+}

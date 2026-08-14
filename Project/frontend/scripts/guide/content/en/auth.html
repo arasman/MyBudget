@@ -1,0 +1,72 @@
+<h1>Account &amp; sign-in</h1>
+
+<p>
+  MyBudget requires an account before you can create or join a budget. This chapter covers
+  creating an account, signing in, recovering a forgotten password, and signing out.
+</p>
+
+<h2>Creating an account</h2>
+<p>
+  Open <code>/register</code> and fill in your first name, last name, email, and a password.
+  The password strength meter enforces the same rule the server checks: at least 8 characters,
+  including an uppercase letter, a lowercase letter, and a digit. Choose your preferred language
+  (English or Spanish) — it controls the language of the emails MyBudget sends you, and you can
+  change it later from your profile.
+</p>
+<figure>
+  <img src="../assets/auth/01-register-empty.png" alt="Empty registration form" width="960" height="600">
+  <figcaption>The registration form before any input.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/auth/02-register-filled.png" alt="Registration form filled with valid data" width="960" height="600">
+  <figcaption>The registration form filled with valid data, ready to submit.</figcaption>
+</figure>
+<p>
+  Submitting a valid form signs you in automatically and takes you straight to your first
+  budget's cycle list — there is no separate email-verification step to complete first.
+</p>
+<figure>
+  <img src="../assets/auth/03-register-success.png" alt="Successful registration redirects into the app" width="960" height="600">
+  <figcaption>After submit: auto-login and redirect to the home/cycles view.</figcaption>
+</figure>
+<p>
+  If the email is already registered, the form stays in place and shows an error instead of
+  creating a duplicate account.
+</p>
+
+<h2>Signing in</h2>
+<p>
+  Returning users sign in at <code>/login</code> with their email and password.
+</p>
+<figure>
+  <img src="../assets/auth/06-login-success.png" alt="Successful login redirects into the app" width="960" height="600">
+  <figcaption>Valid credentials redirect to the home/cycles view.</figcaption>
+</figure>
+<p>
+  Wrong credentials keep you on the login page and show an inline error — MyBudget never
+  reveals whether the email or the password was the problem.
+</p>
+<figure>
+  <img src="../assets/auth/07-login-invalid-error.png" alt="Login error for invalid credentials" width="960" height="600">
+  <figcaption>An incorrect password stays on /login and shows an error alert.</figcaption>
+</figure>
+
+<h2>Forgot your password?</h2>
+<p>
+  From the login page, use "Forgot your password?" to open <code>/forgot-password</code> and
+  enter your email. MyBudget always shows the same "check your inbox" confirmation whether or
+  not that email is registered, so the form cannot be used to discover which addresses have an
+  account. If an account exists, the email contains a link to <code>/reset-password</code> where
+  you set a new password. Reset links expire, and MyBudget will not let you reuse one of your
+  last passwords.
+</p>
+
+<h2>Signing out</h2>
+<p>
+  Open the account menu from the avatar in the top bar and choose "Log out". You are returned to
+  the login page and your session is cleared immediately.
+</p>
+<figure>
+  <img src="../assets/auth/09-logout-success.png" alt="Logged out, back on the login page" width="960" height="600">
+  <figcaption>Session cleared, back on /login.</figcaption>
+</figure>
