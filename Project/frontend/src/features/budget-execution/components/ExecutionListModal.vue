@@ -146,9 +146,9 @@
           {{ t('budgetExecution.modal.periodClosed') }}
         </div>
 
-        <!-- Add form (collapsible, hidden when period closed) -->
+        <!-- Add form (collapsible, hidden when period closed or user cannot write) -->
         <div
-          v-if="!periodClosed"
+          v-if="!periodClosed && isOperator"
           class="border-t border-base-300 mt-2"
         >
           <button
@@ -192,17 +192,19 @@ import { useI18n } from 'vue-i18n'
 import { Maximize2, Minimize2, ChevronDown, ChevronUp } from 'lucide-vue-next'
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
+import { useRoleGate } from '@/features/budget-structure/composables/useRoleGate'
 import type { ExecutionRecordDto } from '../types'
 import ExecutionRecordRow from './ExecutionRecordRow.vue'
 import ExecutionRecordForm from './ExecutionRecordForm.vue'
 
-defineProps<{
+const props = defineProps<{
   budgetId: string
 }>()
 
 const { t } = useI18n()
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
+const { isOperator } = useRoleGate(props.budgetId)
 
 const lineId = computed(() => matrixStore.openModalLineId ?? '')
 const periodId = computed(() => matrixStore.openModalPeriodId ?? '')

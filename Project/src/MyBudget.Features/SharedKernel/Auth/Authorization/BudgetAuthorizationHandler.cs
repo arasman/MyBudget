@@ -58,6 +58,7 @@ public sealed class BudgetAuthorizationHandler
                 JOIN "Budgets" b ON b."Id" = bm."BudgetId"
                 WHERE bm."UserId" = @UserId AND bm."BudgetId" = @BudgetId
                   AND b."IsDeleted" = false
+                  AND bm."IsDeleted" = false
                 LIMIT 1
                 """,
                 new { UserId = userId, BudgetId = budgetId });

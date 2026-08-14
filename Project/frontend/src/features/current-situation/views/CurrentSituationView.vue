@@ -17,7 +17,7 @@
           @navigate="handleNavigate"
         />
         <button
-          v-if="store.currentDate"
+          v-if="store.currentDate && isOperator"
           class="btn btn-ghost btn-sm text-error"
           @click="openDeleteModal"
         >
@@ -91,6 +91,7 @@
       </div>
       <div class="flex justify-end">
         <button
+          v-if="isOperator"
           class="btn btn-primary w-full sm:w-auto sm:btn-sm"
           :disabled="store.saveLoading"
           @click="formRef?.triggerSave()"
@@ -131,6 +132,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useCutRecordStore } from '../store/useCutRecordStore'
 import { useToastStore } from '@/stores/toast.store'
+import { useRoleGate } from '@/features/budget-structure/composables/useRoleGate'
 import type { CutTotalsDto } from '../types/cutRecord'
 import BudgetTabs from '@/features/budget-structure/components/BudgetTabs.vue'
 import CutDateNavigator from '../components/CutDateNavigator.vue'
@@ -148,6 +150,7 @@ const store = useCutRecordStore()
 const toastStore = useToastStore()
 
 const budgetId = computed(() => route.params['budgetId'] as string)
+const { isOperator } = useRoleGate(budgetId)
 
 const formRef = ref<InstanceType<typeof CutRecordForm> | null>(null)
 const currencies = ref<CurrencyItem[]>([])

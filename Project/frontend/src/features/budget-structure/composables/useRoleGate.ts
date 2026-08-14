@@ -10,6 +10,8 @@ export interface RoleGate {
   canWriteStructure: ComputedRef<boolean>
   /** True when the user may write budget lines. Same as isOperator. */
   canWriteLines: ComputedRef<boolean>
+  /** True only when the resolved role is exactly `owner`. */
+  isOwner: ComputedRef<boolean>
 }
 
 /**
@@ -30,6 +32,7 @@ export function useRoleGate(budgetId: Ref<string> | string): RoleGate {
   const isOperator = computed(() => role.value === 'operator' || isAdmin.value)
   const canWriteStructure = computed(() => isAdmin.value)
   const canWriteLines = computed(() => isOperator.value)
+  const isOwner = computed(() => role.value === 'owner')
 
-  return { isAdmin, isOperator, canWriteStructure, canWriteLines }
+  return { isAdmin, isOperator, canWriteStructure, canWriteLines, isOwner }
 }

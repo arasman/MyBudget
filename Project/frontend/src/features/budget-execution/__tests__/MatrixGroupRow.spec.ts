@@ -1,9 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, fireEvent, waitFor } from '@testing-library/vue'
+import { render, fireEvent, waitFor, screen } from '@testing-library/vue'
 import { createPinia, setActivePinia } from 'pinia'
+import { computed } from 'vue'
 
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({ t: (k: string) => k }),
+}))
+
+const roleGateState: { isAdmin: boolean } = { isAdmin: true }
+
+vi.mock('@/features/budget-structure/composables/useRoleGate', () => ({
+  useRoleGate: () => ({
+    isAdmin: computed(() => roleGateState.isAdmin),
+    isOperator: computed(() => roleGateState.isAdmin),
+  }),
 }))
 
 const { mockFormatAmount, mockMatrixStore, mockStructureStore, mockToastPush } = vi.hoisted(() => ({
@@ -88,6 +98,7 @@ describe('MatrixGroupRow.vue — currency symbol', () => {
     mockMatrixStore.periodTotals = {}
     mockStructureStore.budgetLines = []
     mockStructureStore.currentCycle = null
+    roleGateState.isAdmin = true
   })
 
   it('passes default currency symbol to formatAmount when displayCurrency = "default"', () => {
@@ -136,6 +147,7 @@ describe('MatrixGroupRow.vue — toast on actions', () => {
     mockStructureStore.updateGroup.mockResolvedValue(undefined)
     mockStructureStore.deleteGroup.mockResolvedValue(undefined)
     mockStructureStore.restoreGroup.mockResolvedValue(undefined)
+    roleGateState.isAdmin = true
   })
 
   it('saveEdit calls toast.push with updateGroupSuccess on success', async () => {
@@ -208,6 +220,62 @@ describe('MatrixGroupRow.vue — toast on actions', () => {
       type: 'success',
       title: 'budgetMatrix.rows.restoreSuccess',
     })
+  })
+})
+
+describe('MatrixGroupRow.vue — role gating (ReadOnly users)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+    mockStructureStore.currentCycle = null
+    mockStructureStore.budgetLines = []
+    mockMatrixStore.periodTotals = {}
+    mockMatrixStore.showDeleted = false
+  })
+
+  it('hides the drag handle and add-category/delete buttons when isAdmin=false', () => {
+    roleGateState.isAdmin = false
+    const { queryByTitle, container } = renderRow()
+
+    expect(container.querySelector('.group-drag-handle')).toBeNull()
+    expect(queryByTitle('budgetMatrix.rows.addCategory')).toBeNull()
+    expect(queryByTitle('budgetMatrix.rows.delete')).toBeNull()
+  })
+
+  it('shows the drag handle and add-category/delete buttons when isAdmin=true', () => {
+    roleGateState.isAdmin = true
+    const { queryByTitle, container } = renderRow()
+
+    expect(container.querySelector('.group-drag-handle')).not.toBeNull()
+    expect(queryByTitle('budgetMatrix.rows.addCategory')).not.toBeNull()
+    expect(queryByTitle('budgetMatrix.rows.delete')).not.toBeNull()
+  })
+
+  it('does not enter rename mode on dblclick when isAdmin=false', async () => {
+    roleGateState.isAdmin = false
+    const { getByText, queryByRole } = renderRow()
+
+    await fireEvent.dblClick(getByText('Mi hogar'))
+
+    expect(queryByRole('textbox')).toBeNull()
+  })
+
+  it('hides the restore button on a deleted group when isAdmin=false', () => {
+    roleGateState.isAdmin = false
+    mockMatrixStore.showDeleted = true
+
+    render(MatrixGroupRow, {
+      props: {
+        group: { ...baseGroup, deletedAt: '2026-01-01T00:00:00Z' },
+        visiblePeriods: [basePeriod],
+        collapsed: false,
+        isFirst: false,
+        isLast: false,
+        budgetId: 'budget-1',
+      },
+    })
+
+    expect(screen.queryByTitle('budgetMatrix.rows.restore')).toBeNull()
   })
 })
 

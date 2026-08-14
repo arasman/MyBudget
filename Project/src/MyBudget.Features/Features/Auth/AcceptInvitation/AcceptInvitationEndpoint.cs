@@ -44,6 +44,8 @@ public static class AcceptInvitationEndpoint
                     detail: "AUTH_INVITATION_ALREADY_USED", statusCode: StatusCodes.Status410Gone),
                 "AUTH_INVITATION_EMAIL_MISMATCH" => Results.Problem(
                     detail: "AUTH_INVITATION_EMAIL_MISMATCH", statusCode: StatusCodes.Status403Forbidden),
+                "AUTH_ALREADY_MEMBER" => Results.Problem(
+                    detail: "AUTH_ALREADY_MEMBER", statusCode: StatusCodes.Status409Conflict),
                 _ => Results.Problem(result.Error, statusCode: StatusCodes.Status500InternalServerError),
             };
         }

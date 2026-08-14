@@ -151,6 +151,30 @@ public sealed class BudgetAuthorizationHandlerTests : IDisposable
     }
 
     /// <summary>
+    /// budget-member-administration WU2 (AUTHZ-1, security-critical): a cached role for a
+    /// budget/user pair is honoured on the fast path regardless of the underlying membership's
+    /// current soft-delete state — the cache is what gets evicted synchronously by every
+    /// mutating handler (RemoveBudgetMember/RestoreBudgetMember/UpdateMemberRole/AcceptInvitation),
+    /// not consulted for IsDeleted here. This test documents that the WU2 filter lives in the
+    /// Dapper fallback query (18.4), not the cache-hit fast path, which stays byte-identical.
+    /// </summary>
+    [Fact]
+    public async Task CacheHit_StillHonoursCachedRole_CacheHitPathUnchangedByWU2()
+    {
+        var userId   = Guid.NewGuid();
+        var budgetId = Guid.NewGuid();
+        _cache.Set($"budget-membership:{userId}:{budgetId}", BudgetRole.Operator);
+
+        var handler     = new BudgetAuthorizationHandler(_cache, _factory);
+        var requirement = new BudgetRequirement(BudgetRole.Operator);
+        var authCtx     = MakeAuthContext(MakeUser(userId), requirement, MakeHttpContext(budgetId));
+
+        await handler.HandleAsync(authCtx);
+
+        authCtx.HasSucceeded.ShouldBeTrue();
+    }
+
+    /// <summary>
     /// Scenario: Deleted budget → cache miss path triggers DB query.
     /// Since this is a unit test without a real DB, we verify that on cache miss
     /// with no cached role the handler fails and does not write a cache entry.

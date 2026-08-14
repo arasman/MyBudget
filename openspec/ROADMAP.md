@@ -45,6 +45,8 @@ Status values: `✅ archived` | `🔄 in progress` | `⏳ planned` | `🔮 MVP B
 - Frontend: auth Pinia store, Axios 401 interceptor, LoginView, RegisterView, HomeView, AcceptInvitationView, InviteUserModal
 - 112 tests (8 unit + 35 integration + 30 Vitest + 9 E2E Playwright)
 
+**Note on InviteUserModal**: Built as part of this feature but NOT wired into any view until the subsequent untracked fix `feat/wire-invite-budget-modal` connected it to `BudgetSelectionView.vue`. The component shipped with the auth feature; it was simply not rendered anywhere in the UI until that follow-up change.
+
 **Scope out**: Budget CRUD (create/list/delete budgets beyond owner auto-create), password reset, OAuth.
 
 ---
@@ -650,6 +652,42 @@ pnpm exec playwright test
 
 **SDD artifacts**: `openspec/changes/archive/2026-08-13-showcase-hover-zoom/`
 **Specs**: `openspec/specs/landing-page/spec.md` (LANDING-9 added)
+
+---
+
+### 12. `budget-member-administration` ✅ archived 2026-08-13
+
+**What**: Budget member administration — view members, change roles, revoke/restore access, with Owner/Admin permission matrix and security-critical cache-eviction contract.
+
+**Delivered** (4-PR chained strategy, WU0→WU1-backend→WU1-frontend→WU2):
+- PR1 (WU0, ~180L): Duplicate-invitation guard (graceful 409 AUTH_ALREADY_MEMBER); ReadOnly role serialization fix (`"read-only"` not `"readonly"`); frontend AUTH_ALREADY_MEMBER error UI
+- PR2a (WU1-backend, ~380L): `MemberActionPolicy` permission matrix; `ListBudgetMembers` and `UpdateMemberRole` slices with per-matrix 403/404 guards
+- PR2b (WU1-frontend, ~330L): `useRoleGate.isOwner` addition; `budgetMembers.api.ts` + `BudgetMembersView.vue`; Members tab in `BudgetTabs` (visible to Owner/Admin, hidden from Operator/ReadOnly); route and i18n keys
+- PR3 (WU2, ~480L): `BudgetMembership` soft-delete (IsDeleted/DeletedAt) + migration; `RemoveBudgetMember` and `RestoreBudgetMember` slices; `BudgetAuthorizationHandler` filter (`AND bm.IsDeleted = false`); show-deleted toggle UI; cache-eviction contract (mandatory sync eviction on all mutations, 5-min TTL)
+
+**Permission matrix**:
+- Owner: acts on any non-Owner member (cannot act on self, Owner row, or promote to Owner)
+- Admin: acts on Operator/ReadOnly only (cannot act on self, Owner row, another Admin, or promote to Owner)
+- Operator/ReadOnly: no member-administration access
+
+**Security-critical deliverables**:
+- WU0: Duplicate-membership guard prevents DbUpdateException on second live token accept for same email/budget
+- WU2: BudgetAuthorizationHandler soft-delete filter — revoked members see 403 AUTH_NOT_A_MEMBER immediately (not after cache TTL); 5-min cache TTL with synchronous per-mutation eviction
+- Accept-on-restore: re-invited previously-removed member accepts with NEW role (not pre-removal role)
+
+**Post-QA fixes** (not separate SDD changes):
+- `AcceptInvitationView.vue` was missing `await authStore.fetchMe()` post-accept → invited Admin's role not reflected client-side until hard reload (fixed)
+- 7 frontend files lacked `useRoleGate` checks on mutating buttons → ReadOnly users saw Create/Edit/Delete icons that backend correctly rejected (fixed via `fix/readonly-role-gating-gaps` branch merge)
+
+**All 92+ tasks complete across 4 PRs; 335+ tests passing (unit, integration, Vitest, Playwright E2E); PASS verdict (0 CRITICAL); 131 Playwright E2E scenarios pass after `getByLabel` fix**
+
+**SDD artifacts**: `openspec/changes/archive/2026-08-13-budget-member-administration/`
+**Specs**: 
+- `openspec/specs/budget-members/spec.md` (NEW: 5 requirements, 30 scenarios)
+- `openspec/specs/auth/spec.md` (MODIFIED: ACCEPT-1, ME-1, AUTHZ-1 with 10 new scenarios)
+- `openspec/specs/budget-structure-ui/spec.md` (MODIFIED: REQ-NAV-1 Members tab gating + 4 new scenarios)
+
+**Dependencies**: `auth` (invite flow, role strings), `budget-structure-ui` (tab/view pattern, useRoleGate)
 
 ---
 

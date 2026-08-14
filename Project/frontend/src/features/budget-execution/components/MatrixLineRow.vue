@@ -69,11 +69,11 @@
           <span
             class="flex-1 text-sm cursor-pointer"
             :class="{ 'line-through': line.deletedAt }"
-            @dblclick="!line.deletedAt && openEditModal()"
+            @dblclick="!line.deletedAt && isAdmin && openEditModal()"
           >{{ line.name }}</span>
 
-          <!-- Reorder + delete (only non-deleted) -->
-          <template v-if="!line.deletedAt">
+          <!-- Reorder + delete (only non-deleted, admin only) -->
+          <template v-if="!line.deletedAt && isAdmin">
             <button
               type="button"
               class="btn btn-xs btn-ghost btn-square"
@@ -102,9 +102,9 @@
             </button>
           </template>
 
-          <!-- Restore button (only deleted + showDeleted mode + parent not deleted) -->
+          <!-- Restore button (only deleted + showDeleted mode + parent not deleted, admin only) -->
           <button
-            v-if="line.deletedAt && matrixStore.showDeleted && !parentDeleted"
+            v-if="line.deletedAt && matrixStore.showDeleted && !parentDeleted && isAdmin"
             type="button"
             class="btn btn-xs btn-ghost btn-square text-success"
             :title="t('budgetMatrix.rows.restore')"
@@ -170,6 +170,7 @@ import { ArrowUp, ArrowDown, Trash2, RotateCcw } from 'lucide-vue-next'
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useToastStore } from '@/stores/toast.store'
+import { useRoleGate } from '@/features/budget-structure/composables/useRoleGate'
 import { useCurrencyDisplay } from '../composables/useCurrencyDisplay'
 import MatrixCell from './MatrixCell.vue'
 import BudgetLineModal from '@/features/budget-structure/components/BudgetLineModal.vue'
@@ -195,6 +196,7 @@ const { t } = useI18n()
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
 const toast = useToastStore()
+const { isAdmin } = useRoleGate(props.budgetId)
 const { formatAmount } = useCurrencyDisplay(matrixStore)
 
 /** Currency symbol derived from cycle based on the active display currency. */

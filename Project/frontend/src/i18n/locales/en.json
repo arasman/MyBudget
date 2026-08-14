@@ -320,6 +320,30 @@
       "restore": "Restore",
       "deleted": "Deleted",
       "noPermission": "You don't have permission to perform this action."
+    },
+    "members": {
+      "title": "Members",
+      "tabTitle": "Members",
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "joinedAt": "Joined"
+      },
+      "actions": {
+        "changeRole": "Change role",
+        "remove": "Remove",
+        "restore": "Restore"
+      },
+      "showDeleted": "Show deleted",
+      "removeConfirmTitle": "Remove Member",
+      "removeConfirm": "Are you sure you want to remove this member? They will lose access to this budget.",
+      "confirmations": {
+        "roleChangeSuccess": "Member role updated successfully",
+        "roleChangeError": "Could not update member role",
+        "removeSuccess": "Member removed successfully",
+        "restoreSuccess": "Member restored successfully"
+      }
     }
   },
   "budgetMatrix": {
@@ -671,7 +695,8 @@
       "error": {
         "expired": "This invitation has expired. Please request a new one.",
         "alreadyUsed": "This invitation has already been used.",
-        "mismatch": "This invitation was not sent to your email address."
+        "mismatch": "This invitation was not sent to your email address.",
+        "alreadyMember": "You are already a member of this budget."
       }
     }
   },

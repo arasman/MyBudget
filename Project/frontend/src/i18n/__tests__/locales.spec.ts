@@ -268,6 +268,96 @@ describe('i18n locale keys — dashboard page assembly (DASH-7/10)', () => {
   })
 })
 
+// budget-member-administration (WU0/ACCEPT-1): duplicate-membership guard error copy
+// must exist in both locales for AcceptInvitationView's AUTH_ALREADY_MEMBER branch.
+describe('i18n locale keys — accept invitation already-member error (WU0)', () => {
+  it('en.json contains invitation.accept.error.alreadyMember', () => {
+    expect(en.invitation.accept.error).toHaveProperty('alreadyMember')
+    expect(typeof en.invitation.accept.error.alreadyMember).toBe('string')
+    expect(en.invitation.accept.error.alreadyMember.length).toBeGreaterThan(0)
+  })
+
+  it('es.json contains invitation.accept.error.alreadyMember', () => {
+    expect(es.invitation.accept.error).toHaveProperty('alreadyMember')
+    expect(typeof es.invitation.accept.error.alreadyMember).toBe('string')
+    expect(es.invitation.accept.error.alreadyMember.length).toBeGreaterThan(0)
+  })
+})
+
+// budget-member-administration (MEMBERS-UI-1/REQ-NAV-1, WU1): Members tab/view copy
+// must exist in both locales — title, tabTitle, columns, actions, confirmations.
+describe('i18n locale keys — budget members view (MEMBERS-UI-1, WU1)', () => {
+  it('en.json and es.json contain budgetStructure.members.title/tabTitle', () => {
+    expect(en.budgetStructure.members.title.length).toBeGreaterThan(0)
+    expect(en.budgetStructure.members.tabTitle.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.title.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.tabTitle.length).toBeGreaterThan(0)
+  })
+
+  const columnKeys = ['name', 'email', 'role', 'joinedAt'] as const
+
+  it.each(columnKeys)('en.json contains budgetStructure.members.columns.%s', (key) => {
+    expect(en.budgetStructure.members.columns).toHaveProperty(key)
+    expect(en.budgetStructure.members.columns[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(columnKeys)('es.json contains budgetStructure.members.columns.%s', (key) => {
+    expect(es.budgetStructure.members.columns).toHaveProperty(key)
+    expect(es.budgetStructure.members.columns[key].length).toBeGreaterThan(0)
+  })
+
+  it('en.json and es.json contain budgetStructure.members.actions.changeRole', () => {
+    expect(en.budgetStructure.members.actions.changeRole.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.actions.changeRole.length).toBeGreaterThan(0)
+  })
+
+  const confirmationKeys = ['roleChangeSuccess', 'roleChangeError'] as const
+
+  it.each(confirmationKeys)('en.json contains budgetStructure.members.confirmations.%s', (key) => {
+    expect(en.budgetStructure.members.confirmations).toHaveProperty(key)
+    expect(en.budgetStructure.members.confirmations[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(confirmationKeys)('es.json contains budgetStructure.members.confirmations.%s', (key) => {
+    expect(es.budgetStructure.members.confirmations).toHaveProperty(key)
+    expect(es.budgetStructure.members.confirmations[key].length).toBeGreaterThan(0)
+  })
+})
+
+// budget-member-administration WU2 (PR3): show-deleted toggle + remove/restore action copy
+describe('i18n locale keys — budget members view WU2 (show-deleted, remove, restore)', () => {
+  it('en.json and es.json contain budgetStructure.members.showDeleted', () => {
+    expect(en.budgetStructure.members.showDeleted.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.showDeleted.length).toBeGreaterThan(0)
+  })
+
+  it('en.json and es.json contain budgetStructure.members.actions.remove/restore', () => {
+    expect(en.budgetStructure.members.actions.remove.length).toBeGreaterThan(0)
+    expect(en.budgetStructure.members.actions.restore.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.actions.remove.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.actions.restore.length).toBeGreaterThan(0)
+  })
+
+  it('en.json and es.json contain budgetStructure.members.removeConfirmTitle/removeConfirm', () => {
+    expect(en.budgetStructure.members.removeConfirmTitle.length).toBeGreaterThan(0)
+    expect(en.budgetStructure.members.removeConfirm.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.removeConfirmTitle.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.removeConfirm.length).toBeGreaterThan(0)
+  })
+
+  const wu2ConfirmationKeys = ['removeSuccess', 'restoreSuccess'] as const
+
+  it.each(wu2ConfirmationKeys)('en.json contains budgetStructure.members.confirmations.%s', (key) => {
+    expect(en.budgetStructure.members.confirmations).toHaveProperty(key)
+    expect(en.budgetStructure.members.confirmations[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(wu2ConfirmationKeys)('es.json contains budgetStructure.members.confirmations.%s', (key) => {
+    expect(es.budgetStructure.members.confirmations).toHaveProperty(key)
+    expect(es.budgetStructure.members.confirmations[key].length).toBeGreaterThan(0)
+  })
+})
+
 // LAYOUT-4 / LANDING-6: AppFooter copy must exist in both locales
 describe('i18n locale keys — footer (LAYOUT-4/LANDING-6)', () => {
   it('en.json contains footer.poweredBy', () => {

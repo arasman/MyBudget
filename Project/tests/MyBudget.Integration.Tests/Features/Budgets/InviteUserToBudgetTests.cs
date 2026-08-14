@@ -116,6 +116,23 @@ public sealed class InviteUserToBudgetTests : IntegrationTestBase
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task ReadOnlyRoleHyphenated_StillSucceeds()
+    {
+        // Approval test for the TryParseRole → BudgetRoleStrings.TryParse delegation refactor:
+        // captures current behavior (accepts "read-only") so the refactor cannot silently drop it.
+        var (token, budgetId) = await SetupAdminAsync("admin-inv6@example.com");
+        AuthorizeClient(token);
+
+        var response = await Client.PostAsJsonAsync(
+            $"/api/budgets/{budgetId}/invitations",
+            new { email = "invitee6@example.com", role = "read-only" });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+        var body = await response.Content.ReadFromJsonAsync<InviteResponse>(JsonOpts);
+        body!.InvitationId.ShouldNotBe(Guid.Empty);
+    }
+
     private sealed record InviteResponse(Guid InvitationId, DateTime ExpiresAt);
     private sealed record MeResponse(Guid Id, string Email, MembershipEntry[] Memberships);
     private sealed record MembershipEntry(Guid BudgetId, string BudgetName, string Role);

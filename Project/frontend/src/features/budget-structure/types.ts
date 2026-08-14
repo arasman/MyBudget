@@ -206,3 +206,21 @@ export interface UpdateBudgetLinePayload {
   newAmount?: number
   currencyId?: string
 }
+
+// ---------------------------------------------------------------------------
+// Budget member entities (budget-member-administration, WU1)
+// ---------------------------------------------------------------------------
+
+/** Kebab-case role string, matching BudgetRoleStrings.ToApiString() on the backend. */
+export type MemberRole = 'owner' | 'admin' | 'operator' | 'read-only'
+
+export interface MemberDto {
+  userId: string
+  email: string
+  firstName: string
+  lastName: string
+  role: MemberRole
+  joinedAt: string
+  isDeleted: boolean
+  deletedAt?: string | null
+}

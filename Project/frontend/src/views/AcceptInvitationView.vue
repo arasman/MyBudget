@@ -36,6 +36,7 @@ onMounted(async () => {
       { token },
     )
     acceptedBudgetId.value = data.budgetId
+    await authStore.fetchMe()
     status.value = 'success'
   } catch (err: unknown) {
     const axiosError = err as { response?: { status: number; data?: { detail?: string } } }
@@ -47,6 +48,8 @@ onMounted(async () => {
       errorKey.value = 'invitation.accept.error.alreadyUsed'
     } else if (detail === 'AUTH_INVITATION_EMAIL_MISMATCH') {
       errorKey.value = 'invitation.accept.error.mismatch'
+    } else if (detail === 'AUTH_ALREADY_MEMBER') {
+      errorKey.value = 'invitation.accept.error.alreadyMember'
     } else {
       errorKey.value = 'common.error'
     }

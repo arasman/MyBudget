@@ -49,7 +49,7 @@ public sealed class GetCurrentUserHandler
             .Select(m => new BudgetMembershipDto(
                 m.BudgetId,
                 m.BudgetName,
-                ((BudgetRole)m.Role).ToString().ToLowerInvariant(),
+                ((BudgetRole)m.Role).ToApiString(),
                 m.IsDeleted))
             .ToList();
 

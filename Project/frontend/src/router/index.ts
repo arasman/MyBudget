@@ -87,6 +87,12 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import('@/features/dashboard/views/DashboardView.vue'),
       },
+      {
+        path: 'members',
+        name: 'BudgetMembers',
+        component: () =>
+          import('@/features/budget-structure/views/BudgetMembersView.vue'),
+      },
     ],
   },
 
