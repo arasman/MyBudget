@@ -1,16 +1,19 @@
-# Apply Progress: user-guide-docs (PR1 of 5, PR2 of 5, PR3 of 5)
+# Apply Progress: user-guide-docs (PR1 of 5, PR2 of 5, PR3 of 5, PR4 of 5)
 
-## Status: PR1 DONE — implemented, tested (real), committed, reviewed. PR2 DONE — implemented, tested (real, 30/30), committed, user-confirmed. PR3 IMPLEMENTED, NOT COMMITTED.
+## Status: PR1 DONE — implemented, tested (real), committed, reviewed. PR2 DONE — implemented, tested (real, 30/30), committed, user-confirmed. PR3 IMPLEMENTED, NOT COMMITTED (status at PR4 apply time — see PR3 section below for whether it has since been committed). PR4 IMPLEMENTED, NOT COMMITTED.
 
 Chain: `feat/user-guide-docs` (tracker) ← PR1 `feat/user-guide-docs-pr1` ← PR2
-`feat/user-guide-docs-pr2` ← PR3 `feat/user-guide-docs-pr3` (current) ← PR4 ← PR5.
+`feat/user-guide-docs-pr2` ← PR3 `feat/user-guide-docs-pr3` ← PR4 `feat/user-guide-docs-pr4`
+(current) ← PR5.
 PR1's scope (guide infra + `auth` pilot chapter) is committed and reviewed. PR2's scope
 (`budget-management`, `budget-structure-cycles`, `budget-structure-categories`) is now committed on
 `feat/user-guide-docs-pr2` and user-confirmed for real (30/30 `pnpm vitest`, `pnpm run build`
 clean) — this section of the file previously described PR2 as uncommitted; that has since been
 resolved outside this apply batch and is corrected here. PR3's scope
-(`budget-structure-periods-lines`, `budget-execution`) is implemented in this batch, uncommitted,
-on `feat/user-guide-docs-pr3` (base `feat/user-guide-docs-pr2`). PR4–PR5 tasks were not touched.
+(`budget-structure-periods-lines`, `budget-execution`) was implemented and left uncommitted as of
+its own apply batch, on `feat/user-guide-docs-pr3` (base `feat/user-guide-docs-pr2`). PR4's scope
+(`bank-accounts`, `current-situation`, `dashboard`) is implemented in this batch, uncommitted, on
+`feat/user-guide-docs-pr4` (base `feat/user-guide-docs-pr3`). PR5 tasks were not touched.
 
 **Commits on `feat/user-guide-docs-pr1`:**
 - `1e2d45b` — PR1 implementation (infra + `auth` chapter), 28 files, ~1185 authored lines
@@ -376,7 +379,139 @@ per explicit instruction — all PR3 changes are working-tree modifications on
 build` confirmation, and explicit approval before `git add`/`commit`/`push`. Ready to move on to
 PR4 once approved.
 
+## PR 4 — Reporting Chapters (`bank-accounts`, `current-situation`, `dashboard`)
+
+Branch `feat/user-guide-docs-pr4`, base `feat/user-guide-docs-pr3`. Same content-only pattern as
+PR2/PR3: no generator or test changes, `chapters.mjs` manifest diff + 6 new authored fragments
+(EN+ES × 3 chapters) against PR1's already-tested infra.
+
+### Mode: Standard (content-only chapters against an already-tested generator require no new
+production logic and no new TDD cycle — same precedent as PR2/PR3).
+
+### Where
+- `Project/frontend/scripts/guide/chapters.mjs` — flipped `published: true` for `bank-accounts`,
+  `current-situation`, and `dashboard`; added curated `images[]` (6 each, filenames verified
+  against `docs/slides/flows/<slug>/index.md` and the real files on disk before writing the
+  manifest). Diff: +39/-3 (42 authored lines).
+- `Project/frontend/scripts/guide/content/{en,es}/bank-accounts.html` — 4 headings each locale
+  (The account list; Creating an account; Editing an account; Deleting and restoring an account),
+  grounded in `BankAccountListView.vue` (admin-only create/edit/delete/restore via `useRoleGate`,
+  Adds/Subtracts type badge, currency locked once created, `ALIAS_DUPLICATE` dedicated error,
+  soft-delete + "Show deleted" toggle + restore).
+- `Project/frontend/scripts/guide/content/{en,es}/current-situation.html` — 5 headings each locale
+  (Navigating between cut dates; Entering balances and the exchange rate; Saving a cut; Reading
+  the totals and execution summary; Deleting a cut record), grounded in `CurrentSituationView.vue`
+  (`CutDateNavigator`, Draft badge, `LoadStrategyModal`'s blank/clone/from-date seeding options,
+  operator-gated save, `noActivePeriod` 422 rejection, `CutTotalsPanel`'s totals + execution
+  summary + snapshot-notice semantics, `DeleteCutModal`'s type-exact-date-to-confirm pattern).
+- `Project/frontend/scripts/guide/content/{en,es}/dashboard.html` — 6 headings each locale
+  (Lifetime trend; Average behavior band; Budget line behavior — within a cycle; Budget line
+  behavior — across cycles; Currency mismatch guard; Responsive layout), grounded in
+  `DashboardView.vue` (3 self-contained sections, no tabs), `LifetimeTotalsChart.vue`/
+  `TotalsBandChart.vue`/`BudgetLineSeriesChart.vue`, `ComparisonModeSwitch.vue` (within-cycle:
+  1 Cycle + 2+ Periods; cross-cycle: 2+ Cycles, mode switch clears the other mode's selection),
+  `InsufficientDataState.vue` (band needs 2+ periods), `CurrencyMismatchWarning.vue` (mismatched
+  Cycle currencies block the chart entirely), and the `conversionBasis` i18n distinction
+  (`cut-frozen` for lifetime/band vs `transaction-time` for the line-series chart — a real,
+  non-obvious nuance worth documenting since the two charts can show slightly different converted
+  totals for the same data).
+- `Project/frontend/public/guide/{en,es}/{bank-accounts,current-situation,dashboard}.html` +
+  `public/guide/assets/{bank-accounts,current-situation,dashboard}/*.png` (18 files, 6 per
+  chapter) — generated/copied via `node scripts/build-guide.mjs`, excluded from authored count as
+  goldens.
+- `Project/frontend/public/guide/{en,es}/{auth,budget-management,budget-structure-cycles,
+  budget-structure-categories,budget-structure-periods-lines,budget-execution,index}.html` —
+  regenerated sidebars only (all three new chapters flipped from `<span class="disabled">` to
+  `<a href="...">`); confirmed via `git diff` on `auth.html` (+6/-6, sidebar `<ol>` only, no other
+  content changed — verified diff shows exactly the 3 chapters flipped from disabled-span to
+  anchor in both EN and ES).
+- `openspec/changes/user-guide-docs/tasks.md` — PR4's 8 tasks (13.1, 13.2, 14.1, 14.2, 15.1, 15.2,
+  16.1, 16.2) marked `[x]`. 16.1/16.2 (regenerate + `guide:check` gate) were run and verified via
+  the same substitute direct-`node` evidence PR2/PR3 used, then marked complete (following PR2's
+  precedent of marking these `[x]` with the substitute-evidence caveat noted, rather than PR3's
+  stricter reservation of the equivalent checkboxes) — the human user's own `pnpm` run remains the
+  first-party confirmation.
+- `openspec/changes/user-guide-docs/apply-progress.md` (this file) — appended this PR4 section;
+  PR1/PR2/PR3 sections kept intact above.
+
+### Curation decisions
+- `bank-accounts` (10 source captures, kept 6): `01-list-empty`, `02-create-form`,
+  `03-create-success`, `06-edit-success`, `08-delete-success`, `10-restore-success`. Skipped
+  `04-create-duplicate-error` (described in prose instead, following PR2/PR3's precedent of not
+  needing an image for every validation rule), `05-edit-form` (the edit-success frame already
+  shows the result), `07-delete-confirm` (a bare confirmation dialog, less informative than the
+  delete-success frame that follows it), and `09-show-deleted-toggle` (the toggle state is
+  describable in prose; the restore-success frame that follows it tells the more complete story —
+  same tradeoff PR2's `budget-structure-categories` made by skipping its own toggle-adjacent
+  frame).
+- `current-situation` (7 source captures, kept 6): `01-draft-form`, `02-form-filled`,
+  `03-save-error`, `04-save-success`, `06-delete-confirm-typed`, `07-delete-success`. Skipped only
+  `05-delete-confirm-empty` — a near-duplicate of `06-delete-confirm-typed` differing solely in a
+  disabled-vs-enabled button state, and the enabled/typed frame is the more instructive of the
+  pair (mirrors PR3's `budget-execution` reasoning for skipping `02-open-execution-modal` in favor
+  of the more informative frame that follows it). `03-save-error` was kept deliberately — an
+  actual 422 validation error grounded in real backend behavior (`noActivePeriod`), not a
+  generic/uninstructive error state, so it clears the "genuinely instructive" bar ADR-UGD-06 sets
+  for keeping an error-state capture.
+- `dashboard` (7 source captures, kept 6 — one per distinct chart mode plus the responsive check,
+  per the design.md density lesson from the slides deck build): `01-lifetime-trend`,
+  `03-budget-line-empty`, `04-budget-line-selected`, `05-cross-cycle-mode`,
+  `06-insufficient-history`, `07-mobile-viewport`. Skipped only `02-series-picker-empty` — the
+  `SeriesPicker` component it demonstrates is shared by both the lifetime and band charts and its
+  "clearing selection empties the chart" behavior is already implied by `03-budget-line-empty`'s
+  parallel empty state on the line-series chart; keeping it would have meant a 7th image purely to
+  re-demonstrate a picker-driven empty state already shown once. This is the only PR4 chapter
+  whose curated set intentionally maps 1:1 onto "distinct interaction modes" (lifetime trend, band
+  with its insufficient-history guard, budget-line within-cycle empty+selected, budget-line
+  cross-cycle, and the responsive check) rather than a purely CRUD-lifecycle narrative, per the
+  design.md launch-prompt instruction to curate the dashboard around its chart modes specifically.
+
+### Work Unit Evidence (WU4)
+
+| Evidence | Value |
+|---|---|
+| Focused test command and exact result | `pnpm guide:check` — **could not execute via pnpm** (same environment blocker as PR1/PR2/PR3, see Infrastructure Blocker section above, reproduced again this session). Substitute: ran `node scripts/build-guide.mjs` then `node scripts/build-guide.mjs --check` directly from `Project/frontend` — both succeeded (`build-guide: wrote 9 chapter(s) x 2 locale(s) + index pages.` / `guide:check: clean — committed public/guide/** matches the manifest + fragments.`, exit 0, 0 validation errors). The real generator run internally exercises `validateManifest`/`validateAssetPath`/`validateLocaleParity` against the actual new `chapters.mjs` entries and fragments (not fixtures), which is the load-bearing check for a content-only batch — same evidence bar PR2/PR3 used. |
+| Runtime harness command/scenario and exact result | `node scripts/build-guide.mjs` produced the 6 new chapter pages (3 slugs × 2 locales) + regenerated `index.html`/`auth.html`/`budget-management.html`/`budget-structure-cycles.html`/`budget-structure-categories.html`/`budget-structure-periods-lines.html`/`budget-execution.html` sidebars + copied 18 curated PNGs into `public/guide/assets/**`. Verified via `git status --short` + `git diff` on `auth.html`: only the sidebar `<ol>` changed (+6/-6, all three new chapters flipped from disabled-span to anchor, both locales) — no other content touched. Manually confirmed every `images[]` entry for the 3 new chapters has a matching PNG under `docs/slides/flows/<slug>/` (verified via direct `ls` on each new `public/guide/assets/<slug>/` directory) and every `../assets/...` reference in the authored fragments is listed in that chapter's `images[]` (the generator's own validation pass, which ran clean, is the authoritative check here). EN/ES parity confirmed via `grep -c`: `bank-accounts` 4/4 `<h2>`, 6/6 `<img>`; `current-situation` 5/5 `<h2>`, 6/6 `<img>`; `dashboard` 6/6 `<h2>`, 6/6 `<img>`. |
+| Rollback boundary | Revert the 3 `chapters.mjs` manifest entries (restore `published: false`, drop `images[]`), delete the 6 new `content/{en,es}/*.html` fragments, delete `public/guide/assets/{bank-accounts,current-situation,dashboard}/`, delete the 6 new `public/guide/{en,es}/*.html` pages, and regenerate (or revert directly) the 7 previously-published pages' + index's sidebars to restore the PR1+PR2+PR3-only state. All isolated to this batch; PR1's committed infra/generator, PR2's committed 3 chapters, and PR3's chapters are untouched. |
+
+### Deviations from Design / Tasks
+1. **Authored total for this batch is ~502 lines** (460 across the 6 content fragments +
+   `chapters.mjs`'s +39/-3 diff = 42 authored), above the design's ~280 estimate (~79% over,
+   directionally consistent with PR2's ~60% and PR1's larger overrun — real guide-quality prose
+   for 3 chapters with curated screenshots, including the dashboard's extra "why do the two charts
+   show different totals" nuance paragraph, costs more than the estimate assumed). Still well
+   inside the confirmed 800-line per-PR ceiling (~63%), so no `size:exception` or further split is
+   needed — flagged for visibility only, not as a blocking risk.
+2. **`dashboard.html` documents the `cut-frozen` vs `transaction-time` conversion-basis
+   distinction between the lifetime/band charts and the budget-line chart**, sourced from the
+   `conversion-basis` prop passed to `BaseChart` in each chart component and the corresponding
+   `dashboard.conversionBasis.*` i18n keys. This wasn't explicitly requested in tasks.md/design.md
+   but is a real, non-obvious behavior a reader would otherwise find confusing (two dashboard
+   charts disagreeing on a converted total for the same underlying data) — flagging as a
+   deliberate, grounded addition, not scope creep or invention.
+3. **No cross-links were added between the three new chapters and `members`** (not yet published)
+   or between `current-situation` and `dashboard` (the natural "cuts feed the dashboard" relation
+   is mentioned in dashboard's intro paragraph in prose only, not as an `<a href>`), following
+   PR2's established rule: `build-guide.mjs` does not validate cross-chapter body hrefs, so an
+   unresolved link could build clean but 404 at runtime. All chapter cross-references in this
+   batch stay as plain-text mentions.
+
+### Issues Found
+None. `pnpm`/`node_modules` remains blocked in this session by the same pre-existing Windows
+filesystem-level corruption documented in PR1's Infrastructure Blocker section — reproduced again,
+not caused by this PR's code.
+
+## Status (PR4)
+8/8 PR4 tasks complete (13.1, 13.2, 14.1, 14.2, 15.1, 15.2, 16.1, 16.2). Generator run + check
+verified via substitute direct-`node` execution (same pnpm/node_modules blocker as PR1/PR2/PR3).
+Left uncommitted per explicit instruction — all PR4 changes are working-tree modifications on
+`feat/user-guide-docs-pr4`, awaiting orchestrator/user review, the real `pnpm vitest run`/`pnpm run
+build` confirmation, and explicit approval before `git add`/`commit`/`push`. Ready to move on to
+PR5 once approved. Per launch-prompt instructions, PR5 (`members` chapter + landing-page link
+integration touching `src/`) was intentionally NOT started in this batch.
+
 ## Cumulative task status (all PRs)
-38/67 tasks complete (PR1: 25/27 — 5.4/5.5 remain the same partially-verified infra manual gates
+46/67 tasks complete (PR1: 25/27 — 5.4/5.5 remain the same partially-verified infra manual gates
 as before; PR2: 9/9 — fully complete, committed; PR3: 4/4 authoring tasks complete, 12.1/12.2
-manual gates pending the human-run commands). PR4–PR5 (29 tasks) not started.
+manual gates pending the human-run commands; PR4: 8/8 — fully complete, uncommitted). PR5
+(21 tasks) not started.

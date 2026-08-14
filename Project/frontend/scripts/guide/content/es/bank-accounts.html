@@ -1,0 +1,67 @@
+<h1>Cuentas bancarias</h1>
+
+<p>
+  Las cuentas bancarias son la fuente de los saldos que registrás en el capítulo Situación
+  actual, y definen si el total de un corte sube o baja. Este capítulo cubre la lista de cuentas,
+  crear y editar una cuenta, y eliminar (suave) y restaurar una cuenta.
+</p>
+
+<h2>La lista de cuentas</h2>
+<p>
+  Cada cuenta muestra su alias, moneda, tipo y orden de visualización. El tipo es
+  <strong>Suma</strong> — la cuenta contribuye positivamente al total del corte, para una cuenta
+  corriente o de ahorro — o <strong>Resta</strong>, para un pasivo como el saldo de una tarjeta de
+  crédito. El orden de visualización controla el orden de las filas en todos lados donde aparece
+  la cuenta, incluido el formulario de Situación actual. Un presupuesto sin cuentas todavía
+  muestra un mensaje de estado vacío en lugar de una tabla vacía.
+</p>
+<figure>
+  <img src="../assets/bank-accounts/01-list-empty.png" alt="Pestaña de cuentas bancarias de un presupuesto recién creado, sin cuentas todavía" width="960" height="600">
+  <figcaption>Un presupuesto recién creado: la pestaña de cuentas antes de que exista alguna.</figcaption>
+</figure>
+
+<h2>Crear una cuenta</h2>
+<p>
+  Solo los administradores y el propietario ven el botón "Nueva cuenta". El formulario de
+  creación pide un alias, una moneda y si la cuenta suma o resta del total; el toggle de
+  suma/resta viene activado en "suma" por defecto. El alias debe ser único dentro del
+  presupuesto — reutilizar uno se rechaza con un mensaje dedicado ("ya existe una cuenta con
+  este alias") en lugar de uno genérico de error al guardar.
+</p>
+<figure>
+  <img src="../assets/bank-accounts/02-create-form.png" alt="Formulario de nueva cuenta con alias y moneda completos, toggle de suma activado" width="960" height="600">
+  <figcaption>El formulario de nueva cuenta: alias y moneda completos, "suma al total" activado por defecto.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/bank-accounts/03-create-success.png" alt="Aviso de éxito al crear una cuenta bancaria, nueva cuenta listada" width="960" height="600">
+  <figcaption>Aviso de éxito, con la nueva cuenta ya en la lista.</figcaption>
+</figure>
+
+<h2>Editar una cuenta</h2>
+<p>
+  Editar te permite renombrar el alias, cambiar el tipo suma/resta, o cambiar el orden de
+  visualización. La moneda queda bloqueada una vez creada la cuenta — no se puede cambiar
+  después, solo reemplazarse eliminando la cuenta y creando una nueva en la moneda deseada.
+</p>
+<figure>
+  <img src="../assets/bank-accounts/06-edit-success.png" alt="Aviso de éxito al editar una cuenta bancaria, alias actualizado reflejado en la lista" width="960" height="600">
+  <figcaption>Aviso de éxito; el alias actualizado se refleja de inmediato en la lista.</figcaption>
+</figure>
+
+<h2>Eliminar y restaurar una cuenta</h2>
+<p>
+  Eliminar una cuenta es una eliminación suave: la cuenta desaparece de la lista por defecto pero
+  su historial se conserva. Un diálogo de confirmación nombra la cuenta por su alias antes de
+  hacer nada. Para volver a encontrar una cuenta eliminada, activá "Mostrar eliminadas" arriba de
+  la tabla — las filas eliminadas aparecen atenuadas con una etiqueta "eliminada" y una acción
+  Restaurar en lugar de editar/eliminar. Restaurar reinstala la cuenta tal como estaba, incluido
+  su orden de visualización.
+</p>
+<figure>
+  <img src="../assets/bank-accounts/08-delete-success.png" alt="Aviso de éxito al eliminar una cuenta bancaria, cuenta removida de la lista por defecto" width="960" height="600">
+  <figcaption>Aviso de éxito; la cuenta eliminada sale de la lista por defecto (solo activas).</figcaption>
+</figure>
+<figure>
+  <img src="../assets/bank-accounts/10-restore-success.png" alt="Cuenta bancaria restaurada mostrada como activa nuevamente en la lista" width="960" height="600">
+  <figcaption>La cuenta vuelve a estar activa después de Restaurar.</figcaption>
+</figure>

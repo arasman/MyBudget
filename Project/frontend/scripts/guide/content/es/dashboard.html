@@ -1,0 +1,91 @@
+<h1>Panel</h1>
+
+<p>
+  El panel convierte tus cortes guardados y tu historial de ejecución en gráficos. Tiene tres
+  secciones independientes en una sola página, sin pestañas entre las que cambiar: una tendencia
+  histórica, una banda de comportamiento promedio, y una comparación de líneas presupuestarias
+  con dos modos propios. Este capítulo cubre las tres, además del resguardo de monedas distintas
+  y cómo se adapta el diseño en pantallas angostas.
+</p>
+
+<h2>Tendencia histórica</h2>
+<p>
+  Esta es la vista por defecto del panel — la que ves primero, antes de cualquier gráfico de
+  promedio o comparación. Grafica cada serie que elijas (Total de Activos, Total de Pasivos,
+  Deuda Total, Total Disponible, Total Neto, y sus contrapartes presupuestadas/registradas) a lo
+  largo de todos los cortes guardados, del más antiguo al más reciente. Un selector al costado te
+  permite elegir o deseleccionar series individuales, o todas a la vez.
+</p>
+<figure>
+  <img src="../assets/dashboard/01-lifetime-trend.png" alt="Vista por defecto del panel: tendencia del patrimonio neto a través de todos los cortes registrados" width="960" height="600">
+  <figcaption>La vista por defecto: tendencia del patrimonio neto a través de todos los cortes registrados.</figcaption>
+</figure>
+
+<h2>Banda de comportamiento promedio</h2>
+<p>
+  Debajo de la tendencia histórica, el gráfico de comportamiento promedio muestra cómo tiende a
+  moverse cada serie a lo largo de los períodos, en lugar de las fechas de corte crudas. Necesita
+  al menos dos períodos con cortes registrados para tener sentido — con menos, el panel muestra un
+  mensaje explícito de "aún no hay suficiente historial" en lugar de dibujar una banda engañosa a
+  partir de un solo dato.
+</p>
+<figure>
+  <img src="../assets/dashboard/06-insufficient-history.png" alt="Gráfico del panel mostrando un estado vacío explícito cuando hay menos de 2 registros de corte" width="960" height="600">
+  <figcaption>Menos de 2 registros de corte: un estado vacío explícito en lugar de una banda calculada engañosa.</figcaption>
+</figure>
+
+<h2>Comportamiento de líneas presupuestarias — dentro de un ciclo</h2>
+<p>
+  La tercera sección compara líneas de presupuesto específicas en lugar de los totales a nivel de
+  cuenta de arriba. Elegí una o más líneas del selector, y luego elegí períodos para comparar. En
+  el modo "Dentro del ciclo" primero elegís un Ciclo y después dos o más de sus Períodos; el
+  gráfico permanece vacío hasta que se seleccionen tanto una línea como al menos un período.
+</p>
+<figure>
+  <img src="../assets/dashboard/03-budget-line-empty.png" alt="Estado vacío del gráfico de líneas presupuestarias, antes de seleccionar línea o período" width="960" height="600">
+  <figcaption>Ninguna línea ni período seleccionado todavía.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/dashboard/04-budget-line-selected.png" alt="Gráfico de líneas presupuestarias con una línea y dos períodos seleccionados, mostrando una comparación dentro del ciclo" width="960" height="600">
+  <figcaption>Una línea y dos períodos seleccionados: comparación período contra período dentro del ciclo.</figcaption>
+</figure>
+
+<h2>Comportamiento de líneas presupuestarias — entre ciclos</h2>
+<p>
+  Cambiar el modo a "Entre ciclos" reemplaza el selector de períodos de un solo ciclo por una
+  lista de Ciclos — elegí dos o más, y se incluye en la comparación cada período de cada ciclo
+  seleccionado. Cambiar de modo borra lo que estuviera seleccionado en el otro modo, así que una
+  selección de "dentro del ciclo" que quedó sin usar nunca se mezcla en un gráfico entre ciclos,
+  ni viceversa.
+</p>
+<figure>
+  <img src="../assets/dashboard/05-cross-cycle-mode.png" alt="Gráfico de líneas presupuestarias en modo entre ciclos, comparando períodos de varios ciclos" width="960" height="600">
+  <figcaption>Cambiar de modo reemplaza el selector de períodos dentro del ciclo por un selector de ciclos.</figcaption>
+</figure>
+
+<h2>Resguardo por monedas distintas</h2>
+<p>
+  Cada línea que elegís pertenece a un Ciclo, y cada Ciclo tiene una moneda. Si los períodos
+  seleccionados para comparar abarcan ciclos con monedas distintas, el gráfico se niega a
+  renderizarse — en lugar de convertir o mezclar dos monedas silenciosamente en un mismo eje,
+  muestra una advertencia explicando que esas líneas no se pueden comparar juntas. Esto refleja
+  una regla similar en otras partes de la app: monedas distintas nunca se combinan en una sola
+  cifra.
+</p>
+<p>
+  Una sutileza más que vale la pena conocer: la tendencia histórica y el comportamiento promedio
+  convierten los montos en moneda alternativa al tipo de cambio congelado de cada corte, mientras
+  que el gráfico de líneas presupuestarias convierte al tipo de cambio vigente en el momento de
+  cada transacción. Por eso los dos gráficos pueden mostrar totales convertidos ligeramente
+  distintos para los mismos datos subyacentes — esto es esperado, no un error.
+</p>
+
+<h2>Diseño adaptable</h2>
+<p>
+  En una pantalla angosta, los gráficos y sus selectores laterales se apilan verticalmente en
+  lugar de ir uno al lado del otro, y nada se desborda del ancho de la pantalla.
+</p>
+<figure>
+  <img src="../assets/dashboard/07-mobile-viewport.png" alt="Panel en un viewport de 375px de ancho, sin desbordamiento horizontal" width="960" height="600">
+  <figcaption>El panel en un viewport de 375px de ancho, sin desbordamiento horizontal.</figcaption>
+</figure>

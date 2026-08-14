@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bank accounts · MyBudget User Guide</title>
+    <link rel="stylesheet" href="../assets/guide.css" />
+    <link rel="alternate" hreflang="es" href="../es/bank-accounts.html" />
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+    <div class="layout">
+      <nav class="sidebar" aria-label="Guide navigation">
+        <a class="brand" href="./index.html">MyBudget User Guide</a>
+        <p class="locale-toggle">
+          <a href="../es/bank-accounts.html" hreflang="es" lang="es">Español</a>
+        </p>
+        <ol>
+      <li><a href="auth.html">Account &amp; sign-in</a></li>
+      <li><a href="budget-management.html">Budgets</a></li>
+      <li><a href="budget-structure-cycles.html">Cycles</a></li>
+      <li><a href="budget-structure-categories.html">Categories</a></li>
+      <li><a href="budget-structure-periods-lines.html">Periods &amp; budget lines</a></li>
+      <li><a href="budget-execution.html">Matrix &amp; execution</a></li>
+      <li><span aria-current="page">Bank accounts</span></li>
+      <li><a href="current-situation.html">Current situation</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><span class="disabled">Members</span></li>
+        </ol>
+        <p class="back"><a href="/">Back to the app</a></p>
+      </nav>
+      <main id="content" class="content">
+        <h1>Bank accounts</h1>
+
+<p>
+  Bank accounts are the source of the balances you record in the Current situation chapter, and
+  they decide whether a cut's total goes up or down. This chapter covers the account list,
+  creating and editing an account, and soft-deleting and restoring one.
+</p>
+
+<h2>The account list</h2>
+<p>
+  Every account shows its alias, currency, type, and display order. Type is either
+  <strong>Adds</strong> — the account contributes positively to the cut's total, for a checking or
+  savings account — or <strong>Subtracts</strong>, for a liability such as a credit card balance.
+  Display order controls the row order everywhere the account appears, including the Current
+  situation form. A budget with no accounts yet shows an empty-state message instead of an empty
+  table.
+</p>
+<figure>
+  <img src="../assets/bank-accounts/01-list-empty.png" alt="Bank accounts tab for a freshly created budget, with no accounts yet" width="960" height="600">
+  <figcaption>A freshly created budget: the accounts tab before any account exists.</figcaption>
+</figure>
+
+<h2>Creating an account</h2>
+<p>
+  Only admins and the owner see the "New Account" button. The create form asks for an alias, a
+  currency, and whether the account adds to or subtracts from the total; the positive/negative
+  toggle defaults to adding. The alias must be unique within the budget — reusing one is rejected
+  with a dedicated "an account with this alias already exists" message rather than a generic
+  save-failed one.
+</p>
+<figure>
+  <img src="../assets/bank-accounts/02-create-form.png" alt="New account form with alias and currency filled in, positive toggle on" width="960" height="600">
+  <figcaption>The new-account form: alias and currency filled in, "adds to total" on by default.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/bank-accounts/03-create-success.png" alt="Success toast after creating a bank account, new account listed" width="960" height="600">
+  <figcaption>Success toast, with the new account now in the list.</figcaption>
+</figure>
+
+<h2>Editing an account</h2>
+<p>
+  Editing lets you rename the alias, flip the adds/subtracts type, or change the display order.
+  The currency is locked once the account is created — it cannot be changed afterward, only
+  replaced by deleting the account and creating a new one in the target currency.
+</p>
+<figure>
+  <img src="../assets/bank-accounts/06-edit-success.png" alt="Success toast after editing a bank account, updated alias reflected in the list" width="960" height="600">
+  <figcaption>Success toast; the updated alias is reflected in the list immediately.</figcaption>
+</figure>
+
+<h2>Deleting and restoring an account</h2>
+<p>
+  Deleting an account is a soft delete: the account disappears from the default list but its
+  history is preserved. A confirmation dialog names the account by alias before anything happens.
+  To find a deleted account again, turn on "Show deleted" above the table — deleted rows appear
+  dimmed with a "deleted" badge and a Restore action in place of edit/delete. Restoring reinstates
+  the account exactly as it was, including its display order.
+</p>
+<figure>
+  <img src="../assets/bank-accounts/08-delete-success.png" alt="Success toast after deleting a bank account, account removed from the default list" width="960" height="600">
+  <figcaption>Success toast; the deleted account drops out of the default (active-only) list.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/bank-accounts/10-restore-success.png" alt="Restored bank account shown as active again in the list" width="960" height="600">
+  <figcaption>The account is active again after Restore.</figcaption>
+</figure>
+
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+<h1>Dashboard</h1>
+
+<p>
+  The dashboard turns your saved cuts and execution history into charts. It has three
+  self-contained sections on one page, no tabs to switch between: a lifetime trend, an average
+  behavior band, and a budget-line comparison with two modes of its own. This chapter covers all
+  three, plus the currency-mismatch guard and how the layout adapts on narrow screens.
+</p>
+
+<h2>Lifetime trend</h2>
+<p>
+  This is the dashboard's default view — the one you see first, before any average or comparison
+  chart. It plots every series you pick (Total Assets, Total Liabilities, Total Debt, Total
+  Available, Total Net, and their budgeted/registered counterparts) across every saved cut, oldest
+  to newest. A picker to the side lets you select or clear individual series, or all of them at
+  once.
+</p>
+<figure>
+  <img src="../assets/dashboard/01-lifetime-trend.png" alt="Dashboard default landing view: net-worth trend across all cut records" width="960" height="600">
+  <figcaption>The default landing view: net-worth trend across all cut records.</figcaption>
+</figure>
+
+<h2>Average behavior band</h2>
+<p>
+  Below the lifetime trend, the average behavior chart shows how each series tends to move across
+  periods rather than across raw cut dates. It needs at least two periods with recorded cuts to
+  mean anything — with fewer, the dashboard shows an explicit "not enough history yet" message
+  instead of drawing a misleading band from a single data point.
+</p>
+<figure>
+  <img src="../assets/dashboard/06-insufficient-history.png" alt="Dashboard chart showing an explicit empty state when fewer than 2 cut records exist" width="960" height="600">
+  <figcaption>Fewer than 2 cut records: an explicit empty state instead of a misleading computed band.</figcaption>
+</figure>
+
+<h2>Budget line behavior — within a cycle</h2>
+<p>
+  The third section compares specific budget lines instead of the account-level totals above.
+  Pick one or more lines from the line picker, then choose periods to compare. In "Within cycle"
+  mode you first pick a Cycle and then two or more of its Periods; the chart stays empty until
+  both a line and at least one period are selected.
+</p>
+<figure>
+  <img src="../assets/dashboard/03-budget-line-empty.png" alt="Budget line chart empty state, before any line or period is selected" width="960" height="600">
+  <figcaption>No line or period selected yet.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/dashboard/04-budget-line-selected.png" alt="Budget line chart with a line and two periods selected, showing a within-cycle comparison" width="960" height="600">
+  <figcaption>A line and two periods selected: within-cycle period-vs-period comparison.</figcaption>
+</figure>
+
+<h2>Budget line behavior — across cycles</h2>
+<p>
+  Switching the mode to "Cross-cycle" replaces the single-cycle period picker with a list of
+  Cycles — pick two or more, and every period of each selected cycle is included in the
+  comparison. Switching modes clears whatever was selected in the other mode, so a leftover
+  within-cycle pick never gets mixed into a cross-cycle chart or vice versa.
+</p>
+<figure>
+  <img src="../assets/dashboard/05-cross-cycle-mode.png" alt="Budget line chart in cross-cycle mode, comparing periods across multiple cycles" width="960" height="600">
+  <figcaption>Switching modes swaps the within-cycle period picker for a cycle picker.</figcaption>
+</figure>
+
+<h2>Currency mismatch guard</h2>
+<p>
+  Every line you pick belongs to a Cycle, and every Cycle has a currency. If the periods selected
+  for comparison span cycles with different currencies, the chart refuses to render at all —
+  instead of silently converting or blending two currencies onto one axis, it shows a warning
+  explaining that those lines cannot be compared together. This mirrors a similar rule elsewhere
+  in the app: mismatched currencies are never combined into one figure.
+</p>
+<p>
+  One more subtlety worth knowing: the lifetime trend and average behavior charts convert
+  alternate-currency amounts at each cut's own frozen exchange rate, while the budget-line chart
+  converts at the exchange rate in effect when each transaction happened. The two charts can
+  therefore show slightly different converted totals for the same underlying data — this is
+  expected, not a bug.
+</p>
+
+<h2>Responsive layout</h2>
+<p>
+  On a narrow screen, the charts and their side pickers stack vertically instead of sitting side
+  by side, and nothing scrolls off the edge of the viewport.
+</p>
+<figure>
+  <img src="../assets/dashboard/07-mobile-viewport.png" alt="Dashboard at a 375px-wide viewport, no horizontal overflow" width="960" height="600">
+  <figcaption>The dashboard at a 375px-wide viewport, no horizontal overflow.</figcaption>
+</figure>

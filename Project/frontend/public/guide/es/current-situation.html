@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Situación actual · Guía de usuario de MyBudget</title>
+    <link rel="stylesheet" href="../assets/guide.css" />
+    <link rel="alternate" hreflang="en" href="../en/current-situation.html" />
+  </head>
+  <body>
+    <a class="skip" href="#content">Saltar al contenido</a>
+    <div class="layout">
+      <nav class="sidebar" aria-label="Navegación de la guía">
+        <a class="brand" href="./index.html">Guía de usuario de MyBudget</a>
+        <p class="locale-toggle">
+          <a href="../en/current-situation.html" hreflang="en" lang="en">English</a>
+        </p>
+        <ol>
+      <li><a href="auth.html">Cuenta e inicio de sesión</a></li>
+      <li><a href="budget-management.html">Presupuestos</a></li>
+      <li><a href="budget-structure-cycles.html">Ciclos</a></li>
+      <li><a href="budget-structure-categories.html">Categorías</a></li>
+      <li><a href="budget-structure-periods-lines.html">Periodos y líneas de presupuesto</a></li>
+      <li><a href="budget-execution.html">Matriz y ejecución</a></li>
+      <li><a href="bank-accounts.html">Cuentas bancarias</a></li>
+      <li><span aria-current="page">Situación actual</span></li>
+      <li><a href="dashboard.html">Panel</a></li>
+      <li><span class="disabled">Miembros</span></li>
+        </ol>
+        <p class="back"><a href="/">Volver a la app</a></p>
+      </nav>
+      <main id="content" class="content">
+        <h1>Situación actual</h1>
+
+<p>
+  Un "corte" es una foto en el tiempo del saldo de cada cuenta bancaria, guardada contra una
+  fecha específica. Los cortes son lo que alimenta el historial del panel y te permiten comparar
+  tu posición real con lo que el presupuesto esperaba. Este capítulo cubre cómo navegar entre
+  cortes, ingresar saldos, guardar, leer los totales, y eliminar un registro de corte.
+</p>
+
+<h2>Navegar entre fechas de corte</h2>
+<p>
+  El navegador de fechas se mueve un corte a la vez, hacia adelante o atrás, saltando solo entre
+  fechas que ya tienen un registro guardado. Elegir una fecha sin registro existente abre una
+  consulta sobre cómo iniciarla: arrancar cada cuenta en 0 ("En blanco"), copiar los saldos del
+  corte guardado más reciente ("Clonar desde el último registro"), o copiar desde una fecha
+  anterior específica que elegís de una lista. Hasta que guardés, la nueva fecha es un
+  <strong>Borrador</strong>.
+</p>
+<figure>
+  <img src="../assets/current-situation/01-draft-form.png" alt="Un nuevo corte en estado borrador, precargado con las cuentas bancarias activas en saldo 0" width="960" height="600">
+  <figcaption>Un nuevo corte, precargado con las cuentas bancarias activas en saldo 0 (etiqueta Borrador visible).</figcaption>
+</figure>
+
+<h2>Ingresar saldos y el tipo de cambio</h2>
+<p>
+  Las cuentas se dividen en dos grupos según su tipo del capítulo Cuentas bancarias: activos que
+  suman al total, y pasivos que restan. Cada fila toma el saldo de la cuenta a la fecha del
+  corte; el registro también lleva un único tipo de cambio usado para convertir cualquier cuenta
+  en moneda alternativa a la moneda principal del presupuesto para los totales de abajo.
+</p>
+<figure>
+  <img src="../assets/current-situation/02-form-filled.png" alt="Formulario de situación actual con saldos y tipo de cambio ingresados, listo para guardar" width="960" height="600">
+  <figcaption>Saldo y tipo de cambio ingresados, listo para guardar.</figcaption>
+</figure>
+
+<h2>Guardar un corte</h2>
+<p>
+  Solo operadores, administradores y el propietario pueden guardar. Guardar requiere un período
+  de presupuesto activo que cubra la fecha del corte — si todavía no existe ninguno, el guardado
+  se rechaza en lugar de aceptarse silenciosamente contra nada, ya que un corte sin período
+  correspondiente no tendría datos de ejecución con qué compararse.
+</p>
+<figure>
+  <img src="../assets/current-situation/03-save-error.png" alt="Guardado fallando porque ningún período de presupuesto cubre la fecha del corte todavía" width="960" height="600">
+  <figcaption>El guardado falla cuando ningún período de presupuesto cubre la fecha del corte todavía.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/current-situation/04-save-success.png" alt="Aviso de éxito al guardar un corte, panel de totales reflejando los saldos y tipo de cambio guardados" width="960" height="600">
+  <figcaption>Aviso de éxito; el panel de totales refleja los saldos y el tipo de cambio guardados.</figcaption>
+</figure>
+
+<h2>Leer los totales y el resumen de ejecución</h2>
+<p>
+  El panel de totales suma activos, pasivos y posición neta al tipo de cambio del corte, junto a
+  un resumen de ejecución presupuestaria — total presupuestado, total registrado, y el
+  compromiso restante — para el período en el que cae la fecha del corte. Estas cifras son una
+  foto: reflejan los saldos de cuentas y la ejecución al momento del último guardado de este
+  corte, así que cambios posteriores en cuentas o registros de ejecución no mueven los totales de
+  un corte guardado hasta que lo vuelvas a guardar.
+</p>
+
+<h2>Eliminar un registro de corte</h2>
+<p>
+  Eliminar un corte es permanente, así que la confirmación te pide escribir la fecha exacta del
+  corte antes de que el botón de eliminar se habilite — un simple clic de "confirmar" no alcanza
+  para una acción irreversible. Una vez eliminado, la vista vuelve al corte restante más
+  reciente, si existe alguno.
+</p>
+<figure>
+  <img src="../assets/current-situation/06-delete-confirm-typed.png" alt="Confirmación de eliminación con la fecha coincidente escrita, botón de eliminar habilitado" width="960" height="600">
+  <figcaption>Una vez que la fecha escrita coincide, el botón de eliminar se habilita.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/current-situation/07-delete-success.png" alt="Aviso de éxito al eliminar un registro de corte" width="960" height="600">
+  <figcaption>Registro de corte eliminado; aviso de éxito mostrado.</figcaption>
+</figure>
+
+      </main>
+    </div>
+  </body>
+</html>

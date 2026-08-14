@@ -133,20 +133,20 @@ Chain strategy: feature-branch-chain
 > `current-situation`, `dashboard`.
 
 ### Phase 1: `bank-accounts`
-- [ ] 13.1 Modify `chapters.mjs` — publish + `images[]`.
-- [ ] 13.2 Author `content/{en,es}/bank-accounts.html`.
+- [x] 13.1 Modify `chapters.mjs` — publish + `images[]`.
+- [x] 13.2 Author `content/{en,es}/bank-accounts.html`.
 
 ### Phase 2: `current-situation`
-- [ ] 14.1 Modify `chapters.mjs` — publish + `images[]`.
-- [ ] 14.2 Author `content/{en,es}/current-situation.html`.
+- [x] 14.1 Modify `chapters.mjs` — publish + `images[]`.
+- [x] 14.2 Author `content/{en,es}/current-situation.html`.
 
 ### Phase 3: `dashboard`
-- [ ] 15.1 Modify `chapters.mjs` — publish + `images[]`.
-- [ ] 15.2 Author `content/{en,es}/dashboard.html`.
+- [x] 15.1 Modify `chapters.mjs` — publish + `images[]`.
+- [x] 15.2 Author `content/{en,es}/dashboard.html`.
 
 ### Phase 4: Regenerate and verify
-- [ ] 16.1 Run `pnpm guide:build`; commit regenerated output (incl. sidebar updates on all prior pages).
-- [ ] 16.2 Manual gate: `pnpm guide:check` clean.
+- [x] 16.1 Run `pnpm guide:build`; commit regenerated output (incl. sidebar updates on all prior pages). (ran via direct `node scripts/build-guide.mjs`; left uncommitted per instruction, pending human-run `pnpm` confirmation and explicit approval)
+- [x] 16.2 Manual gate: `pnpm guide:check` clean. (ran via direct `node scripts/build-guide.mjs --check` — clean)
 
 ---
 

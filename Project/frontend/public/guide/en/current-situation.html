@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Current situation · MyBudget User Guide</title>
+    <link rel="stylesheet" href="../assets/guide.css" />
+    <link rel="alternate" hreflang="es" href="../es/current-situation.html" />
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+    <div class="layout">
+      <nav class="sidebar" aria-label="Guide navigation">
+        <a class="brand" href="./index.html">MyBudget User Guide</a>
+        <p class="locale-toggle">
+          <a href="../es/current-situation.html" hreflang="es" lang="es">Español</a>
+        </p>
+        <ol>
+      <li><a href="auth.html">Account &amp; sign-in</a></li>
+      <li><a href="budget-management.html">Budgets</a></li>
+      <li><a href="budget-structure-cycles.html">Cycles</a></li>
+      <li><a href="budget-structure-categories.html">Categories</a></li>
+      <li><a href="budget-structure-periods-lines.html">Periods &amp; budget lines</a></li>
+      <li><a href="budget-execution.html">Matrix &amp; execution</a></li>
+      <li><a href="bank-accounts.html">Bank accounts</a></li>
+      <li><span aria-current="page">Current situation</span></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><span class="disabled">Members</span></li>
+        </ol>
+        <p class="back"><a href="/">Back to the app</a></p>
+      </nav>
+      <main id="content" class="content">
+        <h1>Current situation</h1>
+
+<p>
+  A "cut" is a point-in-time snapshot of every bank account's balance, saved against a specific
+  date. Cuts are what powers the dashboard's history and let you compare your actual position to
+  what the budget expected. This chapter covers navigating between cuts, entering balances,
+  saving, reading the totals, and deleting a cut record.
+</p>
+
+<h2>Navigating between cut dates</h2>
+<p>
+  The date navigator moves one cut at a time, forward or backward, jumping only between dates
+  that already have a saved record. Picking a date with no existing record opens a prompt asking
+  how to seed it: start every account at 0 ("Start blank"), copy the balances from the most recent
+  saved cut ("Clone from last record"), or copy from a specific earlier date you choose from a
+  list. Until you save, the new date is a <strong>Draft</strong>.
+</p>
+<figure>
+  <img src="../assets/current-situation/01-draft-form.png" alt="A new cut in draft state, pre-populated with active bank accounts at balance 0" width="960" height="600">
+  <figcaption>A new cut, pre-populated with active bank accounts at balance 0 (Draft badge shown).</figcaption>
+</figure>
+
+<h2>Entering balances and the exchange rate</h2>
+<p>
+  Accounts are split into two groups matching their type from the Bank accounts chapter: assets
+  that add to the total, and liabilities that subtract from it. Each row takes the account's
+  balance as of the cut date; the record also carries a single exchange rate used to convert any
+  alternate-currency accounts into the budget's primary currency for the totals below.
+</p>
+<figure>
+  <img src="../assets/current-situation/02-form-filled.png" alt="Current situation form with balances and exchange rate entered, ready to save" width="960" height="600">
+  <figcaption>Balances and exchange rate entered, ready to save.</figcaption>
+</figure>
+
+<h2>Saving a cut</h2>
+<p>
+  Only operators, admins, and the owner can save. Saving requires an active budget period that
+  covers the cut date — if none exists yet, the save is rejected rather than silently accepted
+  against nothing, since a cut with no matching period would have no execution data to compare
+  against.
+</p>
+<figure>
+  <img src="../assets/current-situation/03-save-error.png" alt="Save failing because no budget period covers the cut date yet" width="960" height="600">
+  <figcaption>Saving fails when no budget period covers the cut date yet.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/current-situation/04-save-success.png" alt="Success toast after saving a cut, totals panel reflecting the saved balances and exchange rate" width="960" height="600">
+  <figcaption>Success toast; the totals panel reflects the saved balances and exchange rate.</figcaption>
+</figure>
+
+<h2>Reading the totals and execution summary</h2>
+<p>
+  The totals panel adds up assets, liabilities, and net position at the cut's exchange rate,
+  alongside a budget execution summary — total budgeted, total registered, and the remaining
+  commitment — for the period the cut date falls in. These figures are a snapshot: they reflect
+  account balances and execution as of the cut's last save, so later changes to accounts or
+  execution records don't move a saved cut's totals until you save it again.
+</p>
+
+<h2>Deleting a cut record</h2>
+<p>
+  Deleting a cut is permanent, so the confirmation asks you to type the exact cut date before the
+  delete button becomes clickable — a plain "confirm" click isn't enough for an irreversible
+  action. Once deleted, the view falls back to the most recent remaining cut, if any.
+</p>
+<figure>
+  <img src="../assets/current-situation/06-delete-confirm-typed.png" alt="Delete confirmation with the matching date typed, delete button enabled" width="960" height="600">
+  <figcaption>Once the typed date matches, the delete button becomes enabled.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/current-situation/07-delete-success.png" alt="Success toast after deleting a cut record" width="960" height="600">
+  <figcaption>Cut record deleted; success toast shown.</figcaption>
+</figure>
+
+      </main>
+    </div>
+  </body>
+</html>
