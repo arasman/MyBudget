@@ -1,10 +1,12 @@
-# Apply Progress: user-guide-docs (PR1 of 5)
+# Apply Progress: user-guide-docs (PR1 of 5, PR2 of 5)
 
-## Status: PR1 DONE — implemented, tested (real), committed, reviewed
+## Status: PR1 DONE — implemented, tested (real), committed, reviewed. PR2 IMPLEMENTED, NOT COMMITTED.
 
-Chain: `feat/user-guide-docs` (tracker) ← PR1 `feat/user-guide-docs-pr1` (current) ← PR2 ← PR3 ← PR4 ← PR5.
-Only PR1's scope (guide infra + `auth` pilot chapter) was implemented in this batch, per explicit
-instruction. PR2–PR5 tasks were not touched.
+Chain: `feat/user-guide-docs` (tracker) ← PR1 `feat/user-guide-docs-pr1` ← PR2
+`feat/user-guide-docs-pr2` (current) ← PR3 ← PR4 ← PR5.
+PR1's scope (guide infra + `auth` pilot chapter) is committed and reviewed. PR2's scope
+(`budget-management`, `budget-structure-cycles`, `budget-structure-categories`) is implemented in
+this batch, uncommitted. PR3–PR5 tasks were not touched.
 
 **Commits on `feat/user-guide-docs-pr1`:**
 - `1e2d45b` — PR1 implementation (infra + `auth` chapter), 28 files, ~1185 authored lines
@@ -172,15 +174,108 @@ this change's code:
   Re-verified after the fix; `public/guide/en/auth.html` now correctly shows
   `<title>Account &amp; sign-in · MyBudget User Guide</title>`.
 
-## Remaining Tasks (PR2–PR5, not started, out of this batch's scope)
-- PR2: `budget-management` (+2 invite-acceptance captures), `budget-structure-cycles`, `budget-structure-categories`
+## Remaining Tasks (PR3–PR5, not started, out of this batch's scope)
 - PR3: `budget-structure-periods-lines`, `budget-execution`
 - PR4: `bank-accounts`, `current-situation`, `dashboard`
 - PR5: `members` chapter + `guide-links.spec.ts` integration walker + locale-aware landing link
 
-## Status
+## Status (PR1)
 20/20 PR1 tasks complete. Committed (`1e2d45b`, then fixes in `87adfcb`), tested for real
 (30/30 vitest, user-run), built for real (`pnpm run build` clean), and reviewed (native 4R,
-approved). Ready to move on to PR2. `render-diagrams.mjs`'s real `npx mermaid-cli` subprocess
-still hasn't been spawned end-to-end (only its argv-construction is unit-tested) — worth a real
-`pnpm render-diagrams` run whenever a guide chapter actually needs a diagram (none do yet).
+approved). `render-diagrams.mjs`'s real `npx mermaid-cli` subprocess still hasn't been spawned
+end-to-end (only its argv-construction is unit-tested) — worth a real `pnpm render-diagrams` run
+whenever a guide chapter actually needs a diagram (none do yet).
+
+---
+
+## PR2 — Core Structure Chapters (`budget-management`, `budget-structure-cycles`,
+`budget-structure-categories`): IMPLEMENTED, NOT COMMITTED
+
+### Branch: `feat/user-guide-docs-pr2` (base `feat/user-guide-docs-pr1`)
+
+### Mode: Content authoring against PR1's already-tested generator — no new production logic,
+no TDD cycle required per skill guidance (structural/content task, single possible output per
+manifest entry). PR1's existing `build-guide.spec.ts` suite (13 test cases covering
+`renderSidebar`, `localeToggleHref`, `fillTemplate`, `validateManifest`, `validateAssetPath`,
+`validateLocaleParity`) is the regression net this batch runs against — no test changes were
+needed, confirming tasks.md's prediction that PR2 wouldn't touch the generator or its tests.
+
+### Files created
+| File | Lines | Notes |
+|------|------:|-------|
+| `scripts/guide/content/en/budget-management.html` | 78 | EN prose — budget list, create, rename/delete, invite-send + invite-accept (success/error) cross-covering the hard PR5 dependency. |
+| `scripts/guide/content/es/budget-management.html` | 83 | Same headings/images, ES voseo register. |
+| `scripts/guide/content/en/budget-structure-cycles.html` | 67 | EN prose — cycle list, create, edit, set-active, delete/restore. |
+| `scripts/guide/content/es/budget-structure-cycles.html` | 71 | Same headings/images, ES voseo register. |
+| `scripts/guide/content/en/budget-structure-categories.html` | 61 | EN prose — category tree, create group, create category, reorder/rename/delete/restore. |
+| `scripts/guide/content/es/budget-structure-categories.html` | 62 | Same headings/images, ES voseo register. |
+| `public/guide/{en,es}/{budget-management,budget-structure-cycles,budget-structure-categories}.html` | generated | Committed generated output — excluded from authored count per ADR-UGD-01 goldens accounting, reproducible via `pnpm guide:check`. |
+| `public/guide/assets/{budget-management,budget-structure-cycles,budget-structure-categories}/*.png` (18 files, 6 per chapter) | — (copied binaries) | Curated subset per chapter; `budget-management` includes the two invite-acceptance captures (`09-invite-accept-success.png`, `10-invite-accept-error.png`) as the hard dependency PR5's `members` chapter will cross-link to. |
+
+### Files modified
+| File | Diff | Notes |
+|------|------|-------|
+| `scripts/guide/chapters.mjs` | +39/-3 | Flipped `published: true` for the 3 chapters, added their curated `images[]` (6 each, filenames verified against both `docs/slides/flows/<slug>/index.md` and the actual PNGs on disk before writing the manifest). |
+| `public/guide/{en,es}/{auth,index}.html` | 6/6/12/12 lines | Regenerated sidebars now link the 3 newly-published chapters instead of rendering them as dimmed `<span class="disabled">` — expected/golden per tasks.md's Phase 4 note, verified via `git diff` to be sidebar-only (no other line changed in `auth.html`). |
+
+### Curation decisions (ADR-UGD-06)
+- `budget-management`: kept `01-budget-list`, `02-create-form`, `04-create-success`,
+  `06-delete-success`, `09-invite-accept-success`, `10-invite-accept-error` (6 of 10). Skipped
+  `03-create-duplicate-error`, `05-delete-confirm`, `07-show-deleted-toggle`,
+  `08-restore-success` — duplicate-error/confirm-dialog/toggle-state variants covered in prose
+  without a screenshot, per the curation principle already established by PR1's `auth` chapter.
+- `budget-structure-cycles`: kept `01-list-empty`, `02-create-form`, `03-create-success`,
+  `06-edit-success`, `07-set-active-success`, `09-delete-success` (6 of 9). Skipped
+  `04-create-duplicate-error`, `05-edit-form`, `08-delete-confirm`.
+- `budget-structure-categories`: kept `01-list-empty`, `02-create-group-form`,
+  `03-create-group-success`, `05-create-category-form`, `06-create-category-success`,
+  `10-restore-category-success` (6 of 10). Skipped `04-create-group-duplicate-error`,
+  `07-create-category-duplicate-error`, `08-delete-category-confirm`,
+  `09-delete-category-success` (restore-success alone tells the soft-delete/restore story
+  without also needing the intermediate delete-success frame).
+
+### Work Unit Evidence (WU2)
+
+| Evidence | Value |
+|---|---|
+| Focused test command and exact result | `pnpm guide:check` — **could not execute via pnpm** (same environment blocker as PR1, see Infrastructure Blocker section below, reproduced again this session). Substitute: ran `node scripts/build-guide.mjs` then `node scripts/build-guide.mjs --check` directly — both succeeded (`build-guide: wrote 4 chapter(s) x 2 locale(s) + index pages.` / `guide:check: clean — committed public/guide/** matches the manifest + fragments.`, exit 0). Also ran PR1's exact `build-guide.spec.ts` assertions (`renderSidebar` single-`aria-current` + unpublished-no-`<a>`, `localeToggleHref`, `validateManifest`, `validateAssetPath`, `validateLocaleParity`) via direct `node -e "import(...)"` against the real committed `chapters.mjs` with the 3 new chapters published — all pass, 0 validation errors, 0 asset-path errors. |
+| Runtime harness command/scenario and exact result | `node scripts/build-guide.mjs` produced all 6 new chapter pages (3 slugs × 2 locales) + regenerated `index.html`/`auth.html` sidebars + copied 18 curated PNGs into `public/guide/assets/**`. Manually verified: sidebar shows exactly one `aria-current="page"` per page and renders the 4 published chapters as `<a>` while the remaining 6 stay `<span class="disabled">`; `git diff` on `auth.html`/`index.html` confirms only the sidebar `<ol>` changed (3 lines flipped from disabled-span to anchor, both locales); heading-count and `<img>`-count parity confirmed EN==ES for all 3 new chapters (5/5, 6/6, 5/5 headings; 6/6, 6/6, 6/6 images). |
+| Rollback boundary | Revert the 3 `chapters.mjs` manifest entries (restore `published: false`, drop `images[]`), delete the 6 new `content/{en,es}/*.html` fragments, delete `public/guide/assets/{budget-management,budget-structure-cycles,budget-structure-categories}/`, delete the 6 new `public/guide/{en,es}/*.html` pages, and regenerate `auth.html`/`index.html` (or revert their 4 diffs directly) to restore the PR1-only sidebar. All isolated to this batch; PR1's committed infra/generator/`auth` chapter untouched. |
+
+### Deviations from Design / Tasks
+1. **Authored total for this batch is ~464 lines** (422 across the 6 content fragments +
+   `chapters.mjs`'s +39/-3 diff = 42 authored), above the design's ~290 estimate (~60% over,
+   directionally consistent with PR1's own overrun — real guide-quality prose for 3 chapters with
+   curated screenshots costs more than the estimate assumed). Still well inside the confirmed
+   800-line per-PR ceiling (~58%), so no `size:exception` or further split is needed — flagged
+   for visibility only, not as a blocking risk.
+2. **Removed a planned cross-link from `budget-management` to `members.html`.** The first draft
+   linked the invite-acceptance section to `<a href="members.html">`, but `members` is not
+   published until PR5 and `build-guide.mjs` does not validate cross-chapter body hrefs (only
+   `../assets/...` image paths and the generated sidebar are checked) — an unresolved link would
+   have silently built clean but 404'd at runtime, violating the design's "no PR ships a 404"
+   principle (seam #2), which the sidebar's `published` flag already protects but body prose does
+   not automatically get. Changed to a plain-text mention ("The Members chapter covers how roles
+   are managed...") in both locales instead of a hyperlink; PR5 can add the actual `<a>` once
+   `members.html` exists. Not silently deviated — noting it here since design.md's ADR-UGD-08
+   describes the reverse link (members → budget-management) but doesn't address this forward
+   reference.
+3. **Confirmed exact screenshot filenames from each chapter's `index.md` and the real files on
+   disk before writing the manifest**, per the launch instructions — `09-invite-accept-success.png`
+   / `10-invite-accept-error.png` for `budget-management` matched exactly as specified.
+
+### Issues Found
+None.
+
+## Status (PR2)
+9/9 PR2 tasks complete (6.1, 6.2, 7.1, 7.2, 8.1, 8.2, 9.1, 9.2, 9.3). Implemented, generator run
++ check verified via substitute direct-`node` execution (same pnpm/node_modules blocker as PR1 —
+see Infrastructure Blocker below, reproduced again this session), **not yet committed** per
+explicit instruction — all changes are uncommitted working-tree modifications on
+`feat/user-guide-docs-pr2`, awaiting orchestrator/user review, the real `pnpm vitest run` / `pnpm
+run build` confirmation, and explicit approval before `git add`/`commit`/`push`. Ready to move on
+to PR3 once approved.
+
+## Cumulative task status (all PRs)
+34/67 tasks complete (PR1: 25/27 — 5.4/5.5 remain the same partially-verified infra manual gates
+as before; PR2: 9/9 — fully complete). PR3–PR5 (33 tasks) not started.

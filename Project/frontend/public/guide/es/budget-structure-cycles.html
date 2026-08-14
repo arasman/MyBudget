@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ciclos · Guía de usuario de MyBudget</title>
+    <link rel="stylesheet" href="../assets/guide.css" />
+    <link rel="alternate" hreflang="en" href="../en/budget-structure-cycles.html" />
+  </head>
+  <body>
+    <a class="skip" href="#content">Saltar al contenido</a>
+    <div class="layout">
+      <nav class="sidebar" aria-label="Navegación de la guía">
+        <a class="brand" href="./index.html">Guía de usuario de MyBudget</a>
+        <p class="locale-toggle">
+          <a href="../en/budget-structure-cycles.html" hreflang="en" lang="en">English</a>
+        </p>
+        <ol>
+      <li><a href="auth.html">Cuenta e inicio de sesión</a></li>
+      <li><a href="budget-management.html">Presupuestos</a></li>
+      <li><span aria-current="page">Ciclos</span></li>
+      <li><a href="budget-structure-categories.html">Categorías</a></li>
+      <li><span class="disabled">Periodos y líneas de presupuesto</span></li>
+      <li><span class="disabled">Matriz y ejecución</span></li>
+      <li><span class="disabled">Cuentas bancarias</span></li>
+      <li><span class="disabled">Situación actual</span></li>
+      <li><span class="disabled">Panel</span></li>
+      <li><span class="disabled">Miembros</span></li>
+        </ol>
+        <p class="back"><a href="/">Volver a la app</a></p>
+      </nav>
+      <main id="content" class="content">
+        <h1>Ciclos</h1>
+
+<p>
+  Un ciclo es un período de tiempo delimitado dentro de un presupuesto — típicamente un mes o un
+  año — que contiene sus propios períodos, líneas de presupuesto y matriz de ejecución. Todo
+  presupuesto arranca con una lista de ciclos vacía; este capítulo cubre crear, editar, activar,
+  eliminar y restaurar ciclos.
+</p>
+
+<h2>La lista de ciclos</h2>
+<p>
+  Al abrir un presupuesto ves su tabla de ciclos: nombre, fecha de inicio, fecha de fin, cantidad
+  de períodos, si el ciclo es el activo, y su moneda alterna si tiene una configurada. Un
+  presupuesto recién creado muestra un estado vacío en vez de la tabla, con un atajo para crear
+  el primer ciclo.
+</p>
+<figure>
+  <img src="../assets/budget-structure-cycles/01-list-empty.png" alt="Lista de ciclos vacía para un presupuesto recién creado" width="960" height="600">
+  <figcaption>La lista de ciclos para un presupuesto recién creado, antes de que exista ningún ciclo.</figcaption>
+</figure>
+
+<h2>Creando un ciclo</h2>
+<p>
+  Administradores y el propietario pueden crear un ciclo con un nombre, una fecha de inicio y una
+  fecha de fin. Un ciclo también puede configurar una moneda predeterminada y, opcionalmente, una
+  moneda alterna con un tipo de cambio — o se completan ambos campos juntos, o se dejan ambos
+  vacíos. Los nombres de ciclo deben ser únicos dentro del mismo presupuesto.
+</p>
+<figure>
+  <img src="../assets/budget-structure-cycles/02-create-form.png" alt="Formulario de creación de ciclo completo con un nombre y rango de fechas" width="960" height="600">
+  <figcaption>El modal de nuevo ciclo completo con un nombre y rango de fechas.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/budget-structure-cycles/03-create-success.png" alt="Ciclo creado exitosamente y listado" width="960" height="600">
+  <figcaption>Mensaje de éxito y el nuevo ciclo listado.</figcaption>
+</figure>
+
+<h2>Editando un ciclo</h2>
+<p>
+  Hacé doble clic sobre el nombre, la fecha de inicio o la fecha de fin de un ciclo para editarlo
+  en línea, o usá el ícono de lápiz para abrir el formulario completo (que también expone los
+  campos de moneda). Editar valida las mismas reglas de unicidad y de emparejamiento de moneda
+  que crear.
+</p>
+<figure>
+  <img src="../assets/budget-structure-cycles/06-edit-success.png" alt="Ciclo actualizado exitosamente" width="960" height="600">
+  <figcaption>Mensaje de éxito y el nombre actualizado reflejado en la lista.</figcaption>
+</figure>
+
+<h2>Estableciendo el ciclo activo</h2>
+<p>
+  Exactamente un ciclo por presupuesto puede marcarse como activo, mostrado con una etiqueta
+  verde "Activo". El ciclo activo es al que abre por defecto la matriz de ejecución
+  presupuestaria, así que cambiarlo es cómo movés la atención de todo el equipo de un período al
+  siguiente.
+</p>
+<figure>
+  <img src="../assets/budget-structure-cycles/07-set-active-success.png" alt="Ciclo marcado como activo" width="960" height="600">
+  <figcaption>El ciclo marcado como Activo, definiendo a qué ciclo abre por defecto la ejecución presupuestaria.</figcaption>
+</figure>
+
+<h2>Eliminando y restaurando un ciclo</h2>
+<p>
+  Eliminar un ciclo es un borrado suave detrás de un diálogo de confirmación — sus períodos,
+  líneas e historial de ejecución se conservan, no se destruyen. Activar "Mostrar eliminados"
+  revela los ciclos eliminados con una etiqueta "Eliminado" y una acción de Restaurar.
+</p>
+<figure>
+  <img src="../assets/budget-structure-cycles/09-delete-success.png" alt="Ciclo eliminado exitosamente" width="960" height="600">
+  <figcaption>Ciclo eliminado con borrado suave; mensaje de éxito mostrado.</figcaption>
+</figure>
+
+      </main>
+    </div>
+  </body>
+</html>

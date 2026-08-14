@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Categorías · Guía de usuario de MyBudget</title>
+    <link rel="stylesheet" href="../assets/guide.css" />
+    <link rel="alternate" hreflang="en" href="../en/budget-structure-categories.html" />
+  </head>
+  <body>
+    <a class="skip" href="#content">Saltar al contenido</a>
+    <div class="layout">
+      <nav class="sidebar" aria-label="Navegación de la guía">
+        <a class="brand" href="./index.html">Guía de usuario de MyBudget</a>
+        <p class="locale-toggle">
+          <a href="../en/budget-structure-categories.html" hreflang="en" lang="en">English</a>
+        </p>
+        <ol>
+      <li><a href="auth.html">Cuenta e inicio de sesión</a></li>
+      <li><a href="budget-management.html">Presupuestos</a></li>
+      <li><a href="budget-structure-cycles.html">Ciclos</a></li>
+      <li><span aria-current="page">Categorías</span></li>
+      <li><span class="disabled">Periodos y líneas de presupuesto</span></li>
+      <li><span class="disabled">Matriz y ejecución</span></li>
+      <li><span class="disabled">Cuentas bancarias</span></li>
+      <li><span class="disabled">Situación actual</span></li>
+      <li><span class="disabled">Panel</span></li>
+      <li><span class="disabled">Miembros</span></li>
+        </ol>
+        <p class="back"><a href="/">Volver a la app</a></p>
+      </nav>
+      <main id="content" class="content">
+        <h1>Categorías</h1>
+
+<p>
+  Las categorías son cómo se clasifica el gasto dentro de un presupuesto, organizadas en grupos
+  (por ejemplo "Hogar" o "Transporte") que contienen cada uno una o más categorías. Los grupos y
+  las categorías se comparten entre todos los ciclos del presupuesto — los configurás una vez, y
+  después las líneas de presupuesto y la ejecución los referencian ciclo tras ciclo.
+</p>
+
+<h2>El árbol de categorías</h2>
+<p>
+  Un presupuesto recién creado muestra un estado vacío en vez del árbol, con un atajo para crear
+  el primer grupo. Sólo los administradores y el propietario pueden crear, editar, eliminar o
+  reordenar grupos y categorías; el resto ve el mismo árbol de sólo lectura, sin las manijas de
+  arrastre ni los íconos de acción.
+</p>
+<figure>
+  <img src="../assets/budget-structure-categories/01-list-empty.png" alt="Árbol de categorías vacío para un presupuesto recién creado" width="960" height="600">
+  <figcaption>La pestaña de categorías para un presupuesto recién creado, antes de que exista ningún grupo.</figcaption>
+</figure>
+
+<h2>Creando un grupo</h2>
+<p>
+  "Nuevo grupo" sólo pide un nombre; los nombres de grupo deben ser únicos dentro del
+  presupuesto.
+</p>
+<figure>
+  <img src="../assets/budget-structure-categories/02-create-group-form.png" alt="Formulario de creación de grupo completo con un nombre" width="960" height="600">
+  <figcaption>El modal de nuevo grupo completo con un nombre.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/budget-structure-categories/03-create-group-success.png" alt="Grupo creado exitosamente y listado" width="960" height="600">
+  <figcaption>Mensaje de éxito y el nuevo grupo listado.</figcaption>
+</figure>
+
+<h2>Creando una categoría</h2>
+<p>
+  "+ Nueva categoría" dentro de un grupo abre el mismo tipo de formulario, anidado bajo ese
+  grupo. Los nombres de categoría deben ser únicos dentro de su grupo, pero el mismo nombre se
+  puede reutilizar en un grupo distinto.
+</p>
+<figure>
+  <img src="../assets/budget-structure-categories/05-create-category-form.png" alt="Formulario de creación de categoría completo, anidado bajo un grupo" width="960" height="600">
+  <figcaption>El modal de nueva categoría, completo, anidado bajo el grupo Hogar.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/budget-structure-categories/06-create-category-success.png" alt="Categoría creada exitosamente y listada bajo su grupo" width="960" height="600">
+  <figcaption>Mensaje de éxito y la nueva categoría listada bajo su grupo.</figcaption>
+</figure>
+
+<h2>Reordenando, renombrando, eliminando y restaurando</h2>
+<p>
+  Administradores y el propietario pueden arrastrar grupos y categorías por su manija para
+  reordenarlos, o hacer doble clic sobre un nombre para renombrarlo en línea. Eliminar un grupo o
+  una categoría es un borrado suave detrás de un diálogo de confirmación — eliminar un grupo
+  también elimina las categorías que contiene. Activar "Mostrar eliminados" revela los grupos y
+  categorías eliminados con una etiqueta "Eliminado" y una acción de Restaurar.
+</p>
+<figure>
+  <img src="../assets/budget-structure-categories/10-restore-category-success.png" alt="Categoría restaurada exitosamente" width="960" height="600">
+  <figcaption>La categoría vuelve a estar activa después de restaurarla.</figcaption>
+</figure>
+
+      </main>
+    </div>
+  </body>
+</html>

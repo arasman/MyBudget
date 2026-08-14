@@ -1,0 +1,83 @@
+<h1>Presupuestos</h1>
+
+<p>
+  Un presupuesto es el contenedor de nivel superior para todo lo demás en MyBudget: ciclos,
+  categorías, cuentas y miembros pertenecen todos a un único presupuesto. Este capítulo cubre
+  cómo ver tus presupuestos, crear uno nuevo, eliminarlo y restaurarlo, e invitar a alguien más
+  a unirse.
+</p>
+
+<h2>Tu lista de presupuestos</h2>
+<p>
+  Al iniciar sesión llegás a <code>/budgets</code>, que lista cada presupuesto al que pertenecés
+  junto con tu rol en cada uno. Si pertenecés a exactamente un presupuesto activo, MyBudget
+  salta esta pantalla y te lleva directo a él — la lista sólo aparece cuando tenés más de uno, o
+  cuando volvés a ella a propósito.
+</p>
+<figure>
+  <img src="../assets/budget-management/01-budget-list.png" alt="Lista de selección de presupuestos" width="960" height="600">
+  <figcaption>El selector de presupuestos, listando cada presupuesto al que pertenecés.</figcaption>
+</figure>
+
+<h2>Creando un presupuesto</h2>
+<p>
+  "Nuevo Presupuesto" abre un formulario que sólo pide un nombre. Los nombres de presupuesto
+  deben ser únicos por cuenta — reutilizar uno que ya tenés se rechaza en vez de crear un
+  duplicado.
+</p>
+<figure>
+  <img src="../assets/budget-management/02-create-form.png" alt="Formulario de creación de presupuesto completo con un nombre" width="960" height="600">
+  <figcaption>El modal de nuevo presupuesto completo con un nombre.</figcaption>
+</figure>
+<p>
+  Crear un presupuesto te convierte en su propietario/a y te lleva directo a él — una lista de
+  ciclos vacía, lista para que agregues tu primer ciclo.
+</p>
+<figure>
+  <img src="../assets/budget-management/04-create-success.png" alt="Presupuesto recién creado con una lista de ciclos vacía" width="960" height="600">
+  <figcaption>Después de crear un presupuesto: una lista de ciclos vacía, con el nombre mostrado en la barra de navegación.</figcaption>
+</figure>
+
+<h2>Renombrar y eliminar un presupuesto</h2>
+<p>
+  Propietarios y administradores pueden renombrar un presupuesto con doble clic sobre su nombre
+  en la lista, o con el ícono de lápiz. Sólo el propietario puede eliminar un presupuesto — la
+  eliminación es un borrado suave detrás de un diálogo de confirmación, así que el presupuesto
+  desaparece de la lista activa pero no se destruye.
+</p>
+<figure>
+  <img src="../assets/budget-management/06-delete-success.png" alt="Presupuesto removido de la lista activa después de eliminarlo" width="960" height="600">
+  <figcaption>El presupuesto eliminado desaparece de la lista activa.</figcaption>
+</figure>
+<p>
+  Activar "Mostrar eliminados" revela los presupuestos eliminados con una etiqueta "Eliminado" y
+  una acción de Restaurar, así que un borrado accidental siempre es recuperable.
+</p>
+
+<h2>Invitar a alguien a un presupuesto</h2>
+<p>
+  Propietarios y administradores pueden invitar a otra persona desde el ícono de invitar en la
+  lista. El formulario de invitación pide un email y un rol (Admin, Operador, o Sólo lectura — un
+  presupuesto no se puede compartir con alguien como un segundo Propietario). MyBudget rechaza la
+  invitación de entrada si esa persona ya es miembro, o si quien invita no tiene permiso para
+  invitar a ese presupuesto.
+</p>
+<p>
+  La persona invitada recibe un email con un enlace para aceptar. Si ya tiene una sesión de
+  MyBudget abierta, aceptar agrega el presupuesto a su lista de inmediato y muestra un mensaje de
+  éxito.
+</p>
+<figure>
+  <img src="../assets/budget-management/09-invite-accept-success.png" alt="Invitación aceptada exitosamente" width="960" height="600">
+  <figcaption>Un token de invitación válido otorga membresía y muestra un mensaje de éxito.</figcaption>
+</figure>
+<p>
+  Un enlace vencido, uno ya usado, o uno abierto con el email equivocado muestra un error en vez
+  de romperse — la persona invitada puede pedirle al propietario o a un administrador del
+  presupuesto que le envíe uno nuevo. El capítulo de Miembros cubre cómo se administran los roles
+  una vez que alguien se unió.
+</p>
+<figure>
+  <img src="../assets/budget-management/10-invite-accept-error.png" alt="Error al aceptar la invitación por un token inválido o vencido" width="960" height="600">
+  <figcaption>Un token inválido o vencido muestra un error en vez de romperse.</figcaption>
+</figure>

@@ -90,21 +90,21 @@ Chain strategy: feature-branch-chain
 > `budget-structure-categories`.
 
 ### Phase 1: `budget-management`
-- [ ] 6.1 Modify `chapters.mjs` — `budget-management.published = true`, `images[]` incl. `09-invite-accept-success.png`, `10-invite-accept-error.png`.
-- [ ] 6.2 Author `content/en/budget-management.html` + `content/es/budget-management.html` — matching headings, incl. invite-acceptance success/error captures.
+- [x] 6.1 Modify `chapters.mjs` — `budget-management.published = true`, `images[]` incl. `09-invite-accept-success.png`, `10-invite-accept-error.png`.
+- [x] 6.2 Author `content/en/budget-management.html` + `content/es/budget-management.html` — matching headings, incl. invite-acceptance success/error captures.
 
 ### Phase 2: `budget-structure-cycles`
-- [ ] 7.1 Modify `chapters.mjs` — `budget-structure-cycles.published = true`, `images[]`.
-- [ ] 7.2 Author `content/{en,es}/budget-structure-cycles.html`.
+- [x] 7.1 Modify `chapters.mjs` — `budget-structure-cycles.published = true`, `images[]`.
+- [x] 7.2 Author `content/{en,es}/budget-structure-cycles.html`.
 
 ### Phase 3: `budget-structure-categories`
-- [ ] 8.1 Modify `chapters.mjs` — `budget-structure-categories.published = true`, `images[]`.
-- [ ] 8.2 Author `content/{en,es}/budget-structure-categories.html`.
+- [x] 8.1 Modify `chapters.mjs` — `budget-structure-categories.published = true`, `images[]`.
+- [x] 8.2 Author `content/{en,es}/budget-structure-categories.html`.
 
 ### Phase 4: Regenerate and verify
-- [ ] 9.1 Run `pnpm guide:build`; commit regenerated output — note: sidebars of ALL previously-committed pages (incl. PR1's `auth`) also regenerate to include the 3 newly-published entries; this is expected and golden.
-- [ ] 9.2 Manual gate: `pnpm guide:check` clean.
-- [ ] 9.3 Manual gate: `pnpm vitest scripts/__tests__/build-guide.spec.ts` — confirm manifest validation still passes for the 3 new chapters.
+- [x] 9.1 Run `pnpm guide:build`; commit regenerated output — note: sidebars of ALL previously-committed pages (incl. PR1's `auth`) also regenerate to include the 3 newly-published entries; this is expected and golden.
+- [x] 9.2 Manual gate: `pnpm guide:check` clean.
+- [x] 9.3 Manual gate: `pnpm vitest scripts/__tests__/build-guide.spec.ts` — confirm manifest validation still passes for the 3 new chapters. (ran via substitute direct-`node` execution — see apply-progress PR2 section for the pnpm blocker.)
 
 ---
 

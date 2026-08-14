@@ -1,0 +1,67 @@
+<h1>Cycles</h1>
+
+<p>
+  A cycle is a bounded time period inside a budget — typically a month or a year — that holds
+  its own periods, budget lines, and execution matrix. Every budget starts with an empty cycle
+  list; this chapter covers creating, editing, activating, deleting, and restoring cycles.
+</p>
+
+<h2>The cycle list</h2>
+<p>
+  Open a budget to see its cycles table: name, start date, end date, number of periods, whether
+  the cycle is the active one, and its alternate currency if one is set. A freshly created budget
+  shows an empty state instead of the table, with a shortcut to create the first cycle.
+</p>
+<figure>
+  <img src="../assets/budget-structure-cycles/01-list-empty.png" alt="Empty cycles list for a freshly created budget" width="960" height="600">
+  <figcaption>The cycles list for a freshly created budget, before any cycle exists.</figcaption>
+</figure>
+
+<h2>Creating a cycle</h2>
+<p>
+  Admins and the owner can create a cycle with a name, a start date, and an end date. A cycle can
+  also set a default currency and, optionally, an alternate currency with an exchange rate —
+  either both fields are filled in together, or both are left empty. Cycle names must be unique
+  within the same budget.
+</p>
+<figure>
+  <img src="../assets/budget-structure-cycles/02-create-form.png" alt="Create cycle form filled with a name and date range" width="960" height="600">
+  <figcaption>The new-cycle modal filled with a name and date range.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/budget-structure-cycles/03-create-success.png" alt="Cycle created successfully and listed" width="960" height="600">
+  <figcaption>Success toast and the new cycle listed.</figcaption>
+</figure>
+
+<h2>Editing a cycle</h2>
+<p>
+  Double-click a cycle's name, start date, or end date to edit it inline, or use the pencil
+  icon to open the full edit form (which also exposes the currency fields). Editing checks the
+  same uniqueness and currency-pairing rules as creation.
+</p>
+<figure>
+  <img src="../assets/budget-structure-cycles/06-edit-success.png" alt="Cycle updated successfully" width="960" height="600">
+  <figcaption>Success toast and the updated name reflected in the list.</figcaption>
+</figure>
+
+<h2>Setting the active cycle</h2>
+<p>
+  Exactly one cycle per budget can be marked active, shown with a green "Active" badge. The
+  active cycle is the one the budget execution matrix opens to by default, so switching it is
+  how you move the whole team's attention from one period to the next.
+</p>
+<figure>
+  <img src="../assets/budget-structure-cycles/07-set-active-success.png" alt="Cycle marked as active" width="960" height="600">
+  <figcaption>The cycle marked Active, driving which cycle budget execution defaults to.</figcaption>
+</figure>
+
+<h2>Deleting and restoring a cycle</h2>
+<p>
+  Deleting a cycle is a soft delete behind a confirmation dialog — its periods, lines, and
+  execution history are preserved, not destroyed. Turning on "Show deleted" reveals removed
+  cycles with a "Deleted" badge and a Restore action.
+</p>
+<figure>
+  <img src="../assets/budget-structure-cycles/09-delete-success.png" alt="Cycle deleted successfully" width="960" height="600">
+  <figcaption>Cycle soft-deleted; success toast shown.</figcaption>
+</figure>

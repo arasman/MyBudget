@@ -1,0 +1,78 @@
+<h1>Budgets</h1>
+
+<p>
+  A budget is the top-level container for everything else in MyBudget: cycles, categories,
+  accounts, and members all belong to exactly one budget. This chapter covers listing your
+  budgets, creating a new one, deleting and restoring a budget, and inviting someone else to
+  join.
+</p>
+
+<h2>Your budget list</h2>
+<p>
+  Signing in takes you to <code>/budgets</code>, listing every budget you belong to along with
+  your role in each one. If you belong to exactly one active budget, MyBudget skips this screen
+  and drops you straight into it — the list only appears when you have more than one, or when
+  you navigate back to it deliberately.
+</p>
+<figure>
+  <img src="../assets/budget-management/01-budget-list.png" alt="Budget selection list" width="960" height="600">
+  <figcaption>The budget switcher, listing every budget you belong to.</figcaption>
+</figure>
+
+<h2>Creating a budget</h2>
+<p>
+  "New Budget" opens a form asking only for a name. Budget names must be unique per account —
+  reusing one you already have is rejected rather than creating a duplicate.
+</p>
+<figure>
+  <img src="../assets/budget-management/02-create-form.png" alt="Create budget form filled with a name" width="960" height="600">
+  <figcaption>The new-budget modal filled with a name.</figcaption>
+</figure>
+<p>
+  Creating a budget makes you its owner and navigates straight into it — an empty cycle list,
+  ready for you to add your first cycle.
+</p>
+<figure>
+  <img src="../assets/budget-management/04-create-success.png" alt="Newly created budget with an empty cycle list" width="960" height="600">
+  <figcaption>After creating a budget: an empty cycles list, name shown in the navbar.</figcaption>
+</figure>
+
+<h2>Renaming and deleting a budget</h2>
+<p>
+  Owners and admins can rename a budget with a double-click on its name in the list, or the
+  pencil icon. Only the owner can delete a budget — deletion is a soft delete behind a
+  confirmation dialog, so the budget disappears from the active list but is not destroyed.
+</p>
+<figure>
+  <img src="../assets/budget-management/06-delete-success.png" alt="Budget removed from the active list after deletion" width="960" height="600">
+  <figcaption>The deleted budget drops out of the active list.</figcaption>
+</figure>
+<p>
+  Turning on "Show deleted" reveals soft-deleted budgets with a "Deleted" badge and a Restore
+  action, so an accidental delete is always recoverable.
+</p>
+
+<h2>Inviting someone to a budget</h2>
+<p>
+  Owners and admins can invite another person from the list's invite icon. The invite form asks
+  for an email address and a role (Admin, Operator, or Read-only — a budget cannot be shared with
+  someone as a second Owner). MyBudget rejects the invite up front if that person is already a
+  member, or if the inviter is not permitted to invite for that budget.
+</p>
+<p>
+  The invitee receives an email with an accept link. If they already have a MyBudget session,
+  accepting adds the budget to their list immediately and shows a success message.
+</p>
+<figure>
+  <img src="../assets/budget-management/09-invite-accept-success.png" alt="Invitation accepted successfully" width="960" height="600">
+  <figcaption>A valid invite token grants membership and shows a success message.</figcaption>
+</figure>
+<p>
+  An expired link, an already-used link, or a link opened by the wrong email address shows an
+  error instead of a crash — the invitee can ask the budget's owner or an admin to send a new
+  one. The Members chapter covers how roles are managed once someone has joined.
+</p>
+<figure>
+  <img src="../assets/budget-management/10-invite-accept-error.png" alt="Invitation acceptance error for an invalid or expired token" width="960" height="600">
+  <figcaption>An invalid or expired token shows an error instead of a crash.</figcaption>
+</figure>

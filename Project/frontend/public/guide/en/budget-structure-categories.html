@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Categories · MyBudget User Guide</title>
+    <link rel="stylesheet" href="../assets/guide.css" />
+    <link rel="alternate" hreflang="es" href="../es/budget-structure-categories.html" />
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+    <div class="layout">
+      <nav class="sidebar" aria-label="Guide navigation">
+        <a class="brand" href="./index.html">MyBudget User Guide</a>
+        <p class="locale-toggle">
+          <a href="../es/budget-structure-categories.html" hreflang="es" lang="es">Español</a>
+        </p>
+        <ol>
+      <li><a href="auth.html">Account &amp; sign-in</a></li>
+      <li><a href="budget-management.html">Budgets</a></li>
+      <li><a href="budget-structure-cycles.html">Cycles</a></li>
+      <li><span aria-current="page">Categories</span></li>
+      <li><span class="disabled">Periods &amp; budget lines</span></li>
+      <li><span class="disabled">Matrix &amp; execution</span></li>
+      <li><span class="disabled">Bank accounts</span></li>
+      <li><span class="disabled">Current situation</span></li>
+      <li><span class="disabled">Dashboard</span></li>
+      <li><span class="disabled">Members</span></li>
+        </ol>
+        <p class="back"><a href="/">Back to the app</a></p>
+      </nav>
+      <main id="content" class="content">
+        <h1>Categories</h1>
+
+<p>
+  Categories are how spending gets classified inside a budget, organized into groups (for
+  example "Household" or "Transport") that each hold one or more categories. Groups and
+  categories are shared across every cycle in the budget — you set them up once, then budget
+  lines and execution reference them cycle after cycle.
+</p>
+
+<h2>The category tree</h2>
+<p>
+  A freshly created budget shows an empty state instead of the tree, with a shortcut to create
+  the first group. Only admins and the owner can create, edit, delete, or reorder groups and
+  categories; everyone else sees the same tree read-only, without the drag handles or action
+  icons.
+</p>
+<figure>
+  <img src="../assets/budget-structure-categories/01-list-empty.png" alt="Empty categories tree for a freshly created budget" width="960" height="600">
+  <figcaption>The categories tab for a freshly created budget, before any group exists.</figcaption>
+</figure>
+
+<h2>Creating a group</h2>
+<p>
+  "New group" asks only for a name; group names must be unique within the budget.
+</p>
+<figure>
+  <img src="../assets/budget-structure-categories/02-create-group-form.png" alt="Create group form filled with a name" width="960" height="600">
+  <figcaption>The new-group modal filled with a name.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/budget-structure-categories/03-create-group-success.png" alt="Group created successfully and listed" width="960" height="600">
+  <figcaption>Success toast and the new group listed.</figcaption>
+</figure>
+
+<h2>Creating a category</h2>
+<p>
+  "+ Create category" inside a group opens the same kind of form, nested under that group.
+  Category names must be unique within their group, but the same name can be reused in a
+  different group.
+</p>
+<figure>
+  <img src="../assets/budget-structure-categories/05-create-category-form.png" alt="Create category form filled, nested under a group" width="960" height="600">
+  <figcaption>The new-category modal, filled, nested under the Household group.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/budget-structure-categories/06-create-category-success.png" alt="Category created successfully and listed under its group" width="960" height="600">
+  <figcaption>Success toast and the new category listed under its group.</figcaption>
+</figure>
+
+<h2>Reordering, renaming, deleting, and restoring</h2>
+<p>
+  Admins and the owner can drag groups and categories by their handle to reorder them, or
+  double-click a name to rename it inline. Deleting a group or a category is a soft delete behind
+  a confirmation dialog — deleting a group also removes the categories inside it. Turning on
+  "Show deleted" reveals removed groups and categories with a "Deleted" badge and a Restore
+  action.
+</p>
+<figure>
+  <img src="../assets/budget-structure-categories/10-restore-category-success.png" alt="Category restored successfully" width="960" height="600">
+  <figcaption>The category is active again after restore.</figcaption>
+</figure>
+
+      </main>
+    </div>
+  </body>
+</html>
