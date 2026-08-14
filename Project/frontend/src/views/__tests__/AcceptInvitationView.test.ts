@@ -6,10 +6,11 @@ import { createI18n } from 'vue-i18n'
 import AcceptInvitationView from '@/views/AcceptInvitationView.vue'
 
 // Hoist mutable state so vi.mock factories can reference it safely
-const { mockPost, mockAuth } = vi.hoisted(() => {
+const { mockPost, mockAuth, mockFetchMe } = vi.hoisted(() => {
   const mockPost = vi.fn()
   const mockAuth = { isAuthenticated: true }
-  return { mockPost, mockAuth }
+  const mockFetchMe = vi.fn().mockResolvedValue(undefined)
+  return { mockPost, mockAuth, mockFetchMe }
 })
 
 vi.mock('@/api/axios', () => ({
@@ -19,6 +20,7 @@ vi.mock('@/api/axios', () => ({
 vi.mock('@/stores/auth.store', () => ({
   useAuthStore: () => ({
     get isAuthenticated() { return mockAuth.isAuthenticated },
+    fetchMe: mockFetchMe,
   }),
 }))
 
@@ -80,6 +82,18 @@ describe('AcceptInvitationView', () => {
       '/api/auth/invitations/accept',
       { token: 'valid-token' },
     )
+  })
+
+  it('refreshes the auth store profile after a successful accept, so the new membership/role is available immediately', async () => {
+    mockPost.mockResolvedValue({ data: { budgetId: 'budget-uuid', role: 'admin' } })
+
+    const { globals } = await setup('/invitations/accept?token=valid-token')
+    render(AcceptInvitationView, globals)
+
+    await waitFor(() => {
+      expect(screen.getByText('You have successfully joined the budget.')).toBeTruthy()
+    })
+    expect(mockFetchMe).toHaveBeenCalled()
   })
 
   it('shows expired error when server returns AUTH_INVITATION_EXPIRED', async () => {

@@ -36,6 +36,7 @@ onMounted(async () => {
       { token },
     )
     acceptedBudgetId.value = data.budgetId
+    await authStore.fetchMe()
     status.value = 'success'
   } catch (err: unknown) {
     const axiosError = err as { response?: { status: number; data?: { detail?: string } } }
