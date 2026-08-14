@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   renderSidebar,
   localeToggleHref,
+  buildPageTitle,
+  buildAtomically,
   fillTemplate,
   validateAssetPath,
   validateManifest,
@@ -47,6 +49,63 @@ describe('build-guide — localeToggleHref', () => {
   it('builds a same-filename sibling-locale href', () => {
     expect(localeToggleHref('en', 'dashboard.html')).toBe('../es/dashboard.html')
     expect(localeToggleHref('es', 'dashboard.html')).toBe('../en/dashboard.html')
+  })
+})
+
+describe('build-guide — buildPageTitle (no self-duplicated <title> on index pages)', () => {
+  it('composes "chapter · guide" when a chapter title is given', () => {
+    expect(buildPageTitle({ guideTitle: 'MyBudget User Guide', chapterTitle: 'Account &amp; sign-in' })).toBe(
+      'Account &amp; sign-in · MyBudget User Guide',
+    )
+  })
+
+  it('is just the guide title alone for the index page (no chapter title) — never self-duplicated', () => {
+    expect(buildPageTitle({ guideTitle: 'MyBudget User Guide' })).toBe('MyBudget User Guide')
+    expect(buildPageTitle({ guideTitle: 'MyBudget User Guide' })).not.toBe(
+      'MyBudget User Guide · MyBudget User Guide',
+    )
+  })
+})
+
+describe('build-guide — buildAtomically (mid-build failure never touches outDir)', () => {
+  it('does not copy into outDir when the build step throws, leaving outDir untouched', () => {
+    const copyInto = vi.fn()
+    const removeDir = vi.fn()
+
+    expect(() =>
+      buildAtomically({
+        outDir: '/fake/out',
+        mkTempDir: () => '/fake/tmp',
+        build: () => {
+          throw new Error('boom mid-build')
+        },
+        copyInto,
+        removeDir,
+      }),
+    ).toThrow(/boom mid-build/)
+
+    expect(copyInto).not.toHaveBeenCalled()
+    expect(removeDir).toHaveBeenCalledWith('/fake/tmp')
+  })
+
+  it('copies the scratch build into outDir only after a full successful build', () => {
+    const copyInto = vi.fn()
+    const removeDir = vi.fn()
+
+    const published = buildAtomically({
+      outDir: '/fake/out',
+      mkTempDir: () => '/fake/tmp',
+      build: (dir: string) => {
+        expect(dir).toBe('/fake/tmp')
+        return ['auth']
+      },
+      copyInto,
+      removeDir,
+    })
+
+    expect(published).toEqual(['auth'])
+    expect(copyInto).toHaveBeenCalledWith('/fake/tmp', '/fake/out')
+    expect(removeDir).toHaveBeenCalledWith('/fake/tmp')
   })
 })
 

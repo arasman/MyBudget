@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{{CHAPTER_TITLE}} · {{GUIDE_TITLE}}</title>
+    <title>{{PAGE_TITLE}}</title>
     <link rel="stylesheet" href="../assets/guide.css" />
-    <link rel="alternate" hreflang="{{OTHER_LANG}}" href="../{{OTHER_LANG}}/{{FILENAME}}" />
+    <link rel="alternate" hreflang="{{OTHER_LANG}}" href="{{LOCALE_TOGGLE_HREF}}" />
   </head>
   <body>
     <a class="skip" href="#content">{{SKIP_LABEL}}</a>
@@ -13,7 +13,7 @@
       <nav class="sidebar" aria-label="{{NAV_LABEL}}">
         <a class="brand" href="./index.html">{{GUIDE_TITLE}}</a>
         <p class="locale-toggle">
-          <a href="../{{OTHER_LANG}}/{{FILENAME}}" hreflang="{{OTHER_LANG}}" lang="{{OTHER_LANG}}">{{OTHER_LANG_LABEL}}</a>
+          <a href="{{LOCALE_TOGGLE_HREF}}" hreflang="{{OTHER_LANG}}" lang="{{OTHER_LANG}}">{{OTHER_LANG_LABEL}}</a>
         </p>
         <ol>
 {{SIDEBAR}}

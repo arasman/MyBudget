@@ -68,6 +68,26 @@ export function parseArgs(argv) {
 }
 
 /**
+ * Pure — no I/O. Rejects a resolved path containing shell metacharacters.
+ *
+ * `main()` spawns `npx` via `execFileSync(..., { shell: true })`. Removing
+ * `shell: true` breaks on Windows: `npx` resolves to `npx.cmd`, and Node's
+ * child_process cannot invoke a `.cmd` file directly without a shell —
+ * confirmed locally (`execFileSync('npx', ..., { stdio: 'pipe' })` fails
+ * ENOENT for `npx.cmd`; the same call with `shell: true` succeeds). Because
+ * `shell: true` re-parses the joined argv as a single shell command string
+ * with no per-argument escaping (CWE-78), `resolveOptions` defensively
+ * rejects `--input`/`--out-dir` values containing shell metacharacters
+ * before they ever reach `buildMermaidArgv`/`execFileSync`.
+ */
+export function assertNoShellMetacharacters(value, label) {
+  const unsafe = /[;&|`$(){}<>"'\n\r]/
+  if (unsafe.test(value)) {
+    throw new Error(`${label} contains characters unsafe for shell execution: "${value}"`)
+  }
+}
+
+/**
  * Pure — no I/O. Applies defaults identical to the pre-generalization hardcoded
  * constants. Relative paths resolve against `cwd` (default `process.cwd()`), not
  * `__dirname` — the *defaults* still resolve against the script location so
@@ -76,6 +96,8 @@ export function parseArgs(argv) {
 export function resolveOptions(args, { cwd = process.cwd() } = {}) {
   const input = args.input ? path.resolve(cwd, args.input) : DEFAULT_INPUT
   const outDir = args.outDir ? path.resolve(cwd, args.outDir) : DEFAULT_OUT_DIR
+  assertNoShellMetacharacters(input, '--input')
+  assertNoShellMetacharacters(outDir, '--out-dir')
   const format = args.format === 'svg' ? 'svg' : 'png'
   const width = args.width ? Number(args.width) : 1400
   const scale = args.scale ? Number(args.scale) : 2
@@ -141,6 +163,11 @@ function main() {
     fs.writeFileSync(mmdPath, code)
 
     console.log(`Rendering ${num}-${slug}.${ext} ...`)
+    // `shell: true` is required on Windows, where `npx` resolves to `npx.cmd` and
+    // Node's child_process cannot exec a `.cmd` file without a shell (see
+    // `assertNoShellMetacharacters` above). `options.input`/`options.outDir` are
+    // already validated by `resolveOptions`; `mmdPath`/`outPath`/`configPath` are
+    // derived from `TMP_DIR` (fixed) and `slugify()` (restricted to [a-z0-9-]).
     execFileSync(
       'npx',
       ['--yes', '@mermaid-js/mermaid-cli', ...buildMermaidArgv(options, mmdPath, outPath, configPath)],

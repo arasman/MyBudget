@@ -77,3 +77,29 @@ describe('render-diagrams — resolveOptions cwd resolution', () => {
     expect(options.outDir).toBe(path.resolve(cwd, 'out'))
   })
 })
+
+// The `npx` subprocess call is still made with `{ shell: true }` (CWE-78 risk if
+// left unvalidated): on Windows, `npx` resolves to `npx.cmd`, and Node's
+// child_process cannot invoke a `.cmd` file without going through a shell —
+// confirmed locally: `execFileSync('npx', ..., { shell: true !== true })` fails
+// with ENOENT for `npx.cmd`, while `{ shell: true }` succeeds. Since the shell
+// re-parses the joined argv as one command string, `resolveOptions` defensively
+// rejects `--input`/`--out-dir` values containing shell metacharacters instead.
+describe('render-diagrams — shell metacharacter rejection (CWE-78 guard, since npx requires shell:true on Windows)', () => {
+  it('rejects a --out-dir value containing shell metacharacters before any exec', () => {
+    expect(() => resolveOptions({ outDir: 'out; rm -rf /' })).toThrow(/unsafe/i)
+  })
+
+  it('rejects a --input value containing shell metacharacters before any exec', () => {
+    expect(() => resolveOptions({ input: 'a.md`whoami`' })).toThrow(/unsafe/i)
+  })
+
+  it('rejects command-substitution and pipe characters too', () => {
+    expect(() => resolveOptions({ outDir: 'out$(whoami)' })).toThrow(/unsafe/i)
+    expect(() => resolveOptions({ outDir: 'out | cat /etc/passwd' })).toThrow(/unsafe/i)
+  })
+
+  it('accepts an ordinary path containing spaces (not a shell metacharacter)', () => {
+    expect(() => resolveOptions({ outDir: 'my diagrams' })).not.toThrow()
+  })
+})

@@ -52,6 +52,15 @@ export function localeToggleHref(locale, filename) {
   return `../${OTHER_LOCALE[locale]}/${filename}`
 }
 
+/**
+ * Composes the `<title>` text. The index page has no distinct chapter title
+ * (`chapterTitle` omitted), so it renders the guide title exactly once instead
+ * of self-duplicating ("MyBudget User Guide · MyBudget User Guide").
+ */
+export function buildPageTitle({ guideTitle, chapterTitle = null }) {
+  return chapterTitle ? `${chapterTitle} · ${guideTitle}` : guideTitle
+}
+
 /** Replaces every {{KEY}} token; throws on any leftover unresolved placeholder. */
 export function fillTemplate(template, values) {
   let out = template
@@ -172,13 +181,15 @@ function buildChapterPage({ chapter, locale, template }) {
   const filename = `${chapter.slug}.html`
   const otherLocale = OTHER_LOCALE[locale]
   const body = readFragmentFs(locale, chapter.slug)
+  const guideTitle = escapeHtml(GUIDE_TITLE[locale])
+  const chapterTitle = escapeHtml((chapter.title ?? chapter.label)[locale])
   const html = fillTemplate(template, {
     LANG: locale,
     OTHER_LANG: otherLocale,
     OTHER_LANG_LABEL: escapeHtml(LOCALE_LABEL[otherLocale]),
-    FILENAME: filename,
-    GUIDE_TITLE: escapeHtml(GUIDE_TITLE[locale]),
-    CHAPTER_TITLE: escapeHtml((chapter.title ?? chapter.label)[locale]),
+    LOCALE_TOGGLE_HREF: localeToggleHref(locale, filename),
+    GUIDE_TITLE: guideTitle,
+    PAGE_TITLE: buildPageTitle({ guideTitle, chapterTitle }),
     NAV_LABEL: escapeHtml(UI_STRINGS[locale].navLabel),
     SKIP_LABEL: escapeHtml(UI_STRINGS[locale].skipLabel),
     BACK_TO_APP: escapeHtml(UI_STRINGS[locale].backToApp),
@@ -191,8 +202,9 @@ function buildChapterPage({ chapter, locale, template }) {
 function buildIndexPage({ locale, template, indexBodyTemplate }) {
   const otherLocale = OTHER_LOCALE[locale]
   const chapterList = renderSidebar({ chapters: CHAPTERS, locale, currentSlug: null })
+  const guideTitle = escapeHtml(GUIDE_TITLE[locale])
   const body = fillTemplate(indexBodyTemplate, {
-    GUIDE_TITLE: escapeHtml(GUIDE_TITLE[locale]),
+    GUIDE_TITLE: guideTitle,
     INDEX_INTRO: escapeHtml(UI_STRINGS[locale].indexIntro),
     CHAPTER_LIST: chapterList,
   })
@@ -200,9 +212,10 @@ function buildIndexPage({ locale, template, indexBodyTemplate }) {
     LANG: locale,
     OTHER_LANG: otherLocale,
     OTHER_LANG_LABEL: escapeHtml(LOCALE_LABEL[otherLocale]),
-    FILENAME: 'index.html',
-    GUIDE_TITLE: escapeHtml(GUIDE_TITLE[locale]),
-    CHAPTER_TITLE: escapeHtml(GUIDE_TITLE[locale]),
+    LOCALE_TOGGLE_HREF: localeToggleHref(locale, 'index.html'),
+    GUIDE_TITLE: guideTitle,
+    // No `chapterTitle` — the index page renders the guide title exactly once (Fix 1).
+    PAGE_TITLE: buildPageTitle({ guideTitle }),
     NAV_LABEL: escapeHtml(UI_STRINGS[locale].navLabel),
     SKIP_LABEL: escapeHtml(UI_STRINGS[locale].skipLabel),
     BACK_TO_APP: escapeHtml(UI_STRINGS[locale].backToApp),
@@ -259,6 +272,26 @@ function collectFiles(dir, excludeSet) {
   return out.sort()
 }
 
+/**
+ * Builds into a scratch directory first and only copies into `outDir` after a
+ * full successful build — mirrors `runCheck`'s try/finally scratch-dir shape so
+ * a mid-build failure (thrown from `build`) never touches `outDir` at all,
+ * instead of `buildToDir` writing straight into the committed directory and
+ * potentially leaving it partially overwritten. `mkTempDir`/`build`/`copyInto`/
+ * `removeDir` are injected so this orchestration is unit-testable without
+ * touching the real `public/guide/**` tree (design.md Testing Strategy).
+ */
+export function buildAtomically({ outDir, mkTempDir, build, copyInto, removeDir }) {
+  const tmpDir = mkTempDir()
+  try {
+    const result = build(tmpDir)
+    copyInto(tmpDir, outDir)
+    return result
+  } finally {
+    removeDir(tmpDir)
+  }
+}
+
 /** Regenerate-and-diff: compares two guide output trees, excluding hand-written assets. */
 export function diffDirs(dirA, dirB, { exclude = [] } = {}) {
   const excludeSet = new Set(exclude)
@@ -294,7 +327,16 @@ function runBuild() {
     process.exit(1)
   }
 
-  const published = buildToDir(OUT_DIR)
+  const published = buildAtomically({
+    outDir: OUT_DIR,
+    mkTempDir: () => fs.mkdtempSync(path.join(os.tmpdir(), 'guide-build-')),
+    build: buildToDir,
+    // `fs.cpSync` merges the scratch build into `OUT_DIR`, overwriting only the
+    // generated files — hand-written assets not produced by `buildToDir` (e.g.
+    // `assets/guide.css`) are left untouched, same as `runCheck`'s diff exclude.
+    copyInto: (tmp, out) => fs.cpSync(tmp, out, { recursive: true }),
+    removeDir: (dir) => fs.rmSync(dir, { recursive: true, force: true }),
+  })
   console.log(`build-guide: wrote ${published.length} chapter(s) x ${LOCALES.length} locale(s) + index pages.`)
 }
 
