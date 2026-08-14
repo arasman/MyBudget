@@ -1,10 +1,37 @@
 # Apply Progress: user-guide-docs (PR1 of 5)
 
-## Status: PR1 IMPLEMENTED — UNCOMMITTED, pending user approval
+## Status: PR1 DONE — implemented, tested (real), committed, reviewed
 
 Chain: `feat/user-guide-docs` (tracker) ← PR1 `feat/user-guide-docs-pr1` (current) ← PR2 ← PR3 ← PR4 ← PR5.
 Only PR1's scope (guide infra + `auth` pilot chapter) was implemented in this batch, per explicit
 instruction. PR2–PR5 tasks were not touched.
+
+**Commits on `feat/user-guide-docs-pr1`:**
+- `1e2d45b` — PR1 implementation (infra + `auth` chapter), 28 files, ~1185 authored lines
+  (accepted as `size:exception` against the 800-line budget — user-approved, infra-heavy first PR).
+- `87adfcb` — fixes for the 4 WARNING findings from the native `gentle-ai` 4R review (title dedup,
+  shell-metacharacter guard in `render-diagrams.mjs`, atomic write in `guide:build`, wired
+  `localeToggleHref` into production code paths). 7 files, +168/-14.
+
+**Verification (real, not substitute):** the human user ran both commands directly in their own
+terminal (the agent's Bash tool hits a Windows pnpm-store/symlink resolution issue — see
+Infrastructure Blocker below, still present):
+- `pnpm vitest run scripts/__tests__/build-guide.spec.ts scripts/__tests__/render-diagrams.spec.ts`
+  → **30/30 passed** (post-fix; was 22/22 pre-fix).
+- `pnpm run build` → **succeeded**, `dist/guide/**` present, no Caddyfile/compose touched.
+
+**Native code review:** `gentle-ai review` ran full 4R (risk/resilience/readability/reliability,
+tier `high`, 2623 changed lines) against commit `1e2d45b` — lineage `review-d8d9a16d3721d4ab`,
+**approved** (all 4 findings WARNING-severity, none blocking), receipt validated at the
+`pre-commit` gate (`allow`). Findings were then fixed in `87adfcb`. Formally re-reviewing that fix
+via the native recovery mechanism would have re-run all 4 lenses against the *entire* PR1+fix diff
+again (its `recover` operation re-diffs against the original base, not incrementally) — the user
+judged that disproportionate for an already-tested, already-approved-once fix and explicitly chose
+to skip it. **`87adfcb` therefore has no separate formal review receipt** — its correctness rests
+on the real 30/30 test run + real build + the original 4R review of the code it's patching + user
+sign-off. The abandoned recovery attempts (`review-user-guide-docs-pr1-fix`,
+`review-user-guide-docs-pr1-fix2`) are quarantined in `.git/gentle-ai/review-transactions/quarantine/`,
+harmless.
 
 ---
 
@@ -152,8 +179,8 @@ this change's code:
 - PR5: `members` chapter + `guide-links.spec.ts` integration walker + locale-aware landing link
 
 ## Status
-20/20 PR1 tasks complete (5.4 and 5.5 partially/not verified due to the environment blocker
-documented above — code and generated output are correct and manually cross-checked, but the
-literal `pnpm build` / real `npx mermaid-cli` commands could not be executed in this session).
-**Not committed** — all changes are uncommitted working-tree modifications, per explicit
-instruction, awaiting user review and approval.
+20/20 PR1 tasks complete. Committed (`1e2d45b`, then fixes in `87adfcb`), tested for real
+(30/30 vitest, user-run), built for real (`pnpm run build` clean), and reviewed (native 4R,
+approved). Ready to move on to PR2. `render-diagrams.mjs`'s real `npx mermaid-cli` subprocess
+still hasn't been spawned end-to-end (only its argv-construction is unit-tested) — worth a real
+`pnpm render-diagrams` run whenever a guide chapter actually needs a diagram (none do yet).
