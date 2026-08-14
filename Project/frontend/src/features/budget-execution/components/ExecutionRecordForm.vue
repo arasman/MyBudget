@@ -176,6 +176,7 @@
         {{ t('budgetExecution.form.cancel') }}
       </button>
       <button
+        v-if="isOperator"
         type="submit"
         data-testid="execution-form-submit"
         class="btn btn-primary btn-sm"
@@ -200,6 +201,7 @@ import type { ExecutionRecordDto } from '../types'
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useToastStore } from '@/stores/toast.store'
+import { useRoleGate } from '@/features/budget-structure/composables/useRoleGate'
 import { extractApiErrorCode } from '@/features/budget-structure/utils/apiError'
 
 const props = defineProps<{
@@ -218,6 +220,7 @@ const { t } = useI18n()
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
 const toastStore = useToastStore()
+const { isOperator } = useRoleGate(props.budgetId)
 
 const submitting = ref(false)
 

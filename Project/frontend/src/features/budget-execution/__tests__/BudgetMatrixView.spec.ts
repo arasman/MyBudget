@@ -1,6 +1,7 @@
 // REQ-TOAST-MATRIX-GROUP-CREATE, REQ-TOAST-MATRIX-CAT-CREATE, REQ-TOAST-MATRIX-LINE-CREATE
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { computed } from 'vue'
 
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({ t: (k: string) => k }),
@@ -52,6 +53,15 @@ const { mockToastPush, mockMatrixStore, mockStructureStore } = vi.hoisted(() => 
 
 vi.mock('@/stores/toast.store', () => ({
   useToastStore: () => ({ push: mockToastPush }),
+}))
+
+const roleGateState: { isAdmin: boolean } = { isAdmin: true }
+
+vi.mock('@/features/budget-structure/composables/useRoleGate', () => ({
+  useRoleGate: () => ({
+    isAdmin: computed(() => roleGateState.isAdmin),
+    isOperator: computed(() => roleGateState.isAdmin),
+  }),
 }))
 
 vi.mock('../store', () => ({
@@ -133,6 +143,7 @@ describe('BudgetMatrixView — add group/category/line toasts', () => {
     mockStructureStore.categoryGroups = [
       { id: 'group-1', name: 'Group 1', categories: [], deletedAt: null },
     ] as unknown[]
+    roleGateState.isAdmin = true
   })
 
   it('confirmAddGroup fires toast.push with createGroupSuccess on success', async () => {
@@ -245,6 +256,21 @@ describe('BudgetMatrixView — add group/category/line toasts', () => {
         type: 'success',
         title: 'budgetMatrix.rows.createLineSuccess',
       })
+    })
+  })
+
+  describe('role gating — ReadOnly users', () => {
+    it('hides the "add group" trigger when isAdmin=false', async () => {
+      roleGateState.isAdmin = false
+      renderView()
+      await waitFor(() => expect(screen.queryByTestId('add-group-row')).toBeNull())
+      expect(screen.queryByTestId('add-group-btn')).toBeNull()
+    })
+
+    it('shows the "add group" trigger when isAdmin=true', async () => {
+      roleGateState.isAdmin = true
+      renderView()
+      await waitFor(() => expect(screen.getByTestId('add-group-btn')).toBeTruthy())
     })
   })
 })

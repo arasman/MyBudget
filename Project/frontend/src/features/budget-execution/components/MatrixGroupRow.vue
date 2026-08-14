@@ -9,7 +9,7 @@
       <div class="flex items-center gap-1">
         <!-- Drag handle (only non-deleted) -->
         <span
-          v-if="!group.deletedAt"
+          v-if="!group.deletedAt && isAdmin"
           class="group-drag-handle cursor-grab text-base-content/30 hover:text-base-content shrink-0 select-none"
           title="Drag to reorder"
         >&#8597;</span>
@@ -122,8 +122,8 @@
             @dblclick="startEdit"
           >{{ group.name }}</span>
 
-          <!-- Reorder buttons (only non-deleted) -->
-          <template v-if="!group.deletedAt">
+          <!-- Reorder buttons (only non-deleted, admin only) -->
+          <template v-if="!group.deletedAt && isAdmin">
             <button
               type="button"
               class="btn btn-xs btn-ghost btn-square"
@@ -162,9 +162,9 @@
             </button>
           </template>
 
-          <!-- Restore button (only deleted + showDeleted mode) -->
+          <!-- Restore button (only deleted + showDeleted mode, admin only) -->
           <button
-            v-if="group.deletedAt && matrixStore.showDeleted"
+            v-if="group.deletedAt && matrixStore.showDeleted && isAdmin"
             type="button"
             class="btn btn-xs btn-ghost btn-square text-success"
             :title="t('budgetMatrix.rows.restore')"
@@ -216,6 +216,7 @@ import { ChevronDown, ChevronRight, ArrowUp, ArrowDown, Plus, Trash2, RotateCcw,
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useToastStore } from '@/stores/toast.store'
+import { useRoleGate } from '@/features/budget-structure/composables/useRoleGate'
 import { useCurrencyDisplay } from '../composables/useCurrencyDisplay'
 import type { CategoryGroupResponse, PeriodSummary } from '@/features/budget-structure/types'
 
@@ -239,6 +240,7 @@ const { t } = useI18n()
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
 const toast = useToastStore()
+const { isAdmin } = useRoleGate(props.budgetId)
 const { formatAmount } = useCurrencyDisplay(matrixStore)
 
 const currencySymbol = computed<string>(() =>
@@ -258,7 +260,7 @@ const confirmingRestore = ref(false)
 const acting = ref(false)
 
 function startEdit(): void {
-  if (props.group.deletedAt) return
+  if (props.group.deletedAt || !isAdmin.value) return
   window.getSelection()?.removeAllRanges()
   editName.value = props.group.name
   editing.value = true

@@ -306,6 +306,7 @@
                 :colspan="1 + visiblePeriods.length * 3"
               >
                 <button
+                  v-if="isAdmin"
                   type="button"
                   class="btn btn-xs btn-ghost gap-1 text-base-content/50"
                   data-testid="add-group-btn"
@@ -357,6 +358,7 @@ import { useI18n } from 'vue-i18n'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useBudgetMatrixStore } from '../store'
 import { useToastStore } from '@/stores/toast.store'
+import { useRoleGate } from '@/features/budget-structure/composables/useRoleGate'
 import { useMatrixNavigation } from '../composables/useMatrixNavigation'
 import BudgetTabs from '@/features/budget-structure/components/BudgetTabs.vue'
 import MatrixPeriodHeader from '../components/MatrixPeriodHeader.vue'
@@ -381,6 +383,7 @@ const cycleId = computed(() => route.params.cycleId as string)
 const structureStore = useBudgetStructureStore()
 const matrixStore = useBudgetMatrixStore()
 const toast = useToastStore()
+const { isAdmin } = useRoleGate(budgetId)
 const { visiblePeriods, canGoPrev, canGoNext, goPrev, goNext } = useMatrixNavigation(matrixStore)
 
 // Non-blocking error for non-critical operations (reorder, etc.)
