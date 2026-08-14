@@ -331,11 +331,18 @@
         "joinedAt": "Joined"
       },
       "actions": {
-        "changeRole": "Change role"
+        "changeRole": "Change role",
+        "remove": "Remove",
+        "restore": "Restore"
       },
+      "showDeleted": "Show deleted",
+      "removeConfirmTitle": "Remove Member",
+      "removeConfirm": "Are you sure you want to remove this member? They will lose access to this budget.",
       "confirmations": {
         "roleChangeSuccess": "Member role updated successfully",
-        "roleChangeError": "Could not update member role"
+        "roleChangeError": "Could not update member role",
+        "removeSuccess": "Member removed successfully",
+        "restoreSuccess": "Member restored successfully"
       }
     }
   },

@@ -110,15 +110,37 @@ Each unit is an independently revertible PR; reverting a later unit never breaks
 
 ## Success Criteria
 
-- [ ] Clicking a second live invitation token for an email that is already a member returns a graceful error, not a 500.
-- [ ] ReadOnly members render a correctly translated role label in EN and ES everywhere the role is shown.
-- [ ] An owner or admin can open a Members tab for the active budget and see every current member with their role.
-- [ ] An owner can change any non-Owner member's role; an admin can change only Operator/ReadOnly members' roles; nobody can change their own; the Owner row offers no role control.
-- [ ] Revoking a member's access removes their ability to reach any `budget:*`-gated endpoint for that budget within one request — not after cache expiry.
-- [ ] Revoked members are hidden by default, visible under "show deleted", and restorable.
-- [ ] A revoked member can be re-invited and accept successfully, without a unique-index error.
-- [ ] All existing `budget:*`-gated endpoints keep working unchanged after the `BudgetAuthorizationHandler` edit.
-- [ ] All four test layers green; every new UI string present in `en.json` and `es.json`.
+- [x] Clicking a second live invitation token for an email that is already a member returns a graceful error, not a 500. (WU0, PR1 — `AUTH_ALREADY_MEMBER` 409, `AcceptInvitationTests.ActiveMembershipAlreadyExists_SecondValidToken_Returns409_NoWrites`.)
+- [x] ReadOnly members render a correctly translated role label in EN and ES everywhere the role is shown. (WU0, PR1 — `BudgetRoleStrings.ToApiString()`.)
+- [x] An owner or admin can open a Members tab for the active budget and see every current member with their role. (WU1, PR2a/PR2b — `ListBudgetMembers` + `BudgetMembersView.vue`.)
+- [x] An owner can change any non-Owner member's role; an admin can change only Operator/ReadOnly members' roles; nobody can change their own; the Owner row offers no role control. (WU1, PR2a/PR2b — `MemberActionPolicy` + `UpdateMemberRole`.)
+- [x] Revoking a member's access removes their ability to reach any `budget:*`-gated endpoint for that budget within one request — not after cache expiry. (WU2, PR3 — `RemoveBudgetMemberTests.RemovedMember_LosesAccessImmediately_NotAfterCacheTtl`, `BudgetAuthorizationTests.SoftDeletedMembership_ResolvesAsNoMembership_Returns403`.)
+- [x] Revoked members are hidden by default, visible under "show deleted", and restorable. (WU2, PR3 — `ListBudgetMembers` `includeDeleted` param + `BudgetMembersView.vue` show-deleted toggle/Restore.)
+- [x] A revoked member can be re-invited and accept successfully, without a unique-index error. (WU2, PR3 — `AcceptInvitationTests.RevokeThenReInviteThenAccept_FullFlow_Returns200WithNewRole`.)
+- [x] All existing `budget:*`-gated endpoints keep working unchanged after the `BudgetAuthorizationHandler` edit. (WU2, PR3 — regression sweep: `ListCycles`/`ListBudgetLines` (`budget:read`), `CreateCycle` (`budget:admin`), `DeleteBudget`/`RestoreBudget` (`budget:owner`), all active-membership scenarios pass unchanged.)
+- [x] All four test layers green; every new UI string present in `en.json` and `es.json`. (Unit + integration + frontend green with real evidence below; E2E written, execution pending the user/CI's Docker stack.)
+
+### Evidence (as of PR3 completion, 2026-08-13)
+
+| Layer | Command | Result |
+|---|---|---|
+| Backend unit | `dotnet test tests/MyBudget.Features.Tests -c Release` | 540/540 passed |
+| Backend integration | `dotnet test tests/MyBudget.Integration.Tests -c Release` | 314/317 passed, 3 skipped (pre-existing `BudgetLineRevisionTests` concurrency tests, unrelated to this change), 0 failed |
+| Frontend unit/component | `pnpm vitest run` | 785/785 passed, 89 files |
+| Frontend build | `pnpm run build` (`vue-tsc -b && vite build`) | 0 TS errors, built in 1.95s |
+| Frontend lint | `pnpm run lint` (`eslint src`) | exit 0 |
+| E2E | `pnpm exec playwright test -- budget-structure-members` | Written (13.1 from PR2b + 22.1/22.2 from PR3), **not executed** — no Docker/E2E stack in this environment; requires the user/CI to run against the full stack |
+
+**Actual changed-line totals per PR** (authored additions + deletions, excluding EF-generated `*.Designer.cs`/model-snapshot machinery per the review-workload guard's golden exclusion):
+
+| PR | Forecast | Actual |
+|---|---|---|
+| PR1 (WU0) | ~150 | ~180 (per PR1 apply-progress) |
+| PR2a (WU1 backend) | (part of ~380) | ~380 (per PR2a verify report, 528+290 tests) |
+| PR2b (WU1 frontend) | (part of ~380) | ~330 (per PR2b verify report, 769 tests) |
+| PR3 (WU2) | ~350–480 | **~1782** (948 insertions + 57 deletions across 22 modified tracked files, plus ~777 lines across 7 new untracked files — `RemoveBudgetMember`/`RestoreBudgetMember` slices, `BudgetMembershipDomainTests.cs`, `RemoveBudgetMemberTests.cs`, `RestoreBudgetMemberTests.cs`, and the hand-inspected additive migration; the auto-generated `*.Designer.cs` model snapshot, ~1354 lines, is excluded as a generated golden) |
+
+PR3 significantly exceeds its own forecast — the gap versus the ~350–480 estimate is explained by: the WU2-required `ListBudgetMembers` `includeDeleted`/`isDeleted` extension (not itemized as its own PR3 task in `tasks.md` but required by `spec.md`'s MEMBERS-LIST-1 WU2 scenarios and the frontend show-deleted toggle), the security-critical regression-sweep tests explicitly requested for the `BudgetAuthorizationHandler` edit, and the full E2E spec extension. This was flagged during apply rather than silently absorbed; the user's launch instructions explicitly assigned the complete PR3 scope (all 10 phases) as one deliverable — "this is the full and final PR of this SDD change" — so no further chain-splitting was applied. Flagged here for `sdd-verify`/reviewer awareness given the review-workload guard's 400-line budget.
 
 ## Proposal Question Round (for user review before spec) — RESOLVED
 

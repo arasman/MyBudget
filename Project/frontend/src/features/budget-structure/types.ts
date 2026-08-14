@@ -221,4 +221,6 @@ export interface MemberDto {
   lastName: string
   role: MemberRole
   joinedAt: string
+  isDeleted: boolean
+  deletedAt?: string | null
 }

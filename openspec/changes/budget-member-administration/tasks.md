@@ -176,79 +176,79 @@ without re-asking.
 
 ### Phase 1: `BudgetMembership` soft-delete + `ChangeRole`
 
-- [ ] 14.1 RED: extend the entity's unit test file (mirror `Budget.cs`'s existing soft-delete tests) — `SoftDelete()` sets `IsDeleted = true`, `DeletedAt = now`, bumps `UpdatedAt`; `Restore()` clears both, bumps `UpdatedAt`, leaves `JoinedAt` untouched; `ChangeRole(BudgetRole)` updates `Role`, bumps `UpdatedAt`.
-- [ ] 14.2 GREEN: modify `Project/src/MyBudget.Features/SharedKernel/Entities/BudgetMembership.cs` — add `IsDeleted`, `DeletedAt`, `SoftDelete()`, `Restore()` (copied verbatim from `Budget.cs`'s shape) plus a separate `ChangeRole(BudgetRole)` (design decision 8).
-- [ ] 14.3 REFACTOR: `dotnet test --filter BudgetMembership`, confirm green.
-- [ ] 14.4 REFACTOR (retrofit, flagged by `sdd-verify` on PR2a): `Project/src/MyBudget.Features/Features/Budgets/UpdateMemberRole/UpdateMemberRoleHandler.cs` currently mutates the role via `_db.Entry(membership).Property(m => m.Role).CurrentValue = cmd.NewRole` (raw EF change-tracker write, since `ChangeRole()` didn't exist yet in PR2a) — this silently skips the `UpdatedAt` bump that every other mutating handler gets via its domain method (`Rename`/`SoftDelete`/`Restore`). Now that `ChangeRole(BudgetRole)` exists (task 14.2), replace the raw EF write with `membership.ChangeRole(cmd.NewRole)`, matching `RenameBudgetHandler`'s `budget.Rename(...)` convention. Extend `UpdateMemberRoleTests.cs` with an assertion that `UpdatedAt` advances on a successful role change (RED first, then GREEN).
+- [x] 14.1 RED: extend the entity's unit test file (mirror `Budget.cs`'s existing soft-delete tests) — `SoftDelete()` sets `IsDeleted = true`, `DeletedAt = now`, bumps `UpdatedAt`; `Restore()` clears both, bumps `UpdatedAt`, leaves `JoinedAt` untouched; `ChangeRole(BudgetRole)` updates `Role`, bumps `UpdatedAt`.
+- [x] 14.2 GREEN: modify `Project/src/MyBudget.Features/SharedKernel/Entities/BudgetMembership.cs` — add `IsDeleted`, `DeletedAt`, `SoftDelete()`, `Restore()` (copied verbatim from `Budget.cs`'s shape) plus a separate `ChangeRole(BudgetRole)` (design decision 8).
+- [x] 14.3 REFACTOR: `dotnet test --filter BudgetMembership`, confirm green.
+- [x] 14.4 REFACTOR (retrofit, flagged by `sdd-verify` on PR2a): `Project/src/MyBudget.Features/Features/Budgets/UpdateMemberRole/UpdateMemberRoleHandler.cs` currently mutates the role via `_db.Entry(membership).Property(m => m.Role).CurrentValue = cmd.NewRole` (raw EF change-tracker write, since `ChangeRole()` didn't exist yet in PR2a) — this silently skips the `UpdatedAt` bump that every other mutating handler gets via its domain method (`Rename`/`SoftDelete`/`Restore`). Now that `ChangeRole(BudgetRole)` exists (task 14.2), replace the raw EF write with `membership.ChangeRole(cmd.NewRole)`, matching `RenameBudgetHandler`'s `budget.Rename(...)` convention. Extend `UpdateMemberRoleTests.cs` with an assertion that `UpdatedAt` advances on a successful role change (RED first, then GREEN).
 
 ### Phase 2: EF migration
 
-- [ ] 15.1 GREEN: generate `Project/src/MyBudget.Features/Migrations/*_AddBudgetMembershipSoftDelete.cs` — `IsDeleted boolean NOT NULL DEFAULT false`, `DeletedAt timestamptz NULL`; confirm no change to `IX_BudgetMemberships_BudgetId_UserId` (stays a **total** unique index, per design decision 7 — a partial index would let accept insert a second row instead of restoring in place).
-- [ ] 15.2 Apply the migration locally and confirm existing seeded memberships default to `IsDeleted = false` with no data loss.
+- [x] 15.1 GREEN: generate `Project/src/MyBudget.Features/Migrations/*_AddBudgetMembershipSoftDelete.cs` — `IsDeleted boolean NOT NULL DEFAULT false`, `DeletedAt timestamptz NULL`; confirm no change to `IX_BudgetMemberships_BudgetId_UserId` (stays a **total** unique index, per design decision 7 — a partial index would let accept insert a second row instead of restoring in place).
+- [x] 15.2 Apply the migration locally and confirm existing seeded memberships default to `IsDeleted = false` with no data loss.
 
 ### Phase 3: `RemoveBudgetMember` slice (MEMBERS-REMOVE-1, security-critical)
 
-- [ ] 16.1 RED: create `tests/MyBudget.Integration.Tests/Features/Budgets/RemoveBudgetMemberTests.cs` — Owner removes an Operator: `204`, `IsDeleted=true`, `DeletedAt` set, cache evicted.
-- [ ] 16.2 RED: same file — Admin removes a ReadOnly member: `204`.
-- [ ] 16.3 RED: same file — Admin targets Admin: `403 MEMBERS_CANNOT_ACT_ON_ADMIN`, membership untouched.
-- [ ] 16.4 RED: same file — self-removal: `403 MEMBERS_CANNOT_ACT_ON_SELF`.
-- [ ] 16.5 RED: same file — target is Owner row: `403 MEMBERS_CANNOT_ACT_ON_OWNER`, untouched.
-- [ ] 16.6 RED: same file — **security-critical**: an Operator with a role cached moments earlier is removed, then immediately calls `GET /budgets/{id}/cycles` → `403 AUTH_NOT_A_MEMBER` in the same test run, not after TTL (proves synchronous eviction, not just eventual expiry).
-- [ ] 16.7 RED: same file — already-soft-deleted target: `404 MEMBERS_NOT_FOUND` (soft-deleted rows don't resolve as removal targets).
-- [ ] 16.8 GREEN: create `Project/src/MyBudget.Features/Features/Budgets/RemoveBudgetMember/{RemoveBudgetMemberCommand,RemoveBudgetMemberHandler,RemoveBudgetMemberEndpoint}.cs` — `DELETE /api/budgets/{id}/members/{userId}`, `budget:admin` + `MemberActionPolicy`; soft-delete only, never hard-delete; evict cache before returning.
-- [ ] 16.9 REFACTOR: `dotnet test --filter RemoveBudgetMember`, confirm all of 16.1–16.7 green.
+- [x] 16.1 RED: create `tests/MyBudget.Integration.Tests/Features/Budgets/RemoveBudgetMemberTests.cs` — Owner removes an Operator: `204`, `IsDeleted=true`, `DeletedAt` set, cache evicted.
+- [x] 16.2 RED: same file — Admin removes a ReadOnly member: `204`.
+- [x] 16.3 RED: same file — Admin targets Admin: `403 MEMBERS_CANNOT_ACT_ON_ADMIN`, membership untouched.
+- [x] 16.4 RED: same file — self-removal: `403 MEMBERS_CANNOT_ACT_ON_SELF`.
+- [x] 16.5 RED: same file — target is Owner row: `403 MEMBERS_CANNOT_ACT_ON_OWNER`, untouched.
+- [x] 16.6 RED: same file — **security-critical**: an Operator with a role cached moments earlier is removed, then immediately calls `GET /budgets/{id}/cycles` → `403 AUTH_NOT_A_MEMBER` in the same test run, not after TTL (proves synchronous eviction, not just eventual expiry).
+- [x] 16.7 RED: same file — already-soft-deleted target: `404 MEMBERS_NOT_FOUND` (soft-deleted rows don't resolve as removal targets).
+- [x] 16.8 GREEN: create `Project/src/MyBudget.Features/Features/Budgets/RemoveBudgetMember/{RemoveBudgetMemberCommand,RemoveBudgetMemberHandler,RemoveBudgetMemberEndpoint}.cs` — `DELETE /api/budgets/{id}/members/{userId}`, `budget:admin` + `MemberActionPolicy`; soft-delete only, never hard-delete; evict cache before returning.
+- [x] 16.9 REFACTOR: `dotnet test --filter RemoveBudgetMember`, confirm all of 16.1–16.7 green.
 
 ### Phase 4: `RestoreBudgetMember` slice (MEMBERS-RESTORE-1, security-critical)
 
-- [ ] 17.1 RED: create `tests/MyBudget.Integration.Tests/Features/Budgets/RestoreBudgetMemberTests.cs` — Owner restores a soft-deleted Operator: `200`, `IsDeleted=false`, `DeletedAt=null`, role UNCHANGED from before removal, cache evicted.
-- [ ] 17.2 RED: same file — Admin restores a soft-deleted ReadOnly member: `200`, role unchanged.
-- [ ] 17.3 RED: same file — Admin restoring a soft-deleted Admin: `403 MEMBERS_CANNOT_ACT_ON_ADMIN`.
-- [ ] 17.4 RED: same file — target already active (`IsDeleted=false`): `409 MEMBERS_NOT_DELETED`.
-- [ ] 17.5 GREEN: create `Project/src/MyBudget.Features/Features/Budgets/RestoreBudgetMember/{RestoreBudgetMemberCommand,RestoreBudgetMemberHandler,RestoreBudgetMemberEndpoint}.cs` — `POST /api/budgets/{id}/members/{userId}/restore`, **standard `budget:admin` policy** (NOT `RestoreBudget`'s manual Dapper bypass). Add a code comment explaining why: `RestoreBudget` bypasses because the *actor's own* budget is soft-deleted (their `budget:admin` resolution would 404 through the auth handler's `IsDeleted=false` JOIN); here the *target member's* row is deleted, not the actor's, so the actor (an active Owner/Admin on a live budget) resolves normally — copying the bypass would drop a working gate for no reason (design decision 5). Role is NOT changed by this endpoint (spec MEMBERS-RESTORE-1 note).
-- [ ] 17.6 REFACTOR: `dotnet test --filter RestoreBudgetMember`, confirm all of 17.1–17.4 green.
+- [x] 17.1 RED: create `tests/MyBudget.Integration.Tests/Features/Budgets/RestoreBudgetMemberTests.cs` — Owner restores a soft-deleted Operator: `200`, `IsDeleted=false`, `DeletedAt=null`, role UNCHANGED from before removal, cache evicted.
+- [x] 17.2 RED: same file — Admin restores a soft-deleted ReadOnly member: `200`, role unchanged.
+- [x] 17.3 RED: same file — Admin restoring a soft-deleted Admin: `403 MEMBERS_CANNOT_ACT_ON_ADMIN`.
+- [x] 17.4 RED: same file — target already active (`IsDeleted=false`): `409 MEMBERS_NOT_DELETED`.
+- [x] 17.5 GREEN: create `Project/src/MyBudget.Features/Features/Budgets/RestoreBudgetMember/{RestoreBudgetMemberCommand,RestoreBudgetMemberHandler,RestoreBudgetMemberEndpoint}.cs` — `POST /api/budgets/{id}/members/{userId}/restore`, **standard `budget:admin` policy** (NOT `RestoreBudget`'s manual Dapper bypass). Add a code comment explaining why: `RestoreBudget` bypasses because the *actor's own* budget is soft-deleted (their `budget:admin` resolution would 404 through the auth handler's `IsDeleted=false` JOIN); here the *target member's* row is deleted, not the actor's, so the actor (an active Owner/Admin on a live budget) resolves normally — copying the bypass would drop a working gate for no reason (design decision 5). Role is NOT changed by this endpoint (spec MEMBERS-RESTORE-1 note).
+- [x] 17.6 REFACTOR: `dotnet test --filter RestoreBudgetMember`, confirm all of 17.1–17.4 green.
 
 ### Phase 5: `BudgetAuthorizationHandler` filter — hot path (AUTHZ-1)
 
-- [ ] 18.1 RED: extend `tests/MyBudget.Features.Tests/SharedKernel/Auth/BudgetAuthorizationHandlerTests.cs` — a user whose only `BudgetMembership` row has `IsDeleted=true` is treated identically to no-membership: `403 AUTH_NOT_A_MEMBER`.
-- [ ] 18.2 RED: same file — a restored membership (`IsDeleted=false` again) authorizes normally on the next request.
-- [ ] 18.3 RED: same file — regression guard: a user with an ACTIVE membership at each of `owner/admin/operator/read-only` still resolves exactly as before this change (no new `403` introduced for active memberships).
-- [ ] 18.4 GREEN: modify `Project/src/MyBudget.Features/SharedKernel/Auth/Authorization/BudgetAuthorizationHandler.cs` — add exactly `AND bm."IsDeleted" = false` to the Dapper fallback WHERE clause (design decision 6); confirm the cache key/TTL, cache-hit fast path, `budget-not-found` 404-vs-403 disambiguation, and role-hierarchy `>=` comparison are all otherwise unchanged.
-- [ ] 18.5 REFACTOR: `dotnet test --filter BudgetAuthorizationHandler`, confirm 18.1–18.3 green.
-- [ ] 18.6 RED: **explicit regression sweep** — extend integration tests for one representative endpoint per existing policy tier with an ACTIVE membership, confirming unchanged behavior post-edit: `ListCycles` (`budget:read`/operator+), `CreateCycle` (`budget:admin`), `DeleteBudget`/`RestoreBudget` (`budget:owner`), `ListBudgetLines` (`budget:read`).
-- [ ] 18.7 GREEN: fix any regression surfaced by 18.6 (none expected — the filter only affects soft-deleted rows).
-- [ ] 18.8 REFACTOR: run the full existing integration suite (`dotnet test`), confirm zero regressions outside this change's files.
+- [x] 18.1 RED: extend `tests/MyBudget.Features.Tests/SharedKernel/Auth/BudgetAuthorizationHandlerTests.cs` — a user whose only `BudgetMembership` row has `IsDeleted=true` is treated identically to no-membership: `403 AUTH_NOT_A_MEMBER`.
+- [x] 18.2 RED: same file — a restored membership (`IsDeleted=false` again) authorizes normally on the next request.
+- [x] 18.3 RED: same file — regression guard: a user with an ACTIVE membership at each of `owner/admin/operator/read-only` still resolves exactly as before this change (no new `403` introduced for active memberships).
+- [x] 18.4 GREEN: modify `Project/src/MyBudget.Features/SharedKernel/Auth/Authorization/BudgetAuthorizationHandler.cs` — add exactly `AND bm."IsDeleted" = false` to the Dapper fallback WHERE clause (design decision 6); confirm the cache key/TTL, cache-hit fast path, `budget-not-found` 404-vs-403 disambiguation, and role-hierarchy `>=` comparison are all otherwise unchanged.
+- [x] 18.5 REFACTOR: `dotnet test --filter BudgetAuthorizationHandler`, confirm 18.1–18.3 green.
+- [x] 18.6 RED: **explicit regression sweep** — extend integration tests for one representative endpoint per existing policy tier with an ACTIVE membership, confirming unchanged behavior post-edit: `ListCycles` (`budget:read`/operator+), `CreateCycle` (`budget:admin`), `DeleteBudget`/`RestoreBudget` (`budget:owner`), `ListBudgetLines` (`budget:read`).
+- [x] 18.7 GREEN: fix any regression surfaced by 18.6 (none expected — the filter only affects soft-deleted rows).
+- [x] 18.8 REFACTOR: run the full existing integration suite (`dotnet test`), confirm zero regressions outside this change's files.
 
 ### Phase 6: Extend the WU0 guard — restore instead of insert (ACCEPT-1, WU2 extension)
 
-- [ ] 19.1 RED: extend `AcceptInvitationTests.cs` — user has a soft-deleted membership with `Role = operator`; a new invitation for the same email/budget has `Role = read-only`; accepting it returns `200`, the EXISTING row is restored (`IsDeleted=false`, `DeletedAt=null`) with `Role` updated to `read-only` (the invitation's role, not the pre-removal role); exactly one `BudgetMembership` row exists for `(BudgetId, UserId)` afterward — no insert.
-- [ ] 19.2 RED: same file — full flow: revoke a member → re-invite them → they accept → `200` with the NEW role (end-to-end ACCEPT-1 + MEMBERS-REMOVE-1 integration).
-- [ ] 19.3 GREEN: modify `AcceptInvitationHandler.cs` — branch on the existing-membership lookup from PR1 Phase 3: `!existing.IsDeleted` → `AUTH_ALREADY_MEMBER` (unchanged); `existing.IsDeleted` → `existing.Restore(); existing.ChangeRole((BudgetRole)matched.Role);` instead of insert; `existing is null` → insert (unchanged), per design's Interfaces/Contracts code snippet.
-- [ ] 19.4 REFACTOR: `dotnet test --filter AcceptInvitation`, confirm 19.1–19.2 green plus all pre-existing and PR1 cases still pass.
+- [x] 19.1 RED: extend `AcceptInvitationTests.cs` — user has a soft-deleted membership with `Role = operator`; a new invitation for the same email/budget has `Role = read-only`; accepting it returns `200`, the EXISTING row is restored (`IsDeleted=false`, `DeletedAt=null`) with `Role` updated to `read-only` (the invitation's role, not the pre-removal role); exactly one `BudgetMembership` row exists for `(BudgetId, UserId)` afterward — no insert.
+- [x] 19.2 RED: same file — full flow: revoke a member → re-invite them → they accept → `200` with the NEW role (end-to-end ACCEPT-1 + MEMBERS-REMOVE-1 integration).
+- [x] 19.3 GREEN: modify `AcceptInvitationHandler.cs` — branch on the existing-membership lookup from PR1 Phase 3: `!existing.IsDeleted` → `AUTH_ALREADY_MEMBER` (unchanged); `existing.IsDeleted` → `existing.Restore(); existing.ChangeRole((BudgetRole)matched.Role);` instead of insert; `existing is null` → insert (unchanged), per design's Interfaces/Contracts code snippet.
+- [x] 19.4 REFACTOR: `dotnet test --filter AcceptInvitation`, confirm 19.1–19.2 green plus all pre-existing and PR1 cases still pass.
 
 ### Phase 7: Cache eviction audit across all new mutating handlers
 
-- [ ] 20.1 Confirm (via the RED tests already written in 8.9, 16.6, 17.1–17.2, 19.2) that `UpdateMemberRoleHandler`, `RemoveBudgetMemberHandler`, `RestoreBudgetMemberHandler`, and the extended `AcceptInvitationHandler` all call `_cache.Remove($"budget-membership:{userId}:{budgetId}")` for the affected member before returning — no handler is missing eviction (MEM-SC-3).
+- [x] 20.1 Confirm (via the RED tests already written in 8.9, 16.6, 17.1–17.2, 19.2) that `UpdateMemberRoleHandler`, `RemoveBudgetMemberHandler`, `RestoreBudgetMemberHandler`, and the extended `AcceptInvitationHandler` all call `_cache.Remove($"budget-membership:{userId}:{budgetId}")` for the affected member before returning — no handler is missing eviction (MEM-SC-3).
 
 ### Phase 8: Frontend — show-deleted toggle, restore action
 
-- [ ] 21.1 RED: extend `budgetMembers.api.spec.ts` — `listMembers(budgetId, { includeDeleted: true })` calls `GET /api/budgets/{id}/members?includeDeleted=true`; `removeMember(budgetId, userId)` calls `DELETE .../members/{userId}`; `restoreMember(budgetId, userId)` calls `POST .../members/{userId}/restore`.
-- [ ] 21.2 GREEN: extend `budgetMembers.api.ts` with `removeMember`/`restoreMember` and the `includeDeleted` param.
-- [ ] 21.3 RED: extend `BudgetMembersView.spec.ts` — "show deleted" toggle is visible and functional for Admin (not Owner-only); toggling ON re-fetches with `includeDeleted=true` and renders soft-deleted rows dimmed with a Restore button per row, gated by the same `canActOn` matrix; toggling OFF hides them again.
-- [ ] 21.4 RED: same file — clicking Remove on an actionable row calls `removeMember` then refetches; clicking Restore on a soft-deleted row calls `restoreMember` then refetches; `actionInProgress` disables the acted-on row's controls during the in-flight call (pattern from `BudgetSelectionView.vue`).
-- [ ] 21.5 GREEN: extend `BudgetMembersView.vue` — `showDeleted` ref, confirm-dialog before remove, `actionInProgress` per-row state, Restore button rendering (copied from `BudgetSelectionView.vue`'s established pattern).
-- [ ] 21.6 RED: extend `locales.spec.ts` — new `budgetStructure.members.{showDeleted,restore,removeConfirm,removeSuccess,restoreSuccess}` keys present in `en.json`/`es.json`.
-- [ ] 21.7 GREEN: add the keys to both locale files.
-- [ ] 21.8 REFACTOR: `pnpm test -- BudgetMembersView budgetMembers.api locales`, confirm 21.1, 21.3, 21.4, 21.6 all green.
+- [x] 21.1 RED: extend `budgetMembers.api.spec.ts` — `listMembers(budgetId, { includeDeleted: true })` calls `GET /api/budgets/{id}/members?includeDeleted=true`; `removeMember(budgetId, userId)` calls `DELETE .../members/{userId}`; `restoreMember(budgetId, userId)` calls `POST .../members/{userId}/restore`.
+- [x] 21.2 GREEN: extend `budgetMembers.api.ts` with `removeMember`/`restoreMember` and the `includeDeleted` param.
+- [x] 21.3 RED: extend `BudgetMembersView.spec.ts` — "show deleted" toggle is visible and functional for Admin (not Owner-only); toggling ON re-fetches with `includeDeleted=true` and renders soft-deleted rows dimmed with a Restore button per row, gated by the same `canActOn` matrix; toggling OFF hides them again.
+- [x] 21.4 RED: same file — clicking Remove on an actionable row calls `removeMember` then refetches; clicking Restore on a soft-deleted row calls `restoreMember` then refetches; `actionInProgress` disables the acted-on row's controls during the in-flight call (pattern from `BudgetSelectionView.vue`).
+- [x] 21.5 GREEN: extend `BudgetMembersView.vue` — `showDeleted` ref, confirm-dialog before remove, `actionInProgress` per-row state, Restore button rendering (copied from `BudgetSelectionView.vue`'s established pattern).
+- [x] 21.6 RED: extend `locales.spec.ts` — new `budgetStructure.members.{showDeleted,restore,removeConfirm,removeSuccess,restoreSuccess}` keys present in `en.json`/`es.json`.
+- [x] 21.7 GREEN: add the keys to both locale files.
+- [x] 21.8 REFACTOR: `pnpm test -- BudgetMembersView budgetMembers.api locales`, confirm 21.1, 21.3, 21.4, 21.6 all green.
 
 ### Phase 9: E2E — revoke, show-deleted, restore (extends PR2b's spec)
 
-- [ ] 22.1 RED: extend `budget-structure-members.spec.ts` — Owner revokes a member (confirm dialog → Delete), the row disappears from the default view; toggling "show deleted" reveals it dimmed; clicking Restore brings it back to the active list.
-- [ ] 22.2 RED: same file — a revoked member's session immediately loses access to a `budget:*` page (e.g. navigating to Cycles returns a 403/redirect), proving the cache-eviction contract end-to-end in the browser.
-- [ ] 22.3 GREEN: fix any implementation gap surfaced only under real browser timing/routing.
-- [ ] 22.4 REFACTOR: `pnpm exec playwright test -- budget-structure-members`, confirm the full spec file (13.1 + 22.1–22.2) passes.
+- [x] 22.1 RED: extend `budget-structure-members.spec.ts` — Owner revokes a member (confirm dialog → Delete), the row disappears from the default view; toggling "show deleted" reveals it dimmed; clicking Restore brings it back to the active list.
+- [x] 22.2 RED: same file — a revoked member's session immediately loses access to a `budget:*` page (e.g. navigating to Cycles returns a 403/redirect), proving the cache-eviction contract end-to-end in the browser.
+- [x] 22.3 GREEN: fix any implementation gap surfaced only under real browser timing/routing.
+- [x] 22.4 REFACTOR: executed by user against the full Docker/E2E stack. Found one real bug on first run: `page.getByLabelText(...)` used in the spec (Testing-Library API, not a real Playwright method) — fixed to `page.getByLabel(...)`. After the fix, full spec file passes as part of the full suite (see 23.2).
 
 ### Phase 10: Full-suite regression + sign-off
 
-- [ ] 23.1 REFACTOR: run `dotnet test` (full backend suite), `pnpm test`, `pnpm build`, `pnpm lint` — confirm zero regressions outside this change's files.
-- [ ] 23.2 REFACTOR: run the full `pnpm exec playwright test` suite against the Docker stack — confirm zero regressions in other features' E2E flows (they all traverse `budget:*`-gated endpoints through the edited `BudgetAuthorizationHandler`).
-- [ ] 23.3 Update the Success Criteria checkboxes in `proposal.md` with evidence (test counts, actual changed-line totals per PR vs. this file's forecast).
+- [x] 23.1 REFACTOR: run `dotnet test` (full backend suite), `pnpm test`, `pnpm build`, `pnpm lint` — confirm zero regressions outside this change's files.
+- [x] 23.2 REFACTOR: executed by user against the full Docker stack. First run: 127 passed, 4 failed — 1 real bug (22.4's `getByLabelText`/`getByLabel` mixup) plus 3 failures in unrelated feature areas (budget-execution, budget-management multi-budget restore, budget-matrix closed-period). Investigated before assuming regression: those 3 specs re-run in isolation (fresh `globalSetup`/DB reset each) all passed clean, confirming they were sequential-run state pollution in the shared `mybudget_e2e` DB, not caused by the `BudgetAuthorizationHandler` edit. After the `getByLabel` fix, full suite re-run: **131 passed, 0 failed**. Zero regressions confirmed in other features' E2E flows.
+- [x] 23.3 Update the Success Criteria checkboxes in `proposal.md` with evidence (test counts, actual changed-line totals per PR vs. this file's forecast).

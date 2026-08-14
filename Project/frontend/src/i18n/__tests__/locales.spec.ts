@@ -324,6 +324,40 @@ describe('i18n locale keys — budget members view (MEMBERS-UI-1, WU1)', () => {
   })
 })
 
+// budget-member-administration WU2 (PR3): show-deleted toggle + remove/restore action copy
+describe('i18n locale keys — budget members view WU2 (show-deleted, remove, restore)', () => {
+  it('en.json and es.json contain budgetStructure.members.showDeleted', () => {
+    expect(en.budgetStructure.members.showDeleted.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.showDeleted.length).toBeGreaterThan(0)
+  })
+
+  it('en.json and es.json contain budgetStructure.members.actions.remove/restore', () => {
+    expect(en.budgetStructure.members.actions.remove.length).toBeGreaterThan(0)
+    expect(en.budgetStructure.members.actions.restore.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.actions.remove.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.actions.restore.length).toBeGreaterThan(0)
+  })
+
+  it('en.json and es.json contain budgetStructure.members.removeConfirmTitle/removeConfirm', () => {
+    expect(en.budgetStructure.members.removeConfirmTitle.length).toBeGreaterThan(0)
+    expect(en.budgetStructure.members.removeConfirm.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.removeConfirmTitle.length).toBeGreaterThan(0)
+    expect(es.budgetStructure.members.removeConfirm.length).toBeGreaterThan(0)
+  })
+
+  const wu2ConfirmationKeys = ['removeSuccess', 'restoreSuccess'] as const
+
+  it.each(wu2ConfirmationKeys)('en.json contains budgetStructure.members.confirmations.%s', (key) => {
+    expect(en.budgetStructure.members.confirmations).toHaveProperty(key)
+    expect(en.budgetStructure.members.confirmations[key].length).toBeGreaterThan(0)
+  })
+
+  it.each(wu2ConfirmationKeys)('es.json contains budgetStructure.members.confirmations.%s', (key) => {
+    expect(es.budgetStructure.members.confirmations).toHaveProperty(key)
+    expect(es.budgetStructure.members.confirmations[key].length).toBeGreaterThan(0)
+  })
+})
+
 // LAYOUT-4 / LANDING-6: AppFooter copy must exist in both locales
 describe('i18n locale keys — footer (LAYOUT-4/LANDING-6)', () => {
   it('en.json contains footer.poweredBy', () => {

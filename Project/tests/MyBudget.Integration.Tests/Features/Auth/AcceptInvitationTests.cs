@@ -254,6 +254,96 @@ public sealed class AcceptInvitationTests : IntegrationTestBase
         body!.Role.ShouldBe("read-only");
     }
 
+    // --- Restore-instead-of-insert on re-accept (WU0 extended by WU2, ACCEPT-1) ---
+
+    [Fact]
+    public async Task SoftDeletedMembership_ReInvitedWithNewRole_Restores_NotInserts()
+    {
+        var (_, budgetId, adminUserId) = await SetupAdminAsync("admin-acc-restore1@example.com");
+        var invitee = await RegisterUserAsync("invitee-acc-restore1@example.com");
+
+        // Invitee has a soft-deleted membership with Role = operator (their role before removal)
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var membership = BudgetMembership.Create(budgetId, invitee.User.Id, BudgetRole.Operator);
+            membership.SoftDelete();
+            db.BudgetMemberships.Add(membership);
+            await db.SaveChangesAsync();
+        }
+
+        // A new invitation for the same email/budget with Role = read-only
+        var rawToken = await SeedInvitationAsync(
+            budgetId:        budgetId,
+            invitedByUserId: adminUserId,
+            inviteeEmail:    "invitee-acc-restore1@example.com",
+            expiresAt:       DateTime.UtcNow.AddDays(7),
+            role:            BudgetRole.ReadOnly);
+
+        AuthorizeClient(invitee.AccessToken);
+        var response = await Client.PostAsJsonAsync("/api/auth/invitations/accept", new
+        {
+            token = rawToken,
+        });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<AcceptResponse>(JsonOpts);
+        body!.Role.ShouldBe("read-only");
+
+        using var verifyScope = Factory.Services.CreateScope();
+        var verifyDb = verifyScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var rows = verifyDb.BudgetMemberships
+            .Where(m => m.BudgetId == budgetId && m.UserId == invitee.User.Id)
+            .ToList();
+
+        rows.Count.ShouldBe(1); // no insert — the existing row was restored
+        rows[0].IsDeleted.ShouldBeFalse();
+        rows[0].DeletedAt.ShouldBeNull();
+        rows[0].Role.ShouldBe(BudgetRole.ReadOnly); // invitation's role, NOT the pre-removal operator role
+    }
+
+    [Fact]
+    public async Task RevokeThenReInviteThenAccept_FullFlow_Returns200WithNewRole()
+    {
+        var (adminToken, budgetId, adminUserId) = await SetupAdminAsync("admin-acc-flow1@example.com");
+        var member = await RegisterUserAsync("member-acc-flow1@example.com");
+
+        // 1. Member accepts an initial invitation as operator
+        var firstToken = await SeedInvitationAsync(
+            budgetId:        budgetId,
+            invitedByUserId: adminUserId,
+            inviteeEmail:    "member-acc-flow1@example.com",
+            expiresAt:       DateTime.UtcNow.AddDays(7),
+            role:            BudgetRole.Operator);
+
+        AuthorizeClient(member.AccessToken);
+        var firstAccept = await Client.PostAsJsonAsync(
+            "/api/auth/invitations/accept", new { token = firstToken });
+        firstAccept.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // 2. Admin revokes (soft-deletes) the member's access
+        AuthorizeClient(adminToken);
+        var removeResponse = await Client.DeleteAsync($"/api/budgets/{budgetId}/members/{member.User.Id}");
+        removeResponse.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        // 3. Admin re-invites the member with a new role
+        var secondToken = await SeedInvitationAsync(
+            budgetId:        budgetId,
+            invitedByUserId: adminUserId,
+            inviteeEmail:    "member-acc-flow1@example.com",
+            expiresAt:       DateTime.UtcNow.AddDays(7),
+            role:            BudgetRole.Admin);
+
+        // 4. Member accepts the new invitation
+        AuthorizeClient(member.AccessToken);
+        var secondAccept = await Client.PostAsJsonAsync(
+            "/api/auth/invitations/accept", new { token = secondToken });
+
+        secondAccept.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await secondAccept.Content.ReadFromJsonAsync<AcceptResponse>(JsonOpts);
+        body!.Role.ShouldBe("admin");
+    }
+
     private sealed record MeResponse(Guid Id, string Email, MembershipEntry[] Memberships);
     private sealed record MembershipEntry(Guid BudgetId, string BudgetName, string Role);
     private sealed record AcceptResponse(Guid BudgetId, string Role);

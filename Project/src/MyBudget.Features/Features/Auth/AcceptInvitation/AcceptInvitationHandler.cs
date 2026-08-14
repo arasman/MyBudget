@@ -81,19 +81,32 @@ public sealed class AcceptInvitationHandler
 
         // 6. Duplicate-membership guard — must run BEFORE MarkUsed() so a duplicate click never
         // burns the token, and BEFORE the insert so the unique index never fires (design decision 1).
+        // WU2 extension: a SOFT-DELETED existing row is restored in place (not treated as a
+        // duplicate) — the unique index on (BudgetId, UserId) is total, so a second insert would
+        // violate it; restoring keeps membership history intact instead of splitting it.
         var existing = await _db.BudgetMemberships.FirstOrDefaultAsync(
             m => m.BudgetId == matched.BudgetId && m.UserId == cmd.UserId, ct);
 
-        if (existing is not null)
+        if (existing is not null && !existing.IsDeleted)
             return Result<AcceptInvitationResponse>.Failure("AUTH_ALREADY_MEMBER");
 
-        // 7. Mark invitation used + create BudgetMembership via EF
+        // 7. Mark invitation used + restore-in-place or create BudgetMembership via EF
         var invitation = await _db.Invitations.FindAsync([matched.Id], ct)
                          ?? throw new InvalidOperationException("Invitation not found in EF context.");
         invitation.MarkUsed();
 
-        var membership = BudgetMembership.Create(matched.BudgetId, cmd.UserId, (BudgetRole)matched.Role);
-        _db.BudgetMemberships.Add(membership);
+        if (existing is not null)
+        {
+            // Soft-deleted membership — restore it and set its role from the NEW invitation
+            // (not the pre-removal role). JoinedAt is deliberately left untouched (design decision 8).
+            existing.Restore();
+            existing.ChangeRole((BudgetRole)matched.Role);
+        }
+        else
+        {
+            var membership = BudgetMembership.Create(matched.BudgetId, cmd.UserId, (BudgetRole)matched.Role);
+            _db.BudgetMemberships.Add(membership);
+        }
 
         await _db.SaveChangesAsync(ct);
 

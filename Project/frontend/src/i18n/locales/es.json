@@ -331,11 +331,18 @@
         "joinedAt": "Fecha de ingreso"
       },
       "actions": {
-        "changeRole": "Cambiar rol"
+        "changeRole": "Cambiar rol",
+        "remove": "Eliminar",
+        "restore": "Restaurar"
       },
+      "showDeleted": "Mostrar eliminados",
+      "removeConfirmTitle": "Eliminar miembro",
+      "removeConfirm": "¿Estás seguro de que deseas eliminar a este miembro? Perderá el acceso a este presupuesto.",
       "confirmations": {
         "roleChangeSuccess": "Rol del miembro actualizado correctamente",
-        "roleChangeError": "No se pudo actualizar el rol del miembro"
+        "roleChangeError": "No se pudo actualizar el rol del miembro",
+        "removeSuccess": "Miembro eliminado correctamente",
+        "restoreSuccess": "Miembro restaurado correctamente"
       }
     }
   },

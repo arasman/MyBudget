@@ -11,6 +11,10 @@ public sealed class BudgetMembership : BaseEntity
 
     public DateTime JoinedAt { get; private set; }
 
+    public bool IsDeleted { get; private set; } = false;
+
+    public DateTimeOffset? DeletedAt { get; private set; }
+
     // Navigation
     public Budget? Budget { get; private set; }
     public User? User { get; private set; }
@@ -21,10 +25,34 @@ public sealed class BudgetMembership : BaseEntity
     {
         return new BudgetMembership
         {
-            BudgetId = budgetId,
-            UserId   = userId,
-            Role     = role,
-            JoinedAt = DateTime.UtcNow,
+            BudgetId  = budgetId,
+            UserId    = userId,
+            Role      = role,
+            JoinedAt  = DateTime.UtcNow,
+            IsDeleted = false,
         };
+    }
+
+    /// <summary>Soft-deletes (revokes) the membership. Sets IsDeleted = true and records the timestamp.</summary>
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTimeOffset.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Restores a soft-deleted membership. Clears IsDeleted and DeletedAt. JoinedAt is untouched — this is a resumed membership, not a new one.</summary>
+    public void Restore()
+    {
+        IsDeleted = false;
+        DeletedAt = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Changes the member's role.</summary>
+    public void ChangeRole(BudgetRole newRole)
+    {
+        Role      = newRole;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

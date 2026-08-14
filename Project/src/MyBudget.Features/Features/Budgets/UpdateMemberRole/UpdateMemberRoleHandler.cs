@@ -68,10 +68,7 @@ public sealed class UpdateMemberRoleHandler
         if (membership is null)
             return Result<UpdateMemberRoleResponse>.Failure("MEMBERS_NOT_FOUND");
 
-        // No public domain method exists yet for changing an existing membership's role — that
-        // lands with BudgetMembership's soft-delete rework in WU2 (ChangeRole). Update the tracked
-        // property directly via EF's change tracker in the meantime.
-        _db.Entry(membership).Property(m => m.Role).CurrentValue = cmd.NewRole;
+        membership.ChangeRole(cmd.NewRole);
         await _db.SaveChangesAsync(ct);
 
         // Evict the target's cached role (MEM-SC-3) before returning.

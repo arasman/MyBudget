@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MyBudget.Features.SharedKernel.Entities;
 using MyBudget.Features.SharedKernel.Persistence;
@@ -171,6 +172,44 @@ public sealed class UpdateMemberRoleTests : IntegrationTestBase
             $"/api/budgets/{budgetId}/members/{Guid.NewGuid()}/role", new { role = "operator" });
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task RoleChange_AdvancesUpdatedAt()
+    {
+        // Retrofit guard (task 14.4): UpdateMemberRoleHandler used to mutate Role via a raw EF
+        // change-tracker write that silently skipped the UpdatedAt bump every other mutating
+        // handler gets via its domain method. Now that BudgetMembership.ChangeRole() exists,
+        // the handler must call it — asserting UpdatedAt advances proves the domain method is
+        // actually used, not the old bypass.
+        var (ownerToken, budgetId) = await SetupOwnerAsync("role-owner10@example.com");
+        var target = await RegisterUserAsync("role-target10@example.com");
+        await AddMemberAsync(budgetId, target.User.Id, BudgetRole.Operator);
+
+        Guid membershipId;
+        DateTimeOffset? updatedAtBefore;
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var membership = await db.BudgetMemberships.SingleAsync(
+                m => m.BudgetId == budgetId && m.UserId == target.User.Id);
+            membershipId = membership.Id;
+            updatedAtBefore = membership.UpdatedAt;
+        }
+
+        AuthorizeClient(ownerToken);
+        var response = await Client.PatchAsJsonAsync(
+            $"/api/budgets/{budgetId}/members/{target.User.Id}/role", new { role = "admin" });
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var membership = await db.BudgetMemberships.SingleAsync(m => m.Id == membershipId);
+            membership.UpdatedAt.ShouldNotBeNull();
+            if (updatedAtBefore.HasValue)
+                membership.UpdatedAt!.Value.ShouldBeGreaterThan(updatedAtBefore.Value);
+        }
     }
 
     [Fact]

@@ -74,6 +74,58 @@ public sealed class ListBudgetMembersTests : IntegrationTestBase
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
+    // --- WU2 extension: includeDeleted / isDeleted (MEMBERS-LIST-1, required by the frontend
+    // show-deleted toggle — design.md's Contracts section documents this as an additive WU2 change
+    // even though it wasn't broken out into its own PR3 task) ---
+
+    [Fact]
+    public async Task DefaultParams_ExcludesSoftDeletedMembers()
+    {
+        var (ownerToken, budgetId) = await SetupOwnerAsync("list-members-wu2-owner1@example.com");
+        var active = await RegisterUserAsync("list-members-wu2-active1@example.com");
+        var deleted = await RegisterUserAsync("list-members-wu2-deleted1@example.com");
+        await AddMemberAsync(budgetId, active.User.Id, BudgetRole.Operator);
+        await AddSoftDeletedMemberAsync(budgetId, deleted.User.Id, BudgetRole.Operator);
+
+        AuthorizeClient(ownerToken);
+        var response = await Client.GetAsync($"/api/budgets/{budgetId}/members");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<ListMembersResponse>(JsonOpts);
+        body!.Members.Count.ShouldBe(2); // owner + active — soft-deleted excluded
+        body.Members.ShouldAllBe(m => !m.IsDeleted);
+    }
+
+    [Fact]
+    public async Task IncludeDeletedTrue_IncludesSoftDeletedMembers()
+    {
+        var (ownerToken, budgetId) = await SetupOwnerAsync("list-members-wu2-owner2@example.com");
+        var active = await RegisterUserAsync("list-members-wu2-active2@example.com");
+        var deleted = await RegisterUserAsync("list-members-wu2-deleted2@example.com");
+        await AddMemberAsync(budgetId, active.User.Id, BudgetRole.Operator);
+        await AddSoftDeletedMemberAsync(budgetId, deleted.User.Id, BudgetRole.Operator);
+
+        AuthorizeClient(ownerToken);
+        var response = await Client.GetAsync($"/api/budgets/{budgetId}/members?includeDeleted=true");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<ListMembersResponse>(JsonOpts);
+        body!.Members.Count.ShouldBe(3); // owner + active + soft-deleted
+
+        var deletedRow = body.Members.Single(m => m.UserId == deleted.User.Id);
+        deletedRow.IsDeleted.ShouldBeTrue();
+    }
+
+    private async Task AddSoftDeletedMemberAsync(Guid budgetId, Guid userId, BudgetRole role)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var membership = BudgetMembership.Create(budgetId, userId, role);
+        membership.SoftDelete();
+        db.BudgetMemberships.Add(membership);
+        await db.SaveChangesAsync();
+    }
+
     private sealed record MeResponse(Guid Id, string Email, MembershipEntry[] Memberships);
     private sealed record MembershipEntry(Guid BudgetId, string BudgetName, string Role, bool IsDeleted);
 
@@ -84,5 +136,6 @@ public sealed class ListBudgetMembersTests : IntegrationTestBase
         string FirstName,
         string LastName,
         string Role,
-        DateTimeOffset JoinedAt);
+        DateTimeOffset JoinedAt,
+        bool   IsDeleted);
 }

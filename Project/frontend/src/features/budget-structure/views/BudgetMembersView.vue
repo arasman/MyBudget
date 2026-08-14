@@ -5,9 +5,30 @@
       class="mb-6"
     />
 
-    <h1 class="text-2xl font-semibold mb-4">
-      {{ t('budgetStructure.members.title') }}
-    </h1>
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-2xl font-semibold">
+        {{ t('budgetStructure.members.title') }}
+      </h1>
+
+      <div
+        v-if="isAdmin"
+        class="flex items-center gap-2"
+      >
+        <input
+          id="members-show-deleted"
+          v-model="showDeleted"
+          type="checkbox"
+          class="checkbox checkbox-sm"
+          @change="loadMembers"
+        >
+        <label
+          for="members-show-deleted"
+          class="label-text cursor-pointer"
+        >
+          {{ t('budgetStructure.members.showDeleted') }}
+        </label>
+      </div>
+    </div>
 
     <!-- Loading indicator -->
     <div
@@ -27,18 +48,20 @@
           <th>{{ t('budgetStructure.members.columns.email') }}</th>
           <th>{{ t('budgetStructure.members.columns.role') }}</th>
           <th>{{ t('budgetStructure.members.columns.joinedAt') }}</th>
+          <th />
         </tr>
       </thead>
       <tbody>
         <tr
           v-for="m in visibleMembers"
           :key="m.userId"
+          :class="m.isDeleted ? 'opacity-60' : ''"
         >
           <td>{{ m.firstName }} {{ m.lastName }}</td>
           <td>{{ m.email }}</td>
           <td>
             <select
-              v-if="canActOn(m)"
+              v-if="!m.isDeleted && canActOn(m)"
               :value="m.role"
               class="select select-bordered select-sm"
               :disabled="actionInProgress === m.userId"
@@ -61,9 +84,71 @@
             >{{ t('enums.role.' + toRoleKey(m.role)) }}</span>
           </td>
           <td>{{ formatJoinedAt(m.joinedAt) }}</td>
+          <td>
+            <!-- Active row: Remove -->
+            <button
+              v-if="!m.isDeleted && canActOn(m)"
+              type="button"
+              class="btn btn-xs btn-ghost text-error"
+              :disabled="actionInProgress === m.userId"
+              @click="onRemoveClick(m)"
+            >
+              {{ t('budgetStructure.members.actions.remove') }}
+            </button>
+            <!-- Soft-deleted row: Restore -->
+            <button
+              v-else-if="m.isDeleted && canActOn(m)"
+              type="button"
+              class="btn btn-xs btn-success"
+              :disabled="actionInProgress === m.userId"
+              @click="onRestore(m)"
+            >
+              <span
+                v-if="actionInProgress === m.userId"
+                class="loading loading-spinner loading-xs"
+              />
+              {{ t('budgetStructure.members.actions.restore') }}
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Remove confirmation dialog -->
+    <dialog
+      v-if="pendingRemove"
+      open
+      class="modal modal-open"
+    >
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-2">
+          {{ t('budgetStructure.members.removeConfirmTitle') }}
+        </h3>
+        <p class="text-base-content/70">
+          {{ t('budgetStructure.members.removeConfirm') }}
+        </p>
+        <div class="modal-action">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click="cancelRemove"
+          >
+            {{ t('common.cancel') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-error"
+            @click="confirmRemove"
+          >
+            {{ t('common.confirm') }}
+          </button>
+        </div>
+      </div>
+      <div
+        class="modal-backdrop"
+        @click="cancelRemove"
+      />
+    </dialog>
   </div>
 </template>
 
@@ -75,7 +160,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useToastStore } from '@/stores/toast.store'
 import { useRoleGate } from '../composables/useRoleGate'
 import { toRoleKey } from '@/utils/enum-key'
-import { listMembers, updateMemberRole } from '../api/budgetMembers.api'
+import { listMembers, updateMemberRole, removeMember, restoreMember } from '../api/budgetMembers.api'
 import BudgetTabs from '../components/BudgetTabs.vue'
 import type { MemberDto, MemberRole } from '../types'
 
@@ -90,6 +175,8 @@ const { isAdmin, isOwner } = useRoleGate(budgetId)
 const members = ref<MemberDto[]>([])
 const loading = ref(false)
 const actionInProgress = ref<string | null>(null)
+const showDeleted = ref(false)
+const pendingRemove = ref<MemberDto | null>(null)
 
 // Owner row is excluded entirely — no role selector, no action control ever rendered for it.
 const visibleMembers = computed(() => members.value.filter((m) => m.role !== 'owner'))
@@ -97,7 +184,8 @@ const visibleMembers = computed(() => members.value.filter((m) => m.role !== 'ow
 /**
  * Frontend row gate — mirrors design.md's Interfaces/Contracts snippet exactly.
  * Server-side MemberActionPolicy is the source of truth (MEM-SC-2); this only
- * hides controls that would otherwise 403.
+ * hides controls that would otherwise 403. Applies identically to soft-deleted rows
+ * (Restore) and active rows (role select / Remove) — the underlying matrix is the same.
  */
 function canActOn(m: MemberDto): boolean {
   if (!isAdmin.value) return false
@@ -116,7 +204,7 @@ function formatJoinedAt(joinedAt: string): string {
 async function loadMembers(): Promise<void> {
   loading.value = true
   try {
-    members.value = await listMembers(budgetId)
+    members.value = await listMembers(budgetId, { includeDeleted: showDeleted.value })
   } finally {
     loading.value = false
   }
@@ -130,6 +218,44 @@ async function onRoleChange(m: MemberDto, newRole: MemberRole): Promise<void> {
     toastStore.push({ type: 'success', title: t('budgetStructure.members.confirmations.roleChangeSuccess') })
   } catch {
     toastStore.push({ type: 'error', title: t('budgetStructure.members.confirmations.roleChangeError') })
+  } finally {
+    actionInProgress.value = null
+  }
+}
+
+// ── Remove (soft-delete) ────────────────────────────────────────────────────
+
+function onRemoveClick(m: MemberDto): void {
+  pendingRemove.value = m
+}
+
+function cancelRemove(): void {
+  if (actionInProgress.value) return
+  pendingRemove.value = null
+}
+
+async function confirmRemove(): Promise<void> {
+  const m = pendingRemove.value
+  if (!m) return
+  actionInProgress.value = m.userId
+  try {
+    await removeMember(budgetId, m.userId)
+    pendingRemove.value = null
+    await loadMembers()
+    toastStore.push({ type: 'success', title: t('budgetStructure.members.confirmations.removeSuccess') })
+  } finally {
+    actionInProgress.value = null
+  }
+}
+
+// ── Restore ────────────────────────────────────────────────────────────────
+
+async function onRestore(m: MemberDto): Promise<void> {
+  actionInProgress.value = m.userId
+  try {
+    await restoreMember(budgetId, m.userId)
+    await loadMembers()
+    toastStore.push({ type: 'success', title: t('budgetStructure.members.confirmations.restoreSuccess') })
   } finally {
     actionInProgress.value = null
   }

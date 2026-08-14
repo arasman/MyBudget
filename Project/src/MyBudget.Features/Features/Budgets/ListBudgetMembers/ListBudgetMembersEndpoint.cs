@@ -20,10 +20,11 @@ public static class ListBudgetMembersEndpoint
 
     private static async Task<IResult> Handle(
         Guid id,
+        bool? includeDeleted,
         IMediator mediator,
         CancellationToken ct)
     {
-        var result = await mediator.Send(new ListBudgetMembersQuery(id), ct);
+        var result = await mediator.Send(new ListBudgetMembersQuery(id, includeDeleted ?? false), ct);
         return result.IsSuccess
             ? Results.Ok(result.Value)
             : Results.Problem(result.Error, statusCode: StatusCodes.Status500InternalServerError);
