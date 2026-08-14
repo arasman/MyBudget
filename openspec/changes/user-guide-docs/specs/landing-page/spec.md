@@ -6,7 +6,8 @@
 
 The landing page MUST provide outbound links to the GitHub repository, the README, the
 presentation deck, and the user guide. These MUST be visually subordinate to the primary sign-up
-CTA. The guide link MUST be locale-aware, resolving to `/guide/en/` or `/guide/es/` based on
+CTA. The guide link MUST be locale-aware, resolving to `/guide/en/index.html` or
+`/guide/es/index.html` based on
 `useLocaleStore().locale`. This is an explicit, scoped exception to this area's convention that
 outbound link URLs are not translated (GitHub/README/deck remain single, locale-independent
 URLs) — the guide is the first outbound target with two genuinely localized artifacts.
@@ -28,4 +29,6 @@ URLs) — the guide is the first outbound target with two genuinely localized ar
 
 - GIVEN the landing page renders with `useLocaleStore().locale` set to `en`
 - WHEN the visitor switches locale to `es` via `LanguageSwitcher`
-- THEN the guide link's `href` updates from `/guide/en/` to `/guide/es/` without a page reload
+- THEN the guide link's `href` updates from `/guide/en/index.html` to `/guide/es/index.html`
+  without a page reload (explicit filename, not a bare directory — `vite dev` does not resolve
+  directory-index the way production Caddy does; see apply-progress.md's post-implementation fix)

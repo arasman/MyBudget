@@ -178,5 +178,5 @@ Chain strategy: feature-branch-chain
 ### Phase 4: Final regenerate and full verification
 - [x] 20.1 Run `pnpm guide:build`; commit regenerated `members.html` (both locales) + final sidebar regeneration across all 10×2 chapter pages (now fully published). (ran via direct `node scripts/build-guide.mjs`; left uncommitted per instruction)
 - [x] 20.2 Manual gate: `pnpm guide:check` clean. (ran via direct `node scripts/build-guide.mjs --check` — clean)
-- [ ] 20.3 Manual gate: `pnpm build` — `dist/guide/` has all 22 files; verify `/guide/en/` and `/guide/es/` resolve via their `index.html`. **BLOCKED**, not run (pnpm/node_modules Windows blocker, see Infrastructure Blocker) — needs the human's real run since this PR touches `src/` and TS/Vite compilation of `LandingLinks.vue`/`links.ts` is unverified.
-- [ ] 20.4 Manual gate: `pnpm lint && pnpm test` (full suite) — zero regressions outside this change's files. **BLOCKED**, not run (same pnpm blocker) — needs the human's real run.
+- [x] 20.3 Manual gate: `pnpm build` — `dist/guide/` has all 22 files; verify `/guide/en/` and `/guide/es/` resolve via their `index.html`. **DONE** — human ran `pnpm run build` for real (succeeded), then manually click-through QA'd both locales in `vite dev` after the directory-index fix, confirmed working end to end.
+- [x] 20.4 Manual gate: `pnpm lint && pnpm test` (full suite) — zero regressions outside this change's files. **DONE** — human ran `pnpm test` (851/851 passed) and `pnpm lint` (clean) for real in their own terminal.
