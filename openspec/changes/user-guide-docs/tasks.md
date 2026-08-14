@@ -114,12 +114,12 @@ Chain strategy: feature-branch-chain
 > `budget-execution` (largest source capture sets — curate to ~4–6 per ADR-UGD-06 regardless).
 
 ### Phase 1: `budget-structure-periods-lines`
-- [ ] 10.1 Modify `chapters.mjs` — publish + `images[]`.
-- [ ] 10.2 Author `content/{en,es}/budget-structure-periods-lines.html`.
+- [x] 10.1 Modify `chapters.mjs` — publish + `images[]`.
+- [x] 10.2 Author `content/{en,es}/budget-structure-periods-lines.html`.
 
 ### Phase 2: `budget-execution`
-- [ ] 11.1 Modify `chapters.mjs` — publish + `images[]`.
-- [ ] 11.2 Author `content/{en,es}/budget-execution.html`.
+- [x] 11.1 Modify `chapters.mjs` — publish + `images[]`.
+- [x] 11.2 Author `content/{en,es}/budget-execution.html`.
 
 ### Phase 3: Regenerate and verify
 - [ ] 12.1 Run `pnpm guide:build`; commit regenerated output (incl. sidebar updates on all prior pages).

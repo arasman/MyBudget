@@ -1,0 +1,99 @@
+<h1>Periods &amp; budget lines</h1>
+
+<p>
+  Before you can record any spending, a budget needs two more things beyond cycles and
+  categories: periods to slice a cycle into manageable chunks of time, and budget lines to
+  say what you're planning to spend or save. This chapter covers both — periods live inside
+  a cycle, while budget lines belong to the budget as a whole and can be reused across cycles.
+</p>
+
+<h2>Periods within a cycle</h2>
+<p>
+  Open a cycle from the Cycles list to see its periods. Only owners and admins can create or
+  modify periods. Each period needs a name and a start/end date range that falls inside the
+  parent cycle's own date range; MyBudget rejects a period whose dates fall outside the cycle
+  or overlap another period in the same cycle.
+</p>
+<figure>
+  <img src="../assets/budget-structure-periods-lines/01-period-list-empty.png" alt="A cycle with no periods yet" width="960" height="600">
+  <figcaption>A freshly created cycle, before any period exists.</figcaption>
+</figure>
+<p>
+  Reusing a period name that already exists in the same cycle is rejected rather than creating
+  a duplicate — pick a different name, or edit the existing period instead.
+</p>
+<figure>
+  <img src="../assets/budget-structure-periods-lines/03-period-create-success.png" alt="Period created successfully, listed with an Open badge" width="960" height="600">
+  <figcaption>A new period appears in the list with an Open status badge.</figcaption>
+</figure>
+
+<h2>Status, deletion, and restoring a period</h2>
+<p>
+  A period's status is Open, Closed, or Locked — visible as a badge and changed from the
+  refresh-style icon in its row. Closing a period is how you signal that execution for that
+  window is finished; locking goes a step further. Renaming a period's name or dates is done
+  with a double-click directly in the row, same inline pattern as budget lines below.
+</p>
+<figure>
+  <img src="../assets/budget-structure-periods-lines/06-period-status-success.png" alt="Period status changed to Closed" width="960" height="600">
+  <figcaption>After changing status: the period now shows a Closed badge.</figcaption>
+</figure>
+<p>
+  Deleting a period is a soft delete behind a confirmation dialog, same as everywhere else in
+  MyBudget's structure screens. Restoring one shows a warning first if any budget lines were
+  also deleted along the way, since restoring can bring those back with it — you choose whether
+  to restore with or without the cascaded lines.
+</p>
+
+<h2>Budget lines</h2>
+<p>
+  A budget line is a single planned item — an expense, a long-term savings goal, or a
+  preventive-savings target — assigned to a category and a category group. Lines are
+  budget-scoped, not cycle-scoped: they carry a start date and an optional end date (leave it
+  empty for a line with no expiry), so the same line can stay active across several cycles.
+  Creating or editing a line requires at least the operator role.
+</p>
+<p>
+  There are two ways to add one: the "New line" button opens a full form, or you can use the
+  inline "+ create" row at the bottom of the table for a quicker entry with the same fields.
+  Either way, a line needs a name, a type, a category, a currency (from the cycle's default or
+  alternate currency), and a budgeted amount. Reusing a line name that already exists in the
+  budget is rejected the same way duplicate period names are.
+</p>
+<figure>
+  <img src="../assets/budget-structure-periods-lines/11-line-create-success.png" alt="Budget line created and listed in the table" width="960" height="600">
+  <figcaption>A new budget line, listed with its group, category, type, and budgeted amount.</figcaption>
+</figure>
+
+<h2>Editing a budget line</h2>
+<p>
+  Double-clicking a line's name switches that row into inline edit mode — no modal, same as
+  periods. You can change the name, type, category, and description this way. The start date,
+  end date, initial amount, and currency become read-only once a line exists, because those are
+  the values MyBudget used to establish the line in the first place; changing the budgeted
+  amount going forward uses a separate mechanism (below) instead of rewriting history.
+</p>
+<figure>
+  <img src="../assets/budget-structure-periods-lines/13-line-edit-inline.png" alt="Budget line row switched into inline edit mode" width="960" height="600">
+  <figcaption>Inline edit mode, opened by double-clicking the line's name.</figcaption>
+</figure>
+
+<h2>Adjusting the budgeted amount over time</h2>
+<p>
+  A line's budgeted amount can change over time without losing its history: admins can add a
+  dated revision with a new amount, an optional end date, and a note explaining the change.
+  Only admins can edit or delete a revision, and MyBudget blocks deleting the line's very first
+  (original) revision, or any revision that already has execution records against it — both
+  would leave the line's history inconsistent.
+</p>
+
+<h2>Removing a budget line</h2>
+<p>
+  Deleting a line is a soft delete behind a confirmation dialog; the "Show deleted" toggle above
+  the table reveals removed lines with a "Deleted" badge and a restore action, so nothing is
+  ever destroyed by accident.
+</p>
+<figure>
+  <img src="../assets/budget-structure-periods-lines/16-line-delete-success.png" alt="Budget line soft-deleted, shown with a Deleted badge" width="960" height="600">
+  <figcaption>A deleted line stays visible (when "Show deleted" is on) with a Deleted badge.</figcaption>
+</figure>

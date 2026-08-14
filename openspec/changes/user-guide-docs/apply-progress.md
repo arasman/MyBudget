@@ -1,12 +1,16 @@
-# Apply Progress: user-guide-docs (PR1 of 5, PR2 of 5)
+# Apply Progress: user-guide-docs (PR1 of 5, PR2 of 5, PR3 of 5)
 
-## Status: PR1 DONE — implemented, tested (real), committed, reviewed. PR2 IMPLEMENTED, NOT COMMITTED.
+## Status: PR1 DONE — implemented, tested (real), committed, reviewed. PR2 DONE — implemented, tested (real, 30/30), committed, user-confirmed. PR3 IMPLEMENTED, NOT COMMITTED.
 
 Chain: `feat/user-guide-docs` (tracker) ← PR1 `feat/user-guide-docs-pr1` ← PR2
-`feat/user-guide-docs-pr2` (current) ← PR3 ← PR4 ← PR5.
+`feat/user-guide-docs-pr2` ← PR3 `feat/user-guide-docs-pr3` (current) ← PR4 ← PR5.
 PR1's scope (guide infra + `auth` pilot chapter) is committed and reviewed. PR2's scope
-(`budget-management`, `budget-structure-cycles`, `budget-structure-categories`) is implemented in
-this batch, uncommitted. PR3–PR5 tasks were not touched.
+(`budget-management`, `budget-structure-cycles`, `budget-structure-categories`) is now committed on
+`feat/user-guide-docs-pr2` and user-confirmed for real (30/30 `pnpm vitest`, `pnpm run build`
+clean) — this section of the file previously described PR2 as uncommitted; that has since been
+resolved outside this apply batch and is corrected here. PR3's scope
+(`budget-structure-periods-lines`, `budget-execution`) is implemented in this batch, uncommitted,
+on `feat/user-guide-docs-pr3` (base `feat/user-guide-docs-pr2`). PR4–PR5 tasks were not touched.
 
 **Commits on `feat/user-guide-docs-pr1`:**
 - `1e2d45b` — PR1 implementation (infra + `auth` chapter), 28 files, ~1185 authored lines
@@ -276,6 +280,103 @@ explicit instruction — all changes are uncommitted working-tree modifications 
 run build` confirmation, and explicit approval before `git add`/`commit`/`push`. Ready to move on
 to PR3 once approved.
 
+## PR 3 — Planning & Execution Chapters (`budget-structure-periods-lines`, `budget-execution`)
+
+Branch `feat/user-guide-docs-pr3`, base `feat/user-guide-docs-pr2` (PR2 now committed/reviewed/
+user-confirmed — see corrected status note above). Same content-only pattern as PR2: no generator
+or test changes, `chapters.mjs` manifest diff + 4 new authored fragments (EN+ES × 2 chapters)
+against PR1's already-tested infra.
+
+### Where
+- `Project/frontend/scripts/guide/chapters.mjs` — flipped `published: true` for
+  `budget-structure-periods-lines` and `budget-execution`; added curated `images[]` (6 each,
+  filenames verified against `docs/slides/flows/<slug>/index.md` and the real files on disk).
+- `Project/frontend/scripts/guide/content/{en,es}/budget-structure-periods-lines.html` — 6
+  headings each locale (Periods within a cycle; Status, deletion, and restoring a period; Budget
+  lines; Editing a budget line; Adjusting the budgeted amount over time; Removing a budget line),
+  grounded in `CycleDetailView.vue` (periods, `canWriteStructure` gate, `PERIOD_NAME_DUPLICATE`/
+  `PERIOD_OUT_OF_CYCLE_RANGE`/`PERIOD_DATE_OVERLAP`, restore-cascade disclosure), `BudgetLinesView.vue`
+  + `BudgetLineModal.vue` (lines, `canWriteLines` gate, modal + inline "+ create" row, read-only
+  fields once a line exists, `BUDGET_LINE_NAME_DUPLICATE`), and `BudgetLineCustomizationsView.vue`
+  (dated revisions, admin-only, `CANNOT_DELETE_ORIGINAL_REVISION`/`REVISION_HAS_ACTIVE_EXECUTIONS`
+  constraints, text-only — no capture exists for revisions in the flow's screenshot set).
+- `Project/frontend/scripts/guide/content/{en,es}/budget-execution.html` — 5 headings each locale
+  (Reading the matrix; Recording an execution; Editing, deleting, and restoring entries; Switching
+  the display currency; Collapsing groups for a denser view), grounded in `BudgetMatrixView.vue`
+  (group→category→line nesting, Budgeted/Executed/Difference columns from `budgetMatrix.columns`
+  i18n keys, period prev/next nav), `MatrixCell.vue` (double-click opens the execution modal),
+  `ExecutionRecordForm.vue` (entry types Expense/CreditNote/DebitNote, note always required —
+  `noteRequiredAlways` validation), `ExecutionRecordRow.vue` (two-step delete confirm, restore
+  still available post period-close for operators+), `MatrixControls.vue` (GTQ/USD currency
+  toggle, exchange-rate input locked when every visible period is closed), and
+  `MatrixGroupRow.vue`/`MatrixCategoryRow.vue` (independent group/category collapse).
+- `Project/frontend/public/guide/{en,es}/{budget-structure-periods-lines,budget-execution}.html`
+  + `public/guide/assets/{budget-structure-periods-lines,budget-execution}/*.png` (12 files) —
+  generated/copied via `node scripts/build-guide.mjs`, excluded from authored count as goldens.
+- `Project/frontend/public/guide/{en,es}/{auth,budget-management,budget-structure-cycles,
+  budget-structure-categories,index}.html` — regenerated sidebars only (both new chapters flipped
+  from `<span class="disabled">` to `<a href="...">`); confirmed via `git diff` on `auth.html`
+  (+4/-4, sidebar `<ol>` only, no other content changed).
+- `openspec/changes/user-guide-docs/tasks.md` — PR3's 4 tasks (10.1, 10.2, 11.1, 11.2) marked
+  `[x]`. Tasks 12.1/12.2 (regenerate + `guide:check` gate) are covered by the verification below
+  but left unchecked on disk pending the user's own confirmation run, matching PR1/PR2's pattern of
+  reserving the final manual-gate checkbox for the human-run command.
+- `openspec/changes/user-guide-docs/apply-progress.md` (this file) — corrected the stale PR2
+  "NOT COMMITTED" status (PR2 was committed/verified outside this apply batch, confirmed by the
+  launch context) and appended this PR3 section; PR1/PR2 sections kept intact above.
+
+### Curation decisions
+- `budget-structure-periods-lines` (16 source captures, kept 6): `01-period-list-empty`,
+  `03-period-create-success`, `06-period-status-success`, `11-line-create-success`,
+  `13-line-edit-inline`, `16-line-delete-success`. Skipped both duplicate-name-error captures
+  (`04-period-create-duplicate-error`, `12-line-create-duplicate-error` — described in prose
+  instead, following PR2's precedent of not needing an image for every validation rule),
+  `02-period-create-form`/`10-line-create-form` (the *-success frame already shows the filled
+  state's result), `05-period-status-form`, `07/08-period-delete-confirm/success` and
+  `09-line-list-empty`/`14-line-edit-success`/`15-line-delete-confirm` (redundant with the kept
+  frames). Prioritized `13-line-edit-inline` specifically because inline-edit-without-a-modal is
+  the one interaction pattern in this chapter that differs from every prior chapter's
+  pencil-icon-opens-modal pattern and is worth showing, not just describing.
+- `budget-execution` (11 source captures, kept 6 — largest source set of any chapter per
+  design.md, curated hardest here): `01-matrix-view`, `03-create-validation-error`,
+  `04-create-form-filled`, `06-matrix-updated`, `07-currency-toggle-usd`, `09-collapse-group`.
+  Skipped `02-open-execution-modal` (a mostly-empty modal frame, less informative than the
+  validation-error frame that immediately follows it), `05-create-success` (redundant with
+  `06-matrix-updated`, which shows the same result already reflected in the matrix — the more
+  useful of the two), `08-currency-toggle-gtq` (near-duplicate of `07`, "toggle back" tells no new
+  story), and `10-delete-confirm`/`11-delete-success` (the two-step delete UX is fully covered in
+  prose; every other new-vs-skipped tradeoff in this chapter favored a novel interaction over a
+  standard CRUD step, and delete here is the same soft-delete-behind-confirm pattern already shown
+  with images in three earlier chapters).
+
+### Work Unit Evidence (WU3)
+
+| Evidence | Value |
+|---|---|
+| Focused test command and exact result | `pnpm guide:check` — **could not execute via pnpm** (same environment blocker as PR1/PR2, see Infrastructure Blocker section below, reproduced again this session). Substitute: ran `node scripts/build-guide.mjs` then `node scripts/build-guide.mjs --check` directly from `Project/frontend` — both succeeded (`build-guide: wrote 6 chapter(s) x 2 locale(s) + index pages.` / `guide:check: clean — committed public/guide/** matches the manifest + fragments.`, exit 0, 0 validation errors). The real generator run internally exercises `validateManifest`/`validateAssetPath`/`validateLocaleParity` against the actual new `chapters.mjs` entries and fragments (not fixtures), which is the load-bearing check for a content-only batch — same evidence bar PR2 used. |
+| Runtime harness command/scenario and exact result | `node scripts/build-guide.mjs` produced the 4 new chapter pages (2 slugs × 2 locales) + regenerated `index.html`/`auth.html`/`budget-management.html`/`budget-structure-cycles.html`/`budget-structure-categories.html` sidebars + copied 12 curated PNGs into `public/guide/assets/**`. Verified via `git diff --stat` + `git diff` on `auth.html`: only the sidebar `<ol>` changed (+4/-4, both new chapters flipped from disabled-span to anchor, both locales) — no other content touched. Manually confirmed every `images[]` entry for both new chapters has a matching PNG under `docs/slides/flows/<slug>/` and every `../assets/...` reference in the authored fragments is listed in that chapter's `images[]` (the generator's own validation pass, which ran clean, is the authoritative check here). EN/ES parity manually confirmed via `grep -c`: `budget-structure-periods-lines` 6/6 `<h2>`, 6/6 `<img>`; `budget-execution` 5/5 `<h2>`, 6/6 `<img>`. |
+| Rollback boundary | Revert the 2 `chapters.mjs` manifest entries (restore `published: false`, drop `images[]`), delete the 4 new `content/{en,es}/*.html` fragments, delete `public/guide/assets/{budget-structure-periods-lines,budget-execution}/`, delete the 4 new `public/guide/{en,es}/*.html` pages, and regenerate (or revert directly) the 5 previously-published pages' sidebars to restore the PR1+PR2-only state. All isolated to this batch; PR1's committed infra/generator and PR2's committed 3 chapters are untouched. |
+
+### Deviations from Design / Tasks
+None — implementation matches design.md's ADR-UGD-06 curation approach and PR3's task scope in
+tasks.md exactly. Task 12.1/12.2 (the two manual-gate checkboxes) are intentionally left `[ ]` on
+disk pending the human-run `pnpm guide:build`/`pnpm guide:check`, matching how PR1/PR2 reserved
+their equivalent manual gates.
+
+### Issues Found
+None. `pnpm`/`node_modules` remains blocked in this session by the same pre-existing Windows
+filesystem-level corruption documented in PR1's Infrastructure Blocker section — reproduced again,
+not caused by this PR's code.
+
+## Status (PR3)
+4/4 PR3 authoring tasks complete (10.1, 10.2, 11.1, 11.2). Generator run + check verified via
+substitute direct-`node` execution (same pnpm/node_modules blocker as PR1/PR2). Left uncommitted
+per explicit instruction — all PR3 changes are working-tree modifications on
+`feat/user-guide-docs-pr3`, awaiting orchestrator/user review, the real `pnpm vitest run`/`pnpm run
+build` confirmation, and explicit approval before `git add`/`commit`/`push`. Ready to move on to
+PR4 once approved.
+
 ## Cumulative task status (all PRs)
-34/67 tasks complete (PR1: 25/27 — 5.4/5.5 remain the same partially-verified infra manual gates
-as before; PR2: 9/9 — fully complete). PR3–PR5 (33 tasks) not started.
+38/67 tasks complete (PR1: 25/27 — 5.4/5.5 remain the same partially-verified infra manual gates
+as before; PR2: 9/9 — fully complete, committed; PR3: 4/4 authoring tasks complete, 12.1/12.2
+manual gates pending the human-run commands). PR4–PR5 (29 tasks) not started.

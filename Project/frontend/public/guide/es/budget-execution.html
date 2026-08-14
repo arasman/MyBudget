@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Matriz y ejecución · Guía de usuario de MyBudget</title>
+    <link rel="stylesheet" href="../assets/guide.css" />
+    <link rel="alternate" hreflang="en" href="../en/budget-execution.html" />
+  </head>
+  <body>
+    <a class="skip" href="#content">Saltar al contenido</a>
+    <div class="layout">
+      <nav class="sidebar" aria-label="Navegación de la guía">
+        <a class="brand" href="./index.html">Guía de usuario de MyBudget</a>
+        <p class="locale-toggle">
+          <a href="../en/budget-execution.html" hreflang="en" lang="en">English</a>
+        </p>
+        <ol>
+      <li><a href="auth.html">Cuenta e inicio de sesión</a></li>
+      <li><a href="budget-management.html">Presupuestos</a></li>
+      <li><a href="budget-structure-cycles.html">Ciclos</a></li>
+      <li><a href="budget-structure-categories.html">Categorías</a></li>
+      <li><a href="budget-structure-periods-lines.html">Periodos y líneas de presupuesto</a></li>
+      <li><span aria-current="page">Matriz y ejecución</span></li>
+      <li><span class="disabled">Cuentas bancarias</span></li>
+      <li><span class="disabled">Situación actual</span></li>
+      <li><span class="disabled">Panel</span></li>
+      <li><span class="disabled">Miembros</span></li>
+        </ol>
+        <p class="back"><a href="/">Volver a la app</a></p>
+      </nav>
+      <main id="content" class="content">
+        <h1>Matriz y ejecución</h1>
+
+<p>
+  La matriz de ejecución es donde la planificación se convierte en seguimiento: presenta cada
+  línea de presupuesto contra cada periodo del ciclo actual, y te permite registrar lo que
+  realmente gastaste, un registro a la vez. Este capítulo cubre cómo leer la matriz, registrar
+  y administrar registros de ejecución, cambiar la moneda de visualización, y colapsar grupos
+  para una vista más densa.
+</p>
+
+<h2>Leer la matriz</h2>
+<p>
+  Las filas están anidadas por grupo de categorías, luego categoría, luego línea de
+  presupuesto — la misma estructura que armaste en los capítulos de Categorías y Periodos y
+  líneas de presupuesto. Cada periodo visible tiene tres columnas: Presupuesto (el monto
+  planeado de la línea para ese periodo), Ejecutado (la suma de sus registros de ejecución), y
+  Diferencia. Usá las flechas anterior/siguiente arriba de la tabla para moverte entre periodos;
+  la columna de etiquetas queda fija a la izquierda mientras te desplazás horizontalmente.
+</p>
+<figure>
+  <img src="../assets/budget-execution/01-matrix-view.png" alt="Matriz de ejecución de presupuesto, agrupada por categoría, antes de registrar cualquier ejecución" width="960" height="600">
+  <figcaption>La matriz antes de que exista ninguna ejecución: líneas de presupuesto por grupo y categoría, periodos como columnas.</figcaption>
+</figure>
+
+<h2>Registrar una ejecución</h2>
+<p>
+  Hacé doble clic en la celda de Ejecutado de una línea, en el periodo contra el que querés
+  registrar — eso abre un modal que lista los registros existentes para esa línea y ese
+  periodo, con un formulario de agregar debajo. Cada registro tiene un tipo (Gasto, Nota de
+  crédito, o Nota de débito), un monto, una fecha de operación, y una nota. La nota es
+  obligatoria para todo tipo de registro, sin excepciones — dejarla vacía se rechaza antes de
+  que la solicitud llegue siquiera al servidor.
+</p>
+<figure>
+  <img src="../assets/budget-execution/03-create-validation-error.png" alt="Formulario de ejecución rechazando el envío porque el campo de nota está vacío" width="960" height="600">
+  <figcaption>Enviar sin una nota se rechaza del lado del cliente.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/budget-execution/04-create-form-filled.png" alt="Formulario de ejecución completo con un monto y una nota, listo para enviar" width="960" height="600">
+  <figcaption>Un registro de gasto, completo y listo para guardar.</figcaption>
+</figure>
+<p>
+  Una vez guardado, el registro aparece en la lista del modal y el total de Ejecutado de la
+  línea se actualiza de inmediato — sin necesidad de cerrar el modal y volver a abrirlo.
+</p>
+<figure>
+  <img src="../assets/budget-execution/06-matrix-updated.png" alt="Celda de Ejecutado de la matriz reflejando el nuevo total de ejecución" width="960" height="600">
+  <figcaption>La celda de Ejecutado refleja el nuevo total después de guardar el registro.</figcaption>
+</figure>
+
+<h2>Editar, eliminar y restaurar registros</h2>
+<p>
+  Cada registro en la lista tiene sus propios controles de editar y eliminar, visibles para
+  operadores, administradores y el propietario. Eliminar es una acción de dos pasos — un primer
+  clic arma una confirmación, un segundo clic remueve el registro — para evitar un borrado
+  accidental con un solo clic en algo que, después de todo, es seguimiento de dinero. Una vez
+  que un periodo está cerrado, las ediciones y eliminaciones nuevas quedan bloqueadas, pero un
+  registro eliminado todavía se puede restaurar incluso entonces, así que un error cometido
+  justo antes de cerrar un periodo no queda atascado para siempre.
+</p>
+
+<h2>Cambiar la moneda de visualización</h2>
+<p>
+  Si un ciclo tiene configurada una moneda alternativa, la barra de controles arriba de la
+  matriz te permite alternar toda la matriz entre la moneda predeterminada del ciclo y esa
+  alternativa, convertida al tipo de cambio del ciclo. La tasa misma es editable ahí mismo —
+  a menos que todos los periodos visibles estén cerrados, en cuyo caso queda bloqueada para
+  evitar reescribir una tasa que ya produjo totales de periodos cerrados.
+</p>
+<figure>
+  <img src="../assets/budget-execution/07-currency-toggle-usd.png" alt="Matriz mostrando montos convertidos a la moneda alternativa" width="960" height="600">
+  <figcaption>Montos convertidos a la moneda alternativa del ciclo al tipo de cambio configurado.</figcaption>
+</figure>
+
+<h2>Colapsar grupos para una vista más densa</h2>
+<p>
+  Un ciclo con muchas categorías y líneas puede resultar en una tabla muy alta. Colapsar un
+  grupo de categorías oculta sus filas de categorías y líneas, manteniendo visible la fila del
+  grupo (y su subtotal) — útil cuando sólo necesitás revisar totales para la mayoría de los
+  grupos y profundizar en uno o dos. Las categorías se colapsan de la misma forma,
+  independientemente de su grupo padre.
+</p>
+<figure>
+  <img src="../assets/budget-execution/09-collapse-group.png" alt="Un grupo de categorías colapsado, ocultando sus filas de categorías y líneas" width="960" height="600">
+  <figcaption>Un grupo colapsado: sus categorías y líneas están ocultas, su propia fila permanece visible.</figcaption>
+</figure>
+
+      </main>
+    </div>
+  </body>
+</html>

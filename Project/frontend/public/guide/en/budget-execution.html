@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Matrix &amp; execution · MyBudget User Guide</title>
+    <link rel="stylesheet" href="../assets/guide.css" />
+    <link rel="alternate" hreflang="es" href="../es/budget-execution.html" />
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+    <div class="layout">
+      <nav class="sidebar" aria-label="Guide navigation">
+        <a class="brand" href="./index.html">MyBudget User Guide</a>
+        <p class="locale-toggle">
+          <a href="../es/budget-execution.html" hreflang="es" lang="es">Español</a>
+        </p>
+        <ol>
+      <li><a href="auth.html">Account &amp; sign-in</a></li>
+      <li><a href="budget-management.html">Budgets</a></li>
+      <li><a href="budget-structure-cycles.html">Cycles</a></li>
+      <li><a href="budget-structure-categories.html">Categories</a></li>
+      <li><a href="budget-structure-periods-lines.html">Periods &amp; budget lines</a></li>
+      <li><span aria-current="page">Matrix &amp; execution</span></li>
+      <li><span class="disabled">Bank accounts</span></li>
+      <li><span class="disabled">Current situation</span></li>
+      <li><span class="disabled">Dashboard</span></li>
+      <li><span class="disabled">Members</span></li>
+        </ol>
+        <p class="back"><a href="/">Back to the app</a></p>
+      </nav>
+      <main id="content" class="content">
+        <h1>Matrix &amp; execution</h1>
+
+<p>
+  The execution matrix is where planning turns into tracking: it lays out every budget line
+  against every period of the current cycle, and lets you record what you actually spent, one
+  entry at a time. This chapter covers reading the matrix, recording and managing execution
+  entries, switching the display currency, and collapsing groups for a denser view.
+</p>
+
+<h2>Reading the matrix</h2>
+<p>
+  Rows are nested by category group, then category, then budget line — the same structure you
+  set up in the Categories and Periods &amp; budget lines chapters. Each visible period gets
+  three columns: Budgeted (the line's planned amount for that period), Executed (the sum of its
+  execution entries), and Difference. Use the prev/next arrows above the table to move between
+  periods; the label column stays pinned on the left as you scroll horizontally.
+</p>
+<figure>
+  <img src="../assets/budget-execution/01-matrix-view.png" alt="Budget execution matrix, grouped by category, before any execution is recorded" width="960" height="600">
+  <figcaption>The matrix before any execution exists: budget lines by group and category, periods as columns.</figcaption>
+</figure>
+
+<h2>Recording an execution</h2>
+<p>
+  Double-click a line's Executed cell for the period you want to record against — that opens a
+  modal listing existing entries for that line and period, with an add form below it. Every
+  entry has a type (Expense, Credit Note, or Debit Note), an amount, an operation date, and a
+  note. The note is mandatory for every entry type, no exceptions — leaving it blank is rejected
+  before the request even reaches the server.
+</p>
+<figure>
+  <img src="../assets/budget-execution/03-create-validation-error.png" alt="Execution form rejecting a submission because the note field is empty" width="960" height="600">
+  <figcaption>Submitting without a note is rejected client-side.</figcaption>
+</figure>
+<figure>
+  <img src="../assets/budget-execution/04-create-form-filled.png" alt="Execution form filled with an amount and a note, ready to submit" width="960" height="600">
+  <figcaption>An expense entry, filled in and ready to save.</figcaption>
+</figure>
+<p>
+  Once saved, the entry shows up in the modal's list and the line's Executed total updates
+  immediately — no need to close the modal and reopen it.
+</p>
+<figure>
+  <img src="../assets/budget-execution/06-matrix-updated.png" alt="Matrix Executed cell reflecting the new execution total" width="960" height="600">
+  <figcaption>The Executed cell reflects the new total after the entry is saved.</figcaption>
+</figure>
+
+<h2>Editing, deleting, and restoring entries</h2>
+<p>
+  Each entry in the list has its own edit and delete controls, visible to operators, admins, and
+  the owner. Deleting is a two-step action — a first click arms a confirmation, a second one
+  removes the entry — to avoid an accidental single-click delete on what is, after all, money
+  tracking. Once a period is closed, new edits and deletes are locked, but a deleted entry can
+  still be restored even then, so a mistake made just before closing a period isn't permanently
+  stuck.
+</p>
+
+<h2>Switching the display currency</h2>
+<p>
+  If a cycle has an alternate currency configured, the controls bar above the matrix lets you
+  toggle the whole matrix between the cycle's default currency and that alternate one, converted
+  at the cycle's exchange rate. The rate itself is editable right there — unless every visible
+  period is closed, in which case it's locked to avoid rewriting a rate that already produced
+  closed-period totals.
+</p>
+<figure>
+  <img src="../assets/budget-execution/07-currency-toggle-usd.png" alt="Matrix showing amounts converted to the alternate currency" width="960" height="600">
+  <figcaption>Amounts converted to the cycle's alternate currency at the configured exchange rate.</figcaption>
+</figure>
+
+<h2>Collapsing groups for a denser view</h2>
+<p>
+  A cycle with many categories and lines can make for a tall table. Collapsing a category group
+  hides its category and line rows while keeping the group's own row (and its subtotal) visible
+  — useful when you only need to check totals for most groups and drill into one or two.
+  Categories collapse the same way, independently of their parent group.
+</p>
+<figure>
+  <img src="../assets/budget-execution/09-collapse-group.png" alt="A category group collapsed, hiding its category and line rows" width="960" height="600">
+  <figcaption>A collapsed group: its categories and lines are hidden, its own row stays visible.</figcaption>
+</figure>
+
+      </main>
+    </div>
+  </body>
+</html>
