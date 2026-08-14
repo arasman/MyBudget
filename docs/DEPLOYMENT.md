@@ -200,17 +200,24 @@ The server may carry local-only overrides that never got committed to `main` (co
 ssh -i <your-key> deploy@<server-ip>
 cd ~/MyBudget
 
-# 2. Check for drift before touching anything. Expect either a clean tree,
-#    or only known server-only overrides (check git log / prior notes for
-#    which files those are — currently: Project/frontend/pnpm-workspace.yaml).
+# 2. Check for drift before touching anything. As of 2026-08-13, no
+#    known server-only override remains (the last one, pnpm-workspace.yaml's
+#    allowBuilds, was merged to main) — expect a clean tree. If git status
+#    shows an unexpected diff, that's a NEW server-only tweak; note which
+#    file it is before continuing (step 3 handles it either way).
 git status
 
-# 3. Stash local overrides, pull, restore them.
+# 3. Stash local overrides, pull, restore them. Do this every time, even if
+#    step 2 showed a clean tree and no override is currently known — a new
+#    server-only tweak can appear at any point, and `git stash` on a clean
+#    tree is a harmless no-op ("No local changes to save").
 git stash
 git pull
 git stash pop
+#    If pop reports "No stash entries found", step 2 was genuinely clean —
+#    continue, nothing to do.
 
-# 4. If step 3's pop reports a conflict:
+# 4. If step 3's pop reports a CONFLICT (not "no stash entries"):
 #    - Inspect: git status / git diff <file>
 #    - If main's incoming version already supersedes the local override
 #      (the same fix landed upstream since): keep HEAD's version —
@@ -218,7 +225,8 @@ git stash pop
 #        git add <file>
 #    - If it's a genuine divergence: merge by hand, then git add <file>
 git status
-git stash drop   # only after confirming the resolution is correct
+git stash drop   # only after confirming the resolution is correct, and only
+                 # if a conflicted stash actually remains — see note above
 
 # 5. Rebuild frontend (skip if only backend changed).
 cd Project/frontend
@@ -231,7 +239,13 @@ cd ..
 #    only that image actually rebuilds.
 docker compose -f docker-compose.prod.yml up -d --build
 
-# 7. Verify Caddy came up clean — look for TLS cert issuance for the right
+# 7. Verify the API came up clean — if this release includes an EF Core
+#    migration, confirm it applied (look for the migration log lines, then
+#    "Now listening on"). A failed migration can crash-loop the api
+#    container silently behind Caddy.
+docker compose -f docker-compose.prod.yml logs api
+
+# 8. Verify Caddy came up clean — look for TLS cert issuance for the right
 #    domain, no parse/ACME errors.
 docker compose -f docker-compose.prod.yml logs caddy
 ```
