@@ -1,10 +1,20 @@
 // REQ-TOAST-MATRIX-LINE-DELETE, REQ-TOAST-MATRIX-LINE-RESTORE
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, fireEvent, waitFor } from '@testing-library/vue'
+import { render, fireEvent, waitFor, screen } from '@testing-library/vue'
 import { createPinia, setActivePinia } from 'pinia'
+import { computed } from 'vue'
 
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({ t: (k: string) => k }),
+}))
+
+const roleGateState: { isAdmin: boolean } = { isAdmin: true }
+
+vi.mock('@/features/budget-structure/composables/useRoleGate', () => ({
+  useRoleGate: () => ({
+    isAdmin: computed(() => roleGateState.isAdmin),
+    isOperator: computed(() => roleGateState.isAdmin),
+  }),
 }))
 
 const { mockToastPush, mockMatrixStore, mockStructureStore } = vi.hoisted(() => ({
@@ -128,6 +138,7 @@ describe('MatrixLineRow.vue — toast on delete and restore', () => {
     mockStructureStore.deleteLine.mockResolvedValue(undefined)
     mockStructureStore.restoreLine.mockResolvedValue(undefined)
     mockMatrixStore.invalidateAllPeriods.mockResolvedValue(undefined)
+    roleGateState.isAdmin = true
   })
 
   it('doDelete calls toast.push with deleteSuccess on success', async () => {
@@ -235,6 +246,7 @@ describe('MatrixLineRow.vue — toast on modal edit (handleEditSubmit)', () => {
     mockMatrixStore.allPeriods = [{ id: 'period-1' }]
     mockStructureStore.updateLine = vi.fn().mockResolvedValue(undefined)
     mockMatrixStore.invalidateAllPeriods.mockResolvedValue(undefined)
+    roleGateState.isAdmin = true
   })
 
   it('handleEditSubmit calls toast.push with updateLineSuccess on success', async () => {
@@ -265,5 +277,55 @@ describe('MatrixLineRow.vue — toast on modal edit (handleEditSubmit)', () => {
         title: 'budgetMatrix.rows.updateLineSuccess',
       })
     })
+  })
+})
+
+describe('MatrixLineRow.vue — role gating (ReadOnly users)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+    mockMatrixStore.showDeleted = false
+    mockMatrixStore.allPeriods = [{ id: 'period-1' }]
+    mockStructureStore.deleteLine.mockResolvedValue(undefined)
+    mockStructureStore.restoreLine.mockResolvedValue(undefined)
+    mockMatrixStore.invalidateAllPeriods.mockResolvedValue(undefined)
+  })
+
+  it('hides move up/down and delete buttons when isAdmin=false', () => {
+    roleGateState.isAdmin = false
+    const { queryByTitle } = renderRow()
+
+    expect(queryByTitle('budgetMatrix.rows.moveUp')).toBeNull()
+    expect(queryByTitle('budgetMatrix.rows.moveDown')).toBeNull()
+    expect(queryByTitle('budgetMatrix.rows.delete')).toBeNull()
+  })
+
+  it('shows move up/down and delete buttons when isAdmin=true', () => {
+    roleGateState.isAdmin = true
+    const { queryByTitle } = renderRow()
+
+    expect(queryByTitle('budgetMatrix.rows.moveUp')).not.toBeNull()
+    expect(queryByTitle('budgetMatrix.rows.moveDown')).not.toBeNull()
+    expect(queryByTitle('budgetMatrix.rows.delete')).not.toBeNull()
+  })
+
+  it('does not open the edit modal on dblclick when isAdmin=false', async () => {
+    roleGateState.isAdmin = false
+    const { getByText } = renderRow()
+
+    await fireEvent.dblClick(getByText('Internet'))
+
+    // BudgetLineModal stub setup() never registers a submit handler if not mounted
+    triggerModalSubmit.call({ name: 'Should not apply' })
+    expect(mockStructureStore.updateLine).not.toHaveBeenCalled()
+  })
+
+  it('hides the restore button on a deleted line when isAdmin=false', () => {
+    roleGateState.isAdmin = false
+    mockMatrixStore.showDeleted = true
+
+    renderRow({ deletedAt: '2026-01-01T00:00:00Z' })
+
+    expect(screen.queryByTitle('budgetMatrix.rows.restore')).toBeNull()
   })
 })

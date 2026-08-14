@@ -10,6 +10,7 @@
         {{ t('bankAccount.title') }}
       </h2>
       <button
+        v-if="isAdmin"
         class="btn btn-primary btn-sm"
         @click="openCreate"
       >
@@ -103,6 +104,7 @@
                 <!-- Active account actions -->
                 <template v-if="!account.deletedAt">
                   <button
+                    v-if="isAdmin"
                     class="btn btn-xs btn-ghost btn-square"
                     :title="t('bankAccount.edit')"
                     @click="openEdit(account)"
@@ -110,6 +112,7 @@
                     <Pencil :size="14" />
                   </button>
                   <button
+                    v-if="isAdmin"
                     class="btn btn-xs btn-ghost btn-square text-error"
                     :title="t('bankAccount.delete')"
                     @click="openDelete(account)"
@@ -120,6 +123,7 @@
                 <!-- Deleted account actions -->
                 <template v-else>
                   <button
+                    v-if="isAdmin"
                     class="btn btn-success btn-xs"
                     :title="t('bankAccount.restore')"
                     @click="handleRestore(account)"
@@ -218,6 +222,7 @@ import { useI18n } from 'vue-i18n'
 import { Pencil, RotateCcw, Trash2 } from 'lucide-vue-next'
 import { useBankAccountStore } from '../store/useBankAccountStore'
 import { useToastStore } from '@/stores/toast.store'
+import { useRoleGate } from '@/features/budget-structure/composables/useRoleGate'
 import { extractApiErrorCode } from '@/features/budget-structure/utils/apiError'
 import BudgetTabs from '@/features/budget-structure/components/BudgetTabs.vue'
 import BankAccountForm from '../components/BankAccountForm.vue'
@@ -231,6 +236,7 @@ const store = useBankAccountStore()
 const toastStore = useToastStore()
 
 const budgetId = computed(() => route.params['budgetId'] as string)
+const { isAdmin } = useRoleGate(budgetId)
 
 const currencies = ref<CurrencyItem[]>([])
 const showForm = ref(false)

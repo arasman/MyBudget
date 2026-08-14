@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/vue'
 import { createPinia, setActivePinia } from 'pinia'
+import { computed } from 'vue'
 import ExecutionRecordForm from '../components/ExecutionRecordForm.vue'
 import { EntryType } from '../types'
 
@@ -49,6 +50,14 @@ vi.mock('@/features/budget-structure/store', () => ({
   }),
 }))
 
+const roleGateState: { isOperator: boolean } = { isOperator: true }
+
+vi.mock('@/features/budget-structure/composables/useRoleGate', () => ({
+  useRoleGate: () => ({
+    isOperator: computed(() => roleGateState.isOperator),
+  }),
+}))
+
 const defaultProps = {
   budgetId: 'budget-1',
   periodId: 'period-1',
@@ -59,6 +68,7 @@ describe('ExecutionRecordForm.vue', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    roleGateState.isOperator = true
   })
 
   it('shows note validation error when note is empty (any entry type)', async () => {
@@ -180,5 +190,19 @@ describe('ExecutionRecordForm.vue', () => {
     })
 
     expect(emitted()['saved']).toBeTruthy()
+  })
+
+  describe('role gating — ReadOnly users', () => {
+    it('hides the Save button when isOperator=false', () => {
+      roleGateState.isOperator = false
+      render(ExecutionRecordForm, { props: defaultProps })
+      expect(screen.queryByRole('button', { name: 'Save' })).toBeNull()
+    })
+
+    it('shows the Save button when isOperator=true', () => {
+      roleGateState.isOperator = true
+      render(ExecutionRecordForm, { props: defaultProps })
+      expect(screen.queryByRole('button', { name: 'Save' })).not.toBeNull()
+    })
   })
 })

@@ -65,6 +65,12 @@ vi.mock('@/features/budget-structure/utils/apiError', () => ({
   },
 }))
 
+vi.mock('@/features/budget-structure/composables/useRoleGate', () => ({
+  useRoleGate: () => ({
+    isOperator: { value: true },
+  }),
+}))
+
 const defaultProps = {
   budgetId: 'budget-1',
   periodId: 'period-1',

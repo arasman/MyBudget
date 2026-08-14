@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { createI18n } from 'vue-i18n'
+import { computed } from 'vue'
 import BankAccountListView from '../BankAccountListView.vue'
 import type { BankAccount } from '../../types/bankAccount'
 
@@ -16,6 +17,10 @@ vi.mock('../../store/useBankAccountStore', () => ({
 
 vi.mock('@/stores/toast.store', () => ({
   useToastStore: vi.fn(),
+}))
+
+vi.mock('@/features/budget-structure/composables/useRoleGate', () => ({
+  useRoleGate: vi.fn(),
 }))
 
 vi.mock('@/features/budget-structure/api/currencies.api', () => ({
@@ -36,6 +41,7 @@ vi.mock('../../components/BankAccountForm.vue', () => ({
 
 import { useBankAccountStore } from '../../store/useBankAccountStore'
 import { useToastStore } from '@/stores/toast.store'
+import { useRoleGate } from '@/features/budget-structure/composables/useRoleGate'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -161,6 +167,15 @@ function setupToastMock() {
   return { push }
 }
 
+function setupRoleGateMock({ isAdmin = true } = {}) {
+  vi.mocked(useRoleGate).mockReturnValue({
+    isAdmin: computed(() => isAdmin),
+    isOperator: computed(() => isAdmin),
+    canWriteStructure: computed(() => isAdmin),
+    canWriteLines: computed(() => isAdmin),
+  })
+}
+
 async function renderView() {
   const router = makeRouter()
   await router.push(`/budgets/${BUDGET_ID}/bank-accounts`)
@@ -179,6 +194,7 @@ describe('BankAccountListView', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    setupRoleGateMock()
   })
 
   describe('Show deleted toggle', () => {
@@ -262,6 +278,50 @@ describe('BankAccountListView', () => {
       expect(push).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'success', title: 'Bank account restored' }),
       )
+    })
+  })
+
+  describe('role gating — ReadOnly users', () => {
+    it('hides "New Account" button when isAdmin=false', async () => {
+      setupStoreMock({ accounts: [] })
+      setupToastMock()
+      setupRoleGateMock({ isAdmin: false })
+      await renderView()
+      expect(screen.queryByText(/New Account/)).toBeNull()
+    })
+
+    it('shows "New Account" button when isAdmin=true', async () => {
+      setupStoreMock({ accounts: [] })
+      setupToastMock()
+      setupRoleGateMock({ isAdmin: true })
+      await renderView()
+      expect(screen.queryByText(/New Account/)).not.toBeNull()
+    })
+
+    it('hides edit/delete buttons on active rows when isAdmin=false', async () => {
+      setupStoreMock({ accounts: [makeAccount()] })
+      setupToastMock()
+      setupRoleGateMock({ isAdmin: false })
+      await renderView()
+      expect(screen.queryByTitle('Edit')).toBeNull()
+      expect(screen.queryByTitle('Delete')).toBeNull()
+    })
+
+    it('shows edit/delete buttons on active rows when isAdmin=true', async () => {
+      setupStoreMock({ accounts: [makeAccount()] })
+      setupToastMock()
+      setupRoleGateMock({ isAdmin: true })
+      await renderView()
+      expect(screen.queryByTitle('Edit')).not.toBeNull()
+      expect(screen.queryByTitle('Delete')).not.toBeNull()
+    })
+
+    it('hides restore button on deleted rows when isAdmin=false', async () => {
+      setupStoreMock({ accounts: [makeDeletedAccount()] })
+      setupToastMock()
+      setupRoleGateMock({ isAdmin: false })
+      await renderView()
+      expect(screen.queryByText('Restore')).toBeNull()
     })
   })
 })

@@ -63,9 +63,11 @@ vi.mock('@/features/budget-structure/store', () => ({
   useBudgetStructureStore: () => structureState,
 }))
 
+const roleGateState: { isOperator: boolean } = { isOperator: true }
+
 vi.mock('@/features/budget-structure/composables/useRoleGate', () => ({
   useRoleGate: () => ({
-    isOperator: computed(() => true),
+    isOperator: computed(() => roleGateState.isOperator),
   }),
 }))
 
@@ -144,6 +146,7 @@ describe('ExecutionListModal.vue', () => {
     matrixState.loadingExecutions = {}
     matrixState.modalError = null
     structureState.periods = [openPeriod]
+    roleGateState.isOperator = true
   })
 
   it('does not render dialog when openModalLineId is null', () => {
@@ -208,5 +211,31 @@ describe('ExecutionListModal.vue', () => {
     render(ExecutionListModal, { props: { budgetId: 'budget-1' } })
 
     expect(screen.queryByText('No entries yet')).not.toBeNull()
+  })
+
+  describe('role gating — ReadOnly users', () => {
+    it('hides the "Add entry" trigger when isOperator=false, even though period is open', () => {
+      roleGateState.isOperator = false
+      matrixState.openModalLineId = 'line-1'
+      matrixState.openModalPeriodId = 'period-open'
+      matrixState.executionRecords = { 'line-1:period-open:false': [] }
+      structureState.periods = [openPeriod]
+
+      render(ExecutionListModal, { props: { budgetId: 'budget-1' } })
+
+      expect(screen.queryByText('Add entry')).toBeNull()
+    })
+
+    it('shows the "Add entry" trigger when isOperator=true and period is open', () => {
+      roleGateState.isOperator = true
+      matrixState.openModalLineId = 'line-1'
+      matrixState.openModalPeriodId = 'period-open'
+      matrixState.executionRecords = { 'line-1:period-open:false': [] }
+      structureState.periods = [openPeriod]
+
+      render(ExecutionListModal, { props: { budgetId: 'budget-1' } })
+
+      expect(screen.queryByText('Add entry')).not.toBeNull()
+    })
   })
 })

@@ -115,8 +115,8 @@
             @dblclick="startEdit"
           >{{ category.name }}</span>
 
-          <!-- Reorder + add-line + delete (only non-deleted) -->
-          <template v-if="!category.deletedAt">
+          <!-- Reorder + add-line + delete (only non-deleted, admin only) -->
+          <template v-if="!category.deletedAt && isAdmin">
             <button
               type="button"
               class="btn btn-xs btn-ghost btn-square"
@@ -153,9 +153,9 @@
             </button>
           </template>
 
-          <!-- Restore button (only deleted + showDeleted mode + parent not deleted) -->
+          <!-- Restore button (only deleted + showDeleted mode + parent not deleted, admin only) -->
           <button
-            v-if="category.deletedAt && matrixStore.showDeleted && !parentDeleted"
+            v-if="category.deletedAt && matrixStore.showDeleted && !parentDeleted && isAdmin"
             type="button"
             class="btn btn-xs btn-ghost btn-square text-success"
             :title="t('budgetMatrix.rows.restore')"
@@ -207,6 +207,7 @@ import { ChevronDown, ChevronRight, ArrowUp, ArrowDown, Plus, Trash2, RotateCcw,
 import { useBudgetMatrixStore } from '../store'
 import { useBudgetStructureStore } from '@/features/budget-structure/store'
 import { useToastStore } from '@/stores/toast.store'
+import { useRoleGate } from '@/features/budget-structure/composables/useRoleGate'
 import { useCurrencyDisplay } from '../composables/useCurrencyDisplay'
 import type { CategoryItem, PeriodSummary } from '@/features/budget-structure/types'
 
@@ -233,6 +234,7 @@ const { t } = useI18n()
 const matrixStore = useBudgetMatrixStore()
 const structureStore = useBudgetStructureStore()
 const toast = useToastStore()
+const { isAdmin } = useRoleGate(props.budgetId)
 const { formatAmount } = useCurrencyDisplay(matrixStore)
 
 const currencySymbol = computed<string>(() =>
@@ -252,7 +254,7 @@ const confirmingRestore = ref(false)
 const acting = ref(false)
 
 function startEdit(): void {
-  if (props.category.deletedAt) return
+  if (props.category.deletedAt || !isAdmin.value) return
   window.getSelection()?.removeAllRanges()
   editName.value = props.category.name
   editing.value = true
