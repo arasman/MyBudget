@@ -113,6 +113,29 @@ describe('ShowcaseTile', () => {
     expect(emitted()['activate']?.[0]).toEqual(['dashboard'])
   })
 
+  // Bug found in manual QA: the zoomed tile grows its real CSS width (via
+  // left/width calc(), not transform — main.css), but `sizes` was a static
+  // string always describing the small grid-tile width. The browser trusts
+  // the declared `sizes`, not the actual rendered box, so it kept serving
+  // the 640w candidate even when the tile visually filled the grid — the
+  // enlarged image never got sharper. `sizes` must reflect the true
+  // rendered width per state.
+  it('idle tile source sizes describes the small grid-tile width', () => {
+    const { container } = renderTile()
+
+    const source = container.querySelector('picture source')
+    expect(source?.getAttribute('sizes')).toBe(
+      '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw',
+    )
+  })
+
+  it('active (zoomed) tile source sizes switches to 100vw so the browser fetches the 1280w candidate', () => {
+    const { container } = renderTile({ active: true, zoomVars: { '--zoom-col': '0', '--zoom-cols': '3' } })
+
+    const source = container.querySelector('picture source')
+    expect(source?.getAttribute('sizes')).toBe('100vw')
+  })
+
   // LANDING-9 scenario "Keyboard focus enlarges immediately, no dwell":
   // Tabbing to the tile only focuses it (no Enter/click) — design.md's Data
   // Flow diagram lists `focus` as its own activate trigger alongside

@@ -31,10 +31,15 @@
   >
     <figure class="flex flex-col gap-2">
       <picture>
+        <!-- `sizes` must track `active`: the zoomed tile grows its real CSS
+             width via left/width calc() (main.css), not transform, but the
+             browser picks a srcset candidate from the declared `sizes`
+             string, not the actual rendered box. A static 33vw/50vw value
+             kept the browser on the 640w candidate even at full zoom width. -->
         <source
           type="image/webp"
           :srcset="`/showcase/${item.slug}-640.webp 640w, /showcase/${item.slug}-1280.webp 1280w`"
-          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          :sizes="active ? '100vw' : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'"
         >
         <img
           :src="`/showcase/${item.slug}-1280.webp`"
