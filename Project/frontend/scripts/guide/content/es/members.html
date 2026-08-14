@@ -1,0 +1,68 @@
+<h1>Miembros</h1>
+
+<p>
+  La pestaña Miembros administra quién tiene acceso a un presupuesto y qué puede hacer en él: ver
+  la lista de miembros, cambiar roles, quitar el acceso, restaurarlo y enviar nuevas invitaciones.
+  Este capítulo es solamente texto — no hay capturas de pantalla para él.
+</p>
+
+<h2>Quién puede administrar miembros</h2>
+<p>
+  La pestaña Miembros solamente aparece en la barra de pestañas del presupuesto para sus
+  administradores y su propietario/a — un operador o un miembro de sólo lectura nunca la ve.
+</p>
+<p>
+  Dentro de la pestaña, que aparezca un control para cambiar el rol, un botón "Quitar" o un botón
+  "Restaurar" en una fila depende de una sola regla: se muestra solamente cuando se cumplen
+  <strong>todas</strong> estas condiciones — sos administrador/a o propietario/a, la fila no es la
+  tuya, la fila no es la del propietario/a, y — a menos que seas el propietario/a — la fila no es
+  la de otro administrador. La misma regla se aplica a las filas eliminadas, así que un rol que no
+  podés cambiar tampoco lo podés restaurar. El servidor aplica esto de forma independiente; la
+  interfaz sólo oculta lo que de todos modos sería rechazado.
+</p>
+
+<h2>Ver la lista de miembros</h2>
+<p>
+  La lista muestra Nombre, Email, Rol y Fecha de ingreso de cada miembro activo del presupuesto.
+  La fila del propietario/a nunca aparece acá — la propiedad no es algo que esta pestaña
+  administre ni transfiera. Un interruptor "Mostrar eliminados" revela a los miembros quitados
+  anteriormente, listados junto a los activos con opacidad reducida.
+</p>
+
+<h2>Cambiar el rol de un miembro</h2>
+<p>
+  Cuando podés actuar sobre la fila de un miembro, su rol se muestra como un selector — Admin,
+  Operador o Sólo lectura — en lugar de una etiqueta fija. Elegir un valor distinto guarda de
+  inmediato: un mensaje de éxito confirma el cambio, o un mensaje de error explica por qué se
+  rechazó.
+</p>
+
+<h2>Quitar el acceso</h2>
+<p>
+  "Quitar" abre un diálogo de confirmación que avisa que el miembro perderá el acceso a este
+  presupuesto. Confirmar lo quita de la lista activa. Nada de su historial se elimina — un miembro
+  quitado siempre se puede restaurar más adelante con el rol que tenía antes.
+</p>
+
+<h2>Restaurar el acceso</h2>
+<p>
+  Activar "Mostrar eliminados" revela a los miembros quitados. En cualquier fila sobre la que
+  puedas actuar, un botón "Restaurar" reemplaza a "Quitar" y reincorpora a esa persona con su rol
+  anterior.
+</p>
+
+<h2>Invitar a alguien</h2>
+<p>
+  Enviar una invitación no se hace desde la pestaña Miembros — buscá el ícono "Invitar usuario"
+  junto al nombre de un presupuesto en la pantalla de selección de presupuestos, visible para los
+  administradores y el propietario/a de ese presupuesto. Abre un formulario que pide el email de
+  la persona invitada y un rol, con Operador como valor por defecto (Propietario no es un rol
+  asignable). El servidor rechaza la solicitud de entrada si ese email ya es miembro del
+  presupuesto, si de alguna forma se seleccionó Propietario, o si quien invita no tiene permiso
+  para invitar en ese presupuesto — cada caso muestra su propio mensaje.
+</p>
+<p>
+  Este capítulo termina cuando se envía la invitación. Lo que pasa cuando la persona invitada abre
+  el enlace de invitación — aceptarla y unirse al presupuesto — está cubierto en el capítulo de
+  <a href="budget-management.html">Presupuestos</a>.
+</p>

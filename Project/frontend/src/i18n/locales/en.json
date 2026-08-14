@@ -752,6 +752,7 @@
     "links": {
       "github": "View source on GitHub",
       "readme": "Read the docs",
+      "guide": "Open the user guide",
       "deck": "View the presentation"
     }
   },

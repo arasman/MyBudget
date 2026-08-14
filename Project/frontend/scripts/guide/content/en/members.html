@@ -1,0 +1,64 @@
+<h1>Members</h1>
+
+<p>
+  The Members tab manages who has access to a budget and what they can do in it: viewing the
+  member list, changing roles, removing access, restoring it, and sending new invitations. It is
+  text-only in this guide — there are no screenshots for this chapter.
+</p>
+
+<h2>Who can manage members</h2>
+<p>
+  The Members tab itself only appears in a budget's tab bar for that budget's admins and owner —
+  an operator or read-only member never sees it.
+</p>
+<p>
+  Inside the tab, whether a role-change control, a "Remove" button, or a "Restore" button appears
+  for a given row follows one rule: it renders only when <strong>all</strong> of the following are
+  true — you are an admin or the owner, the row is not your own, the row is not the owner's, and
+  — unless you are the owner — the row is not another admin's. The same rule applies to
+  soft-deleted rows, so a role you cannot change is also a role you cannot restore. The server
+  enforces this independently; the interface only hides what would otherwise be rejected.
+</p>
+
+<h2>Viewing the member list</h2>
+<p>
+  The list shows Name, Email, Role, and Joined date for every active member of the budget. The
+  owner's own row never appears here — ownership is not something this tab manages or transfers.
+  A "Show deleted" toggle reveals members who were previously removed, listed alongside the active
+  ones at reduced opacity.
+</p>
+
+<h2>Changing a member's role</h2>
+<p>
+  When you can act on a member's row, their role shows as a dropdown — Admin, Operator, or Read
+  Only — instead of a plain badge. Picking a different value saves immediately: a success message
+  confirms the change, or an error message explains why it was rejected.
+</p>
+
+<h2>Removing access</h2>
+<p>
+  "Remove" opens a confirmation dialog warning that the member will lose access to this budget.
+  Confirming removes them from the active list. Nothing about their history is deleted — a removed
+  member can always be restored later with the role they had before.
+</p>
+
+<h2>Restoring access</h2>
+<p>
+  Turning on "Show deleted" reveals removed members. For any row you can act on, a "Restore"
+  button replaces "Remove" and reinstates that person with their prior role.
+</p>
+
+<h2>Inviting someone</h2>
+<p>
+  Sending an invitation is not done from the Members tab — look for the "Invite user" icon next to
+  a budget's name on the budget selection screen, visible to that budget's admins and owner. It
+  opens a form asking for the invitee's email address and a role, defaulting to Operator (Owner is
+  not an assignable role). The server rejects the request up front if that email is already a
+  member of the budget, if Owner was somehow selected, or if the inviter does not have permission
+  to invite for that budget — each case shows its own message.
+</p>
+<p>
+  This chapter stops once the invitation is sent. What happens when the invitee opens the
+  invitation link — accepting it and joining the budget — is covered in the
+  <a href="budget-management.html">Budgets</a> chapter.
+</p>

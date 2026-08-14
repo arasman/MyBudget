@@ -170,5 +170,5 @@ export const CHAPTERS = [
     ],
     published: true,
   },
-  { slug: 'members', label: { en: 'Members', es: 'Miembros' }, published: false },
+  { slug: 'members', label: { en: 'Members', es: 'Miembros' }, published: true },
 ]

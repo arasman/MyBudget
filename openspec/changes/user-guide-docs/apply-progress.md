@@ -1,6 +1,6 @@
-# Apply Progress: user-guide-docs (PR1 of 5, PR2 of 5, PR3 of 5, PR4 of 5)
+# Apply Progress: user-guide-docs (PR1 of 5, PR2 of 5, PR3 of 5, PR4 of 5, PR5 of 5 — FINAL)
 
-## Status: PR1 DONE — implemented, tested (real), committed, reviewed. PR2 DONE — implemented, tested (real, 30/30), committed, user-confirmed. PR3 IMPLEMENTED, NOT COMMITTED (status at PR4 apply time — see PR3 section below for whether it has since been committed). PR4 IMPLEMENTED, NOT COMMITTED.
+## Status: PR1 DONE — implemented, tested (real), committed, reviewed. PR2 DONE — implemented, tested (real, 30/30), committed, user-confirmed. PR3 IMPLEMENTED, NOT COMMITTED (status at PR4 apply time — see PR3 section below for whether it has since been committed). PR4 IMPLEMENTED, NOT COMMITTED (per this session's launch context, PR1-PR4 are now committed on `feat/user-guide-docs-pr4`). PR5 (FINAL) IMPLEMENTED, NOT COMMITTED — see PR5 section at the bottom of this file.
 
 Chain: `feat/user-guide-docs` (tracker) ← PR1 `feat/user-guide-docs-pr1` ← PR2
 `feat/user-guide-docs-pr2` ← PR3 `feat/user-guide-docs-pr3` ← PR4 `feat/user-guide-docs-pr4`
@@ -511,7 +511,313 @@ PR5 once approved. Per launch-prompt instructions, PR5 (`members` chapter + land
 integration touching `src/`) was intentionally NOT started in this batch.
 
 ## Cumulative task status (all PRs)
-46/67 tasks complete (PR1: 25/27 — 5.4/5.5 remain the same partially-verified infra manual gates
-as before; PR2: 9/9 — fully complete, committed; PR3: 4/4 authoring tasks complete, 12.1/12.2
-manual gates pending the human-run commands; PR4: 8/8 — fully complete, uncommitted). PR5
-(21 tasks) not started.
+46/67 tasks complete as of PR4 (PR1: 25/27; PR2: 9/9; PR3: 4/4 authoring tasks (12.1/12.2 manual
+gates pending); PR4: 8/8). PR5 (17 tasks) not started as of PR4. See the PR5 section below for
+this batch's result: **61/67 cumulative** (15/17 of PR5's tasks complete; 20.3/20.4 blocked on the
+human's real `pnpm build`/`pnpm lint && pnpm test`).
+
+---
+
+## PR 5 — Members Chapter + Landing Integration (FINAL): IMPLEMENTED, NOT COMMITTED
+
+### Branch: `feat/user-guide-docs-pr5` (base `feat/user-guide-docs-pr4`, which per this session's
+launch context has PR1-PR4 committed and previously user-confirmed: 30/30 vitest, `pnpm build`
+clean).
+
+### Mode: Mixed. Part A (`members` chapter content) is standard mode, same content-only pattern as
+PR2/PR3/PR4 — no new production logic, no TDD cycle. Parts C and D (locale-aware landing link,
+`guide-links.spec.ts` integration walker) are **Strict TDD** (RED → GREEN → REFACTOR) per this
+session's launch instructions, since they are the only parts of the entire `user-guide-docs`
+change (besides PR1) that touch real application `src/` and test infrastructure.
+
+### Part A — `members` chapter (content-only, no TDD)
+
+#### Where
+- `Project/frontend/scripts/guide/chapters.mjs` — flipped `members.published` from `false` to
+  `true`. No `images` key (text-only chapter, per ADR-UGD-06 — the generator's own validation
+  treats a missing `images` key as valid, confirmed again by this batch's safety-net run).
+- `Project/frontend/scripts/guide/content/{en,es}/members.html` — 6 sections each locale (Who can
+  manage members; Viewing the member list; Changing a member's role; Removing access; Restoring
+  access; Inviting someone), grounded in:
+  - `src/features/budget-structure/views/BudgetMembersView.vue` — `canActOn()` gate (transcribed
+    verbatim into prose: admin/owner AND not your own row AND not the owner's row AND — unless
+    you're the owner — not another admin's row; the same gate covers both the role-change control
+    and Remove/Restore), `visibleMembers` (owner row filtered out entirely), the `showDeleted`
+    toggle, and the remove-confirmation dialog copy.
+  - `src/features/budget-structure/composables/useRoleGate.ts` — `isAdmin`/`isOwner` definitions.
+  - `src/features/budget-structure/components/BudgetTabs.vue` — confirmed the Members tab itself
+    is `v-if="isAdmin"`, i.e. invisible in the tab bar (not just inert) for non-admins.
+  - **Non-obvious discovery, corrected from the launch prompt's assumption**: `InviteUserModal` is
+    NOT opened from `BudgetMembersView.vue`. It is opened from
+    `src/features/budget-structure/views/BudgetSelectionView.vue` — the budget *selection* screen,
+    via a "UserPlus" icon button next to each budget's name, gated by that view's own `canEdit(m)`
+    (`m.role === 'owner' || m.role === 'admin'`). Section 6 ("Inviting someone") documents this
+    correctly — inviting happens from the budget list, not from inside the Members tab — rather
+    than inventing an invite button on `BudgetMembersView.vue` that does not exist. Confirmed via
+    `i18n/locales/en.json`'s real key text (`budgetStructure.selection.inviteUser`,
+    `invitation.modal.*`) matching the actual component wiring.
+  - Section 6 stops at "the invitation is sent" per UG-6/ADR-UGD-08's scope fence; the last
+    paragraph in both locales cross-links to the now-published `budget-management` chapter for
+    invite *acceptance*.
+  - Zero `<img>` elements in either locale (UG-6 requirement) — confirmed by the integration
+    walker (Part D) and by direct `node` inspection.
+- `Project/frontend/scripts/guide/content/{en,es}/budget-management.html` — small forward-reference
+  fix: PR2 had deliberately left "The Members chapter covers how roles are managed..." as
+  plain text (not a real `<a>`) because `members.html` didn't exist yet and an unresolved link
+  would have built clean but 404'd at runtime (PR2's own documented deviation #2). Now that
+  `members` is published, converted that sentence to a real `<a href="members.html">` in both
+  locales — closing the loop PR2 explicitly left open for this PR.
+- `Project/frontend/public/guide/{en,es}/members.html` + all 9 previously-published chapter
+  pages' + `index.html`'s sidebars — regenerated via `node scripts/build-guide.mjs` (all 10
+  chapters × 2 locales now published; sidebars go from 9-published+1-disabled to 10-published,
+  0-disabled everywhere).
+
+#### Deviation from the launch prompt worth flagging
+The launch prompt's own description of section 6 ("Inviting someone") implicitly assumed the
+invite flow lives inside the Members tab. Real source reading found it lives on the budget
+*selection* screen instead (`BudgetSelectionView.vue`, not `BudgetMembersView.vue`). The chapter
+documents the real wiring, not the assumed one — flagging per this skill's "if the design is
+wrong or incomplete, note it" rule, since ADR-UGD-08's table cites `InviteUserModal.vue` as a
+"source of truth" without naming which view opens it, and the launch prompt's phrasing read as
+if it were opened from within the Members tab.
+
+### Part B — `render-diagrams.mjs` end-to-end (deferred, per instructions)
+Not exercised — per the launch prompt, this remains low-priority since no chapter across all 10
+needs a diagram. Still true after `members` (text-only, no diagram). Unchanged from PR1's status:
+argv-construction is unit-tested; the real `npx`/mermaid-cli subprocess has never been spawned
+end-to-end in this session (same pnpm blocker as everything else that needs `npx`).
+
+### Part C — Locale-aware landing link: Strict TDD
+
+#### RED
+Extended `Project/frontend/src/features/landing/__tests__/LandingView.spec.ts`:
+- Added a new test, `'guide link resolves per active locale and updates without a page reload
+  (LANDING-4)'`, asserting `[data-testid="link-guide"]`'s `href` is `/guide/en/` by default, is
+  not styled `btn-primary`, and updates to `/guide/es/` after calling `useLocaleStore().setLocale('es')`
+  — with no re-render/navigation trigger, just `await nextTick()`.
+- **Non-trivial RED fix required in the test's own mock, not just a new test case.** The file's
+  existing `vi.mock('@/stores/locale.store', ...)` returned a plain object
+  `{ locale: 'en', setLocale: vi.fn() }`. Pinia's real `storeToRefs()` only wraps store
+  properties that are already `isRef`/`isReactive` — a plain string property is silently *skipped*,
+  so `const { locale } = storeToRefs(useLocaleStore())` in `LandingLinks.vue` would have destructured
+  to `undefined` against the old mock, regardless of whether the component code was correct. Rewrote
+  the mock to a singleton store object built with a real `ref<'en'|'es'>('en')`, with `setLocale`
+  mutating that ref — matching how a real per-app Pinia store instance is shared by every component
+  that calls `useLocaleStore()`. Added a `beforeEach` reset (`useLocaleStore().setLocale('en')`)
+  since the ref's mutated value — unlike `vi.fn()` call-tracking — is not cleared by
+  `vi.clearAllMocks()` and would otherwise leak across tests. This is a genuine test-infrastructure
+  gap the RED step surfaced, not scope creep.
+- Added `landing.links.guide: 'Open the user guide'` to the test file's own inline i18n messages
+  fixture (`makeI18n()`), matching the pattern of the other 3 link labels already there.
+- At this point (before the GREEN step), `[data-testid="link-guide"]` does not exist in
+  `LandingLinks.vue` — the new test fails for the correct reason (`guide?.getAttribute('href')` is
+  `undefined`, not `/guide/en/`).
+
+#### GREEN
+- `Project/frontend/src/features/landing/config/links.ts` — added `guideUrl(locale: SupportedLocale): string`,
+  a pure function mapping `en → '/guide/en/'`, `es → '/guide/es/'`, with a comment marking it as
+  the scoped exception to the file's existing "URLs are not translated" convention (ADR-UGD-09).
+  Requires `import type { SupportedLocale } from '@/stores/locale.store'` (type-only, erased at
+  build time — does not create a runtime Pinia dependency in this config module).
+- `Project/frontend/src/features/landing/components/LandingLinks.vue` — added
+  `const { locale } = storeToRefs(useLocaleStore())` and `const guideHref = computed(() => guideUrl(locale.value))`;
+  new `<a data-testid="link-guide" :href="guideHref" target="_blank" rel="noopener noreferrer" class="link link-hover text-base-content/70">`
+  placed 3rd of 4 (`github, readme, guide, deck`), matching design.md's specified order and the
+  existing 3 links' exact classes.
+- `Project/frontend/src/i18n/locales/en.json` — `landing.links.guide: "Open the user guide"`.
+- `Project/frontend/src/i18n/locales/es.json` — `landing.links.guide: "Abrí la guía de usuario"`
+  (voseo, matching `cta.primary: "Creá tu cuenta gratis"` etc. in the same file).
+
+#### REFACTOR / verification
+- `guideUrl()` substitute-verified against the **real** `links.ts` module (not a reimplementation):
+  `node --experimental-strip-types -e "import('./src/features/landing/config/links.ts')..."` — Node
+  22.18's experimental TS type-stripping correctly erased the `import type` line and ran the real
+  function; `guideUrl('en') === '/guide/en/'`, `guideUrl('es') === '/guide/es/'`, both confirmed
+  against the live module.
+- `LandingLinks.vue` + the updated `LandingView.spec.ts` test itself: **not substitute-executable**.
+  Unlike PR1's plain-ESM `.mjs` scripts, this requires Vue SFC compilation, jsdom, Pinia, and
+  `@testing-library/vue` — none of which run under plain `node`, even with type-stripping. This is
+  confirmed only by static review (component code matches design.md's literal snippet almost
+  verbatim; the mock fix is reasoned through Pinia's real `storeToRefs` source semantics above,
+  not guessed). **This is the one piece of PR5 that genuinely needs the human's real
+  `pnpm vitest run src/features/landing/__tests__/LandingView.spec.ts` to confirm** — flagged
+  explicitly rather than claimed as verified.
+
+### Part D — `guide-links.spec.ts` integration walker: Strict TDD
+
+#### RED
+Created `Project/frontend/src/features/landing/__tests__/guide-links.spec.ts` — chosen path
+(not `scripts/__tests__/`) because `vitest.config.ts`'s `include` already covers both roots
+(`src/**/*.{test,spec}.ts` and `scripts/**/*.{test,spec}.ts`) and design.md/tasks.md specify this
+exact path; walks the **committed** `public/guide/**` tree directly via `node:fs` rather than
+importing `scripts/guide/chapters.mjs` (kept the walker fully independent of the generator's
+internals — the whole point is to catch drift in the *shipped* artifact, not to re-test the
+generator, which `build-guide.spec.ts` already covers). 5 test cases: EN/ES file-tree identity;
+every `href`/`src` resolves to a real file; every sidebar lists every chapter with zero
+disabled entries; EN/ES `<h2>` counts match per chapter; `members.html` has zero `<img>` in both
+locales.
+
+At RED time (written before running `node scripts/build-guide.mjs` with `members` newly
+published), the walker correctly failed for real reasons against the pre-regeneration tree:
+`public/guide/{en,es}/members.html` did not exist yet (ENOENT on the dedicated members test), and
+the "zero disabled sidebar entries" assertion failed because the 9 already-published pages'
+committed sidebars still rendered `members` as `<span class="disabled">` (published:false at that
+point in history).
+
+#### GREEN — two real bugs found in the test's own logic, not the generator
+Running the RED assertions via substitute `node` execution against the real tree (after
+`node scripts/build-guide.mjs`) surfaced two false failures that were bugs in the *test*, fixed
+before declaring GREEN:
+1. **`href="#content"` (the skip-link's in-page fragment) was being treated as a dead link** by
+   the naive `href`/`src` regex walk. Fixed by skipping any ref starting with `#`, alongside the
+   existing `/` (absolute app-exit link) skip.
+2. **`index.html` legitimately has 20 `<li>` elements, not 10** — `index-body.html`'s
+   `{{CHAPTER_LIST}}` placeholder repeats the full chapter list a second time in the page body
+   (by design — the guide home page is meant to show the chapter list as its main content, not
+   just in the sidebar), on top of the real `<nav class="sidebar"><ol>...</ol></nav>` sidebar.
+   The test's "every sidebar lists every chapter" assertion was correct in spirit but too broad in
+   scope — fixed by regex-scoping the `<li>` count to the `<nav class="sidebar">...</nav>` region
+   only, which is what UG-3 ("sidebar navigation") actually specifies. `build-guide.mjs` itself
+   needed zero changes for either fix — both were test-design gaps.
+
+#### REFACTOR / verification
+All 5 assertions re-run via direct `node` against the real, fully-regenerated `public/guide/**`
+tree (10 chapters × 2 locales, all published): **5/5 pass** — EN/ES trees identical; 0 missing
+href/src targets; every sidebar (10 pages × 2 locales) lists all 10 chapters with 0 disabled
+entries; every chapter's EN/ES `<h2>` counts match and are non-zero; `members.html` has 0 `<img>`
+in both locales. Also re-ran PR1's own `build-guide.spec.ts`-equivalent safety-net assertions
+(`renderSidebar`, `validateManifest`, `validateLocaleParity`) against the real `chapters.mjs` with
+`members` now published — all pass, 0 errors either direction.
+
+### Final regenerate and verification (Phase 4)
+- `node scripts/build-guide.mjs` → `build-guide: wrote 10 chapter(s) x 2 locale(s) + index pages.`
+  — succeeded. Regenerated: `members.html` (both locales, new) + sidebar-only diffs on the other
+  18 chapter pages + both `index.html` pages (all now show all 10 chapters as real links, 0
+  disabled spans).
+- `node scripts/build-guide.mjs --check` → `guide:check: clean — committed public/guide/** matches
+  the manifest + fragments.`, exit 0.
+- `pnpm build` (would confirm `dist/guide/` has all 22 files and TS/Vite compiles the modified
+  `LandingLinks.vue`/`links.ts` cleanly) — **BLOCKED, not run.** Same pre-existing Windows
+  `node_modules`/pnpm-store corruption documented in PR1's Infrastructure Blocker section,
+  reproduced again this session. **This is the one PR in the chain that actually needs this gate
+  run for real** — PR2-PR4 were content-only and this gate was lower-stakes for them; PR5 modifies
+  real `.vue`/`.ts` source that only `vue-tsc`/`vite build` can fully type-check and bundle.
+- `pnpm lint && pnpm test` (full suite) — **BLOCKED, not run.** Same blocker.
+
+### Work Unit Evidence (WU5)
+
+| Evidence | Value |
+|---|---|
+| Focused test command and exact result | `pnpm vitest src/features/landing/__tests__/guide-links.spec.ts src/features/landing/__tests__/LandingView.spec.ts` — **could not execute via pnpm** (Infrastructure Blocker). Substitute: (a) `guide-links.spec.ts`'s 5 assertions run directly via `node` against the real `public/guide/**` tree — 5/5 pass. (b) `guideUrl()` run directly via `node --experimental-strip-types` against the real `links.ts` module — both locale cases pass. (c) `LandingView.spec.ts`'s new/modified assertions (the mock rewrite, the new guide-link test case) are **not** substitute-executable — Vue SFC + jsdom + Pinia + testing-library have no plain-`node` equivalent path; confirmed by static review only, explicitly flagged as needing the human's real `pnpm vitest run`. |
+| Runtime harness command/scenario and exact result | `node scripts/build-guide.mjs` then `node scripts/build-guide.mjs --check` — both succeeded (10 chapters × 2 locales, 0 validation errors, clean diff). `pnpm build` (the real runtime harness for the `src/`-touching parts of this PR) is **N/A — blocked**, reason: pre-existing Windows pnpm/node_modules corruption unrelated to this PR's code (documented since PR1). |
+| Rollback boundary | Revert the `members` entry in `chapters.mjs` (`published: false`), delete `content/{en,es}/members.html`, delete `public/guide/{en,es}/members.html`, revert the `members.html` cross-link edits in `content/{en,es}/budget-management.html`, regenerate (or revert directly) the other 18 chapter pages' + 2 index pages' sidebars, and separately revert `links.ts`, `LandingLinks.vue`, the two i18n files, and `LandingView.spec.ts`/`guide-links.spec.ts` — these two halves (chapter content vs. landing integration) are independently revertible; nothing outside PR5's declared scope was touched. |
+
+### TDD Cycle Evidence (Parts C and D only — Part A is standard/content-only, no TDD rows)
+
+| Task | Test File | Layer | Safety Net | RED | GREEN | TRIANGULATE | REFACTOR |
+|------|-----------|-------|------------|-----|-------|-------------|----------|
+| 18.1–18.3 | `guide-links.spec.ts` | Integration (real committed tree) | ✅ ran PR1's `build-guide.spec.ts`-equivalent assertions first, all passing pre-batch | ✅ Written first; failed for real reasons (missing `members.html`, disabled-span leftovers) against the pre-regeneration tree | ✅ 5/5 pass after `node scripts/build-guide.mjs` + 2 test-logic fixes (`#content` fragment skip, sidebar-scoped `<li>` count) | ✅ 5 distinct assertions covering file-tree parity, link resolution, sidebar completeness, heading parity, and the UG-6 no-image rule — each exercises a different code path in the generated tree | ✅ Comments added explaining both non-obvious fixes; no further extraction needed |
+| 19.1 | `LandingView.spec.ts` | Component (existing @testing-library/vue harness) | ✅ existing 8 tests in the file used as the safety net context (not independently re-run here — no pnpm) | ✅ Written first, plus a real mock-infrastructure fix (plain-object → `ref`-based singleton) surfaced by reasoning through Pinia's `storeToRefs` semantics before any GREEN code existed | ⚠️ **Not executed** — no plain-`node` path for Vue/jsdom/Pinia; GREEN code written per design.md's literal snippet + static verification only | ➖ Not performed — cannot triangulate a test that was never executed | ➖ N/A |
+| 19.2 | — (pure fn) | Unit | N/A (new function) | N/A — no test-first for this one; `guideUrl` was written directly alongside 19.1's RED test as the GREEN target | ✅ substitute-verified via `node --experimental-strip-types` against the real `links.ts` module — both locale cases pass | ✅ 2 cases (en, es) both confirmed against the real module | ➖ None needed — already minimal |
+
+### Test Summary
+- **Total tests written/modified this batch**: 6 new/changed test cases (5 in `guide-links.spec.ts`,
+  1 new case + 1 rewritten mock in `LandingView.spec.ts`)
+- **Total tests passing (substitute-verified)**: 5/5 in `guide-links.spec.ts`; `guideUrl()`'s 2
+  locale cases against the real module. **Not verified**: `LandingView.spec.ts`'s new/modified
+  assertions (Vue component layer) — needs the human's real `pnpm vitest run`.
+- **Layers used**: Unit (2 — `guideUrl` locale cases), Integration (5 — `guide-links.spec.ts`),
+  Component (1 new case, unverified — `LandingView.spec.ts`)
+- **Approval tests**: None — no refactoring-of-existing-behavior tasks in Part A/D; Part C's
+  `LandingLinks.vue` change is additive (new anchor + new reactive binding), not a refactor of
+  existing behavior
+- **Pure functions created**: 1 (`guideUrl` in `links.ts`)
+
+### Deviations from Design / Tasks
+1. **Invite flow is on `BudgetSelectionView.vue`, not `BudgetMembersView.vue`** — see Part A's
+   "Deviation from the launch prompt" note above. Documented correctly in the chapter; flagging
+   since it corrects an implicit assumption in both the launch prompt and (arguably) ADR-UGD-08's
+   phrasing.
+2. **`LandingView.spec.ts`'s existing locale-store mock had to be rewritten**, not just extended
+   with a new test case, because a plain-object mock is structurally incompatible with
+   `storeToRefs()` (Pinia only wraps already-reactive properties). This is a necessary consequence
+   of ADR-UGD-09's own design choice (`storeToRefs`, not a one-time `.locale` read) — not a
+   deviation from the design, but worth flagging as more test-infrastructure work than tasks.md's
+   one-line description ("extend `LandingView.spec.ts`") implied.
+3. **Added a real `<a href="members.html">` cross-link in `budget-management.html`** (both
+   locales), closing the forward-reference PR2 had deliberately left as plain text. This was
+   PR2's own documented deviation #2 anticipating this exact PR5 fix — not new scope, just paying
+   off that IOU.
+4. **Authored total for this batch is ~339 lines** (87 insertions across the 8 tracked-modified
+   files per `git diff --stat`, + 64 (`members.html` en) + 68 (`members.html` es) + 120
+   (`guide-links.spec.ts`, new/untracked)), close to the ~300 estimate (~13% over) — the smallest
+   overrun of any PR in this chain, and well under the confirmed 800-line ceiling (~42%). No
+   `size:exception` needed.
+5. **Tasks 20.3/20.4 (full `pnpm build` / `pnpm lint && pnpm test`) are left unchecked**, unlike
+   PR2/PR4's looser convention of marking substitute-verified gates `[x]` with a caveat. This PR
+   is the one place in the entire chain where that distinction matters: it is the only PR whose
+   correctness depends on a real TypeScript compile + Vite bundle of modified `.vue`/`.ts` source,
+   which has no substitute-execution path in this session.
+
+### Issues Found
+None beyond the two test-logic bugs documented above (Part D GREEN), which were found and fixed
+within this same batch, not left as open bugs. `pnpm`/`node_modules` remains blocked in this
+session by the same pre-existing Windows filesystem-level corruption documented in PR1's
+Infrastructure Blocker section — reproduced again, not caused by this PR's code.
+
+### Review recommendation
+Unlike PR2-PR4 (content-only, correctly skipped for formal code review), **PR5 is the one PR in
+this chain that should go through the project's formal 4-lens (`gentle-ai` 4R: risk / resilience /
+readability / reliability) review before merge** — it is the only PR touching real application
+`src/` (Pinia store consumption, a new reactive computed, a new i18n-bound anchor) and test
+infrastructure (a rewritten Vitest mock), matching the exact criteria that triggered PR1's full 4R
+review.
+
+## Status (PR5)
+15/17 PR5 tasks complete (17.1-17.3, 18.1-18.5, 19.1-19.5, 20.1-20.2). Members chapter authored and
+published (10/10 chapters now live in both locales); locale-aware landing link implemented per
+ADR-UGD-09; `guide-links.spec.ts` integration walker created and substitute-verified 5/5 against
+the real committed tree. **Blocked, not run**: 20.3 (`pnpm build`) and 20.4
+(`pnpm lint && pnpm test`) — both need the human's real `pnpm` run, plus `LandingView.spec.ts`'s
+new/modified assertions specifically need `pnpm vitest run` to confirm (Vue/Pinia layer has no
+substitute-execution path this session). Left uncommitted per explicit instruction — all PR5
+changes are working-tree modifications on `feat/user-guide-docs-pr5`, awaiting orchestrator/user
+review, the real `pnpm vitest run`/`pnpm run build` confirmation, and explicit approval before
+`git add`/`commit`/`push`. **This is the final PR of the `user-guide-docs` change** — once
+committed and confirmed, all 5 PRs in the chain are complete and the tracker branch
+`feat/user-guide-docs` can be readied for its own merge to `main`.
+
+## Post-implementation fix: dev-server directory-index gap (found by manual QA)
+
+After the human ran the full `pnpm test` (851/851 passed) and `pnpm lint` (clean) and confirmed
+PR5 was ready to commit, manual click-through QA in the running `vite dev` server found the guide
+link resolved to a **blank screen** in both locales, despite the automated tests passing.
+
+**Root cause**: ADR-UGD-04 assumed `/guide/en/` (a bare directory URL) "resolves identically under
+`vite dev`, `vite preview`, Caddy" — true for Caddy (`file_server` resolves a directory to its
+`index.html`) but **false for `vite dev`**: an unmatched directory path there falls through to the
+SPA's own root `index.html` instead, and since no Vue route matches `/guide/en/`, the rendered
+page is blank. This gap wasn't caught by any automated test because `guide-links.spec.ts` walks
+the committed static tree directly (file existence, not HTTP resolution), and `LandingView.spec.ts`
+only asserts the `href` attribute's string value, not that a dev server actually resolves it.
+
+**Fix**: `GUIDE_PATH_BY_LOCALE` in `links.ts` now points at the explicit file
+(`/guide/en/index.html`, `/guide/es/index.html`) instead of the bare directory — a real static
+file resolves identically in every environment (dev, preview, Caddy), removing the dependency on
+any server's directory-index behavior. Updated `LandingView.spec.ts`'s two assertions to match.
+No other file referenced the bare-directory form (`links.ts` is the single source of truth,
+`LandingLinks.vue` only calls `guideUrl()`).
+
+**Lesson**: an environment-parity claim in design.md was accepted without independently verifying
+it in the specific environment that turned out to differ — automated tests exercised the two
+environments that *did* behave consistently (the static file tree, and the string-level href),
+never the actual HTTP resolution the real dev server performs. Manual QA in a live server remains
+necessary even with a passing automated suite for anything involving server-level URL resolution.
+
+## Cumulative task status (final, all 5 PRs)
+**61/67 tasks complete.** PR1: 25/27 (5.4/5.5 remain the same partially-verified infra manual
+gates, unchanged this session). PR2: 9/9. PR3: 4/4 authoring tasks (12.1/12.2 manual gates
+pending the human-run commands, unchanged this session). PR4: 8/8. PR5: 15/17 (20.3/20.4 blocked
+on the human's real `pnpm build`/`pnpm lint && pnpm test`). All 5 chapters' authoring work and
+both TDD-required `src/`-touching pieces (landing link, integration walker) are implemented;
+the remaining 2 open tasks are pure manual-gate confirmations, not missing implementation.

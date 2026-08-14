@@ -15,9 +15,11 @@ import { render, screen, fireEvent } from '@testing-library/vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { createI18n } from 'vue-i18n'
+import { ref, nextTick } from 'vue'
 import LandingView from '../views/LandingView.vue'
 import { SHOWCASE_ITEMS } from '../config/showcase'
 import { REPO_URL, README_URL, DECK_URL } from '../config/links'
+import { useLocaleStore } from '@/stores/locale.store'
 
 // LandingView mounts LanguageSwitcher directly (RootGate bypasses PublicLayout,
 // see design.md Decision 1) — stub its stores like PublicLayout.spec.ts does.
@@ -28,9 +30,21 @@ vi.mock('@/api/axios', () => ({
   },
 }))
 
-vi.mock('@/stores/locale.store', () => ({
-  useLocaleStore: vi.fn(() => ({ locale: 'en', setLocale: vi.fn() })),
-}))
+// Reactive mock (ADR-UGD-09 needs the guide link to react to a locale change without a page
+// reload) — a plain `{ locale: 'en' }` object cannot be picked up by `storeToRefs` in
+// LandingLinks.vue, since storeToRefs only wraps properties that are already `isRef`/`isReactive`.
+// The factory returns one singleton `store` object (not a fresh ref per call), matching how a
+// real Pinia store is a per-app singleton shared by every component that calls `useLocaleStore()`.
+vi.mock('@/stores/locale.store', () => {
+  const locale = ref<'en' | 'es'>('en')
+  const store = {
+    locale,
+    setLocale: vi.fn((lang: 'en' | 'es') => {
+      locale.value = lang
+    }),
+  }
+  return { useLocaleStore: vi.fn(() => store) }
+})
 
 vi.mock('@/stores/auth.store', () => ({
   useAuthStore: vi.fn(() => ({ isAuthenticated: false })),
@@ -83,7 +97,12 @@ function makeI18n() {
             dismissHint: 'Press Escape or click outside to close',
           },
           cta: { primary: 'Create your free account', secondary: 'Sign in' },
-          links: { github: 'View source on GitHub', readme: 'Read the docs', deck: 'View the presentation' },
+          links: {
+            github: 'View source on GitHub',
+            readme: 'Read the docs',
+            deck: 'View the presentation',
+            guide: 'Open the user guide',
+          },
         },
       },
     },
@@ -103,6 +122,9 @@ describe('LandingView', () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
     stubMatchMedia(true)
+    // Reset the shared locale-store mock's reactive state between tests — vi.clearAllMocks()
+    // clears vi.fn() call tracking but not the ref's mutated value from a prior test.
+    useLocaleStore().setLocale('en')
   })
 
   afterEach(() => {
@@ -213,5 +235,20 @@ describe('LandingView', () => {
       return inlineWidth.endsWith('px') && parseFloat(inlineWidth) > 375
     })
     expect(overflowingFixedWidthEl).toBeUndefined()
+  })
+
+  // ADR-UGD-09 / LANDING-4 delta: the guide link is the one outbound link that IS locale-aware,
+  // a scoped exception to this file's other links staying on single, untranslated URLs.
+  it('guide link resolves per active locale and updates without a page reload (LANDING-4)', async () => {
+    const { container } = await renderLandingView()
+
+    const guide = container.querySelector('[data-testid="link-guide"]')
+    expect(guide?.getAttribute('href')).toBe('/guide/en/index.html')
+    expect(guide?.className).not.toContain('btn-primary')
+
+    useLocaleStore().setLocale('es')
+    await nextTick()
+
+    expect(guide?.getAttribute('href')).toBe('/guide/es/index.html')
   })
 })

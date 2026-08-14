@@ -157,26 +157,26 @@ Chain strategy: feature-branch-chain
 > captures already merged.
 
 ### Phase 1: `members` chapter (text-only, no `images` key)
-- [ ] 17.1 Modify `chapters.mjs` — `members.published = true`, no `images` key (text-only, per ADR-UGD-06).
-- [ ] 17.2 Author `content/en/members.html` — 6 sections per ADR-UGD-08 (who can manage, viewing the list, changing a role incl. action-matrix note, removing access, restoring access, inviting someone — stops at "invitation sent", links to `budget-management` for acceptance).
-- [ ] 17.3 Author `content/es/members.html` — same 6 sections, ES voseo register.
+- [x] 17.1 Modify `chapters.mjs` — `members.published = true`, no `images` key (text-only, per ADR-UGD-06).
+- [x] 17.2 Author `content/en/members.html` — 6 sections per ADR-UGD-08 (who can manage, viewing the list, changing a role incl. action-matrix note, removing access, restoring access, inviting someone — stops at "invitation sent", links to `budget-management` for acceptance).
+- [x] 17.3 Author `content/es/members.html` — same 6 sections, ES voseo register.
 
 ### Phase 2: Guide integration walker — TDD
-- [ ] 18.1 RED: create `src/features/landing/__tests__/guide-links.spec.ts` — EN/ES file sets under `public/guide/**` identical; every `<img src>`, sidebar `href`, and toggle target resolves to an existing file.
-- [ ] 18.2 RED: same file — every chapter page's sidebar lists all 10 chapters; heading counts match across EN/ES.
-- [ ] 18.3 RED: same file — `members.html` (both locales) contains zero `<img>` elements.
-- [ ] 18.4 GREEN: fix any gap surfaced by 18.1–18.3 (expected none, given PR1's generator validations).
-- [ ] 18.5 REFACTOR: `pnpm vitest src/features/landing/__tests__/guide-links.spec.ts`, confirm 18.1–18.3 green.
+- [x] 18.1 RED: create `src/features/landing/__tests__/guide-links.spec.ts` — EN/ES file sets under `public/guide/**` identical; every `<img src>`, sidebar `href`, and toggle target resolves to an existing file.
+- [x] 18.2 RED: same file — every chapter page's sidebar lists all 10 chapters; heading counts match across EN/ES.
+- [x] 18.3 RED: same file — `members.html` (both locales) contains zero `<img>` elements.
+- [x] 18.4 GREEN: fix any gap surfaced by 18.1–18.3 (two real gaps found in the *test itself*, not the generator: the skip-link's `href="#content"` fragment was being flagged as a dead link, and `index.html`'s sidebar-count check didn't account for its body also repeating the chapter list via `index-body.html`'s `{{CHAPTER_LIST}}` — both fixed by scoping the check to fragment-refs and to the `<nav class="sidebar">` region; the generator itself needed zero changes).
+- [x] 18.5 REFACTOR: `pnpm vitest src/features/landing/__tests__/guide-links.spec.ts` — could not execute via pnpm (see Infrastructure Blocker); substitute: ran the exact 5 assertions directly via `node` against the real committed `public/guide/**` tree — 5/5 pass.
 
 ### Phase 3: Locale-aware landing link — TDD
-- [ ] 19.1 RED: extend `src/features/landing/__tests__/LandingView.spec.ts` — `link-guide` href is `/guide/en/` by default and updates to `/guide/es/` after `localeStore.setLocale('es')`.
-- [ ] 19.2 GREEN: modify `src/features/landing/config/links.ts` — add `guideUrl(locale: SupportedLocale)` pure function + scoped-exception comment (ADR-UGD-09).
-- [ ] 19.3 GREEN: modify `src/features/landing/components/LandingLinks.vue` — `storeToRefs(useLocaleStore())`, computed `guideHref`, new anchor placed 3rd of 4 (github, readme, guide, deck).
-- [ ] 19.4 GREEN: modify `src/i18n/locales/en.json` and `es.json` — add `landing.links.guide` (`Open the user guide` / `Abrí la guía de usuario`).
-- [ ] 19.5 REFACTOR: `pnpm vitest src/features/landing/__tests__/LandingView.spec.ts`, confirm 19.1 green and existing 3-link assertions unaffected.
+- [x] 19.1 RED: extend `src/features/landing/__tests__/LandingView.spec.ts` — `link-guide` href is `/guide/en/` by default and updates to `/guide/es/` after `localeStore.setLocale('es')`.
+- [x] 19.2 GREEN: modify `src/features/landing/config/links.ts` — add `guideUrl(locale: SupportedLocale)` pure function + scoped-exception comment (ADR-UGD-09).
+- [x] 19.3 GREEN: modify `src/features/landing/components/LandingLinks.vue` — `storeToRefs(useLocaleStore())`, computed `guideHref`, new anchor placed 3rd of 4 (github, readme, guide, deck).
+- [x] 19.4 GREEN: modify `src/i18n/locales/en.json` and `es.json` — add `landing.links.guide` (`Open the user guide` / `Abrí la guía de usuario`).
+- [x] 19.5 REFACTOR: `pnpm vitest src/features/landing/__tests__/LandingView.spec.ts` — **not executed**, `pnpm`/jsdom/Vue Test Utils cannot be substitute-run via plain `node` (unlike the pure-function scripts). `guideUrl()` itself was substitute-verified against the real `links.ts` module via `node --experimental-strip-types`; the Vue component/store-reactivity wiring is confirmed only by static review — flagged for the human's real `pnpm vitest run` to confirm 19.1 green and the existing 3-link assertions unaffected.
 
 ### Phase 4: Final regenerate and full verification
-- [ ] 20.1 Run `pnpm guide:build`; commit regenerated `members.html` (both locales) + final sidebar regeneration across all 10×2 chapter pages (now fully published).
-- [ ] 20.2 Manual gate: `pnpm guide:check` clean.
-- [ ] 20.3 Manual gate: `pnpm build` — `dist/guide/` has all 22 files; verify `/guide/en/` and `/guide/es/` resolve via their `index.html`.
-- [ ] 20.4 Manual gate: `pnpm lint && pnpm test` (full suite) — zero regressions outside this change's files.
+- [x] 20.1 Run `pnpm guide:build`; commit regenerated `members.html` (both locales) + final sidebar regeneration across all 10×2 chapter pages (now fully published). (ran via direct `node scripts/build-guide.mjs`; left uncommitted per instruction)
+- [x] 20.2 Manual gate: `pnpm guide:check` clean. (ran via direct `node scripts/build-guide.mjs --check` — clean)
+- [ ] 20.3 Manual gate: `pnpm build` — `dist/guide/` has all 22 files; verify `/guide/en/` and `/guide/es/` resolve via their `index.html`. **BLOCKED**, not run (pnpm/node_modules Windows blocker, see Infrastructure Blocker) — needs the human's real run since this PR touches `src/` and TS/Vite compilation of `LandingLinks.vue`/`links.ts` is unverified.
+- [ ] 20.4 Manual gate: `pnpm lint && pnpm test` (full suite) — zero regressions outside this change's files. **BLOCKED**, not run (same pnpm blocker) — needs the human's real run.
