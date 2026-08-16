@@ -289,6 +289,16 @@ Deployed to a Hetzner VPS running the app in Docker, fronted by Caddy for automa
 
 Slide deck: [`docs/slides/presentation/MyBudget.pdf`](docs/slides/presentation/MyBudget.pdf) (browser-viewable; [`.pptx` source](docs/slides/presentation/MyBudget.pptx) also available) — value proposition, the problem it solves, architecture and development process, and a feature-by-feature walkthrough with real screenshots (89 captures across the app's flows).
 
+Video: Depending on the watcher preferences it can find different resolutions (video-file-size) and speed (time) here at this [`google-drive folder`](https://drive.google.com/drive/folders/1J2za-1V0ayyVnZGtdS2-ZGIi6rArEEnN), where it can find:
+| File Name | Size | Time |
+| -------------------- | --------- | ------------- |
+| MyBudget_1080p-2x.mp4 | `~893MB` | 11.75 minutes |
+| MyBudget_1080p.mp4 | `~1.4GB` | 23 minutes |
+| MyBudget_720p.mp4 | `~852MB` | 23 minutes |
+| MyBudget_480p.mp4 | `~428MB` | 23 minutes |
+
+In case you cannot have access to this google-drive folder, which link has configured as `anyone with the link` should have access to it, please let me know with an email to `arasman@gmail.com` with subject `MyBudget-Video-Access` I'll gladly check, and if the link has changed for any reason, I'll share it with you.
+
 ## Project Status
 
 **MVP A — complete.** 31 feature changes shipped and archived, from initial scaffold through budget member administration (2026-07-07 → 2026-08-13). Full history in [`openspec/ROADMAP.md`](openspec/ROADMAP.md).
